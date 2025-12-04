@@ -15,6 +15,9 @@ class Trainees extends Model
 
     }
     protected $fillable = [
+        'id',
+        'national_id',
+        'date_of_birth',
         'name',
         'institution_id',
         'major',
@@ -22,9 +25,14 @@ class Trainees extends Model
         'phone',
         'department_id',
         'administrative_id',
+        'accepted_at',
         'start_date',
-        'end_date',
+        'finish_date',
         'status',
+        'supervisor_id',
+        'address',
+        'reason_for_rejection',
+        'cover_letter',
     ];
 
 }

@@ -26,7 +26,9 @@ class AdministrativesResource extends Resource
 
     public static function form(Schema $schema): Schema
     {
-        return AdministrativesForm::configure($schema);
+        return AdministrativesForm::configure($schema)
+
+        ;
     }
 
     public static function infolist(Schema $schema): Schema
@@ -36,7 +38,9 @@ class AdministrativesResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return AdministrativesTable::configure($table);
+            
+        return AdministrativesTable::configure($table)
+            ;
     }
 
     public static function getRelations(): array

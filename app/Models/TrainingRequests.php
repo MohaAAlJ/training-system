@@ -22,5 +22,8 @@ class TrainingRequests extends Model
         'full_name',
         'phone_number',
         'major_level',
+        'address',
+        'reason_for_rejection',
+
     ];
 }

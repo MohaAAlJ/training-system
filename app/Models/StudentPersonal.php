@@ -14,8 +14,8 @@ class StudentPersonal extends Model
         'department_id',
         'major_id',
         'major_level',
-        'gpa',
         'graduation_year',
-        '',
+        'address',
+        'phone_number',
     ];
 }
