@@ -10,4 +10,15 @@ class Administratives extends Model
     //
     use SoftDeletes,HasFactory;
     protected $table = "administratives";
+    protected $fillable = [
+        'name',
+        'email',
+        'phone',
+        'position',
+        'department',
+        'office_location',
+        'employee_id',
+        'status',
+        'notes',
+    ];
 }
