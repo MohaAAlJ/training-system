@@ -16,12 +16,6 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Section;
 
 class ApplicationsResource extends Resource
 {
@@ -40,4 +34,38 @@ class ApplicationsResource extends Resource
         return ApplicationsForm::configure($schema);
     }
 
+    public static function infolist(Schema $schema): Schema
+    {
+        return ApplicationsInfolist::configure($schema);
     }
+
+    public static function table(Table $table): Table
+    {
+        return ApplicationsTable::configure($table);
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            //
+        ];
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => ListApplications::route('/'),
+            'create' => CreateApplications::route('/create'),
+            'view' => ViewApplications::route('/{record}'),
+            'edit' => EditApplications::route('/{record}/edit'),
+        ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withoutGlobalScopes([
+                SoftDeletingScope::class,
+            ]);
+    }
+}

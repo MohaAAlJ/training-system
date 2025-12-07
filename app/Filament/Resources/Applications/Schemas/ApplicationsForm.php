@@ -16,7 +16,8 @@ class ApplicationsForm
 {
     public static function configure(Schema $schema): Schema
     {
-        return $schema
+                return $schema
+
             ->components([
                 Fieldset::make('معلومات المتدرب')
                     ->schema([
@@ -37,8 +38,26 @@ class ApplicationsForm
                                     ->label('رقم الهاتف')
                                     ->tel()
                                     ->required(),
+                                DatePicker::make('dob')
+                                    ->label('تاريخ الميلاد')
+                                    ->required()
+                                    ->native(false),
+                                TextInput::make('location')
+                                    ->label('الموقع'),
+                                Select::make('institution_id')
+                                    ->label('المؤسسة التعليمية')
+                                    ->relationship('institution', 'name')
+                                    ->searchable()
+                                    ->preload(),
+                                Select::make('institution_major_id')
+                                    ->label('التخصص')
+                                    ->relationship('institutionMajor', 'name')
+                                    ->searchable()
+                                    ->preload(),
                             ]),
                     ])->columns(1),
+
+                // ...existing code...
 
                 Fieldset::make('تفاصيل الطلب')
                     ->schema([
