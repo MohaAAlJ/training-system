@@ -11,10 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('training_requests', function (Blueprint $table) {
+        Schema::create('applications', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
-            $table->softDeletes();
         });
     }
 
@@ -23,6 +22,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('training_requests');
+        Schema::dropIfExists('applications');
     }
 };

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\TrainingRequests\Tables;
+namespace App\Filament\Resources\Applications\Tables;
 
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -11,7 +11,7 @@ use Filament\Actions\ViewAction;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 
-class TrainingRequestsTable
+class ApplicationsTable
 {
     public static function configure(Table $table): Table
     {
