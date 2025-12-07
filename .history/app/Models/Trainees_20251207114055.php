@@ -22,6 +22,8 @@ class Trainees extends Model
     protected $casts = [
         'dob' => 'date',
     ];
+    
+    protected $dates = ['dob'];
 
     public function institution()
     {

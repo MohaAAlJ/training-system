@@ -11,14 +11,12 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Translatable\HasTranslations;
 
 class Institution extends Model
-{
-    /** @use HasFactory<\Database\Factories\InstitutionFactory> */
-    use HasFactory, SoftDeletes, HasTranslations;
+    {
+        /** @use HasFactory<\Database\Factories\InstitutionFactory> */
+        use HasFactory, SoftDeletes, HasTranslations;
 
-    protected $fillable = ['name'];
-    public $translatable = ['name'];
-
-    /** Relations */
+        protected $fillable = ['name'];
+        public $translatable = ['name'];    /** Relations */
 
     public function institutionMajors(): HasMany
     {
