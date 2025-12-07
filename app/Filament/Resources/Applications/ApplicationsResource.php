@@ -37,75 +37,7 @@ class ApplicationsResource extends Resource
 
     public static function form(Schema $schema): Schema
     {
-        return $schema
-            ->components([
-                Section::make('المعلومات الشخصية')
-                    ->schema([
-                        TextInput::make('full_name')
-                            ->label('الاسم الكامل')
-                            ->required()
-                            ->maxLength(255),
-                        TextInput::make('phone_number')
-                            ->label('رقم الهاتف')
-                            ->tel()
-                            ->required(),
-                        TextInput::make('address')
-                            ->label('العنوان')
-                            ->maxLength(255),
-                    ])->columns(2),
-
-                Section::make('معلومات التعليم')
-                    ->schema([
-                        TextInput::make('institution_name')
-                            ->label('اسم المؤسسة التعليمية')
-                            ->required(),
-                        TextInput::make('major')
-                            ->label('التخصص')
-                            ->required(),
-                        TextInput::make('major_level')
-                            ->label('المستوى الدراسي'),
-                    ])->columns(2),
-
-                Section::make('تفاصيل الطلب')
-                    ->schema([
-                        TextInput::make('position_applied')
-                            ->label('الوظيفة المتقدم لها'),
-                        DatePicker::make('start_date')
-                            ->label('تاريخ البدء')
-                            ->required(),
-                        DatePicker::make('end_date')
-                            ->label('تاريخ الانتهاء')
-                            ->required(),
-                        Select::make('status')
-                            ->label('الحالة')
-                            ->options([
-                                'pending' => 'قيد الانتظار',
-                                'approved' => 'مقبول',
-                                'rejected' => 'مرفوض',
-                            ])
-                            ->default('pending')
-                            ->required(),
-                    ])->columns(2),
-
-                Section::make('المستندات')
-                    ->schema([
-                        Textarea::make('cover_letter')
-                            ->label('خطاب التقديم')
-                            ->rows(4)
-                            ->columnSpanFull(),
-                        FileUpload::make('resume_path')
-                            ->label('السيرة الذاتية')
-                            ->directory('resumes')
-                            ->acceptedFileTypes(['application/pdf'])
-                            ->columnSpanFull(),
-                        Textarea::make('reason_for_rejection')
-                            ->label('سبب الرفض')
-                            ->rows(3)
-                            ->columnSpanFull()
-                            ->visible(fn ($get) => $get('status') === 'rejected'),
-                    ]),
-            ]);
+        return ApplicationsForm::configure($schema);
     }
 
-    // ...existing code...
-}
+    }
