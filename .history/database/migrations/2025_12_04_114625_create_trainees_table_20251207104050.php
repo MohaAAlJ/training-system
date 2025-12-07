@@ -18,9 +18,11 @@ return new class extends Migration
             $table->string('national_id')->unique(); // Marked as UK (Unique Key) in ERD
             $table->string('full_name');
             $table->string('phone_number');
-            $table->date('dob');
-            $table->string('location')->nullable();
+            $table->date('dob'); // Date of Birth
+            $table->string('location')->nullable(); // Address/Location
 
+            // Relationships (Foreign Keys)
+            // Link to institution for enrollment tracking
             $table->foreignId('institution_id')
                 ->nullable()
                 ->constrained('institutions')

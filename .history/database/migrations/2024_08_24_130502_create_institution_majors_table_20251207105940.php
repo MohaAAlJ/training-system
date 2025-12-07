@@ -11,21 +11,20 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('institution_majors', function (Blueprint $table) {
+        Schema::create('institution_major', function (Blueprint $table) {
             $table->id();
-            
-            // Foreign Key
+
             $table->foreignId('institution_id')
                 ->constrained('institutions')
                 ->cascadeOnDelete();
-            $table->index('institution_id');
-            
-            // Major Info
-            $table->json('name'); // Localized major names
-            $table->string('code')->unique()->nullable(); // Major code
-            
-            $table->softDeletes();
+
+            $table->foreignId('institution_major_id')
+                ->constrained('institution_majors')
+                ->cascadeOnDelete();
+
             $table->timestamps();
+
+            $table->unique(['institution_id', 'institution_major_id']);
         });
     }
 

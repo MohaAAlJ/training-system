@@ -13,25 +13,25 @@ return new class extends Migration
     {
         Schema::create('departments', function (Blueprint $table) {
             $table->id();
-
+            
             // Department Info
             $table->string('name_location'); // Department name and location
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->integer('total_capacity');
-
+            
             // Foreign Keys
             $table->foreignId('user_id')
                 ->nullable()
                 ->constrained('users')
                 ->nullOnDelete();
             $table->index('user_id');
-
+            
             $table->foreignId('administrative_id')
                 ->nullable()
                 ->constrained('administratives')
                 ->nullOnDelete();
             $table->index('administrative_id');
-
+            
             $table->timestamps();
             $table->softDeletes();
         });

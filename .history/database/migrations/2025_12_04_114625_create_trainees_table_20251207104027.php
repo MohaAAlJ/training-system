@@ -18,21 +18,22 @@ return new class extends Migration
             $table->string('national_id')->unique(); // Marked as UK (Unique Key) in ERD
             $table->string('full_name');
             $table->string('phone_number');
-            $table->date('dob');
-            $table->string('location')->nullable();
+            $table->date('dob'); // Date of Birth
+            $table->string('location')->nullable(); // Address/Location
 
-            $table->foreignId('institution_id')
+            // Relationships (Foreign Keys)
+            // Assuming 'universities' and 'majors' tables exist.
+            // using nullable() + nullOnDelete() is safer for history preservation if a university/major is deleted.
+
+            $table->foreignId('university_id')
                 ->nullable()
-                ->constrained('institutions')
+                ->constrained('universities')
                 ->nullOnDelete();
 
-            $table->foreignId('institution_major_id')
+            $table->foreignId('major_id')
                 ->nullable()
-                ->constrained('institution_majors')
+                ->constrained('majors')
                 ->nullOnDelete();
-
-            $table->index('institution_id');
-            $table->index('institution_major_id');
 
             $table->timestamps();
             $table->softDeletes();

@@ -11,11 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('student_personals', function (Blueprint $table) {
+        Schema::create('institution_major', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
-            $table->softDeletes();
-
         });
     }
 
@@ -24,6 +22,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('student_personals');
+        Schema::dropIfExists('institution_major');
     }
 };

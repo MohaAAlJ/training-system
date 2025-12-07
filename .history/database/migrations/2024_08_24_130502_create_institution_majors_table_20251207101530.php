@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\InstitutionDepartment;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -13,17 +14,8 @@ return new class extends Migration
     {
         Schema::create('institution_majors', function (Blueprint $table) {
             $table->id();
-            
-            // Foreign Key
-            $table->foreignId('institution_id')
-                ->constrained('institutions')
-                ->cascadeOnDelete();
-            $table->index('institution_id');
-            
-            // Major Info
-            $table->json('name'); // Localized major names
-            $table->string('code')->unique()->nullable(); // Major code
-            
+            $table->json('name');
+            $table->foreignIdFor(InstitutionDepartment::class)->constrained()->cascadeOnUpdate()->cascadeOnDelete();
             $table->softDeletes();
             $table->timestamps();
         });

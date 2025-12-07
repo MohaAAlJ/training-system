@@ -9,23 +9,23 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
+    // create_institution_major_table.php
     public function up(): void
     {
-        Schema::create('institution_majors', function (Blueprint $table) {
+        Schema::create('institution_major', function (Blueprint $table) {
             $table->id();
-            
-            // Foreign Key
+
             $table->foreignId('institution_id')
                 ->constrained('institutions')
                 ->cascadeOnDelete();
-            $table->index('institution_id');
-            
-            // Major Info
-            $table->json('name'); // Localized major names
-            $table->string('code')->unique()->nullable(); // Major code
-            
-            $table->softDeletes();
+
+            $table->foreignId('major_id')
+                ->constrained('majors')
+                ->cascadeOnDelete();
+
             $table->timestamps();
+
+            $table->unique(['institution_id', 'major_id']);
         });
     }
 
@@ -34,6 +34,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('institution_majors');
+        Schema::dropIfExists('institution_major');
     }
 };
