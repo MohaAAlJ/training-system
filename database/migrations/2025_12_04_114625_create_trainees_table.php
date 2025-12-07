@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('full_name');
             $table->string('phone_number');
             $table->date('dob');
-            $table->string('location')->nullable();
+            $table->string('address')->nullable();
 
             $table->foreignId('institution_id')
                 ->nullable()
