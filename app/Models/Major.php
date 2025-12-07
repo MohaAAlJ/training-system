@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Translatable\HasTranslations;
 
@@ -20,11 +21,11 @@ class Major extends Model
 
     public function institutions(): BelongsToMany
     {
-        return $this->belongsToMany(Institution::class, 'institution_major', 'major_id', 'institution_id');
+        return $this->belongsToMany(Institution::class, 'institution_major');
     }
 
-    public function trainees(): BelongsToMany
+    public function trainees(): HasMany
     {
-        return $this->belongsToMany(Trainees::class, 'trainee_major', 'major_id', 'trainee_id');
+        return $this->hasMany(Trainees::class, 'major_id');
     }
 }
