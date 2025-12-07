@@ -4,10 +4,11 @@ use Faker\Factory;
 
 if (!function_exists('arabicFaker')) {
     /**
-     * Create a Faker instance with Arabic locale.
+     * Get an Arabic Faker instance.
      */
     function arabicFaker()
     {
+        // ar_SA provides realistic Arabic names and text
         return Factory::create('ar_SA');
     }
 }

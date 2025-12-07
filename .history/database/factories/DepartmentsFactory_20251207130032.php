@@ -21,6 +21,12 @@ class DepartmentsFactory extends Factory
 
             'status' => $this->faker->randomElement(['active', 'inactive']),
             'total_capacity' => $this->faker->numberBetween(10, 50),
+
+            // --- التعديل هنا ---
+            // غير هذا السطر:
+            // 'head_of_department_id' => User::factory(),
+
+            // إلى هذا الاسم الموجود في قاعدتك:
             'user_id' => User::factory(),
 
             'administrative_id' => Administratives::factory(),

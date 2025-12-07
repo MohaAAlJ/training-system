@@ -11,17 +11,23 @@ class DepartmentsFactory extends Factory
     public function definition(): array
     {
         // 1. Arabic Name using helper
-        $arabicName = arabicFaker()->name;
+        $arabicName = arabicFaker()->name; 
 
         // 2. English Name using standard Faker
         $englishName = $this->faker->name;
 
         return [
             'name_location' => 'قسم ' . $arabicName . ' - Department ' . $englishName,
-
+            
             'status' => $this->faker->randomElement(['active', 'inactive']),
             'total_capacity' => $this->faker->numberBetween(10, 50),
-            'user_id' => User::factory(),
+            
+            // --- التعديل هنا ---
+            // غير هذا السطر:
+            // 'head_of_department_id' => User::factory(),
+            
+            // إلى هذا الاسم الموجود في قاعدتك:
+            'user_id' => User::factory(), 
 
             'administrative_id' => Administratives::factory(),
         ];
