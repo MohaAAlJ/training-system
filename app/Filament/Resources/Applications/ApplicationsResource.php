@@ -21,7 +21,7 @@ class ApplicationsResource extends Resource
 {
     protected static ?string $model = Applications::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClipboardDocumentList;
 
     // Arabic labels
     protected static ?string $modelLabel = 'طلب';

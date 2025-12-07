@@ -8,6 +8,7 @@ use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Actions\ViewAction;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 
@@ -17,7 +18,26 @@ class AdministrativesTable
     {
         return $table
             ->columns([
-                //
+                TextColumn::make('title')
+                    ->label('اسم المديرية')
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('head_of_administrative')
+                    ->label('رئيس المديرية')
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('user.name')
+                    ->label('المستخدم المسؤول')
+                    ->searchable(),
+                TextColumn::make('departments_count')
+                    ->label('عدد الأقسام')
+                    ->counts('departments')
+                    ->sortable(),
+                TextColumn::make('created_at')
+                    ->label('تاريخ الإنشاء')
+                    ->dateTime('Y-m-d')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 TrashedFilter::make(),

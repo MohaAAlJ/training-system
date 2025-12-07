@@ -13,6 +13,8 @@ return new class extends Migration
     {
         Schema::create('departments', function (Blueprint $table) {
             $table->id();
+            $table->text('description')->nullable();
+            $table->string('address')->nullable();
 
             // Department Info
             $table->string('name_location'); // Department name and location

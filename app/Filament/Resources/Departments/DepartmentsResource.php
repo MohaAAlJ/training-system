@@ -22,7 +22,7 @@ class DepartmentsResource extends Resource
 {
     protected static ?string $model = Departments::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingOffice;
 
     public static function form(Schema $schema): Schema
     {

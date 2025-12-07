@@ -8,6 +8,9 @@ use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Actions\ViewAction;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\BadgeColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 
@@ -17,9 +20,49 @@ class DepartmentsTable
     {
         return $table
             ->columns([
-                //
+                TextColumn::make('name_location')
+                    ->label('اسم القسم والموقع')
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('administrative.title')
+                    ->label('المديرية')
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('user.name')
+                    ->label('المسؤول')
+                    ->searchable(),
+                TextColumn::make('total_capacity')
+                    ->label('السعة')
+                    ->sortable(),
+                TextColumn::make('status')
+                    ->label('الحالة')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'active' => 'success',
+                        'inactive' => 'danger',
+                        default => 'gray',
+                    })
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'active' => 'نشط',
+                        'inactive' => 'غير نشط',
+                        default => $state,
+                    }),
+                TextColumn::make('created_at')
+                    ->label('تاريخ الإنشاء')
+                    ->dateTime('Y-m-d')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
+                SelectFilter::make('status')
+                    ->label('الحالة')
+                    ->options([
+                        'active' => 'نشط',
+                        'inactive' => 'غير نشط',
+                    ]),
+                SelectFilter::make('administrative_id')
+                    ->label('المديرية')
+                    ->relationship('administrative', 'title'),
                 TrashedFilter::make(),
             ])
             ->recordActions([

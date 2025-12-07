@@ -22,7 +22,7 @@ class TraineesResource extends Resource
 {
     protected static ?string $model = Trainees::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedIdentification;
       // Arabic labels
     protected static ?string $modelLabel = 'المتدرب';
     protected static ?string $pluralModelLabel = 'المتدربين';

@@ -13,18 +13,18 @@ return new class extends Migration
     {
         Schema::create('applications', function (Blueprint $table) {
             $table->id();
-            
+
             // Foreign Keys
             $table->foreignId('trainee_id')
                 ->constrained('trainees')
                 ->cascadeOnDelete();
             $table->index('trainee_id');
-            
+
             $table->foreignId('department_id')
                 ->constrained('departments')
                 ->cascadeOnDelete();
             $table->index('department_id');
-            
+
             // Application Details
             $table->date('start_date');
             $table->date('end_date');
@@ -32,7 +32,7 @@ return new class extends Migration
             $table->string('letter_image_path')->nullable(); // Path to letter/document image
             $table->dateTime('accepted_at')->nullable(); // When application was accepted
             $table->string('tags')->nullable(); // Additional tags/metadata
-            
+
             $table->timestamps();
             $table->softDeletes();
         });

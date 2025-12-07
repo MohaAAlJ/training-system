@@ -15,7 +15,7 @@ class Trainees extends Model
         'full_name',
         'phone_number',
         'dob',
-        'location',
+        'address',
         'institution_id',
         'major_id',
     ];

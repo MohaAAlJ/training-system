@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Administratives\Schemas;
 
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 
 class AdministrativesForm
@@ -10,7 +12,20 @@ class AdministrativesForm
     {
         return $schema
             ->components([
-                //
+                TextInput::make('title')
+                    ->label('اسم المديرية')
+                    ->required()
+                    ->maxLength(255),
+                TextInput::make('head_of_administrative')
+                    ->label('رئيس المديرية')
+                    ->required()
+                    ->maxLength(255),
+                Select::make('user_id')
+                    ->label('المستخدم المسؤول')
+                    ->relationship('user', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->required(),
             ]);
     }
 }
