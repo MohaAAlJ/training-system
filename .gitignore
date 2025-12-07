@@ -11,6 +11,12 @@
 .env
 .env.*
 *.env
+# Local environment files
+.env
+.env.local
+.env.*.local
+# keep an example file in repo if you want
+!.env.example
 
 # Compiled files
 /bootstrap/cache/*.php
