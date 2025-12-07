@@ -23,6 +23,12 @@ class TraineesResource extends Resource
     protected static ?string $model = Trainees::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+      // Arabic labels
+    protected static ?string $modelLabel = 'المتدرب';
+    protected static ?string $pluralModelLabel = 'المتدربين';
+    protected static ?string $navigationLabel = 'المتدربين';
+    protected static ?int $navigationSort = 1;
+
 
     public static function form(Schema $schema): Schema
     {
@@ -61,4 +67,5 @@ class TraineesResource extends Resource
                 SoftDeletingScope::class,
             ]);
     }
+
 }

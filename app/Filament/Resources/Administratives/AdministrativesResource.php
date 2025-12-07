@@ -38,10 +38,15 @@ class AdministrativesResource extends Resource
 
     public static function table(Table $table): Table
     {
-            
+
         return AdministrativesTable::configure($table)
             ;
     }
+      // Arabic labels
+    protected static ?string $modelLabel = 'الدائرة';
+    protected static ?string $pluralModelLabel = 'الدائرة';
+    protected static ?string $navigationLabel = 'الدائرة';
+    protected static ?int $navigationSort = 1;
 
     public static function getRelations(): array
     {

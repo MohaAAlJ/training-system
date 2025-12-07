@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Trainees extends Model
 {
     use SoftDeletes, HasFactory;
-    
+
     protected $table = 'trainees';
     protected $fillable = [
         'national_id',
@@ -19,7 +19,7 @@ class Trainees extends Model
         'institution_id',
         'institution_major_id',
     ];
-    
+
     protected $dates = ['dob'];
 
     public function institution()
@@ -31,7 +31,6 @@ class Trainees extends Model
     {
         return $this->belongsTo(InstitutionMajor::class, 'institution_major_id');
     }
-
     public function applications()
     {
         return $this->hasMany(Applications::class, 'trainee_id');

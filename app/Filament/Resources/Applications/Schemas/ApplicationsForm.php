@@ -66,7 +66,8 @@ class ApplicationsForm
                             ->relationship('department', 'name_location')
                             ->searchable()
                             ->preload()
-                            ->required(),
+                            // ->required()
+                            ,
                         DatePicker::make('start_date')
                             ->label('تاريخ البدء')
                             ->required()

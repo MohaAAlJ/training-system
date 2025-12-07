@@ -10,6 +10,7 @@ use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class TraineesTable
@@ -27,31 +28,46 @@ class TraineesTable
                     ->sortable()
                     ->searchable(),
                 TextColumn::make('phone_number')
-                    ->label('رقم الهاتف'),
-                TextColumn::make('address')
-                    ->label('العنوان')
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->label('رقم الهاتف')
+                    ->searchable(),
                 TextColumn::make('dob')
                     ->label('تاريخ الميلاد')
                     ->date('Y-m-d')
                     ->sortable(),
-                TextColumn::make('institutionMajor.name')
-                    ->label('التخصص'),
+                TextColumn::make('location')
+                    ->label('الموقع')
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('institution.name')
-                    ->label('المؤسسة'),
+                    ->label('المؤسسة التعليمية')
+                    ->sortable(),
+                TextColumn::make('institutionMajor.name')
+                    ->label('التخصص')
+                    ->sortable(),
+                TextColumn::make('applications.status')
+                    ->label('حالة الطلب')
+                    ->badge()
+                    ->color(fn (?string $state): string => match ($state) {
+                        'pending' => 'warning',
+                        'approved' => 'success',
+                        'rejected' => 'danger',
+                        'completed' => 'info',
+                        default => 'gray',
+                    })
+                    ->formatStateUsing(fn (?string $state): string => match ($state) {
+                        'pending' => 'قيد الانتظار',
+                        'approved' => 'مقبول',
+                        'rejected' => 'مرفوض',
+                        'completed' => 'مكتمل',
+                        default => 'لا يوجد طلب',
+                    }),
+                TextColumn::make('applications_count')
+                    ->label('عدد الطلبات')
+                    ->counts('applications')
+                    ->badge()
+                    ->color('primary'),
                 TextColumn::make('created_at')
                     ->label('تاريخ الإنشاء')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->label('تاريخ التحديث')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('deleted_at')
-                    ->label('تاريخ الحذف')
-                    ->dateTime()
+                    ->dateTime('Y-m-d H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
