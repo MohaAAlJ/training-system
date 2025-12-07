@@ -11,20 +11,23 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('institution_majors', function (Blueprint $table) {
+        Schema::create('institution_major', function (Blueprint $table) {
             $table->id();
-            
-            // Foreign Key
+
+            // Foreign Keys
             $table->foreignId('institution_id')
                 ->constrained('institutions')
                 ->cascadeOnDelete();
-            $table->index('institution_id');
-            
-            // Major Info
-            $table->json('name'); // Localized major names
-            
-            $table->softDeletes();
+
+            $table->foreignId('major_id')
+                ->constrained('majors')
+                ->cascadeOnDelete();
+
+            // Timestamps
             $table->timestamps();
+
+            // Prevent duplicate entries
+            $table->unique(['institution_id', 'major_id']);
         });
     }
 
@@ -33,6 +36,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('institution_majors');
+        Schema::dropIfExists('institution_major');
     }
 };
