@@ -15,6 +15,10 @@ class Administratives extends Model
         'user_id',
         'head_of_administrative',
     ];
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
 
     public function user()
     {

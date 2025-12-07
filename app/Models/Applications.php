@@ -3,9 +3,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Spatie\Translatable\HasTranslations;
 
 class Applications extends Model
 {
@@ -22,8 +20,12 @@ class Applications extends Model
         'accepted_at',
         'tags',
     ];
-    
-    protected $dates = ['start_date', 'end_date', 'accepted_at'];
+    protected $casts = [
+        'start_date' => 'date',
+        'end_date' => 'date',
+        'accepted_at' => 'datetime',
+        'status' => 'string',
+    ];
 
     public function trainee()
     {

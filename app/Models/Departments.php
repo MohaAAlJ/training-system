@@ -17,6 +17,9 @@ class Departments extends Model
         'user_id',
         'administrative_id',
     ];
+    protected $casts = [
+        'status' => 'string',
+    ];
 
     public function user()
     {

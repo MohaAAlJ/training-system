@@ -26,13 +26,13 @@ return new class extends Migration
                 ->constrained('institutions')
                 ->nullOnDelete();
 
-            $table->foreignId('institution_major_id')
+            $table->foreignId('major_id')
                 ->nullable()
-                ->constrained('institution_majors')
+                ->constrained('majors')
                 ->nullOnDelete();
 
             $table->index('institution_id');
-            $table->index('institution_major_id');
+            $table->index('major_id');
 
             $table->timestamps();
             $table->softDeletes();

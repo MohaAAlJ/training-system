@@ -17,7 +17,10 @@ class Trainees extends Model
         'dob',
         'location',
         'institution_id',
-        'institution_major_id',
+        'major_id',
+    ];
+    protected $casts = [
+        'dob' => 'date',
     ];
 
     protected $dates = ['dob'];
@@ -27,9 +30,9 @@ class Trainees extends Model
         return $this->belongsTo(Institution::class, 'institution_id');
     }
 
-    public function institutionMajor()
+    public function major()
     {
-        return $this->belongsTo(InstitutionMajor::class, 'institution_major_id');
+        return $this->belongsTo(Major::class, 'major_id');
     }
     public function applications()
     {
