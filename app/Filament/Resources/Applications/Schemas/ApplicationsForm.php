@@ -42,8 +42,8 @@ class ApplicationsForm
                                     ->label('تاريخ الميلاد')
                                     ->required()
                                     ->native(false),
-                                TextInput::make('location')
-                                    ->label('الموقع'),
+                                TextInput::make('address')
+                                    ->label('العنوان'),
                                 Select::make('institution_id')
                                     ->label('المؤسسة التعليمية')
                                     ->relationship('institution', 'name')
