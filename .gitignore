@@ -1,25 +1,66 @@
-*.log
-.env
-.DS_Store
-.env
-.env.backup
-.env.production
-.phpactor.json
-.phpunit.result.cache
-/.fleet
-/.idea
-/.nova
-/.phpunit.cache
-/.vscode
-/.zed
-/auth.json
+# Laravel
+/vendor
 /node_modules
-/public/build
-/public/hot
 /public/storage
 /storage/*.key
-/storage/pail
-/vendor
-Homestead.json
-Homestead.yaml
+/storage/framework/*
+/storage/logs/*
+/storage/app/public
+
+# Environment files
+.env
+.env.*
+*.env
+
+# Compiled files
+/bootstrap/cache/*.php
+.phpunit.result.cache
+
+# Laravel Horizon
+horizon.migrations
+
+# Laravel Telescope
+telescope/*.sqlite
+
+# IDE / Editor junk
+/.idea
+/.vscode/*
+!.vscode/extensions.json
+*.log
+*.cache
+*.DS_Store
 Thumbs.db
+
+# npm & yarn
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Composer lock backup issues
+composer.lock.backup
+
+# Filament generated cache
+/public/filament-assets
+
+# Generated images
+/public/images-generated
+/public/uploads
+/public/tmp
+
+# Local database or sqlite
+/database/*.sqlite
+
+# Laragon
+*.pid
+*.spec
+*.bak
+
+# PHPStorm / JetBrains
+/.phpstorm.meta.php
+/.phpunit.result.cache
+
+# Redis dump and cache
+dump.rdb
+
+# Local mail storage
+/storage/mail/*
