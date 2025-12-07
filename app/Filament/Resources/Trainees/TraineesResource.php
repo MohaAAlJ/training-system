@@ -50,9 +50,7 @@ class TraineesResource extends Resource
     {
         return [
             'index' => ListTrainees::route('/'),
-            'create' => CreateTrainees::route('/create'),
             'view' => ViewTrainees::route('/{record}'),
-            'edit' => EditTrainees::route('/{record}/edit'),
         ];
     }
 
