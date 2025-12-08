@@ -4,6 +4,11 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Database\Seeders\InstitutionsSeeder;
+use Database\Seeders\MajorsSeeder;
+use Database\Seeders\InstitutionMajorSeeder;
+use Database\Seeders\DepartmentsSeeder;
+use Database\Seeders\TraineesSeeder;
 
 class DatabaseSeeder extends Seeder
 {

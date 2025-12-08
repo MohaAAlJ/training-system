@@ -33,9 +33,9 @@ class ApplicationsResource extends Resource
         return ApplicationsForm::configure($schema);
     }
 
-    public static function infolist(Schema $schema): Schema
+    public static function infolist(Infolist $infolist): Infolist
     {
-        return ApplicationsInfolist::configure($schema);
+        return ApplicationsInfolist::infolist($infolist);
     }
 
     public static function table(Table $table): Table

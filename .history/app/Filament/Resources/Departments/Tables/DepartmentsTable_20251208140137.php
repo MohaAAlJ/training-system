@@ -44,7 +44,8 @@ class DepartmentsTable
                     ->beforeStateUpdated(function ($record, $state) {
                         $record->status = $state ? 'active' : 'inactive';
                         $record->save();
-                    }),
+                    })
+                    ->formatStateUsing(fn ($state): bool => $state === 'active'),
                 TextColumn::make('created_at')
                     ->label('تاريخ الإنشاء')
                     ->dateTime('Y-m-d')

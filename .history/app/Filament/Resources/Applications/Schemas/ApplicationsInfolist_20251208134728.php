@@ -2,10 +2,10 @@
 
 namespace App\Filament\Resources\Applications\Schemas;
 
-use Filament\Infolists\Components\TextEntry;
-use Filament\Infolists\Components\ImageEntry;
-use Filament\Schemas\Components\Section;
-use Filament\Schemas\Schema;
+use Filament\Infolist\Components\TextEntry;
+use Filament\Infolist\Components\ImageEntry;
+use Filament\Infolist\Components\Section;
+use Filament\Infolist\Infolist;
 
 class ApplicationsInfolist
 {
