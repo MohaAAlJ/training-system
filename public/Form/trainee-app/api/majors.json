@@ -1,0 +1,5 @@
+[
+    { "id": 1, "name": "التمريض", "institution_id": 1 },
+    { "id": 2, "name": "تقنية المعلومات", "institution_id": 1 },
+    { "id": 3, "name": "الأشعة", "institution_id": 2 }
+]
