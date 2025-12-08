@@ -35,15 +35,18 @@ class DepartmentsTable
                 TextColumn::make('total_capacity')
                     ->label('السعة')
                     ->sortable(),
-                ToggleColumn::make('status')
+                TextColumn::make('status')
                     ->label('الحالة')
-                    ->onIcon('heroicon-m-check-circle')
-                    ->offIcon('heroicon-m-x-circle')
-                    ->onColor('success')
-                    ->offColor('danger')
-                    ->beforeStateUpdated(function ($record, $state) {
-                        $record->status = $state ? 'active' : 'inactive';
-                        $record->save();
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'active' => 'success',
+                        'inactive' => 'danger',
+                        default => 'gray',
+                    })
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'active' => 'نشط',
+                        'inactive' => 'غير نشط',
+                        default => $state,
                     }),
                 TextColumn::make('created_at')
                     ->label('تاريخ الإنشاء')

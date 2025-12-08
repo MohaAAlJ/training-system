@@ -20,14 +20,14 @@ class TraineesFactory extends Factory
         if (!$link) {
             $institution = Institution::factory()->create(); // أو نختار أول جامعة
             $major = Major::factory()->create(); // أو نختار أول تخصص
-
+            
             $pivotId = DB::table('institution_major')->insertGetId([
                 'institution_id' => $institution->id,
                 'major_id' => $major->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
-
+            
             $institutionId = $institution->id;
         } else {
             // إذا وجدنا بيانات جاهزة نستخدمها
@@ -41,10 +41,10 @@ class TraineesFactory extends Factory
             'phone_number' => '05' . $this->faker->numerify('#######'),
             'dob'         => $this->faker->date('Y-m-d', '-20 years'),
             'location'    => $arabicFaker->city, // تأكد أن لديك هذا العمود في جدولك
-
+            
             // تعبئة المفاتيح الأجنبية بناءً على ملف الـ SQL الخاص بك
             'institution_id' => $institutionId,
-            'institution_major_id' => $pivotId,
+            'institution_major_id' => $pivotId, 
         ];
     }
 }

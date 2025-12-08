@@ -4,15 +4,15 @@ namespace App\Filament\Resources\Applications\Schemas;
 
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Components\ImageEntry;
-use Filament\Schemas\Components\Section;
-use Filament\Schemas\Schema;
+use Filament\Infolists\Components\Section;
+use Filament\Infolists\Infolist;
 
 class ApplicationsInfolist
 {
-    public static function configure(Schema $schema): Schema
+    public static function infolist(Infolist $infolist): Infolist
     {
-        return $schema
-            ->components([
+        return $infolist
+            ->schema([
                 Section::make('معلومات المتدرب')
                     ->columns(2)
                     ->schema([

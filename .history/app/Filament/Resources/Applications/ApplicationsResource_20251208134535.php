@@ -11,6 +11,7 @@ use App\Models\Applications;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
+use Filament\Infolists\Infolist;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -33,9 +34,9 @@ class ApplicationsResource extends Resource
         return ApplicationsForm::configure($schema);
     }
 
-    public static function infolist(Schema $schema): Schema
+    public static function infolist(Infolist $infolist): Infolist
     {
-        return ApplicationsInfolist::configure($schema);
+        return ApplicationsInfolist::infolist($infolist);
     }
 
     public static function table(Table $table): Table
