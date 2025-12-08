@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+    <head>
+        <meta charset="UTF-8" />
+        <title>طلب تدريب المتدرب</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <style>
+            :root {
+                --bg: #fff7f7;
+                --panel: #ffffff;
+                --border: #f3d6d6;
+                --text: #2d1b1b;
+                --muted: #8b6b6b;
+                --accent: #b91c1c;
+                --accent-weak: #fee2e2;
+                --danger: #dc2626;
+                --success: #059669;
+            }
+            * {
+                box-sizing: border-box;
+            }
+            body {
+                margin: 0;
+                font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+                background: radial-gradient(
+                    circle at 10% 20%,
+                    #ffe6e6 0,
+                    #fff7f7 35%,
+                    #ffffff 70%
+                );
+                color: var(--text);
+                padding: 28px;
+            }
+            h1 {
+                margin: 0 0 10px;
+                font-weight: 700;
+                color: var(--accent);
+            }
+            p.lead {
+                margin: 0 0 18px;
+                color: var(--muted);
+            }
+            form {
+                background: var(--panel);
+                border: 1px solid var(--border);
+                border-radius: 14px;
+                padding: 22px;
+                max-width: 1000px;
+                box-shadow: 0 16px 40px rgba(185, 28, 28, 0.08);
+            }
+            fieldset {
+                border: 1px solid var(--border);
+                border-radius: 12px;
+                padding: 16px;
+                margin-bottom: 18px;
+                background: #fffafb;
+            }
+            legend {
+                padding: 0 10px;
+                font-weight: 700;
+                color: var(--accent);
+            }
+            .grid {
+                display: grid;
+                gap: 12px 16px;
+            }
+            .grid.two {
+                grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            }
+            label {
+                display: block;
+                font-weight: 700;
+                margin-bottom: 4px;
+                color: var(--text);
+            }
+            input,
+            select,
+            textarea {
+                width: 100%;
+                padding: 10px 12px;
+                border: 1px solid var(--border);
+                border-radius: 9px;
+                font: inherit;
+                color: var(--text);
+                background: #fff;
+            }
+            input:focus,
+            select:focus,
+            textarea:focus {
+                outline: 2px solid var(--accent-weak);
+                border-color: var(--accent);
+                box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.12);
+            }
+            button {
+                background: var(--accent);
+                color: #fff;
+                border: none;
+                border-radius: 12px;
+                padding: 12px 18px;
+                font-weight: 700;
+                cursor: pointer;
+                transition: transform 120ms ease, box-shadow 120ms ease;
+            }
+            button:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 10px 25px rgba(185, 28, 28, 0.18);
+            }
+            button:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+            }
+            .note {
+                color: var(--muted);
+                font-size: 0.9rem;
+            }
+            .inline {
+                display: inline-flex;
+                gap: 8px;
+                align-items: center;
+            }
+            .pill {
+                display: inline-block;
+                padding: 4px 8px;
+                border-radius: 999px;
+                background: var(--accent-weak);
+                color: var(--accent);
+                font-size: 0.85rem;
+                font-weight: 700;
+            }
+            .error {
+                color: var(--danger);
+                margin-top: 8px;
+            }
+            .success {
+                color: var(--success);
+                margin-top: 8px;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>طلب تدريب المتدرب</h1>
+        <p class="lead">
+            أكمل البيانات لإرسال طلب التدريب. الحقول الإلزامية تحمل علامة *.
+        </p>
+
+        <form id="applicationForm" method="post" action="/form/applications">
+            <!-- البيانات الشخصية -->
+            <fieldset>
+                <legend>البيانات الشخصية</legend>
+                <div class="grid two">
+                    <div>
+                        <label for="full_name">الاسم الكامل *</label>
+                        <input
+                            id="full_name"
+                            name="full_name"
+                            type="text"
+                            required
+                            autocomplete="name"
+                        />
+                    </div>
+                    <div>
+                        <label for="dob">تاريخ الميلاد *</label>
+                        <input id="dob" name="dob" type="date" required />
+                    </div>
+                    <div>
+                        <label for="national_id">رقم الهوية *</label>
+                        <input
+                            id="national_id"
+                            name="national_id"
+                            type="text"
+                            minlength="10"
+                            maxlength="10"
+                            pattern="\d{10}"
+                            required
+                        />
+                        <div class="note">10 أرقام</div>
+                    </div>
+                    <div>
+                        <label for="phone_number">رقم الجوال *</label>
+                        <input
+                            id="phone_number"
+                            name="phone_number"
+                            type="tel"
+                            pattern="05\d{8}"
+                            placeholder="05########"
+                            required
+                        />
+                    </div>
+                    <div>
+                        <label for="address">العنوان *</label>
+                        <select id="address" name="address" required>
+                            <option value="" disabled selected>
+                                اختر العنوان
+                            </option>
+                        </select>
+                        <div class="note">
+                            سيتم تحميل العناوين من البيانات المزروعة.
+                        </div>
+                    </div>
+                </div>
+            </fieldset>
+
+            <!-- معلومات الجهة والتدريب -->
+            <fieldset>
+                <legend>الجهة والتدريب</legend>
+                <div class="grid two">
+                    <div>
+                        <label for="institution_id">الجهة التعليمية *</label>
+                        <select
+                            id="institution_id"
+                            name="institution_id"
+                            required
+                        >
+                            <option value="" disabled selected>
+                                اختر الجهة التعليمية
+                            </option>
+                        </select>
+                        <div class="note">يتم جلبها من البيانات المزروعة.</div>
+                    </div>
+                    <div>
+                        <label for="major_id">التخصص *</label>
+                        <select id="major_id" name="major_id" required>
+                            <option value="" disabled selected>
+                                اختر التخصص
+                            </option>
+                        </select>
+                        <div class="note">يُرشّح حسب الجهة التعليمية.</div>
+                    </div>
+                    <div>
+                        <label for="training_hours">عدد ساعات التدريب *</label>
+                        <input
+                            id="training_hours"
+                            name="training_hours"
+                            type="number"
+                            min="1"
+                            max="1000"
+                            step="1"
+                            required
+                        />
+                    </div>
+                    <div>
+                        <label for="training_focus">مجال التدريب *</label>
+                        <select
+                            id="training_focus"
+                            name="training_focus"
+                            required
+                        >
+                            <option value="" disabled selected>
+                                اختر مجال التدريب
+                            </option>
+                        </select>
+                        <div class="note">يُحمّل من البيانات المزروعة.</div>
+                    </div>
+                    <div>
+                        <label for="administrative_id">الإدارة *</label>
+                        <select
+                            id="administrative_id"
+                            name="administrative_id"
+                            required
+                        >
+                            <option value="" disabled selected>
+                                اختر الإدارة
+                            </option>
+                        </select>
+                        <div class="note">
+                            تتأثر بالعنوان والطاقة الاستيعابية.
+                        </div>
+                    </div>
+                    <div>
+                        <label for="department_id">القسم *</label>
+                        <select
+                            id="department_id"
+                            name="department_id"
+                            required
+                        >
+                            <option value="" disabled selected>
+                                اختر القسم
+                            </option>
+                        </select>
+                        <div class="note">
+                            يتأثر بالإدارة والتخصص والطاقة المتاحة.
+                        </div>
+                    </div>
+                    <div>
+                        <label for="start_date">تاريخ البدء *</label>
+                        <input
+                            id="start_date"
+                            name="start_date"
+                            type="date"
+                            required
+                        />
+                    </div>
+                    <div>
+                        <label for="end_date">تاريخ الانتهاء *</label>
+                        <input
+                            id="end_date"
+                            name="end_date"
+                            type="date"
+                            required
+                        />
+                    </div>
+                </div>
+            </fieldset>
+
+            <div
+                class="inline"
+                style="
+                    justify-content: space-between;
+                    width: 100%;
+                    align-items: center;
+                "
+            >
+                <div class="note">
+                    سيُحفظ الطلب بحالة <span class="pill">معلق</span> عند
+                    الإرسال.
+                </div>
+                <button type="submit">إرسال الطلب</button>
+            </div>
+            <div id="formMessage" class="note" style="margin-top: 10px"></div>
+        </form>
+
+        <script>
+            // --- الإعدادات: استبدل الروابط عند توفر واجهات الـ API ---
+            const endpoints = {
+                addresses: "/api/addresses",
+                institutions: "/api/institutions",
+                majors: (institutionId) =>
+                    `/api/majors?institution_id=${institutionId ?? ""}`,
+                trainingFocus: "/api/training-focuses",
+                administratives: (address) =>
+                    `/api/administratives?address=${encodeURIComponent(
+                        address ?? ""
+                    )}`,
+                departments: (administrativeId, majorId) =>
+                    `/api/departments?administrative_id=${
+                        administrativeId ?? ""
+                    }&major_id=${majorId ?? ""}`,
+                submit: "/form/applications",
+            };
+
+            // --- بيانات بديلة مؤقتة (أزلها عند توفر الـ API) ---
+            const fallback = {
+                addresses: [
+                    { id: "riyadh", name: "الرياض" },
+                    { id: "jeddah", name: "جدة" },
+                    { id: "dammam", name: "الدمام" },
+                ],
+                institutions: [
+                    { id: 1, name: "جامعة الملك سعود" },
+                    { id: 2, name: "جامعة الملك عبدالعزيز" },
+                ],
+                majors: [
+                    { id: 1, name: "التمريض", institution_id: 1 },
+                    { id: 2, name: "تقنية المعلومات", institution_id: 1 },
+                    { id: 3, name: "الأشعة", institution_id: 2 },
+                ],
+                trainingFocus: [
+                    { id: "summer", name: "تدريب صيفي" },
+                    { id: "coop", name: "تدريب تعاوني" },
+                    { id: "field", name: "تدريب ميداني" },
+                ],
+                administratives: [
+                    {
+                        id: 10,
+                        name: "مديرية الخدمات الطبية",
+                        address: "riyadh",
+                        remaining: 5,
+                    },
+                    {
+                        id: 11,
+                        name: "مديرية تقنية المعلومات",
+                        address: "riyadh",
+                        remaining: 0,
+                    },
+                    {
+                        id: 12,
+                        name: "مديرية التمريض",
+                        address: "jeddah",
+                        remaining: 2,
+                    },
+                ],
+                departments: [
+                    {
+                        id: 100,
+                        name: "قسم الطوارئ - المبنى الرئيسي",
+                        administrative_id: 10,
+                        major_ids: [1],
+                        remaining: 3,
+                    },
+                    {
+                        id: 101,
+                        name: "قسم العناية المركزة - الطابق الثاني",
+                        administrative_id: 10,
+                        major_ids: [1],
+                        remaining: 0,
+                    },
+                    {
+                        id: 102,
+                        name: "قسم التطبيقات - تقنية المعلومات",
+                        administrative_id: 11,
+                        major_ids: [2],
+                        remaining: 0,
+                    },
+                    {
+                        id: 103,
+                        name: "قسم الأشعة - الدور الأرضي",
+                        administrative_id: 12,
+                        major_ids: [3],
+                        remaining: 1,
+                    },
+                ],
+            };
+
+            const form = document.getElementById("applicationForm");
+            const message = document.getElementById("formMessage");
+            const addressSelect = document.getElementById("address");
+            const institutionSelect = document.getElementById("institution_id");
+            const majorSelect = document.getElementById("major_id");
+            const focusSelect = document.getElementById("training_focus");
+            const administrativeSelect =
+                document.getElementById("administrative_id");
+            const departmentSelect = document.getElementById("department_id");
+
+            const setMessage = (text, type = "note") => {
+                message.textContent = text;
+                message.className =
+                    type === "error"
+                        ? "error"
+                        : type === "success"
+                        ? "success"
+                        : "note";
+            };
+
+            const populateOptions = (select, items, labelKey = "name") => {
+                select.innerHTML =
+                    '<option value="" disabled selected>اختر</option>';
+                items.forEach((item) => {
+                    const opt = document.createElement("option");
+                    opt.value = item.id;
+                    opt.textContent = item[labelKey] ?? "";
+                    select.appendChild(opt);
+                });
+            };
+
+            async function loadOptions(
+                select,
+                url,
+                fallbackData,
+                labelKey = "name"
+            ) {
+                try {
+                    const res = await fetch(url);
+                    if (!res.ok) throw new Error("Request failed");
+                    const data = await res.json();
+                    populateOptions(select, data, labelKey);
+                } catch (err) {
+                    populateOptions(select, fallbackData, labelKey);
+                }
+            }
+
+            function filterAdministrativesByAddress(addressId) {
+                const data = fallback.administratives.filter(
+                    (a) =>
+                        (!addressId || a.address === addressId) &&
+                        a.remaining > 0
+                );
+                populateOptions(
+                    administrativeSelect,
+                    data.map((a) => ({
+                        id: a.id,
+                        name: `${a.name} (سعة متبقية: ${a.remaining})`,
+                    }))
+                );
+                populateOptions(departmentSelect, []);
+            }
+
+            function filterDepartments(adminId, majorId) {
+                const data = fallback.departments.filter(
+                    (d) =>
+                        (!adminId || d.administrative_id == adminId) &&
+                        (!majorId || d.major_ids.includes(Number(majorId))) &&
+                        d.remaining > 0
+                );
+                populateOptions(
+                    departmentSelect,
+                    data.map((d) => ({
+                        id: d.id,
+                        name: `${d.name} (سعة: ${d.remaining})`,
+                    }))
+                );
+            }
+
+            addressSelect.addEventListener("change", (e) => {
+                filterAdministrativesByAddress(e.target.value);
+                setMessage("");
+            });
+
+            institutionSelect.addEventListener("change", (e) => {
+                const instId = e.target.value;
+                const data = fallback.majors.filter(
+                    (m) => !instId || m.institution_id == instId
+                );
+                populateOptions(majorSelect, data);
+            });
+
+            administrativeSelect.addEventListener("change", (e) => {
+                filterDepartments(e.target.value, majorSelect.value);
+            });
+
+            majorSelect.addEventListener("change", (e) => {
+                filterDepartments(administrativeSelect.value, e.target.value);
+            });
+
+            form.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                setMessage("جاري الإرسال...", "note");
+
+                const formData = new FormData(form);
+                formData.append("status", "pending");
+
+                try {
+                    const res = await fetch(endpoints.submit, {
+                        method: "POST",
+                        body: formData,
+                        headers: {
+                            // أضف رمز CSRF عند توفره
+                        },
+                    });
+
+                    if (!res.ok) throw new Error("Submission failed");
+                    setMessage("تم إرسال الطلب بنجاح.", "success");
+                    form.reset();
+                } catch (err) {
+                    setMessage(
+                        "تعذر الإرسال، جرّب لاحقاً بعد ربط الـ API.",
+                        "error"
+                    );
+                }
+            });
+
+            (async function init() {
+                await loadOptions(
+                    addressSelect,
+                    endpoints.addresses,
+                    fallback.addresses
+                );
+                await loadOptions(
+                    institutionSelect,
+                    endpoints.institutions,
+                    fallback.institutions
+                );
+                await loadOptions(
+                    focusSelect,
+                    endpoints.trainingFocus,
+                    fallback.trainingFocus
+                );
+                populateOptions(majorSelect, fallback.majors);
+                populateOptions(
+                    administrativeSelect,
+                    fallback.administratives
+                        .filter((a) => a.remaining > 0)
+                        .map((a) => ({
+                            id: a.id,
+                            name: `${a.name} (سعة متبقية: ${a.remaining})`,
+                        }))
+                );
+                populateOptions(departmentSelect, []);
+            })();
+        </script>
+    </body>
+</html>

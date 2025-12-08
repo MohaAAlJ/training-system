@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>طلب تدريب المتدرب</title>
+        <link rel="stylesheet" href="./styles.css" />
+    </head>
+    <body>
+        <main class="page">
+            <!-- <div class="brand-bar">
+                <div class="brand-bar__left">
+                    <div class="brand-bar__logo">
+                        <img src="./logo.png" alt="شعار PRICs" />
+                    </div>
+                    <div class="brand-bar__meta">
+                        <span class="brand-bar__label">PRICs</span>
+                        <span class="brand-bar__sub"
+                            >نظام التدريب التعاوني</span
+                        >
+                    </div>
+                </div>
+                <div class="brand-bar__pill">صفحة طلب التدريب</div>
+            </div> -->
+            <header class="hero hero--banner">
+                <div class="hero__text">
+                    <p class="eyebrow">بوابة التدريب التعاوني</p>
+                    <h1>طلب تدريب المتدرب</h1>
+                    <p class="lead">
+                        أكمل بياناتك لاختيار الجهة والتخصص والقسم المناسب وفق
+                        الطاقة الاستيعابية المتاحة.
+                    </p>
+                </div>
+                <div class="hero__brand">
+                    <div class="hero__logo">
+                        <img src="./logo.png" alt="شعار PRICs" />
+                    </div>
+                    <div class="hero__brand-meta">
+                        <span class="hero__brand-name">PRCS</span>
+                        <span class="hero__brand-sub"> </span>
+                    </div>
+                </div>
+            </header>
+
+            <form
+                id="applicationForm"
+                class="card"
+                method="post"
+                action="/form/applications"
+            >
+                <fieldset>
+                    <legend>
+                        <span class="legend-icon">👤</span>البيانات الشخصية
+                    </legend>
+                    <div class="grid two">
+                        <label class="field">
+                            <span>الاسم الكامل *</span>
+                            <input
+                                id="full_name"
+                                name="full_name"
+                                type="text"
+                                required
+                                autocomplete="name"
+                            />
+                        </label>
+                        <label class="field">
+                            <span>تاريخ الميلاد *</span>
+                            <input id="dob" name="dob" type="date" required />
+                        </label>
+                        <label class="field">
+                            <span>رقم الهوية *</span>
+                            <input
+                                id="national_id"
+                                name="national_id"
+                                type="text"
+                                minlength="10"
+                                maxlength="10"
+                                pattern="\d{10}"
+                                required
+                            />
+                            <small class="note">10 أرقام</small>
+                        </label>
+                        <label class="field">
+                            <span>رقم الجوال *</span>
+                            <input
+                                id="phone_number"
+                                name="phone_number"
+                                type="tel"
+                                pattern="05\d{8}"
+                                placeholder="05########"
+                                required
+                            />
+                        </label>
+                        <label class="field">
+                            <span>العنوان *</span>
+                            <select id="address" name="address" required>
+                                <option value="" disabled selected>
+                                    اختر العنوان
+                                </option>
+                            </select>
+                            <small class="note"
+                                >يُحمّل من البيانات المزروعة.</small
+                            >
+                        </label>
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>
+                        <span class="legend-icon">🏢</span>الجهة والتدريب
+                    </legend>
+                    <div class="grid two">
+                        <label class="field">
+                            <span>الجهة التعليمية *</span>
+                            <select
+                                id="institution_id"
+                                name="institution_id"
+                                required
+                            >
+                                <option value="" disabled selected>
+                                    اختر الجهة التعليمية
+                                </option>
+                            </select>
+                            <small class="note">من البيانات المزروعة.</small>
+                        </label>
+                        <label class="field">
+                            <span>التخصص *</span>
+                            <select id="major_id" name="major_id" required>
+                                <option value="" disabled selected>
+                                    اختر التخصص
+                                </option>
+                            </select>
+                            <small class="note">يُرشّح حسب الجهة.</small>
+                        </label>
+                        <label class="field">
+                            <span>عدد ساعات التدريب *</span>
+                            <input
+                                id="training_hours"
+                                name="training_hours"
+                                type="number"
+                                min="1"
+                                max="1000"
+                                step="1"
+                                required
+                            />
+                        </label>
+                        <!-- <label class="field">
+                            <span>مجال التدريب *</span>
+                            <select
+                                id="training_focus"
+                                name="training_focus"
+                                required
+                            >
+                                <option value="" disabled selected>
+                                    اختر مجال التدريب
+                                </option>
+                            </select>
+                            <small class="note">من البيانات المزروعة.</small>
+                        </label> -->
+                        <label class="field">
+                            <span>الإدارة *</span>
+                            <select
+                                id="administrative_id"
+                                name="administrative_id"
+                                required
+                            >
+                                <option value="" disabled selected>
+                                    اختر الإدارة
+                                </option>
+                            </select>
+                            <small class="note"
+                                >تتأثر بالعنوان والطاقة الاستيعابية.</small
+                            >
+                        </label>
+                        <label class="field">
+                            <span>القسم *</span>
+                            <select
+                                id="department_id"
+                                name="department_id"
+                                required
+                            >
+                                <option value="" disabled selected>
+                                    اختر القسم
+                                </option>
+                            </select>
+                            <small class="note"
+                                >يتأثر بالإدارة والتخصص والطاقة.</small
+                            >
+                        </label>
+                        <label class="field" id="training_type_field">
+                            <span>نوع التدريب *</span>
+                            <select
+                                id="training_type"
+                                name="training_type"
+                                required
+                            >
+                                <option value="" disabled selected>
+                                    اختر نوع التدريب
+                                </option>
+                                <option value="networks">شبكات</option>
+                                <option value="software">برمجة وتطوير</option>
+                                <option value="security">أمن سيبراني</option>
+                                <option value="support">دعم فني</option>
+                                <option value="db">قواعد بيانات</option>
+                            </select>
+                        </label>
+                    </div>
+                </fieldset>
+
+                <div class="form-footer">
+                    <button type="submit">إرسال الطلب</button>
+                </div>
+                <div
+                    id="formMessage"
+                    class="note"
+                    style="margin-top: 10px"
+                ></div>
+            </form>
+        </main>
+
+        <script src="./app.js" defer></script>
+    </body>
+</html>

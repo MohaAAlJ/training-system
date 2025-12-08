@@ -1,0 +1,15 @@
+[
+    {
+        "id": 10,
+        "name": "مديرية الخدمات الطبية",
+        "address": "riyadh",
+        "remaining": 5
+    },
+    {
+        "id": 11,
+        "name": "مديرية تقنية المعلومات",
+        "address": "riyadh",
+        "remaining": 0
+    },
+    { "id": 12, "name": "مديرية التمريض", "address": "jeddah", "remaining": 2 }
+]
