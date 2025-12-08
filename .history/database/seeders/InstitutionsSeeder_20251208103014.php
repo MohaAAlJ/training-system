@@ -1,23 +1,23 @@
 <?php
 
-namespace Database\Factories;
+namespace Database\Seeders;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
+use App\Models\Institution;
+use Illuminate\Database\Seeder;
 
-class InstitutionFactory extends Factory
+class InstitutionsSeeder extends Seeder
 {
-    // قائمة مؤسسات التعليم العالي في غزة
-    private static array $institutions = [
-        // الجامعات
+    private const INSTITUTIONS = [
+        // الجامعات (6)
         'الجامعة الإسلامية بغزة',
         'جامعة الأزهر - غزة',
         'جامعة الأقصى',
         'جامعة القدس المفتوحة - فروع غزة',
         'جامعة غزة',
         'جامعة فلسطين',
-        'جامعة الإسراء',
+        'جامعة الإسراء', // (أحياناً تصنف حديثاً كجامعة)
 
-        // الكليات الجامعية
+        // الكليات الجامعية (تمنح بكالوريوس ودبلوم)
         'الكلية الجامعية للعلوم التطبيقية',
         'الكلية الجامعية للعلوم والتكنولوجيا - خانيونس',
         'كلية فلسطين التقنية - دير البلح',
@@ -28,14 +28,14 @@ class InstitutionFactory extends Factory
         'كلية الرباط الجامعية',
         'كلية نماء للعلوم والتكنولوجيا',
 
-        // كليات المجتمع
+        // كليات المجتمع المتوسطة
         'كلية مجتمع الأقصى للدراسات المتوسطة',
     ];
 
-    public function definition(): array
+    public function run(): void
     {
-        return [
-            'name' => $this->faker->randomElement(self::$institutions),
-        ];
+        foreach (self::INSTITUTIONS as $name) {
+            Institution::create(['name' => json_encode(['ar' => $name])]);
+        }
     }
 }

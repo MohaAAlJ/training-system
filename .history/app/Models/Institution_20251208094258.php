@@ -16,16 +16,13 @@ class Institution extends Model
 
     protected $fillable = ['name'];
 
-    public $translatable = ['name'];
-
+    // هذا السطر مهم جداً
+    // يخبر لاراڤيل أن هذا العمود يجب معاملته كمصفوفة برمجياً وكـ JSON في قاعدة البيانات
     protected $casts = [
         'name' => 'array',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-        'deleted_at' => 'datetime',
     ];
 
-    // Relations
+    /** Relations */
 
     public function majors(): BelongsToMany
     {
@@ -36,4 +33,5 @@ class Institution extends Model
     {
         return $this->hasMany(Trainees::class, 'institution_id');
     }
+
 }

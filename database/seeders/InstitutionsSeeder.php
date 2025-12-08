@@ -1,13 +1,13 @@
 <?php
 
-namespace Database\Factories;
+namespace Database\Seeders;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
+use App\Models\Institution;
+use Illuminate\Database\Seeder;
 
-class InstitutionFactory extends Factory
+class InstitutionsSeeder extends Seeder
 {
-    // قائمة مؤسسات التعليم العالي في غزة
-    private static array $institutions = [
+    private const INSTITUTIONS = [
         // الجامعات
         'الجامعة الإسلامية بغزة',
         'جامعة الأزهر - غزة',
@@ -32,10 +32,10 @@ class InstitutionFactory extends Factory
         'كلية مجتمع الأقصى للدراسات المتوسطة',
     ];
 
-    public function definition(): array
+    public function run(): void
     {
-        return [
-            'name' => $this->faker->randomElement(self::$institutions),
-        ];
+        foreach (self::INSTITUTIONS as $name) {
+            Institution::create(['name' => $name]);
+        }
     }
 }

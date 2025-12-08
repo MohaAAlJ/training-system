@@ -19,7 +19,6 @@ class Institution extends Model
     public $translatable = ['name'];
 
     protected $casts = [
-        'name' => 'array',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
