@@ -36,14 +36,9 @@ class DepartmentsTable
                 TextColumn::make('total_capacity')
                     ->label('السعة')
                     ->sortable(),
-                TextColumn::make('registered_count')
+                TextColumn::make('applications_count')
                     ->label('المسجلين')
-                    ->state(function ($record) {
-                        return DB::table('applications')
-                            ->where('department_id', $record->id)
-                            ->whereIn('status', ['active', 'completed'])
-                            ->count();
-                    })
+                    ->counts('applications')
                     ->badge()
                     ->color('primary'),
                 ToggleColumn::make('status')
@@ -71,14 +66,7 @@ class DepartmentsTable
                     ]),
                 SelectFilter::make('administrative_id')
                     ->label('المديرية')
-                    ->relationship('administrative', 'title')
-                    ->searchable()
-                    ->preload(),
-                SelectFilter::make('user_id')
-                    ->label('المسؤول')
-                    ->relationship('user', 'name')
-                    ->searchable()
-                    ->preload(),
+                    ->relationship('administrative', 'title'),
                 TrashedFilter::make(),
             ])
             ->recordActions([

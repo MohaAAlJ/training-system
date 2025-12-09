@@ -41,7 +41,7 @@ class DepartmentsTable
                     ->state(function ($record) {
                         return DB::table('applications')
                             ->where('department_id', $record->id)
-                            ->whereIn('status', ['active', 'completed'])
+                            ->whereIn('status', ['approved', 'accepted'])
                             ->count();
                     })
                     ->badge()
@@ -71,14 +71,7 @@ class DepartmentsTable
                     ]),
                 SelectFilter::make('administrative_id')
                     ->label('المديرية')
-                    ->relationship('administrative', 'title')
-                    ->searchable()
-                    ->preload(),
-                SelectFilter::make('user_id')
-                    ->label('المسؤول')
-                    ->relationship('user', 'name')
-                    ->searchable()
-                    ->preload(),
+                    ->relationship('administrative', 'title'),
                 TrashedFilter::make(),
             ])
             ->recordActions([

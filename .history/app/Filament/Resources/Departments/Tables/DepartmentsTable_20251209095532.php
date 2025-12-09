@@ -71,14 +71,7 @@ class DepartmentsTable
                     ]),
                 SelectFilter::make('administrative_id')
                     ->label('المديرية')
-                    ->relationship('administrative', 'title')
-                    ->searchable()
-                    ->preload(),
-                SelectFilter::make('user_id')
-                    ->label('المسؤول')
-                    ->relationship('user', 'name')
-                    ->searchable()
-                    ->preload(),
+                    ->relationship('administrative', 'title'),
                 TrashedFilter::make(),
             ])
             ->recordActions([

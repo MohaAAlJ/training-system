@@ -55,16 +55,6 @@ class TraineesTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                SelectFilter::make('institution_id')
-                    ->label('المؤسسة التعليمية')
-                    ->relationship('institution', 'name')
-                    ->searchable()
-                    ->preload(),
-                SelectFilter::make('major_id')
-                    ->label('التخصص')
-                    ->relationship('major', 'name')
-                    ->searchable()
-                    ->preload(),
                 TrashedFilter::make(),
             ])
             ->recordActions([

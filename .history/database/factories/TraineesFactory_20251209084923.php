@@ -13,30 +13,25 @@ class TraineesFactory extends Factory
     {
         $arabicFaker = arabicFaker();
 
-        // Get or create an institution
-        $institution = Institution::inRandomOrder()->first();
-        if (!$institution) {
+        $link = DB::table('institution_major')->inRandomOrder()->first();
+
+        if (!$link) {
             $institution = Institution::factory()->create();
-        }
-
-        // Get a major that is linked to this institution
-        $majorLink = DB::table('institution_major')
-            ->where('institution_id', $institution->id)
-            ->inRandomOrder()
-            ->first();
-
-        // If no major linked to this institution, create one
-        if (!$majorLink) {
             $major = Major::factory()->create();
+
             DB::table('institution_major')->insert([
                 'institution_id' => $institution->id,
                 'major_id' => $major->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
+
+            $institutionId = $institution->id;
             $majorId = $major->id;
         } else {
-            $majorId = $majorLink->major_id;
+            // إذا وجدنا بيانات جاهزة نستخدمها
+            $institutionId = $link->institution_id;
+            $majorId = $link->major_id;
         }
 
         return [
@@ -45,7 +40,7 @@ class TraineesFactory extends Factory
             'phone_number' => '05' . $this->faker->numerify('#######'),
             'dob'         => $this->faker->date('Y-m-d', '-20 years'),
             'address'     => $arabicFaker->city,
-            'institution_id' => $institution->id,
+            'institution_id' => $institutionId,
             'major_id' => $majorId,
         ];
     }

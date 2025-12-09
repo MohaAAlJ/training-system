@@ -41,11 +41,6 @@ class AdministrativesTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                SelectFilter::make('user_id')
-                    ->label('المستخدم المسؤول')
-                    ->relationship('user', 'name')
-                    ->searchable()
-                    ->preload(),
                 TrashedFilter::make(),
             ])
             ->recordActions([

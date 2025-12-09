@@ -43,6 +43,23 @@ class TraineesTable
                 TextColumn::make('major.name')
                     ->label('التخصص')
                     ->sortable(),
+                TextColumn::make('applications.status')
+                    ->label('حالة الطلب')
+                    ->badge()
+                    ->color(fn (?string $state): string => match ($state) {
+                        'pending' => 'warning',
+                        'approved' => 'success',
+                        'rejected' => 'danger',
+                        'completed' => 'info',
+                        default => 'gray',
+                    })
+                    ->formatStateUsing(fn (?string $state): string => match ($state) {
+                        'pending' => 'قيد الانتظار',
+                        'approved' => 'مقبول',
+                        'rejected' => 'مرفوض',
+                        'completed' => 'مكتمل',
+                        default => 'لا يوجد طلب',
+                    }),
                 TextColumn::make('applications_count')
                     ->label('عدد الطلبات')
                     ->counts('applications')
@@ -55,16 +72,6 @@ class TraineesTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                SelectFilter::make('institution_id')
-                    ->label('المؤسسة التعليمية')
-                    ->relationship('institution', 'name')
-                    ->searchable()
-                    ->preload(),
-                SelectFilter::make('major_id')
-                    ->label('التخصص')
-                    ->relationship('major', 'name')
-                    ->searchable()
-                    ->preload(),
                 TrashedFilter::make(),
             ])
             ->recordActions([

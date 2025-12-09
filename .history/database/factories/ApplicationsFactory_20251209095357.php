@@ -23,7 +23,7 @@ class ApplicationsFactory extends Factory
     {
         $startDate = fake()->dateTimeBetween('now', '+1 month');
         $endDate = fake()->dateTimeBetween($startDate, '+3 months');
-        $status = fake()->randomElement(['pending', 'active', 'rejected', 'completed', 'cancelled']);
+        $status = fake()->randomElement(['pending', 'approved', 'rejected', 'completed']);
 
         // Get or create a trainee
         $trainee = Trainees::inRandomOrder()->first();
@@ -53,7 +53,7 @@ class ApplicationsFactory extends Factory
             'end_date' => $endDate->format('Y-m-d'),
             'status' => $status,
             'letter_image_path' => null,
-            'accepted_at' => $status === 'active' ? fake()->dateTimeBetween('-1 month', 'now') : null,
+            'accepted_at' => $status === 'approved' ? fake()->dateTimeBetween('-1 month', 'now') : null,
             'tags' => fake()->randomElement([null, implode(',', fake()->randomElements($tags, rand(1, 3)))]),
         ];
     }
@@ -70,12 +70,12 @@ class ApplicationsFactory extends Factory
     }
 
     /**
-     * Indicate that the application is active.
+     * Indicate that the application is approved.
      */
-    public function active(): static
+    public function approved(): static
     {
         return $this->state(fn (array $attributes) => [
-            'status' => 'active',
+            'status' => 'approved',
             'accepted_at' => fake()->dateTimeBetween('-1 month', 'now'),
         ]);
     }
