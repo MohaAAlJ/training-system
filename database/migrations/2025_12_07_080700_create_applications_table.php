@@ -2,6 +2,7 @@
 
 use App\Models\Trainees;
 use App\Models\Departments;
+use App\Models\Administratives;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -26,6 +27,17 @@ return new class extends Migration
                 ->constrained()
                 ->cascadeOnDelete();
             $table->index('department_id');
+
+            $table->foreignIdFor(Administratives::class, 'administrative_id')
+                ->nullable()
+                ->constrained()
+                ->nullOnDelete();
+            $table->index('administrative_id');
+
+            // Application-specific fields
+            $table->string('street')->nullable();
+            $table->integer('training_hours');
+            $table->string('training_type')->nullable();
 
             // Application lifecycle
             $table->date('start_date')->nullable();

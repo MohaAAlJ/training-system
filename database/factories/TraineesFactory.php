@@ -44,11 +44,9 @@ class TraineesFactory extends Factory
             'full_name'   => $arabicFaker->name,
             'phone_number' => '05' . $this->faker->numerify('#######'),
             'dob'         => $this->faker->date('Y-m-d', '-20 years'),
-            'address'    => $arabicFaker->city, // تأكد أن لديك هذا العمود في جدولك
-
-            // تعبئة المفاتيح الأجنبية بناءً على ملف الـ SQL الخاص بك
-            'institution_id' => $institutionId,
-            'major_id' => $link->major_id ?? $major->id,
+            'address'    => $arabicFaker->city,
+            'institution_id' => $institution->id,
+            'major_id' => $majorId,
         ];
     }
 }

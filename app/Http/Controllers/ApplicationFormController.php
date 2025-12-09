@@ -7,7 +7,9 @@ use App\Models\Administratives;
 use App\Models\Departments;
 use App\Models\Institution;
 use App\Models\Major;
+use App\Models\Trainees;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -121,7 +123,8 @@ class ApplicationFormController extends Controller
     }
 
     /**
-     * Store a trainee application into the applications table.
+     * Store a trainee application into the trainees and applications tables.
+     * Uses a database transaction to ensure both save together or neither saves.
      */
     public function store(Request $request)
     {
@@ -150,14 +153,18 @@ class ApplicationFormController extends Controller
             'phone_number' => ['required', 'regex:/^97[02]5[69]\d{7}$/'],
             'address' => ['required', 'string', 'max:255'],
             'street' => ['required', 'string', 'max:255', 'regex:/^[\p{Arabic}A-Za-z0-9\s\-\.,#\/]+$/u'],
-            'institution_id' => ['required', 'integer'],
-            'major_id' => ['required', 'integer'],
+            'institution_id' => ['required', 'integer', 'exists:institutions,id'],
+            'major_id' => ['required', 'integer', 'exists:majors,id'],
             'training_hours' => ['required', 'integer', 'min:1', 'max:999'],
-            'administrative_id' => ['required', 'integer'],
-            'department_id' => ['required', 'integer'],
+            'administrative_id' => ['required', 'integer', 'exists:administratives,id'],
+            'department_id' => ['required', 'integer', 'exists:departments,id'],
             'training_type' => ['required', 'string', 'max:100'],
             'letter_file' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
         ]);
+
+        // Convert DOB from dd/mm/yyyy to Y-m-d format for database storage
+        $dobParts = explode('/', $validated['dob']);
+        $dobFormatted = "{$dobParts[2]}-{$dobParts[1]}-{$dobParts[0]}";
 
         $slug = Str::slug($validated['full_name'] . '-' . now()->timestamp);
 
@@ -166,28 +173,60 @@ class ApplicationFormController extends Controller
             $letterPath = $request->file('letter_file')->store('uploads', 'public');
         }
 
-        $application = Applications::create([
-            'full_name' => $validated['full_name'],
-            'dob' => $validated['dob'],
-            'national_id' => $validated['national_id'],
-            'phone_number' => $validated['phone_number'],
-            'address' => $validated['address'],
-            'street' => $validated['street'],
-            'institution_id' => $validated['institution_id'],
-            'major_id' => $validated['major_id'],
-            'training_hours' => $validated['training_hours'],
-            'administrative_id' => $validated['administrative_id'],
-            'department_id' => $validated['department_id'],
-            'training_type' => $validated['training_type'] ?? null,
-            'letter_image_path' => $letterPath,
-            'status' => 'pending',
-            'slug' => $slug,
-        ]);
+        try {
+            // Use database transaction to ensure both trainee and application save together
+            $result = DB::transaction(function () use ($validated, $dobFormatted, $slug, $letterPath) {
 
-        return response()->json([
-            'message' => 'تم استلام الطلب بنجاح',
-            'slug' => $application->slug,
-            'redirect' => route('training.welcome'),
-        ]);
+                // Step 1: Create or update trainee record
+                // Use updateOrCreate to handle case where trainee with same national_id already exists
+                $trainee = Trainees::updateOrCreate(
+                    ['national_id' => $validated['national_id']], // Find by national_id
+                    [
+                        'full_name' => $validated['full_name'],
+                        'phone_number' => $validated['phone_number'],
+                        'dob' => $dobFormatted,
+                        'address' => $validated['address'],
+                        'institution_id' => $validated['institution_id'],
+                        'major_id' => $validated['major_id'],
+                    ]
+                );
+
+                // Step 2: Create application record linked to the trainee
+                $application = Applications::create([
+                    'trainee_id' => $trainee->id,
+                    'department_id' => $validated['department_id'],
+                    'administrative_id' => $validated['administrative_id'],
+                    'street' => $validated['street'],
+                    'training_hours' => $validated['training_hours'],
+                    'training_type' => $validated['training_type'],
+                    'letter_image_path' => $letterPath,
+                    'status' => 'pending',
+                    'slug' => $slug,
+                ]);
+
+                return [
+                    'trainee' => $trainee,
+                    'application' => $application,
+                ];
+            });
+
+            return response()->json([
+                'message' => 'تم استلام الطلب بنجاح',
+                'slug' => $result['application']->slug,
+                'redirect' => route('training.welcome'),
+            ]);
+
+        } catch (\Exception $e) {
+            // If there was an error, the transaction will be rolled back
+            // Delete uploaded file if it exists since the transaction failed
+            if ($letterPath) {
+                Storage::disk('public')->delete($letterPath);
+            }
+
+            return response()->json([
+                'message' => 'حدث خطأ أثناء حفظ الطلب. يرجى المحاولة مرة أخرى.',
+                'error' => config('app.debug') ? $e->getMessage() : null,
+            ], 500);
+        }
     }
 }

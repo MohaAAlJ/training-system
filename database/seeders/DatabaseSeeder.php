@@ -10,6 +10,9 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // 1. Users
+        $this->call([
+            UserSeeder::class,
+        ]);
         User::factory(5)->create();
 
         // 2. Main Data
@@ -17,9 +20,9 @@ class DatabaseSeeder extends Seeder
             InstitutionsSeeder::class,
             MajorsSeeder::class,
             InstitutionMajorSeeder::class, // Links Inst & Majors
-            
+
             // 3. Departments (If you have the seeder from previous steps)
-            DepartmentsSeeder::class, 
+            DepartmentsSeeder::class,
 
             // 4. Trainees
             TraineesSeeder::class,

@@ -22,14 +22,36 @@ class ApplicationsInfolist
                             ->label('رقم الهوية'),
                         TextEntry::make('trainee.phone_number')
                             ->label('رقم الهاتف'),
+                        TextEntry::make('trainee.dob')
+                            ->label('تاريخ الميلاد')
+                            ->date('Y-m-d'),
+                        TextEntry::make('trainee.address')
+                            ->label('العنوان'),
                         TextEntry::make('trainee.institution.name')
-                            ->label('المؤسسة التعليمية'),
+                            ->label('المؤسسة التعليمية')
+                            ->formatStateUsing(fn ($state) => is_array($state) ? ($state['ar'] ?? $state['en'] ?? reset($state)) : $state),
+                        TextEntry::make('trainee.major.name')
+                            ->label('التخصص')
+                            ->formatStateUsing(fn ($state) => is_array($state) ? ($state['ar'] ?? $state['en'] ?? reset($state)) : $state),
                     ]),
                 Section::make('تفاصيل التدريب')
                     ->columns(2)
                     ->schema([
                         TextEntry::make('department.name_location')
                             ->label('القسم'),
+                        TextEntry::make('administrative.title')
+                            ->label('الإدارة'),
+                        TextEntry::make('street')
+                            ->label('الشارع'),
+                        TextEntry::make('training_hours')
+                            ->label('عدد ساعات التدريب'),
+                        TextEntry::make('training_type')
+                            ->label('نوع التدريب')
+                            ->formatStateUsing(fn (?string $state): string => match ($state) {
+                                'cooperative' => 'تدريب جامعي',
+                                'professional' => 'مزاولة مهنة',
+                                default => $state ?? '-',
+                            }),
                         TextEntry::make('status')
                             ->label('الحالة')
                             ->badge()
