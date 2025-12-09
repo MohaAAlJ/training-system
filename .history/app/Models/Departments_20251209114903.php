@@ -5,11 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
-
 class Departments extends Model
 {
     use SoftDeletes, HasFactory;
-
+    
     protected $table = 'departments';
     protected $fillable = [
         'name_location',
@@ -24,9 +23,7 @@ class Departments extends Model
 
     protected static function booted()
     {
-        static::addGlobalScope('active', function ($builder) {
-            $builder->where('status', 'active');
-        });
+        static::
     }
 
     // Accessor to convert status string to boolean for ToggleColumn
