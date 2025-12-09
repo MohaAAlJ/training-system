@@ -1,16 +1,16 @@
 // الإعدادات: حالياً تشير لملفات JSON محلية داخل مجلد النموذج
 const endpoints = {
-    addresses: "./api/addresses.json",
-    institutions: "./api/institutions.json",
+    addresses: "/admin/form/api/addresses",
+    institutions: "/admin/form/api/institutions",
     majors: (institutionId) =>
-        `./api/majors.json?institution_id=${institutionId ?? ""}`,
-    trainingFocus: "./api/training-focuses.json",
-    administratives: "./api/administratives.json",
+        `/admin/form/api/majors?institution_id=${institutionId ?? ""}`,
+    trainingFocus: "/admin/form/api/training-types",
+    administratives: "/admin/form/api/administratives",
     departments: (administrativeId, majorId) =>
-        `./api/departments.json?administrative_id=${
+        `/admin/form/api/departments?administrative_id=${
             administrativeId ?? ""
         }&major_id=${majorId ?? ""}`,
-    submit: "/form/applications",
+    submit: "/admin/form",
 };
 
 // بيانات بديلة مؤقتة (أزلها عند توفر الـ API)
@@ -79,6 +79,14 @@ const administrativeSelect = document.getElementById("administrative_id");
 const departmentSelect = document.getElementById("department_id");
 const trainingTypeSelect = document.getElementById("training_type");
 const dobInput = document.getElementById("dob");
+
+const getCsrfToken = () => {
+    const match = document.cookie
+        .split(";")
+        .map((c) => c.trim())
+        .find((c) => c.startsWith("XSRF-TOKEN="));
+    return match ? decodeURIComponent(match.split("=")[1]) : "";
+};
 
 function handleDobInput(event) {
     const input = event.target;
@@ -180,7 +188,8 @@ form.addEventListener("submit", async (e) => {
             method: "POST",
             body: formData,
             headers: {
-                // أضف رمز CSRF عند توفره
+                "X-CSRF-TOKEN": getCsrfToken(),
+                "X-Requested-With": "XMLHttpRequest",
             },
         });
 

@@ -4,14 +4,14 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>طلب تدريب المتدرب</title>
-        <link rel="stylesheet" href="./styles.css" />
+        <link rel="stylesheet" href="/Form/trainee-app/styles.css" />
     </head>
     <body>
         <main class="page">
             <!-- <div class="brand-bar">
                 <div class="brand-bar__left">
                     <div class="brand-bar__logo">
-                        <img src="./logo.png" alt="شعار PRICs" />
+                        <img src="/Form/trainee-app/logo.png" alt="شعار PRICs" />
                     </div>
                     <div class="brand-bar__meta">
                         <span class="brand-bar__label">PRICs</span>
@@ -33,7 +33,10 @@
                 </div>
                 <div class="hero__brand">
                     <div class="hero__logo">
-                        <img src="./logo.png" alt="شعار PRICs" />
+                        <img
+                            src="/Form/trainee-app/logo.png"
+                            alt="شعار PRICs"
+                        />
                     </div>
                     <div class="hero__brand-meta">
                         <span class="hero__brand-name">PRCS</span>
@@ -46,8 +49,9 @@
                 id="applicationForm"
                 class="card"
                 method="post"
-                action="/form/applications"
+                action="/admin/form"
             >
+                @csrf
                 <fieldset>
                     <legend>
                         <span class="legend-icon">👤</span>البيانات الشخصية
@@ -235,6 +239,6 @@
             </form>
         </main>
 
-        <script src="./app.js" defer></script>
+        <script src="/Form/trainee-app/app.js" defer></script>
     </body>
 </html>
