@@ -13,26 +13,30 @@ class TraineesFactory extends Factory
     {
         $arabicFaker = arabicFaker();
 
-        // 1. محاولة جلب تخصص مربوط بجامعة من الجدول الوسيط
-        $link = DB::table('institution_major')->inRandomOrder()->first();
+        // Get or create an institution
+        $institution = Institution::inRandomOrder()->first();
+        if (!$institution) {
+            $institution = Institution::factory()->create();
+        }
 
-        // 2. إذا لم يوجد ربط (الجدول فارغ)، نقوم بإنشاء ربط جديد فوراً
-        if (!$link) {
-            $institution = Institution::factory()->create(); // أو نختار أول جامعة
-            $major = Major::factory()->create(); // أو نختار أول تخصص
+        // Get a major that is linked to this institution
+        $majorLink = DB::table('institution_major')
+            ->where('institution_id', $institution->id)
+            ->inRandomOrder()
+            ->first();
 
-            $pivotId = DB::table('institution_major')->insertGetId([
+        // If no major linked to this institution, create one
+        if (!$majorLink) {
+            $major = Major::factory()->create();
+            DB::table('institution_major')->insert([
                 'institution_id' => $institution->id,
                 'major_id' => $major->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
-
-            $institutionId = $institution->id;
+            $majorId = $major->id;
         } else {
-            // إذا وجدنا بيانات جاهزة نستخدمها
-            $institutionId = $link->institution_id;
-            $pivotId = $link->id;
+            $majorId = $majorLink->major_id;
         }
 
         return [
