@@ -6,7 +6,6 @@ use App\Models\Applications;
 use App\Models\Departments;
 use App\Models\Trainees;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Str;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Applications>
