@@ -13,13 +13,11 @@ class TraineesFactory extends Factory
     {
         $arabicFaker = arabicFaker();
 
-        // 1. محاولة جلب تخصص مربوط بجامعة من الجدول الوسيط
         $link = DB::table('institution_major')->inRandomOrder()->first();
 
-        // 2. إذا لم يوجد ربط (الجدول فارغ)، نقوم بإنشاء ربط جديد فوراً
         if (!$link) {
-            $institution = Institution::factory()->create(); // أو نختار أول جامعة
-            $major = Major::factory()->create(); // أو نختار أول تخصص
+            $institution = Institution::factory()->create();
+            $major = Major::factory()->create();
 
             $pivotId = DB::table('institution_major')->insertGetId([
                 'institution_id' => $institution->id,
@@ -30,7 +28,6 @@ class TraineesFactory extends Factory
 
             $institutionId = $institution->id;
         } else {
-            // إذا وجدنا بيانات جاهزة نستخدمها
             $institutionId = $link->institution_id;
             $pivotId = $link->id;
         }
@@ -40,9 +37,8 @@ class TraineesFactory extends Factory
             'full_name'   => $arabicFaker->name,
             'phone_number' => '05' . $this->faker->numerify('#######'),
             'dob'         => $this->faker->date('Y-m-d', '-20 years'),
-            'location'    => $arabicFaker->city, // تأكد أن لديك هذا العمود في جدولك
+            'location'    => $arabicFaker->city, 
 
-            // تعبئة المفاتيح الأجنبية بناءً على ملف الـ SQL الخاص بك
             'institution_id' => $institutionId,
             'institution_major_id' => $pivotId,
         ];
