@@ -3,12 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 class Departments extends Model
 {
     use SoftDeletes, HasFactory;
-    
+
     protected $table = 'departments';
     protected $fillable = [
         'name_location',
@@ -20,6 +21,14 @@ class Departments extends Model
     protected $casts = [
         'status' => 'string',
     ];
+
+    /**
+     * Scope a query to only include active departments.
+     */
+    public function scopeActive(Builder $query): void
+    {
+        $query->where('status', 'active');
+    }
 
     // Accessor to convert status string to boolean for ToggleColumn
     protected function getStatusAttribute($value)

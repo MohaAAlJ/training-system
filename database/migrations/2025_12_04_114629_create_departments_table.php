@@ -28,7 +28,7 @@ return new class extends Migration
                 ->nullOnDelete();
             $table->index('user_id');
 
-            $table->foreignId('administrative_id')
+            $table->foreignIdFor('App\Models\Administratives', 'administrative_id')
                 ->nullable()
                 ->constrained('administratives')
                 ->nullOnDelete();
