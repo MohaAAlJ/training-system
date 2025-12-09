@@ -1,19 +1,16 @@
 // الإعدادات: حالياً تشير لملفات JSON محلية داخل مجلد النموذج
 const endpoints = {
-    addresses: "./api/addresses.json",
-    institutions: "./api/institutions.json",
+    addresses: "/admin/form/api/addresses",
+    institutions: "/admin/form/api/institutions",
     majors: (institutionId) =>
-        `./api/majors.json?institution_id=${institutionId ?? ""}`,
-    trainingFocus: "./api/training-focuses.json",
-    administratives: (address) =>
-        `./api/administratives.json?address=${encodeURIComponent(
-            address ?? ""
-        )}`,
+        `/admin/form/api/majors?institution_id=${institutionId ?? ""}`,
+    trainingFocus: "/admin/form/api/training-types",
+    administratives: "/admin/form/api/administratives",
     departments: (administrativeId, majorId) =>
-        `./api/departments.json?administrative_id=${
+        `/admin/form/api/departments?administrative_id=${
             administrativeId ?? ""
         }&major_id=${majorId ?? ""}`,
-    submit: "/form/applications",
+    submit: "/admin/form",
 };
 
 // بيانات بديلة مؤقتة (أزلها عند توفر الـ API)
@@ -33,24 +30,13 @@ const fallback = {
         { id: 3, name: "الأشعة", institution_id: 2 },
     ],
     trainingFocus: [
-        { id: "summer", name: "تدريب صيفي" },
-        { id: "coop", name: "تدريب تعاوني" },
-        { id: "field", name: "تدريب ميداني" },
+        { id: "Uni", name: "تدريب جامعي" },
+        { id: "minis", name: "مزاولة مهنة" },
     ],
     administratives: [
-        {
-            id: 10,
-            name: "مديرية الخدمات الطبية",
-            address: "riyadh",
-            remaining: 5,
-        },
-        {
-            id: 11,
-            name: "مديرية تقنية المعلومات",
-            address: "riyadh",
-            remaining: 0,
-        },
-        { id: 12, name: "مديرية التمريض", address: "jeddah", remaining: 2 },
+        { id: 10, name: "مديرية الخدمات الطبية", remaining: 5 },
+        { id: 11, name: "مديرية تقنية المعلومات", remaining: 0 },
+        { id: 12, name: "مديرية التمريض", remaining: 2 },
     ],
     departments: [
         {
@@ -89,45 +75,27 @@ const message = document.getElementById("formMessage");
 const addressSelect = document.getElementById("address");
 const institutionSelect = document.getElementById("institution_id");
 const majorSelect = document.getElementById("major_id");
-const focusSelect = document.getElementById("training_focus");
 const administrativeSelect = document.getElementById("administrative_id");
 const departmentSelect = document.getElementById("department_id");
 const trainingTypeSelect = document.getElementById("training_type");
+const dobInput = document.getElementById("dob");
 
-// خيارات نوع التدريب بحسب التخصص (يمكن التعديل أو الإضافة بحسب الحاجة)
-// IDs per fallback majors: 1=تمريض، 2=تقنية المعلومات، 3=الأشعة
-const trainingTypeByMajor = {
-    1: [
-        { id: "clinical", name: "تمريض سريري" },
-        { id: "icu", name: "عناية مركزة" },
-        { id: "er", name: "طوارئ" },
-        { id: "vaccination", name: "تطعيم/حقن" },
-        { id: "ward", name: "أجنحة وتنظيم جرعات" },
-    ],
-    2: [
-        { id: "networks", name: "شبكات" },
-        { id: "software", name: "برمجة وتطوير" },
-        { id: "security", name: "أمن سيبراني" },
-        { id: "support", name: "دعم فني" },
-        { id: "db", name: "قواعد بيانات" },
-    ],
-    3: [
-        { id: "imaging", name: "تصوير شعاعي" },
-        { id: "ct", name: "أشعة مقطعية" },
-        { id: "mri", name: "أشعة رنين" },
-        { id: "xray", name: "أشعة سينية" },
-    ],
-    default: [],
+const getCsrfToken = () => {
+    const match = document.cookie
+        .split(";")
+        .map((c) => c.trim())
+        .find((c) => c.startsWith("XSRF-TOKEN="));
+    return match ? decodeURIComponent(match.split("=")[1]) : "";
 };
 
-function setTrainingTypeOptions(majorId) {
-    if (!trainingTypeSelect) return;
-    if (!majorId) {
-        populateOptions(trainingTypeSelect, []);
-        return;
-    }
-    const options = trainingTypeByMajor[majorId] || trainingTypeByMajor.default;
-    populateOptions(trainingTypeSelect, options);
+function handleDobInput(event) {
+    const input = event.target;
+    const digits = input.value.replace(/\D/g, "").slice(0, 8);
+    const parts = [];
+    if (digits.length > 0) parts.push(digits.slice(0, 2));
+    if (digits.length > 2) parts.push(digits.slice(2, 4));
+    if (digits.length > 4) parts.push(digits.slice(4, 8));
+    input.value = parts.join("/");
 }
 
 const setMessage = (text, type = "note") => {
@@ -137,6 +105,7 @@ const setMessage = (text, type = "note") => {
 };
 
 const populateOptions = (select, items, labelKey = "name") => {
+    if (!select) return;
     select.innerHTML = '<option value="" disabled selected>اختر</option>';
     items.forEach((item) => {
         const opt = document.createElement("option");
@@ -147,6 +116,7 @@ const populateOptions = (select, items, labelKey = "name") => {
 };
 
 async function loadOptions(select, url, fallbackData, labelKey = "name") {
+    if (!select) return;
     try {
         const res = await fetch(url);
         if (!res.ok) throw new Error("Request failed");
@@ -157,35 +127,32 @@ async function loadOptions(select, url, fallbackData, labelKey = "name") {
     }
 }
 
-function filterAdministrativesByAddress(addressId) {
-    const data = fallback.administratives.filter(
-        (a) => (!addressId || a.address === addressId) && a.remaining > 0
-    );
-    populateOptions(
+async function loadAdministratives() {
+    await loadOptions(
         administrativeSelect,
-        data.map((a) => ({
-            id: a.id,
-            name: a.name,
-        }))
+        endpoints.administratives,
+        fallback.administratives
     );
     populateOptions(departmentSelect, []);
 }
 
-function filterDepartments(adminId, majorId) {
-    const data = fallback.departments.filter(
-        (d) =>
-            (!adminId || d.administrative_id == adminId) &&
-            (!majorId || d.major_ids.includes(Number(majorId))) &&
-            d.remaining > 0
-    );
-    populateOptions(
-        departmentSelect,
-        data.map((d) => ({ id: d.id, name: d.name }))
-    );
+async function filterDepartments(adminId, majorId) {
+    try {
+        const res = await fetch(endpoints.departments(adminId, majorId));
+        if (!res.ok) throw new Error("Request failed");
+        const data = await res.json();
+        populateOptions(departmentSelect, data);
+    } catch (err) {
+        const data = fallback.departments.filter(
+            (d) =>
+                (!adminId || d.administrative_id == adminId) &&
+                (!majorId || d.major_ids.includes(Number(majorId)))
+        );
+        populateOptions(departmentSelect, data);
+    }
 }
 
-addressSelect.addEventListener("change", (e) => {
-    filterAdministrativesByAddress(e.target.value);
+addressSelect.addEventListener("change", () => {
     setMessage("");
 });
 
@@ -203,8 +170,11 @@ administrativeSelect.addEventListener("change", (e) => {
 
 majorSelect.addEventListener("change", (e) => {
     filterDepartments(administrativeSelect.value, e.target.value);
-    setTrainingTypeOptions(e.target.value);
 });
+
+if (dobInput) {
+    dobInput.addEventListener("input", handleDobInput);
+}
 
 form.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -218,7 +188,8 @@ form.addEventListener("submit", async (e) => {
             method: "POST",
             body: formData,
             headers: {
-                // أضف رمز CSRF عند توفره
+                "X-CSRF-TOKEN": getCsrfToken(),
+                "X-Requested-With": "XMLHttpRequest",
             },
         });
 
@@ -238,20 +209,11 @@ form.addEventListener("submit", async (e) => {
         fallback.institutions
     );
     await loadOptions(
-        focusSelect,
+        trainingTypeSelect,
         endpoints.trainingFocus,
         fallback.trainingFocus
     );
     populateOptions(majorSelect, fallback.majors);
-    populateOptions(
-        administrativeSelect,
-        fallback.administratives
-            .filter((a) => a.remaining > 0)
-            .map((a) => ({
-                id: a.id,
-                name: a.name,
-            }))
-    );
     populateOptions(departmentSelect, []);
-    setTrainingTypeOptions();
+    loadAdministratives();
 })();
