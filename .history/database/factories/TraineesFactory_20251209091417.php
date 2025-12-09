@@ -20,13 +20,14 @@ class TraineesFactory extends Factory
         }
 
         // Get a major that is linked to this institution
-        $majorLink = DB::table('institution_major')
+        $major = DB::table('institution_major')
             ->where('institution_id', $institution->id)
+            ->with('major')
             ->inRandomOrder()
             ->first();
 
         // If no major linked to this institution, create one
-        if (!$majorLink) {
+        if (!$major) {
             $major = Major::factory()->create();
             DB::table('institution_major')->insert([
                 'institution_id' => $institution->id,
@@ -36,7 +37,7 @@ class TraineesFactory extends Factory
             ]);
             $majorId = $major->id;
         } else {
-            $majorId = $majorLink->major_id;
+            $majorId = $major->major_id;
         }
 
         return [
