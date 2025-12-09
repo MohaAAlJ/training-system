@@ -29,6 +29,14 @@ class ApplicationsTable
                 TextColumn::make('trainee.national_id')
                     ->label('رقم الهوية')
                     ->searchable(),
+                TextColumn::make('trainee.institution.name')
+                    ->label('المؤسسة')
+                    ->formatStateUsing(fn ($state) => is_array($state) ? ($state['ar'] ?? $state['en'] ?? reset($state)) : $state)
+                    ->toggleable(isToggledHiddenByDefault: false),
+                TextColumn::make('trainee.major.name')
+                    ->label('التخصص')
+                    ->formatStateUsing(fn ($state) => is_array($state) ? ($state['ar'] ?? $state['en'] ?? reset($state)) : $state)
+                    ->toggleable(isToggledHiddenByDefault: false),
                 TextColumn::make('department.name_location')
                     ->label('القسم')
                     ->searchable()

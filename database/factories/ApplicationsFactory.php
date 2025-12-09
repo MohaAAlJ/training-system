@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Applications;
+use App\Models\Administratives;
 use App\Models\Departments;
 use App\Models\Trainees;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -38,6 +39,9 @@ class ApplicationsFactory extends Factory
             $department = Departments::factory()->create();
         }
 
+        // Get or create an administrative
+        $administrative = Administratives::inRandomOrder()->first();
+
         $tags = [
             'تدريب صيفي',
             'تدريب تعاوني',
@@ -50,6 +54,10 @@ class ApplicationsFactory extends Factory
         return [
             'trainee_id' => $trainee->id,
             'department_id' => $department->id,
+            'administrative_id' => $administrative?->id,
+            'street' => fake()->streetName(),
+            'training_hours' => fake()->randomElement([80, 100, 120, 150, 200]),
+            'training_type' => fake()->randomElement(['cooperative', 'professional']),
             'start_date' => $startDate->format('Y-m-d'),
             'end_date' => $endDate->format('Y-m-d'),
             'status' => $status,
