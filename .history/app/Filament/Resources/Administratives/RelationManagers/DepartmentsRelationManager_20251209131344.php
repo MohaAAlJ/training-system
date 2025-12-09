@@ -128,9 +128,7 @@ class DepartmentsRelationManager extends RelationManager
                     ->preload(),
                 TrashedFilter::make(),
             ])
-            ->headerActions([
-                CreateAction::make(),
-            ])
+            ->headerActions([])
             ->recordActions([
                 EditAction::make(),
                 DeleteAction::make(),

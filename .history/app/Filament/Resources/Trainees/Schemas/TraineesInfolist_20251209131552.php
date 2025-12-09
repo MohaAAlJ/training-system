@@ -4,6 +4,8 @@ namespace App\Filament\Resources\Trainees\Schemas;
 
 use Filament\Schemas\Components\Section;
 use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Components\RepeatableEntry;
+use Filament\Infolists\Components\ImageEntry;
 use Filament\Schemas\Schema;
 
 class TraineesInfolist

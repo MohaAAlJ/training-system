@@ -16,16 +16,14 @@ use Filament\Actions\RestoreAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Textarea;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\ToggleColumn;
-use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Illuminate\Support\Facades\DB;
 
 class DepartmentsRelationManager extends RelationManager
 {
@@ -35,31 +33,23 @@ class DepartmentsRelationManager extends RelationManager
     {
         return $schema
             ->components([
-                TextInput::make('name_location')
-                    ->label('اسم القسم والموقع')
-                    ->required()
-                    ->maxLength(255)
+                Textarea::make('description')
+                    ->default(null)
                     ->columnSpanFull(),
-                Select::make('user_id')
-                    ->label('المسؤول')
-                    ->relationship('user', 'name')
-                    ->searchable()
-                    ->preload()
-                    ->required(),
-                TextInput::make('total_capacity')
-                    ->label('السعة الكلية')
-                    ->numeric()
-                    ->minValue(1)
-                    ->default(10)
+                TextInput::make('address')
+                    ->default(null),
+                TextInput::make('name_location')
                     ->required(),
                 Select::make('status')
-                    ->label('الحالة')
-                    ->options([
-                        'active' => 'نشط',
-                        'inactive' => 'غير نشط',
-                    ])
+                    ->options(['active' => 'Active', 'inactive' => 'Inactive'])
                     ->default('active')
                     ->required(),
+                TextInput::make('total_capacity')
+                    ->required()
+                    ->numeric(),
+                TextInput::make('user_id')
+                    ->numeric()
+                    ->default(null),
             ]);
     }
 
@@ -68,77 +58,48 @@ class DepartmentsRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('name_location')
             ->columns([
-                TextColumn::make('name_location')
-                    ->label('اسم القسم والموقع')
-                    ->searchable()
-                    ->sortable(),
-                TextColumn::make('user.name')
-                    ->label('المسؤول')
+                TextColumn::make('address')
                     ->searchable(),
+                TextColumn::make('name_location')
+                    ->searchable(),
+                TextColumn::make('status')
+                    ->badge(),
                 TextColumn::make('total_capacity')
-                    ->label('السعة')
+                    ->numeric()
                     ->sortable(),
-                TextColumn::make('registered_count')
-                    ->label('المسجلين')
-                    ->state(function ($record) {
-                        return DB::table('applications')
-                            ->where('department_id', $record->id)
-                            ->whereIn('status', ['active', 'completed'])
-                            ->count();
-                    })
-                    ->badge()
-                    ->color('primary'),
-                ToggleColumn::make('status')
-                    ->label('الحالة')
-                    ->onIcon('heroicon-m-check-circle')
-                    ->offIcon('heroicon-m-x-circle')
-                    ->onColor('success')
-                    ->offColor('danger')
-                    ->beforeStateUpdated(function ($record, $state) {
-                        $record->status = $state ? 'active' : 'inactive';
-                        $record->save();
-                    }),
+                TextColumn::make('user_id')
+                    ->numeric()
+                    ->sortable(),
                 TextColumn::make('created_at')
-                    ->label('تاريخ الإنشاء')
-                    ->dateTime('Y-m-d')
+                    ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('updated_at')
-                    ->label('تاريخ التحديث')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('deleted_at')
-                    ->label('تاريخ الحذف')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                SelectFilter::make('status')
-                    ->label('الحالة')
-                    ->options([
-                        'active' => 'نشط',
-                        'inactive' => 'غير نشط',
-                    ]),
-                SelectFilter::make('user_id')
-                    ->label('المسؤول')
-                    ->relationship('user', 'name')
-                    ->searchable()
-                    ->preload(),
                 TrashedFilter::make(),
             ])
             ->headerActions([
                 CreateAction::make(),
+                AssociateAction::make(),
             ])
             ->recordActions([
                 EditAction::make(),
+                DissociateAction::make(),
                 DeleteAction::make(),
                 ForceDeleteAction::make(),
                 RestoreAction::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
+                    DissociateBulkAction::make(),
                     DeleteBulkAction::make(),
                     ForceDeleteBulkAction::make(),
                     RestoreBulkAction::make(),

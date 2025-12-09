@@ -2,13 +2,9 @@
 
 namespace App\Filament\Resources\Administratives\RelationManagers;
 
-use Filament\Actions\AssociateAction;
 use Filament\Actions\BulkActionGroup;
-use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\DissociateAction;
-use Filament\Actions\DissociateBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\ForceDeleteBulkAction;
@@ -128,9 +124,7 @@ class DepartmentsRelationManager extends RelationManager
                     ->preload(),
                 TrashedFilter::make(),
             ])
-            ->headerActions([
-                CreateAction::make(),
-            ])
+            ->headerActions([])
             ->recordActions([
                 EditAction::make(),
                 DeleteAction::make(),

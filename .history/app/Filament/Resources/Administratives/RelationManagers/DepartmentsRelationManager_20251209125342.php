@@ -16,6 +16,7 @@ use Filament\Actions\RestoreAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Textarea;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
@@ -35,31 +36,23 @@ class DepartmentsRelationManager extends RelationManager
     {
         return $schema
             ->components([
-                TextInput::make('name_location')
-                    ->label('اسم القسم والموقع')
-                    ->required()
-                    ->maxLength(255)
+                Textarea::make('description')
+                    ->default(null)
                     ->columnSpanFull(),
-                Select::make('user_id')
-                    ->label('المسؤول')
-                    ->relationship('user', 'name')
-                    ->searchable()
-                    ->preload()
-                    ->required(),
-                TextInput::make('total_capacity')
-                    ->label('السعة الكلية')
-                    ->numeric()
-                    ->minValue(1)
-                    ->default(10)
+                TextInput::make('address')
+                    ->default(null),
+                TextInput::make('name_location')
                     ->required(),
                 Select::make('status')
-                    ->label('الحالة')
-                    ->options([
-                        'active' => 'نشط',
-                        'inactive' => 'غير نشط',
-                    ])
+                    ->options(['active' => 'Active', 'inactive' => 'Inactive'])
                     ->default('active')
                     ->required(),
+                TextInput::make('total_capacity')
+                    ->required()
+                    ->numeric(),
+                TextInput::make('user_id')
+                    ->numeric()
+                    ->default(null),
             ]);
     }
 
@@ -130,15 +123,18 @@ class DepartmentsRelationManager extends RelationManager
             ])
             ->headerActions([
                 CreateAction::make(),
+                AssociateAction::make(),
             ])
             ->recordActions([
                 EditAction::make(),
+                DissociateAction::make(),
                 DeleteAction::make(),
                 ForceDeleteAction::make(),
                 RestoreAction::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
+                    DissociateBulkAction::make(),
                     DeleteBulkAction::make(),
                     ForceDeleteBulkAction::make(),
                     RestoreBulkAction::make(),
