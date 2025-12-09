@@ -4,14 +4,14 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>طلب تدريب المتدرب</title>
-        <link rel="stylesheet" href="./styles.css" />
+        <link rel="stylesheet" href="/Form/trainee-app/styles.css" />
     </head>
     <body>
         <main class="page">
             <!-- <div class="brand-bar">
                 <div class="brand-bar__left">
                     <div class="brand-bar__logo">
-                        <img src="./logo.png" alt="شعار PRICs" />
+                        <img src="/Form/trainee-app/logo.png" alt="شعار PRICs" />
                     </div>
                     <div class="brand-bar__meta">
                         <span class="brand-bar__label">PRICs</span>
@@ -33,7 +33,10 @@
                 </div>
                 <div class="hero__brand">
                     <div class="hero__logo">
-                        <img src="./logo.png" alt="شعار PRICs" />
+                        <img
+                            src="/Form/trainee-app/logo.png"
+                            alt="شعار PRICs"
+                        />
                     </div>
                     <div class="hero__brand-meta">
                         <span class="hero__brand-name">PRCS</span>
@@ -46,8 +49,9 @@
                 id="applicationForm"
                 class="card"
                 method="post"
-                action="/form/applications"
+                action="/admin/form"
             >
+                @csrf
                 <fieldset>
                     <legend>
                         <span class="legend-icon">👤</span>البيانات الشخصية
@@ -59,13 +63,24 @@
                                 id="full_name"
                                 name="full_name"
                                 type="text"
+                                pattern="[A-Za-z\u0600-\u06FF\s]+"
+                                title="أدخل حروفاً فقط"
                                 required
                                 autocomplete="name"
                             />
                         </label>
                         <label class="field">
                             <span>تاريخ الميلاد *</span>
-                            <input id="dob" name="dob" type="date" required />
+                            <input
+                                id="dob"
+                                name="dob"
+                                type="text"
+                                dir="ltr"
+                                inputmode="numeric"
+                                placeholder="dd/mm/yyyy"
+                                pattern="\d{2}/\d{2}/\d{4}"
+                                title="صيغة التاريخ dd/mm/yyyy"
+                            />
                         </label>
                         <label class="field">
                             <span>رقم الهوية *</span>
@@ -73,12 +88,14 @@
                                 id="national_id"
                                 name="national_id"
                                 type="text"
-                                minlength="10"
-                                maxlength="10"
-                                pattern="\d{10}"
+                                minlength="9"
+                                maxlength="9"
+                                pattern="\d{9}"
+                                inputmode="numeric"
+                                oninput="this.value = this.value.replace(/[^0-9]/g, '')"
                                 required
                             />
-                            <small class="note">10 أرقام</small>
+                            <small class="note">9 أرقام</small>
                         </label>
                         <label class="field">
                             <span>رقم الجوال *</span>
@@ -86,8 +103,11 @@
                                 id="phone_number"
                                 name="phone_number"
                                 type="tel"
-                                pattern="05\d{8}"
-                                placeholder="05########"
+                                pattern="^97\d5\d{8}$"
+                                inputmode="numeric"
+                                maxlength="12"
+                                placeholder="97x5xxxxxxxx"
+                                title="ابدأ بـ97 ثم رقم واحد ثم 5 ثم 8 أرقام"
                                 required
                             />
                         </label>
@@ -98,9 +118,17 @@
                                     اختر العنوان
                                 </option>
                             </select>
-                            <small class="note"
-                                >يُحمّل من البيانات المزروعة.</small
-                            >
+                            <small class="note">المحافظة .</small>
+                        </label>
+                        <label class="field">
+                            <span>اسم الشارع *</span>
+                            <input
+                                id="street"
+                                name="street"
+                                type="text"
+                                placeholder="اسم الشارع الذي تسكن فيه"
+                                required
+                            />
                         </label>
                     </div>
                 </fieldset>
@@ -111,7 +139,7 @@
                     </legend>
                     <div class="grid two">
                         <label class="field">
-                            <span>الجهة التعليمية *</span>
+                            <span>جامعة/كلية *</span>
                             <select
                                 id="institution_id"
                                 name="institution_id"
@@ -121,7 +149,8 @@
                                     اختر الجهة التعليمية
                                 </option>
                             </select>
-                            <small class="note">من البيانات المزروعة.</small>
+
+                            <small class="note"></small>
                         </label>
                         <label class="field">
                             <span>التخصص *</span>
@@ -130,7 +159,7 @@
                                     اختر التخصص
                                 </option>
                             </select>
-                            <small class="note">يُرشّح حسب الجهة.</small>
+                            <small class="note"> </small>
                         </label>
                         <label class="field">
                             <span>عدد ساعات التدريب *</span>
@@ -141,36 +170,35 @@
                                 min="1"
                                 max="1000"
                                 step="1"
+                                inputmode="numeric"
                                 required
                             />
                         </label>
                         <!-- <label class="field">
-                            <span>مجال التدريب *</span>
+                            <span>نوع التدريب *</span>
                             <select
-                                id="training_focus"
-                                name="training_focus"
+                                id="training_type"
+                                name="training_type"
                                 required
                             >
                                 <option value="" disabled selected>
-                                    اختر مجال التدريب
+                                    اختر نوع التدريب
                                 </option>
                             </select>
-                            <small class="note">من البيانات المزروعة.</small>
+                            <small class="note">من واجهة البيانات.</small>
                         </label> -->
                         <label class="field">
-                            <span>الإدارة *</span>
+                            <span>الدوائر *</span>
                             <select
                                 id="administrative_id"
                                 name="administrative_id"
                                 required
                             >
                                 <option value="" disabled selected>
-                                    اختر الإدارة
+                                    اختر الدائرة
                                 </option>
                             </select>
-                            <small class="note"
-                                >تتأثر بالعنوان والطاقة الاستيعابية.</small
-                            >
+                            <small class="note"> </small>
                         </label>
                         <label class="field">
                             <span>القسم *</span>
@@ -183,9 +211,7 @@
                                     اختر القسم
                                 </option>
                             </select>
-                            <small class="note"
-                                >يتأثر بالإدارة والتخصص والطاقة.</small
-                            >
+                            <small class="note"> </small>
                         </label>
                         <label class="field" id="training_type_field">
                             <span>نوع التدريب *</span>
@@ -197,11 +223,6 @@
                                 <option value="" disabled selected>
                                     اختر نوع التدريب
                                 </option>
-                                <option value="networks">شبكات</option>
-                                <option value="software">برمجة وتطوير</option>
-                                <option value="security">أمن سيبراني</option>
-                                <option value="support">دعم فني</option>
-                                <option value="db">قواعد بيانات</option>
                             </select>
                         </label>
                     </div>
@@ -218,6 +239,6 @@
             </form>
         </main>
 
-        <script src="./app.js" defer></script>
+        <script src="/Form/trainee-app/app.js" defer></script>
     </body>
 </html>

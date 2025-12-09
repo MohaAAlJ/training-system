@@ -27,13 +27,19 @@ return new class extends Migration
                 ->cascadeOnDelete();
             $table->index('department_id');
 
-            // Application Details
-            $table->date('start_date');
-            $table->date('end_date');
+            // Optional association to a trainee record (nullable for public form submissions)
+            $table->foreignId('trainee_id')->nullable()->constrained('trainees')->nullOnDelete();
+
+            // Application lifecycle
+            $table->date('start_date')->nullable();
+            $table->date('end_date')->nullable();
             $table->enum('status', ['pending', 'active', 'rejected', 'completed', 'cancelled'])->default('pending');
-            $table->string('letter_image_path')->nullable(); // Path to letter/document image
-            $table->dateTime('accepted_at')->nullable(); // When application was accepted
-            $table->string('tags')->nullable(); // Additional tags/metadata
+            $table->string('letter_image_path')->nullable();
+            $table->dateTime('accepted_at')->nullable();
+            $table->string('tags')->nullable();
+
+            // Slug for public lookup/slugged endpoint
+            $table->string('slug')->unique();
 
             $table->timestamps();
             $table->softDeletes();
