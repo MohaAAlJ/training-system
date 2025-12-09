@@ -24,15 +24,15 @@ return new class extends Migration
             $table->integer('total_capacity');
 
             // Foreign Keys
-            $table->foreignIdFor(User::class, 'user_id')
+            $table->foreignId('user_id')
                 ->nullable()
-                ->constrained()
+                ->constrained('users')
                 ->nullOnDelete();
             $table->index('user_id');
 
-            $table->foreignIdFor(Administratives::class, 'administrative_id')
+            $table->foreignId('administrative_id')
                 ->nullable()
-                ->constrained()
+                ->constrained('administratives')
                 ->nullOnDelete();
             $table->index('administrative_id');
 

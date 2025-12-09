@@ -17,29 +17,23 @@ return new class extends Migration
             $table->id();
 
             // Foreign Keys
-            $table->foreignIdFor(Trainees::class, 'trainee_id')
-                ->constrained()
+            $table->foreignId('trainee_id')
+                ->constrained('trainees')
                 ->cascadeOnDelete();
             $table->index('trainee_id');
 
-            $table->foreignIdFor(Departments::class, 'department_id')
-                ->constrained()
+            $table->foreignId('department_id')
+                ->constrained('departments')
                 ->cascadeOnDelete();
             $table->index('department_id');
 
-            // Optional association to a trainee record (nullable for public form submissions)
-            $table->foreignIdFor('trainee_id')->nullable()->constrained('trainees')->nullOnDelete();
-
-            // Application lifecycle
-            $table->date('start_date')->nullable();
-            $table->date('end_date')->nullable();
+            // Application Details
+            $table->date('start_date');
+            $table->date('end_date');
             $table->enum('status', ['pending', 'active', 'rejected', 'completed', 'cancelled'])->default('pending');
-            $table->string('letter_image_path')->nullable();
-            $table->dateTime('accepted_at')->nullable();
-            $table->string('tags')->nullable();
-
-            // Slug for public lookup/slugged endpoint
-            $table->string('slug')->unique();
+            $table->string('letter_image_path')->nullable(); // Path to letter/document image
+            $table->dateTime('accepted_at')->nullable(); // When application was accepted
+            $table->string('tags')->nullable(); // Additional tags/metadata
 
             $table->timestamps();
             $table->softDeletes();

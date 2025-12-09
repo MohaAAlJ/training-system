@@ -23,14 +23,14 @@ return new class extends Migration
             $table->date('dob');
             $table->string('address')->nullable();
 
-            $table->foreignIdFor(Institution::class, 'institution_id')
+            $table->foreignId('institution_id')
                 ->nullable()
-                ->constrained()
+                ->constrained('institutions')
                 ->nullOnDelete();
 
-            $table->foreignIdFor(Major::class, 'major_id')
+            $table->foreignId('major_id')
                 ->nullable()
-                ->constrained()
+                ->constrained('majors')
                 ->nullOnDelete();
 
             $table->index('institution_id');

@@ -17,13 +17,13 @@ return new class extends Migration
             $table->id();
 
             // Foreign Keys
-            $table->foreignIdFor(Institution::class, 'institution_id')
-                ->constrained()
+            $table->foreignId('institution_id')
+                ->constrained('institutions')
                 ->cascadeOnDelete();
             $table->index('institution_id');
 
-            $table->foreignIdFor(Major::class, 'major_id')
-                ->constrained()
+            $table->foreignId('major_id')
+                ->constrained('majors')
                 ->cascadeOnDelete();
             $table->index('major_id');
 
