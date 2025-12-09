@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -22,11 +23,12 @@ class Departments extends Model
         'status' => 'string',
     ];
 
-    protected static function booted()
+    /**
+     * Scope a query to only include active departments.
+     */
+    public function scopeActive(Builder $query): void
     {
-        static::addGlobalScope('active', function ($builder) {
-            $builder->where('status', 'active');
-        });
+        $query->where('status', 'active');
     }
 
     // Accessor to convert status string to boolean for ToggleColumn
