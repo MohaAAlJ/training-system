@@ -20,8 +20,8 @@ return new class extends Migration
             $table->string('head_of_administrative'); // Head of this administrative unit
             
             // Foreign Keys
-            $table->foreignIdFor(User::class, 'user_id')
-                ->constrained()
+            $table->foreignId('user_id')
+                ->constrained('users')
                 ->cascadeOnDelete();
             $table->index('user_id');
             
