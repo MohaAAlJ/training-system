@@ -8,10 +8,19 @@ use App\Models\Departments;
 use App\Models\Institution;
 use App\Models\Major;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class ApplicationFormController extends Controller
 {
+    /**
+     * Serve the welcome page.
+     */
+    public function showWelcome()
+    {
+        return view('Form.welcomeapp');
+    }
+
     /**
      * Serve the public trainee application form.
      */
@@ -19,13 +28,21 @@ class ApplicationFormController extends Controller
     {
         return view('Form.trainee-app.index');
     }
-
     /**
      * Public JSON endpoints to feed the form selects from the database.
      */
     public function addresses()
     {
-        return response()->json([]);
+        // Gaza governorates - stored directly in applications.address field
+        $data = [
+            ['id' => 'شمال غزة', 'name' => 'شمال غزة'],
+            ['id' => 'غزة', 'name' => 'غزة'],
+            ['id' => 'الوسطى', 'name' => 'الوسطى'],
+            ['id' => 'خان يونس', 'name' => 'خان يونس'],
+            ['id' => 'رفح', 'name' => 'رفح'],
+        ];
+
+        return response()->json($data);
     }
 
     public function institutions()
@@ -77,7 +94,7 @@ class ApplicationFormController extends Controller
     {
         $administrativeId = $request->query('administrative_id');
 
-        $query = Departments::select('id', 'name_location', 'administrative_id');
+        $query = Departments::active()->select('id', 'name_location', 'administrative_id');
         if ($administrativeId) {
             $query->where('administrative_id', $administrativeId);
         }
@@ -96,7 +113,7 @@ class ApplicationFormController extends Controller
     public function trainingTypes()
     {
         $data = [
-            ['id' => 'cooperative', 'name' => 'تدريب تعاوني'],
+            ['id' => 'cooperative', 'name' => 'تدريب جامعي'],
             ['id' => 'professional', 'name' => 'مزاولة مهنة'],
         ];
 
@@ -108,22 +125,46 @@ class ApplicationFormController extends Controller
      */
     public function store(Request $request)
     {
+        $maxBirthYear = now()->year - 20; // Must be at least 20 years old
+        $minBirthYear = now()->year - 60; // Must be at most 60 years old
+
         $validated = $request->validate([
             'full_name' => ['required', 'string', 'max:255', 'regex:/^[\p{Arabic}A-Za-z\s]+$/u'],
-            'dob' => ['required', 'regex:/^\d{2}\/\d{2}\/\d{4}$/'],
-            'national_id' => ['required', 'digits:10'],
-            'phone_number' => ['required', 'regex:/^97\d5\d{8}$/'],
+            'dob' => [
+                'required',
+                'regex:/^\d{2}\/\d{2}\/\d{4}$/',
+                function ($attribute, $value, $fail) use ($maxBirthYear, $minBirthYear) {
+                    $parts = explode('/', $value);
+                    if (count($parts) === 3) {
+                        $year = (int) $parts[2];
+                        if ($year > $maxBirthYear) {
+                            $fail("يجب أن يكون العمر 20 سنة على الأقل (سنة الميلاد يجب أن تكون {$maxBirthYear} أو أقل)");
+                        }
+                        if ($year < $minBirthYear) {
+                            $fail("يجب أن يكون العمر 60 سنة على الأكثر (سنة الميلاد يجب أن تكون {$minBirthYear} أو أكثر)");
+                        }
+                    }
+                },
+            ],
+            'national_id' => ['required', 'digits:9'],
+            'phone_number' => ['required', 'regex:/^97[02]5[69]\d{7}$/'],
             'address' => ['required', 'string', 'max:255'],
-            'street' => ['required', 'string', 'max:255'],
+            'street' => ['required', 'string', 'max:255', 'regex:/^[\p{Arabic}A-Za-z0-9\s\-\.,#\/]+$/u'],
             'institution_id' => ['required', 'integer'],
             'major_id' => ['required', 'integer'],
-            'training_hours' => ['required', 'integer', 'min:1', 'max:1000'],
+            'training_hours' => ['required', 'integer', 'min:1', 'max:999'],
             'administrative_id' => ['required', 'integer'],
             'department_id' => ['required', 'integer'],
-            'training_type' => ['nullable', 'string', 'max:100'],
+            'training_type' => ['required', 'string', 'max:100'],
+            'letter_file' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
         ]);
 
         $slug = Str::slug($validated['full_name'] . '-' . now()->timestamp);
+
+        $letterPath = null;
+        if ($request->hasFile('letter_file')) {
+            $letterPath = $request->file('letter_file')->store('uploads', 'public');
+        }
 
         $application = Applications::create([
             'full_name' => $validated['full_name'],
@@ -138,6 +179,7 @@ class ApplicationFormController extends Controller
             'administrative_id' => $validated['administrative_id'],
             'department_id' => $validated['department_id'],
             'training_type' => $validated['training_type'] ?? null,
+            'letter_image_path' => $letterPath,
             'status' => 'pending',
             'slug' => $slug,
         ]);
@@ -145,6 +187,7 @@ class ApplicationFormController extends Controller
         return response()->json([
             'message' => 'تم استلام الطلب بنجاح',
             'slug' => $application->slug,
+            'redirect' => route('training.welcome'),
         ]);
     }
 }

@@ -50,6 +50,7 @@
                 class="card"
                 method="post"
                 action="/admin/form"
+                enctype="multipart/form-data"
             >
                 @csrf
                 <fieldset>
@@ -224,6 +225,16 @@
                                     اختر نوع التدريب
                                 </option>
                             </select>
+                        </label>
+                        <label class="field">
+                            <span>ارفع ملف <small class="note">(اختياري)</small></span>
+                            <input
+                                id="letter_file"
+                                name="letter_file"
+                                type="file"
+                                accept="image/*,application/pdf"
+                            />
+                            <small class="note">pdf أو صورة بحد أقصى 2MB</small>
                         </label>
                     </div>
                 </fieldset>

@@ -2,19 +2,24 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ApplicationFormController;
-
-// Default route - redirect to admin
+use Illuminate\Support\Facades\Auth;
 Route::get('/', function () {
-    return redirect('/admin');
+    if (Auth::check()) {
+        return redirect('/admin');
+    }
+    return redirect('/admin/login');
 });
 
-// Trainee application form (public landing)
-Route::get('admin/form', [ApplicationFormController::class, 'showForm'])->name('training.form');
-Route::post('admin/form', [ApplicationFormController::class, 'store'])
+// Welcome page (public landing)
+Route::get('/WelcomeForm', [ApplicationFormController::class, 'showWelcome'])->name('training.welcome');
+
+// Trainee application form (public)
+Route::get('/WelcomeForm/Form', [ApplicationFormController::class, 'showForm'])->name('training.form');
+Route::post('/WelcomeForm/Form', [ApplicationFormController::class, 'store'])
     ->name('training.form.store');
 
 // Public form data endpoints (no auth)
-Route::prefix('admin/form/api')->group(function () {
+Route::prefix('WelcomeForm/Form/api')->group(function () {
     Route::get('addresses', [ApplicationFormController::class, 'addresses']);
     Route::get('institutions', [ApplicationFormController::class, 'institutions']);
     Route::get('majors', [ApplicationFormController::class, 'majors']);

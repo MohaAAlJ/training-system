@@ -266,6 +266,22 @@ button:disabled {
     opacity: 0.65;
     cursor: not-allowed;
 }
+
+/* Glow button effect */
+.glow-button {
+    transition: transform 120ms ease, box-shadow 200ms ease;
+}
+.glow-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 20px rgba(217, 43, 58, 0.6), 0 0 40px rgba(217, 43, 58, 0.4),
+        0 0 60px rgba(217, 43, 58, 0.2);
+}
+.glow-button:active {
+    transform: translateY(0);
+    box-shadow: 0 0 30px rgba(217, 43, 58, 0.8), 0 0 50px rgba(217, 43, 58, 0.5),
+        0 0 70px rgba(217, 43, 58, 0.3);
+}
+
 .note {
     color: var(--muted);
     font-size: 0.9rem;
@@ -294,6 +310,35 @@ button:disabled {
 }
 .success {
     color: #0f9d58;
+}
+
+/* Toast notification */
+.toast {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-100px);
+    background: linear-gradient(135deg, #0f9d58, #0a7a45);
+    color: #fff;
+    padding: 16px 28px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    box-shadow: 0 8px 32px rgba(15, 157, 88, 0.35);
+    z-index: 9999;
+    opacity: 0;
+    transition: transform 0.4s ease, opacity 0.4s ease;
+    pointer-events: none;
+}
+
+.toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
+
+.toast.error {
+    background: linear-gradient(135deg, #d92b3a, #b91c2e);
+    box-shadow: 0 8px 32px rgba(217, 43, 58, 0.35);
 }
 
 @media (max-width: 720px) {
