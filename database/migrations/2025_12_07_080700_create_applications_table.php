@@ -28,7 +28,7 @@ return new class extends Migration
             $table->index('department_id');
 
             // Optional association to a trainee record (nullable for public form submissions)
-            $table->foreignId('trainee_id')->nullable()->constrained('trainees')->nullOnDelete();
+            $table->foreignIdFor('trainee_id')->nullable()->constrained('trainees')->nullOnDelete();
 
             // Application lifecycle
             $table->date('start_date')->nullable();
