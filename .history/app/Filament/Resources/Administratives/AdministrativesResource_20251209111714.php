@@ -6,7 +6,6 @@ use App\Filament\Resources\Administratives\Pages\CreateAdministratives;
 use App\Filament\Resources\Administratives\Pages\EditAdministratives;
 use App\Filament\Resources\Administratives\Pages\ListAdministratives;
 use App\Filament\Resources\Administratives\Pages\ViewAdministratives;
-use App\Filament\Resources\Administratives\RelationManagers\DepartmentsRelationManager;
 use App\Filament\Resources\Administratives\Schemas\AdministrativesForm;
 use App\Filament\Resources\Administratives\Schemas\AdministrativesInfolist;
 use App\Filament\Resources\Administratives\Tables\AdministrativesTable;
@@ -27,7 +26,9 @@ class AdministrativesResource extends Resource
 
     public static function form(Schema $schema): Schema
     {
-        return AdministrativesForm::configure($schema);
+        return AdministrativesForm::configure($schema)
+
+        ;
     }
 
     public static function infolist(Schema $schema): Schema
@@ -38,9 +39,10 @@ class AdministrativesResource extends Resource
     public static function table(Table $table): Table
     {
 
-        return AdministrativesTable::configure($table);
+        return AdministrativesTable::configure($table)
+            ;
     }
-    // Arabic labels
+      // Arabic labels
     protected static ?string $modelLabel = 'الدائرة';
     protected static ?string $pluralModelLabel = 'الدائرة';
     protected static ?string $navigationLabel = 'الدائرة';
@@ -49,7 +51,7 @@ class AdministrativesResource extends Resource
     public static function getRelations(): array
     {
         return [
-            DepartmentsRelationManager::class,
+            //
         ];
     }
 

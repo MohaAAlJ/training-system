@@ -6,7 +6,6 @@ use App\Filament\Resources\Administratives\Pages\CreateAdministratives;
 use App\Filament\Resources\Administratives\Pages\EditAdministratives;
 use App\Filament\Resources\Administratives\Pages\ListAdministratives;
 use App\Filament\Resources\Administratives\Pages\ViewAdministratives;
-use App\Filament\Resources\Administratives\RelationManagers\DepartmentsRelationManager;
 use App\Filament\Resources\Administratives\Schemas\AdministrativesForm;
 use App\Filament\Resources\Administratives\Schemas\AdministrativesInfolist;
 use App\Filament\Resources\Administratives\Tables\AdministrativesTable;
@@ -49,7 +48,7 @@ class AdministrativesResource extends Resource
     public static function getRelations(): array
     {
         return [
-            DepartmentsRelationManager::class,
+            AdministrativeResource::getRelations()
         ];
     }
 

@@ -6,7 +6,6 @@ use App\Filament\Resources\Administratives\Pages\CreateAdministratives;
 use App\Filament\Resources\Administratives\Pages\EditAdministratives;
 use App\Filament\Resources\Administratives\Pages\ListAdministratives;
 use App\Filament\Resources\Administratives\Pages\ViewAdministratives;
-use App\Filament\Resources\Administratives\RelationManagers\DepartmentsRelationManager;
 use App\Filament\Resources\Administratives\Schemas\AdministrativesForm;
 use App\Filament\Resources\Administratives\Schemas\AdministrativesInfolist;
 use App\Filament\Resources\Administratives\Tables\AdministrativesTable;
@@ -18,6 +17,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+
 
 class AdministrativesResource extends Resource
 {
@@ -49,7 +49,7 @@ class AdministrativesResource extends Resource
     public static function getRelations(): array
     {
         return [
-            DepartmentsRelationManager::class,
+            AdministrativeResource::getRelations()
         ];
     }
 

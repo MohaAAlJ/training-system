@@ -6,7 +6,6 @@ use App\Filament\Resources\Trainees\Pages\CreateTrainees;
 use App\Filament\Resources\Trainees\Pages\EditTrainees;
 use App\Filament\Resources\Trainees\Pages\ListTrainees;
 use App\Filament\Resources\Trainees\Pages\ViewTrainees;
-use App\Filament\Resources\Trainees\RelationManagers\ApplicationsRelationManager;
 use App\Filament\Resources\Trainees\Schemas\TraineesForm;
 use App\Filament\Resources\Trainees\Schemas\TraineesInfolist;
 use App\Filament\Resources\Trainees\Tables\TraineesTable;
@@ -49,7 +48,7 @@ class TraineesResource extends Resource
     public static function getRelations(): array
     {
         return [
-            ApplicationsRelationManager::class,
+            ::class,
         ];
     }
 
