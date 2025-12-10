@@ -5,10 +5,10 @@ namespace App\Filament\Resources\Applications\Schemas;
 use App\Models\Departments;
 use App\Models\Trainees;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Schema;
 
@@ -80,21 +80,28 @@ class ApplicationsForm
                             ->label('الحالة')
                             ->options([
                                 'pending' => 'قيد الانتظار',
-                                'approved' => 'مقبول',
+                                'active' => 'مقبول',
                                 'rejected' => 'مرفوض',
                                 'completed' => 'مكتمل',
+                                'cancelled' => 'ملغي',
                             ])
                             ->default('pending')
-                            ->required(),
+                            ->required()
+                            ->live()
+                            ->afterStateUpdated(function ($state, $set) {
+                                // Auto-fill accepted_at when status changes to active
+                                if ($state === 'active') {
+                                    $set('accepted_at', now());
+                                }
+                            }),
                     ])->columns(2),
 
                 Fieldset::make('المستندات والملاحظات')
                     ->schema([
-                        FileUpload::make('letter_image_path')
+                        SpatieMediaLibraryFileUpload::make('application_letter')
                             ->label('صورة خطاب التدريب')
+                            ->collection('application_letter')
                             ->image()
-                            ->directory('application-letters')
-                            ->maxSize(2048)
                             ->columnSpanFull(),
                         TextInput::make('tags')
                             ->label('الوسوم')
@@ -103,7 +110,7 @@ class ApplicationsForm
                         DatePicker::make('accepted_at')
                             ->label('تاريخ القبول')
                             ->native(false)
-                            ->visible(fn ($get) => $get('status') === 'approved'),
+                            ->visible(fn ($get) => $get('status') === 'active'),
                     ])->columns(1),
             ]);
     }

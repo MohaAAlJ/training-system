@@ -4,10 +4,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
-class Applications extends Model
+class Applications extends Model implements HasMedia
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, InteractsWithMedia;
 
     protected $table = 'applications';
     protected $fillable = [
@@ -20,7 +22,6 @@ class Applications extends Model
         'start_date',
         'end_date',
         'status',
-        'letter_image_path',
         'accepted_at',
         'tags',
         'slug',
@@ -32,6 +33,15 @@ class Applications extends Model
         'status' => 'string',
         'training_hours' => 'integer',
     ];
+
+    /**
+     * Register media collections for Spatie Media Library
+     */
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('application_letter')
+            ->singleFile();
+    }
 
     public function trainee()
     {

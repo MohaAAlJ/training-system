@@ -43,7 +43,7 @@ return new class extends Migration
             $table->date('start_date')->nullable();
             $table->date('end_date')->nullable();
             $table->enum('status', ['pending', 'active', 'rejected', 'completed', 'cancelled'])->default('pending');
-            $table->string('letter_image_path')->nullable();
+            // Note: application_letter is handled by Spatie Media Library (media table)
             $table->dateTime('accepted_at')->nullable();
             $table->string('tags')->nullable();
 

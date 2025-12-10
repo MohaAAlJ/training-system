@@ -54,16 +54,18 @@ class ApplicationsTable
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
                         'pending' => 'warning',
-                        'approved' => 'success',
+                        'active' => 'success',
                         'rejected' => 'danger',
                         'completed' => 'info',
+                        'cancelled' => 'gray',
                         default => 'gray',
                     })
                     ->formatStateUsing(fn (string $state): string => match ($state) {
                         'pending' => 'قيد الانتظار',
-                        'approved' => 'مقبول',
+                        'active' => 'مقبول',
                         'rejected' => 'مرفوض',
                         'completed' => 'مكتمل',
+                        'cancelled' => 'ملغي',
                         default => $state,
                     }),
                 TextColumn::make('duration')
@@ -90,9 +92,10 @@ class ApplicationsTable
                     ->label('الحالة')
                     ->options([
                         'pending' => 'قيد الانتظار',
-                        'approved' => 'مقبول',
+                        'active' => 'مقبول',
                         'rejected' => 'مرفوض',
                         'completed' => 'مكتمل',
+                        'cancelled' => 'ملغي',
                     ]),
                 SelectFilter::make('department_id')
                     ->label('القسم')
