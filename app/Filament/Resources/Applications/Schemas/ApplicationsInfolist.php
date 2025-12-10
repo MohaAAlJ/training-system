@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Applications\Schemas;
 
 use Filament\Infolists\Components\TextEntry;
-use Filament\Infolists\Components\SpatieMediaLibraryImageEntry;
+use Filament\Infolists\Components\ImageEntry;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
@@ -85,9 +85,9 @@ class ApplicationsInfolist
                     ]),
                 Section::make('المستندات')
                     ->schema([
-                        SpatieMediaLibraryImageEntry::make('application_letter')
+                        ImageEntry::make('application_letter')
                             ->label('صورة خطاب التدريب')
-                            ->collection('application_letter'),
+                            ->disk('public'),
                     ]),
             ]);
     }

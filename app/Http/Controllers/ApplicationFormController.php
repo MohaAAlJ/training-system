@@ -168,12 +168,12 @@ class ApplicationFormController extends Controller
 
         $slug = Str::slug($validated['full_name'] . '-' . now()->timestamp);
 
-        // Store uploaded file temporarily for Spatie Media Library
-        $letterFile = $request->file('letter_file');
+        // Get the uploaded file (will be renamed after we have IDs)
+        $uploadedFile = $request->file('letter_file');
 
         try {
             // Use database transaction to ensure both trainee and application save together
-            $result = DB::transaction(function () use ($validated, $dobFormatted, $slug, $letterFile, $request) {
+            $result = DB::transaction(function () use ($validated, $dobFormatted, $slug, $uploadedFile) {
 
                 // Step 1: Create or update trainee record
                 // Use updateOrCreate to handle case where trainee with same national_id already exists
@@ -189,7 +189,7 @@ class ApplicationFormController extends Controller
                     ]
                 );
 
-                // Step 2: Create application record linked to the trainee
+                // Step 2: Create application record linked to the trainee (without letter path first)
                 $application = Applications::create([
                     'trainee_id' => $trainee->id,
                     'department_id' => $validated['department_id'],
@@ -201,10 +201,15 @@ class ApplicationFormController extends Controller
                     'slug' => $slug,
                 ]);
 
-                // Step 3: Add media using Spatie Media Library
-                if ($letterFile) {
-                    $application->addMedia($letterFile)
-                        ->toMediaCollection('application_letter');
+                // Step 3: Upload file with custom name: {application_id}_{trainee_id}.{extension}
+                $letterPath = null;
+                if ($uploadedFile) {
+                    $extension = $uploadedFile->getClientOriginalExtension();
+                    $customFileName = "{$application->id}_{$trainee->id}.{$extension}";
+                    $letterPath = $uploadedFile->storeAs('application-letters', $customFileName, 'public');
+
+                    // Update the application with the file path
+                    $application->update(['application_letter' => $letterPath]);
                 }
 
                 return [

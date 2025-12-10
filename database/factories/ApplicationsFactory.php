@@ -63,8 +63,7 @@ class ApplicationsFactory extends Factory
             'status' => $status,
             'letter_image_path' => null,
             'accepted_at' => $status === 'active' ? fake()->dateTimeBetween('-1 month', 'now') : null,
-            'tags' => fake()->randomElement([null, implode(',', fake()->randomElements($tags, rand(1, 3)))]),
-            'slug' => Str::slug($trainee->full_name) . '-' . Str::slug($department->name_location) . '-' . uniqid(),
+            'tags' => fake()->randomElement([null, implode(',', fake()->randomElements($tags, fake()->numberBetween(1, 3)))]),
         ];
     }
 

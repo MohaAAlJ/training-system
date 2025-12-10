@@ -5,10 +5,10 @@ namespace App\Filament\Resources\Applications\Schemas;
 use App\Models\Departments;
 use App\Models\Trainees;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Schema;
 
@@ -98,10 +98,18 @@ class ApplicationsForm
 
                 Fieldset::make('المستندات والملاحظات')
                     ->schema([
-                        SpatieMediaLibraryFileUpload::make('application_letter')
+                        FileUpload::make('application_letter')
                             ->label('صورة خطاب التدريب')
-                            ->collection('application_letter')
                             ->image()
+                            ->disk('public')
+                            ->directory('application-letters')
+                            ->visibility('public')
+                            ->getUploadedFileNameForStorageUsing(function ($file, $get): string {
+                                $extension = $file->getClientOriginalExtension();
+                                $applicationId = $get('id') ?? 'new';
+                                $traineeId = $get('trainee_id') ?? 'unknown';
+                                return "{$applicationId}_{$traineeId}.{$extension}";
+                            })
                             ->columnSpanFull(),
                         TextInput::make('tags')
                             ->label('الوسوم')
