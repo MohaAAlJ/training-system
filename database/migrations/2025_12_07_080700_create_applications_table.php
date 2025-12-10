@@ -47,9 +47,6 @@ return new class extends Migration
             $table->dateTime('accepted_at')->nullable();
             $table->string('tags')->nullable();
 
-            // Slug for public lookup/slugged endpoint
-            $table->string('slug')->unique();
-
             $table->timestamps();
             $table->softDeletes();
         });

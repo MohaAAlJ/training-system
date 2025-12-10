@@ -11,7 +11,6 @@ use App\Models\Trainees;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 
 class ApplicationFormController extends Controller
 {
@@ -166,14 +165,12 @@ class ApplicationFormController extends Controller
         $dobParts = explode('/', $validated['dob']);
         $dobFormatted = "{$dobParts[2]}-{$dobParts[1]}-{$dobParts[0]}";
 
-        $slug = Str::slug($validated['full_name'] . '-' . now()->timestamp);
-
         // Get the uploaded file (will be renamed after we have IDs)
         $uploadedFile = $request->file('letter_file');
 
         try {
             // Use database transaction to ensure both trainee and application save together
-            $result = DB::transaction(function () use ($validated, $dobFormatted, $slug, $uploadedFile) {
+            $result = DB::transaction(function () use ($validated, $dobFormatted, $uploadedFile) {
 
                 // Step 1: Create or update trainee record
                 // Use updateOrCreate to handle case where trainee with same national_id already exists
@@ -198,7 +195,6 @@ class ApplicationFormController extends Controller
                     'training_hours' => $validated['training_hours'],
                     'training_type' => $validated['training_type'],
                     'status' => 'pending',
-                    'slug' => $slug,
                 ]);
 
                 // Step 3: Upload file with custom name: {application_id}_{trainee_id}.{extension}
