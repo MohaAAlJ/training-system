@@ -100,11 +100,12 @@ class ApplicationsRelationManager extends RelationManager
 
                 Fieldset::make('المستندات والملاحظات')
                     ->schema([
-                        FileUpload::make('letter_image_path')
+                        FileUpload::make('application_letter')
                             ->label('صورة خطاب التدريب')
                             ->image()
-                            ->directory('application-letters')
-                            ->maxSize(2048)
+                            ->disk('public')
+                            ->directory('1')
+                            ->visibility('public')
                             ->columnSpanFull(),
                         TextInput::make('tags')
                             ->label('الوسوم')

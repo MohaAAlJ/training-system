@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Applications\Schemas;
 
 use Filament\Infolists\Components\TextEntry;
-use Filament\Infolists\Components\ImageEntry;
+use Filament\Infolists\Components\SpatieMediaLibraryImageEntry;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
@@ -57,16 +57,18 @@ class ApplicationsInfolist
                             ->badge()
                             ->color(fn (string $state): string => match ($state) {
                                 'pending' => 'warning',
-                                'approved' => 'success',
+                                'active' => 'success',
                                 'rejected' => 'danger',
                                 'completed' => 'info',
+                                'cancelled' => 'gray',
                                 default => 'gray',
                             })
                             ->formatStateUsing(fn (string $state): string => match ($state) {
                                 'pending' => 'قيد الانتظار',
-                                'approved' => 'مقبول',
+                                'active' => 'مقبول',
                                 'rejected' => 'مرفوض',
                                 'completed' => 'مكتمل',
+                                'cancelled' => 'ملغي',
                                 default => $state,
                             }),
                         TextEntry::make('start_date')
@@ -83,8 +85,9 @@ class ApplicationsInfolist
                     ]),
                 Section::make('المستندات')
                     ->schema([
-                        ImageEntry::make('letter_image_path')
-                            ->label('صورة خطاب التدريب'),
+                        SpatieMediaLibraryImageEntry::make('application_letter')
+                            ->label('صورة خطاب التدريب')
+                            ->collection('application_letter'),
                     ]),
             ]);
     }

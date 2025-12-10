@@ -168,14 +168,12 @@ class ApplicationFormController extends Controller
 
         $slug = Str::slug($validated['full_name'] . '-' . now()->timestamp);
 
-        $letterPath = null;
-        if ($request->hasFile('letter_file')) {
-            $letterPath = $request->file('letter_file')->store('uploads', 'public');
-        }
+        // Store uploaded file temporarily for Spatie Media Library
+        $letterFile = $request->file('letter_file');
 
         try {
             // Use database transaction to ensure both trainee and application save together
-            $result = DB::transaction(function () use ($validated, $dobFormatted, $slug, $letterPath) {
+            $result = DB::transaction(function () use ($validated, $dobFormatted, $slug, $letterFile, $request) {
 
                 // Step 1: Create or update trainee record
                 // Use updateOrCreate to handle case where trainee with same national_id already exists
@@ -199,10 +197,15 @@ class ApplicationFormController extends Controller
                     'street' => $validated['street'],
                     'training_hours' => $validated['training_hours'],
                     'training_type' => $validated['training_type'],
-                    'letter_image_path' => $letterPath,
                     'status' => 'pending',
                     'slug' => $slug,
                 ]);
+
+                // Step 3: Add media using Spatie Media Library
+                if ($letterFile) {
+                    $application->addMedia($letterFile)
+                        ->toMediaCollection('application_letter');
+                }
 
                 return [
                     'trainee' => $trainee,
@@ -218,10 +221,7 @@ class ApplicationFormController extends Controller
 
         } catch (\Exception $e) {
             // If there was an error, the transaction will be rolled back
-            // Delete uploaded file if it exists since the transaction failed
-            if ($letterPath) {
-                Storage::disk('public')->delete($letterPath);
-            }
+            // Spatie Media Library handles cleanup automatically
 
             return response()->json([
                 'message' => 'حدث خطأ أثناء حفظ الطلب. يرجى المحاولة مرة أخرى.',
