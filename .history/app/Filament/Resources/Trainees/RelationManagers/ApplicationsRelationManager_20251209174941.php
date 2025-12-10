@@ -131,7 +131,8 @@ class ApplicationsRelationManager extends RelationManager
                     ->dateTime('Y-m-d')
                     ->sortable(),
                 TextColumn::make('tags')
-                    ->label('الوسوم'),
+                    ->label('الوسوم')
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('created_at')
                     ->label('تاريخ الإنشاء')
                     ->dateTime('Y-m-d')
