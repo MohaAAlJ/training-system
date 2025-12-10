@@ -124,14 +124,16 @@ class ApplicationsRelationManager extends RelationManager
                 TextColumn::make('duration')
                     ->label('مدة التدريب (أيام)')
                     ->getStateUsing(fn($record) => $record->start_date && $record->end_date ? $record->end_date->diffInDays($record->start_date) : '-')
-                    ->sortable(query: fn(Builder $query, string $direction) => $query->orderBy('end_date', $direction)),
+                    ->sortable(query: fn(Builder $query, string $direction) => $query->orderBy('end_date', $direction))
                     // ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('accepted_at')
                     ->label('تاريخ القبول')
                     ->dateTime('Y-m-d')
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('tags')
-                    ->label('الوسوم'),
+                    ->label('الوسوم')
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('created_at')
                     ->label('تاريخ الإنشاء')
                     ->dateTime('Y-m-d')
