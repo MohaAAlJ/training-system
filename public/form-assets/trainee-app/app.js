@@ -14,61 +14,7 @@ const endpoints = {
 };
 
 // بيانات بديلة مؤقتة (أزلها عند توفر الـ API)
-const fallback = {
-    addresses: [
-        { id: "riyadh", name: "الرياض" },
-        { id: "jeddah", name: "جدة" },
-        { id: "dammam", name: "الدمام" },
-    ],
-    institutions: [
-        { id: 1, name: "جامعة الملك سعود" },
-        { id: 2, name: "جامعة الملك عبدالعزيز" },
-    ],
-    majors: [
-        { id: 1, name: "التمريض", institution_id: 1 },
-        { id: 2, name: "تقنية المعلومات", institution_id: 1 },
-        { id: 3, name: "الأشعة", institution_id: 2 },
-    ],
-    trainingFocus: [
-        { id: "Uni", name: "تدريب جامعي" },
-        { id: "minis", name: "مزاولة مهنة" },
-    ],
-    administratives: [
-        { id: 10, name: "مديرية الخدمات الطبية", remaining: 5 },
-        { id: 11, name: "مديرية تقنية المعلومات", remaining: 0 },
-        { id: 12, name: "مديرية التمريض", remaining: 2 },
-    ],
-    departments: [
-        {
-            id: 100,
-            name: "قسم الطوارئ - المبنى الرئيسي",
-            administrative_id: 10,
-            major_ids: [1],
-            remaining: 3,
-        },
-        {
-            id: 101,
-            name: "قسم العناية المركزة - الطابق الثاني",
-            administrative_id: 10,
-            major_ids: [1],
-            remaining: 0,
-        },
-        {
-            id: 102,
-            name: "قسم التطبيقات - تقنية المعلومات",
-            administrative_id: 11,
-            major_ids: [2],
-            remaining: 0,
-        },
-        {
-            id: 103,
-            name: "قسم الأشعة - الدور الأرضي",
-            administrative_id: 12,
-            major_ids: [3],
-            remaining: 1,
-        },
-    ],
-};
+const fallback = {};
 
 const form = document.getElementById("applicationForm");
 const message = document.getElementById("formMessage");

@@ -57,7 +57,23 @@
                     <legend>
                         <span class="legend-icon">👤</span>البيانات الشخصية
                     </legend>
+
                     <div class="grid two">
+                        <label class="field">
+                            <span>رقم الهوية *</span>
+                            <input
+                                id="national_id"
+                                name="national_id"
+                                type="text"
+                                minlength="9"
+                                maxlength="9"
+                                pattern="\d{9}"
+                                inputmode="numeric"
+                                oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                                required
+                            />
+                            <small class="note">9 أرقام</small>
+                        </label>
                         <label class="field">
                             <span>الاسم الكامل *</span>
                             <input
@@ -83,7 +99,7 @@
                                 title="صيغة التاريخ dd/mm/yyyy"
                             />
                         </label>
-                        <label class="field">
+                        <!-- <label class="field">
                             <span>رقم الهوية *</span>
                             <input
                                 id="national_id"
@@ -97,7 +113,7 @@
                                 required
                             />
                             <small class="note">9 أرقام</small>
-                        </label>
+                        </label> -->
                         <label class="field">
                             <span>رقم الجوال *</span>
                             <input
