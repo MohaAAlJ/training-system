@@ -242,6 +242,7 @@
                                 </option>
                             </select>
                         </label>
+                        <!-- File attachment hidden for now
                         <label class="field">
                             <span>ارفع ملف <small class="note">(اختياري)</small></span>
                             <input
@@ -252,6 +253,7 @@
                             />
                             <small class="note">pdf أو صورة بحد أقصى 2MB</small>
                         </label>
+                        -->
                     </div>
                 </fieldset>
 

@@ -194,7 +194,7 @@ class ApplicationFormController extends Controller
                     'street' => $validated['street'],
                     'training_hours' => $validated['training_hours'],
                     'training_type' => $validated['training_type'],
-                    'status' => 'pending',
+                    'status' => 'waiting',
                 ]);
 
                 // Step 3: Upload file with custom name: {application_id}_{trainee_id}.{extension}
