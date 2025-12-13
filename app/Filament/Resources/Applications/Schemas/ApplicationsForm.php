@@ -79,13 +79,15 @@ class ApplicationsForm
                         Select::make('status')
                             ->label('الحالة')
                             ->options([
-                                'waiting' => 'طلب جديد',
-                                'pending' => 'قبول جامعة',
+                                'pending' => 'طلب جديد',
+                                'waiting' => 'استيعاب',
+                                'approved' => 'قبول جامعة',
                                 'active' => 'بدء العمل',
                                 'completed' => 'انتهى',
                                 'rejected' => 'مرفوض',
+                                'paused' => 'منقطع',
                             ])
-                            ->default('waiting')
+                            ->default('pending')
                             ->required()
                             ->live()
                             ->afterStateUpdated(function ($state, $set) {

@@ -56,19 +56,23 @@ class ApplicationsInfolist
                             ->label('الحالة')
                             ->badge()
                             ->color(fn (string $state): string => match ($state) {
-                                'waiting' => 'info',
-                                'pending' => 'warning',
+                                'pending' => 'info',
+                                'waiting' => 'warning',
+                                'approved' => 'primary',
                                 'active' => 'success',
                                 'completed' => 'gray',
                                 'rejected' => 'danger',
+                                'paused' => 'warning',
                                 default => 'gray',
                             })
                             ->formatStateUsing(fn (string $state): string => match ($state) {
-                                'waiting' => 'طلب جديد',
-                                'pending' => 'قبول جامعة',
+                                'pending' => 'طلب جديد',
+                                'waiting' => 'استيعاب',
+                                'approved' => 'قبول جامعة',
                                 'active' => 'بدء العمل',
                                 'completed' => 'انتهى',
                                 'rejected' => 'مرفوض',
+                                'paused' => 'منقطع',
                                 default => $state,
                             }),
                         TextEntry::make('start_date')
