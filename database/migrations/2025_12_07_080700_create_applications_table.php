@@ -42,7 +42,7 @@ return new class extends Migration
             // Application lifecycle
             $table->date('start_date')->nullable();
             $table->date('end_date')->nullable();
-            $table->enum('status', ['waiting', 'pending', 'active', 'completed', 'rejected'])->default('waiting');
+            $table->enum('status', ['pending', 'waiting', 'approved', 'active', 'completed', 'rejected', 'paused'])->default('pending');
             $table->string('application_letter')->nullable();
             $table->dateTime('accepted_at')->nullable();
             $table->string('tags')->nullable();

@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -24,11 +25,12 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake('ar_SA')->name(), 
+            'name' => fake('ar_SA')->name(),
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => Hash::make('password'),
             'status' => fake()->randomElement(['active', 'inactive', 'banned']),
+            'role' => User::ROLE_ADMIN, // Default to admin for seeding
             'remember_token' => Str::random(10),
         ];
     }
@@ -40,6 +42,56 @@ class UserFactory extends Factory
     {
         return $this->state(fn(array $attributes) => [
             'email_verified_at' => null,
+        ]);
+    }
+
+    /**
+     * Set user role to Admin
+     */
+    public function admin(): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'role' => User::ROLE_ADMIN,
+        ]);
+    }
+
+    /**
+     * Set user role to Administrative
+     */
+    public function administrative(): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'role' => User::ROLE_ADMINISTRATIVE,
+        ]);
+    }
+
+    /**
+     * Set user role to Department
+     */
+    public function department(): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'role' => User::ROLE_DEPARTMENT,
+        ]);
+    }
+
+    /**
+     * Set user role to MOH
+     */
+    public function moh(): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'role' => User::ROLE_MOH,
+        ]);
+    }
+
+    /**
+     * Set user role to Institution
+     */
+    public function institution(): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'role' => User::ROLE_INSTITUTION,
         ]);
     }
 }
