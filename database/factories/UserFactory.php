@@ -12,41 +12,23 @@ use App\Helpers\Constans;
  */
 class UserFactory extends Factory
 {
-    /**
-     * The current password being used by the factory.
-     */
-    protected static ?string $password;
-
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
         return [
-            'name' => fake('ar_SA')->name(),
-            'email' => fake()->unique()->safeEmail(),
+            'name' => $this->faker->name(),
+            'email' => $this->faker->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => Hash::make('password'),
             'status' => fake()->randomElement(['active', 'inactive', 'banned']),
             'role' => Constans::ROLE_ADMIN, // Default to admin for seeding
             'remember_token' => Str::random(10),
+            'status' => 'active',
+            'role' => User::ROLE_MOH, 
         ];
     }
 
     /**
-     * Indicate that the model's email address should be unverified.
-     */
-    public function unverified(): static
-    {
-        return $this->state(fn(array $attributes) => [
-            'email_verified_at' => null,
-        ]);
-    }
-
-    /**
-     * Set user role to Admin
+     * حالة لإنشاء مدير نظام
      */
     public function admin(): static
     {
@@ -88,7 +70,7 @@ class UserFactory extends Factory
     /**
      * Set user role to Institution
      */
-    public function institution(): static
+    public function institutionSupervisor(): static
     {
         return $this->state(fn(array $attributes) => [
             'role' => Constans::ROLE_INSTITUTION,

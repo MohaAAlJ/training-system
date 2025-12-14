@@ -6,7 +6,7 @@ use App\Models\College;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\DB;
 
-class TraineesFactory extends Factory 
+class TraineesFactory extends Factory // تأكد أن الاسم يطابق ملفك (TraineeFactory أو TraineesFactory)
 {
     public function definition(): array
     {

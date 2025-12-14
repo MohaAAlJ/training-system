@@ -17,7 +17,7 @@ return new class extends Migration
             $table->id();
 
             // Basic Info
-            $table->string('national_id')->unique();
+            
             $table->foreignId('college_id')->constrained()->cascadeOnDelete();
             $table->string('full_name');
             $table->string('phone_number');
