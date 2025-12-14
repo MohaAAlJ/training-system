@@ -17,7 +17,7 @@ return new class extends Migration
 
             // Administrative Info
             $table->string('title'); // Administrative title/role
-            $table->boolean('is_medical')->default(false);
+            $table->boolean('is_medical')->default(false)->after('title');
             $table->string('head_of_administrative'); // Head of this administrative unit
 
             // Foreign Keys

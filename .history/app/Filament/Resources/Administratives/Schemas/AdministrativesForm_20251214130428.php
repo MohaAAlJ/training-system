@@ -2,11 +2,11 @@
 
 namespace App\Filament\Resources\Administratives\Schemas;
 
+use Filament\Forms\Components\Fieldset;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 use Filament\Forms\Components\Toggle;
-use Filament\Schemas\Components\Section;
 
 class AdministrativesForm
 {
@@ -14,7 +14,7 @@ class AdministrativesForm
     {
         return $schema
             ->components([
-                Section::make('البيانات الأساسية')
+                Fieldset::make('البيانات الأساسية')
                     ->columns(2)
                     ->schema([
                         TextInput::make('title')
@@ -23,31 +23,26 @@ class AdministrativesForm
                             ->required()
                             ->maxLength(255)
                             ->columnSpanFull(),
+                        TextInput::make('head_of_administrative')
+                            ->label('رئيس الإدارة')
+                            ->placeholder('أدخل اسم رئيس الإدارة')
+                            ->required()
+                            ->maxLength(255),
                         Toggle::make('is_medical')
                             ->label('إدارة طبية')
                             ->helperText('حدد إذا كانت هذه إدارة طبية أم لا')
                             ->onColor('success')
-                            ->offColor('danger')
-                            ->live(),
+                            ->offColor('danger'),
                     ]),
-                Section::make('المستخدمون المسؤولون')
-                    ->columns(2)
+                Fieldset::make('المستخدم المسؤول')
                     ->schema([
                         Select::make('user_id')
-                            ->label('رئيس الإدارة')
-                            ->helperText('اختر رئيس الإدارة')
+                            ->label('المستخدم المسؤول')
+                            ->helperText('اختر المستخدم الذي سيكون مسؤولاً عن هذه الإدارة')
                             ->relationship('user', 'name')
                             ->searchable()
                             ->preload()
                             ->required(),
-                        Select::make('medical_head_user_id')
-                            ->label('رئيس الإدارة الطبية')
-                            ->helperText('اختر رئيس الإدارة الطبية')
-                            ->relationship('medicalHead', 'name')
-                            ->searchable()
-                            ->preload()
-                            ->visible(fn($get) => $get('is_medical'))
-                            ->required(fn($get) => $get('is_medical')),
                     ]),
             ]);
     }

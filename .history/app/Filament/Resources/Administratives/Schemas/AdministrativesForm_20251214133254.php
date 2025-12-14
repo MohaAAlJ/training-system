@@ -27,8 +27,7 @@ class AdministrativesForm
                             ->label('إدارة طبية')
                             ->helperText('حدد إذا كانت هذه إدارة طبية أم لا')
                             ->onColor('success')
-                            ->offColor('danger')
-                            ->live(),
+                            ->offColor('danger'),
                     ]),
                 Section::make('المستخدمون المسؤولون')
                     ->columns(2)

@@ -13,7 +13,7 @@ class Administratives extends Model
     protected $fillable = [
         'title',
         'user_id',
-        'medical_head_user_id',
+        'head_of_administrative',
         'is_medical',
     ];
     protected $casts = [
@@ -24,11 +24,6 @@ class Administratives extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
-    }
-
-    public function medicalHead()
-    {
-        return $this->belongsTo(User::class, 'medical_head_user_id');
     }
 
     public function departments()
