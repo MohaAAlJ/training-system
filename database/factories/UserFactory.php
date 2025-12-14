@@ -6,7 +6,10 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
-
+use App\Helpers\Constans;
+/**
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\User>
+ */
 class UserFactory extends Factory
 {
     public function definition(): array
@@ -15,7 +18,9 @@ class UserFactory extends Factory
             'name' => $this->faker->name(),
             'email' => $this->faker->unique()->safeEmail(),
             'email_verified_at' => now(),
-            'password' => Hash::make('password'), 
+            'password' => Hash::make('password'),
+            'status' => fake()->randomElement(['active', 'inactive', 'banned']),
+            'role' => Constans::ROLE_ADMIN, // Default to admin for seeding
             'remember_token' => Str::random(10),
             'status' => 'active',
             'role' => User::ROLE_MOH, 
@@ -27,19 +32,48 @@ class UserFactory extends Factory
      */
     public function admin(): static
     {
-        return $this->state(fn (array $attributes) => [
-            'role' => User::ROLE_ADMIN,
-            'email' => 'admin@system.com',
+        return $this->state(fn(array $attributes) => [
+            'role' => Constans::ROLE_ADMIN,
         ]);
     }
 
     /**
-     * حالة لإنشاء مشرف كلية/جامعة
+     * Set user role to Administrative
+     */
+    public function administrative(): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'role' => Constans::ROLE_ADMINISTRATIVE,
+        ]);
+    }
+
+    /**
+     * Set user role to Department
+     */
+    public function department(): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'role' => Constans::ROLE_DEPARTMENT,
+        ]);
+    }
+
+    /**
+     * Set user role to MOH
+     */
+    public function moh(): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'role' => Constans::ROLE_MOH,
+        ]);
+    }
+
+    /**
+     * Set user role to Institution
      */
     public function institutionSupervisor(): static
     {
-        return $this->state(fn (array $attributes) => [
-            'role' => User::ROLE_INSTITUTION,
+        return $this->state(fn(array $attributes) => [
+            'role' => Constans::ROLE_INSTITUTION,
         ]);
     }
 }

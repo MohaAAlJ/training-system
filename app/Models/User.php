@@ -7,37 +7,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
-
+use app\Helpers\Constans;
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, SoftDeletes;
 
-    /**
-     * Role constants - stored as integers in database for easy extension
-     */
-    public const ROLE_ADMIN = 1;
-    public const ROLE_ADMINISTRATIVE = 2;
-    public const ROLE_DEPARTMENT = 3;
-    public const ROLE_MOH = 4;
-    public const ROLE_INSTITUTION = 5;
+    // Role constants and labels moved to \App\Helpers\Constans
 
-    /**
-     * Role labels in Arabic
-     */
-    public const ROLE_LABELS = [
-        self::ROLE_ADMIN => 'مدير النظام',
-        self::ROLE_ADMINISTRATIVE => 'إداري',
-        self::ROLE_DEPARTMENT => 'رئيس قسم',
-        self::ROLE_MOH => 'وزارة الصحة',
-        self::ROLE_INSTITUTION => 'مشرف كلية',
-    ];
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
         'name',
         'email',
@@ -51,7 +28,7 @@ class User extends Authenticatable
      */
     public function isAdmin(): bool
     {
-        return $this->role === self::ROLE_ADMIN;
+        return $this->role === Constans::ROLE_ADMIN;
     }
 
     /**
@@ -59,7 +36,7 @@ class User extends Authenticatable
      */
     public function isAdministrative(): bool
     {
-        return $this->role === self::ROLE_ADMINISTRATIVE;
+        return $this->role === Constans::ROLE_ADMINISTRATIVE;
     }
 
     /**
@@ -67,7 +44,7 @@ class User extends Authenticatable
      */
     public function isDepartment(): bool
     {
-        return $this->role === self::ROLE_DEPARTMENT;
+        return $this->role === Constans::ROLE_DEPARTMENT;
     }
 
     /**
@@ -75,7 +52,7 @@ class User extends Authenticatable
      */
     public function isMOH(): bool
     {
-        return $this->role === self::ROLE_MOH;
+        return $this->role === Constans::ROLE_MOH;
     }
 
     /**
@@ -83,7 +60,7 @@ class User extends Authenticatable
      */
     public function isInstitution(): bool
     {
-        return $this->role === self::ROLE_INSTITUTION;
+        return $this->role === Constans::ROLE_INSTITUTION;
     }
 
     /**
@@ -99,7 +76,7 @@ class User extends Authenticatable
      */
     public function getRoleLabelAttribute(): string
     {
-        return self::ROLE_LABELS[$this->role] ?? 'غير معروف';
+        return Constans::ROLE_LABELS[$this->role] ?? 'غير معروف';
     }
 
     public function departments()
