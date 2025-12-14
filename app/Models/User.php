@@ -13,31 +13,9 @@ class User extends Authenticatable
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, SoftDeletes;
 
-    /**
-     * Role constants - stored as integers in database for easy extension
-     */
-    public const ROLE_ADMIN = 1;
-    public const ROLE_ADMINISTRATIVE = 2;
-    public const ROLE_DEPARTMENT = 3;
-    public const ROLE_MOH = 4;
-    public const ROLE_INSTITUTION = 5;
 
-    /**
-     * Role labels in Arabic
-     */
-    public const ROLE_LABELS = [
-        self::ROLE_ADMIN => 'مدير النظام',
-        self::ROLE_ADMINISTRATIVE => 'إداري',
-        self::ROLE_DEPARTMENT => 'رئيس قسم',
-        self::ROLE_MOH => 'وزارة الصحة',
-        self::ROLE_INSTITUTION => 'مشرف جامعة',
-    ];
+    //moved to Constans.php
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
         'name',
         'email',
