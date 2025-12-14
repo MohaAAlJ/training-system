@@ -10,16 +10,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use app\Helpers\Constans;
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, SoftDeletes;
 
     // Role constants and labels moved to \App\Helpers\Constans
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
+
     protected $fillable = [
         'name',
         'email',
