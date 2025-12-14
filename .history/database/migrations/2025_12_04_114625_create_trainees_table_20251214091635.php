@@ -13,25 +13,31 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('institution_major', function (Blueprint $table) {
+        Schema::create('trainees', function (Blueprint $table) {
             $table->id();
 
-            // Foreign Keys
+            // Basic Info
+            $table->foreignId('college_id')->constrained()->cascadeOnDelete();
+            $table->string('full_name');
+            $table->string('phone_number');
+            $table->date('dob');
+            $table->string('address')->nullable();
+
             $table->foreignIdFor(Institution::class, 'institution_id')
+                ->nullable()
                 ->constrained()
-                ->cascadeOnDelete();
-            $table->index('institution_id');
+                ->nullOnDelete();
 
             $table->foreignIdFor(Major::class, 'major_id')
+                ->nullable()
                 ->constrained()
-                ->cascadeOnDelete();
+                ->nullOnDelete();
+
+            $table->index('institution_id');
             $table->index('major_id');
 
-            // Timestamps
             $table->timestamps();
-
-            // Prevent duplicates
-            $table->unique(['institution_id', 'major_id']);
+            $table->softDeletes();
         });
     }
 
@@ -40,6 +46,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('institution_major');
+        Schema::dropIfExists('trainees');
     }
 };

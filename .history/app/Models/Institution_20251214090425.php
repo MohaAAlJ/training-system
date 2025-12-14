@@ -31,13 +31,10 @@ class Institution extends Model
         return $this->hasMany(College::class);
     }
 
+    // إذا أردت الوصول للتخصصات عبر الكليات (HasManyThrough)
     public function majors() {
-        return $this->hasManyThrough(
-            Major::class, 
-            College::class,
-            'institution_id',  
-            'college_id'       
-        );
+        return $this->hasManyThrough(Major::class, College::class); 
+        // ملاحظة: هذا يتطلب تعديل بسيط إذا كنت تستخدم جدول وسيط
     }
 
     public function trainees(): HasMany

@@ -17,7 +17,7 @@ return new class extends Migration
             $table->id();
 
             // Basic Info
-            $table->foreignId('college_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('college_id')->constrained()->cascadeOnDelete(); // Marked as UK (Unique Key) in ERD
             $table->string('full_name');
             $table->string('phone_number');
             $table->date('dob');

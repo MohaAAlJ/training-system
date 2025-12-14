@@ -11,7 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::dropIfExists('institution_majors');
+        Schema::create('college_major', function (Blueprint $table) {
+            $table->id();
+            $table->timestamps();
+        });
     }
 
     /**
@@ -19,6 +22,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Cannot restore the table
+        Schema::dropIfExists('college_major');
     }
 };
