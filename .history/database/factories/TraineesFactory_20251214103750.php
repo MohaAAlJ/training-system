@@ -6,14 +6,16 @@ use App\Models\College;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\DB;
 
-class TraineesFactory extends Factory 
+class TraineeFactory extends Factory // تأكد أن الاسم يطابق ملفك (TraineeFactory أو TraineesFactory)
 {
     public function definition(): array
     {
-     
+        // 1. جلب رابط حقيقي موجود مسبقاً (تم إدخاله عبر RealDataSeeder)
+        // هذا يضمن أن الطالب يسجل في تخصص موجود فعلاً في تلك الكلية
         $realLink = DB::table('college_major')->inRandomOrder()->first();
 
         if (!$realLink) {
+            // حماية: في حال نسيت تشغيل RealDataSeeder
             throw new \Exception('Please run "php artisan db:seed --class=RealDataSeeder" first to populate majors.');
         }
 

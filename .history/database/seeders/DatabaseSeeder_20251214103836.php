@@ -8,7 +8,8 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
 {
-
+    // 1. أولاً: إدخال الهيكل الأكاديمي الحقيقي (جامعات - كليات - تخصصات)
+    // هذا السيدر هو الذي يحتوي المصفوفة الضخمة التي كتبناها سابقاً
     $this->call(RealDataSeeder::class); 
 
     $this->call([

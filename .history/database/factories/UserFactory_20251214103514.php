@@ -18,7 +18,7 @@ class UserFactory extends Factory
             'password' => Hash::make('password'), 
             'remember_token' => Str::random(10),
             'status' => 'active',
-            'role' => User::ROLE_MOH, 
+            'role' => User::ROLE_MOH, // افتراضياً موظف وزارة أو يمكنك جعله عشوائي
         ];
     }
 

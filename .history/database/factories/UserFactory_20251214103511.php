@@ -15,10 +15,10 @@ class UserFactory extends Factory
             'name' => $this->faker->name(),
             'email' => $this->faker->unique()->safeEmail(),
             'email_verified_at' => now(),
-            'password' => Hash::make('password'), 
+            'password' => Hash::make('password'), // كلمة مرور موحدة للتطوير
             'remember_token' => Str::random(10),
             'status' => 'active',
-            'role' => User::ROLE_MOH, 
+            'role' => User::ROLE_MOH, // افتراضياً موظف وزارة أو يمكنك جعله عشوائي
         ];
     }
 
