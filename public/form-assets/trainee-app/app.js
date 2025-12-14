@@ -4,6 +4,8 @@ const endpoints = {
     institutions: "/WelcomeForm/Form/api/institutions",
     majors: (institutionId) =>
         `/WelcomeForm/Form/api/majors?institution_id=${institutionId ?? ""}`,
+    majorColleges: (majorId) =>
+        `/WelcomeForm/Form/api/major-colleges?major_id=${majorId ?? ""}`,
     trainingFocus: "/WelcomeForm/Form/api/training-types",
     administratives: "/WelcomeForm/Form/api/administratives",
     departments: (administrativeId, majorId) =>
@@ -156,6 +158,31 @@ majorSelect.addEventListener("change", (e) => {
     if (administrativeSelect.value) {
         filterDepartments(administrativeSelect.value, e.target.value);
     }
+    // Auto-fill institution based on selected major (pick first linked college)
+    (async function () {
+        try {
+            const res = await fetch(endpoints.majorColleges(e.target.value));
+            if (!res.ok) return;
+            const data = await res.json();
+            if (Array.isArray(data) && data.length > 0) {
+                const first = data[0];
+                if (first.institution_id && institutionSelect) {
+                    institutionSelect.value = first.institution_id;
+                }
+                // set hidden college_id field to the first linked college id
+                const collegeInput = document.getElementById("college_id");
+                if (collegeInput) {
+                    collegeInput.value = first.id ?? "";
+                }
+            } else {
+                const collegeInput = document.getElementById("college_id");
+                if (collegeInput) collegeInput.value = "";
+            }
+        } catch (err) {
+            const collegeInput = document.getElementById("college_id");
+            if (collegeInput) collegeInput.value = "";
+        }
+    })();
 });
 
 // Handle DOB dropdowns - combine to dd/mm/yyyy format for the hidden field
@@ -223,9 +250,45 @@ if (letterFileInput) {
 form.addEventListener("submit", async (e) => {
     e.preventDefault();
     setMessage("جاري الإرسال...", "note");
+    // Ensure college_id is set. If missing, try to fetch from major-colleges endpoint.
+    const collegeInput = document.getElementById("college_id");
+    const majorId = majorSelect ? majorSelect.value : null;
+    if (collegeInput && (!collegeInput.value || collegeInput.value === "")) {
+        if (majorId) {
+            try {
+                const res = await fetch(endpoints.majorColleges(majorId));
+                if (res.ok) {
+                    const data = await res.json();
+                    if (Array.isArray(data) && data.length > 0) {
+                        collegeInput.value = data[0].id ?? "";
+                        if (data[0].institution_id && institutionSelect) {
+                            institutionSelect.value = data[0].institution_id;
+                        }
+                    }
+                }
+            } catch (err) {
+                // ignore and continue; server has a fallback too
+                console.warn(
+                    "Could not fetch college for major before submit",
+                    err
+                );
+            }
+        }
+    }
 
     const formData = new FormData(form);
     formData.append("status", "pending");
+
+    // Debug: log key fields
+    try {
+        console.log("Submitting form", {
+            national_id: formData.get("national_id"),
+            full_name: formData.get("full_name"),
+            major_id: formData.get("major_id"),
+            college_id: formData.get("college_id"),
+            institution_id: formData.get("institution_id"),
+        });
+    } catch (err) {}
 
     try {
         const res = await fetch(endpoints.submit, {
@@ -237,7 +300,11 @@ form.addEventListener("submit", async (e) => {
             },
         });
 
-        if (!res.ok) throw new Error("Submission failed");
+        if (!res.ok) {
+            const bodyText = await res.text();
+            console.error("Submission failed", res.status, bodyText);
+            throw new Error("Submission failed");
+        }
 
         const data = await res.json();
         setMessage("", "note"); // Clear the inline message

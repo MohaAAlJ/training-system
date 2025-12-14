@@ -141,7 +141,7 @@ class RealDataSeeder extends Seeder
 
                     foreach ($majorsList as $majorName) {
                         $majorCode = strtoupper(substr($majorName, 0, 2)) . '-' . hash('crc32', $majorName);
-                        
+
                         $major = Major::firstOrCreate(
                             ['name->ar' => $majorName],
                             [
@@ -150,7 +150,9 @@ class RealDataSeeder extends Seeder
                             ]
                         );
 
+                        // Attach major to college (college_major pivot)
                         $college->majors()->syncWithoutDetaching($major->id);
+
                     }
                 }
             }

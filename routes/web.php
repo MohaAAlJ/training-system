@@ -23,6 +23,7 @@ Route::prefix('WelcomeForm/Form/api')->group(function () {
     Route::get('addresses', [ApplicationFormController::class, 'addresses']);
     Route::get('institutions', [ApplicationFormController::class, 'institutions']);
     Route::get('majors', [ApplicationFormController::class, 'majors']);
+    Route::get('major-colleges', [ApplicationFormController::class, 'majorColleges']);
     Route::get('administratives', [ApplicationFormController::class, 'administratives']);
     Route::get('departments', [ApplicationFormController::class, 'departments']);
     Route::get('training-types', [ApplicationFormController::class, 'trainingTypes']);

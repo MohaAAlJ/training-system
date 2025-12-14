@@ -46,14 +46,23 @@ class ApplicationsForm
                                     ->label('العنوان'),
                                 Select::make('institution_id')
                                     ->label('المؤسسة التعليمية')
-                                    ->relationship('institution', 'name')
+                                    ->options(fn () => \App\Models\Institution::pluck('name->ar', 'id'))
                                     ->searchable()
-                                    ->preload(),
-                                Select::make('institution_major_id')
+                                    ->reactive()
+                                    ->required(),
+                                Select::make('college_id')
+                                    ->label('الكلية')
+                                    ->options(fn (callable $get) => $get('institution_id') ? \App\Models\College::where('institution_id', $get('institution_id'))->pluck('name->ar', 'id') : [])
+                                    ->searchable()
+                                    ->reactive()
+                                    ->required()
+                                    ->dependsOn('institution_id'),
+                                Select::make('major_id')
                                     ->label('التخصص')
-                                    ->relationship('institutionMajor', 'name')
+                                    ->options(fn (callable $get) => $get('college_id') ? \App\Models\Major::whereHas('colleges', function ($q) use ($get) { $q->where('colleges.id', $get('college_id')); })->pluck('name->ar', 'id') : [])
                                     ->searchable()
-                                    ->preload(),
+                                    ->required()
+                                    ->dependsOn('college_id'),
                             ]),
                     ])->columns(1),
 
