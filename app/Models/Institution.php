@@ -33,10 +33,10 @@ class Institution extends Model
 
     public function majors() {
         return $this->hasManyThrough(
-            Major::class, 
+            Major::class,
             College::class,
-            'institution_id',  
-            'college_id'       
+            'institution_id',
+            'college_id'
         );
     }
 
