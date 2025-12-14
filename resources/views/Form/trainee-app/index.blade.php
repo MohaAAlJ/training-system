@@ -46,6 +46,21 @@
                     </legend>
                     <div class="grid two">
                         <label class="field">
+                            <span>رقم الهوية *</span>
+                            <input
+                                id="national_id"
+                                name="national_id"
+                                type="text"
+                                minlength="9"
+                                maxlength="9"
+                                pattern="\d{9}"
+                                inputmode="numeric"
+                                oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                                required
+                            />
+                            <small class="note">9 أرقام</small>
+                        </label>
+                        <label class="field">
                             <span>الاسم الكامل *</span>
                             <input
                                 id="full_name"
@@ -101,21 +116,7 @@
                             />
                             <small class="note"></small>
                         </label>
-                        <label class="field">
-                            <span>رقم الهوية *</span>
-                            <input
-                                id="national_id"
-                                name="national_id"
-                                type="text"
-                                minlength="9"
-                                maxlength="9"
-                                pattern="\d{9}"
-                                inputmode="numeric"
-                                oninput="this.value = this.value.replace(/[^0-9]/g, '')"
-                                required
-                            />
-                            <small class="note">9 أرقام</small>
-                        </label>
+
                         <label class="field">
                             <span>رقم الجوال *</span>
                             <input
@@ -146,7 +147,7 @@
                                 name="street"
                                 type="text"
                                 maxlength="255"
-                                pattern="^[\p{Arabic}A-Za-z0-9\s\-\.,#\/]+$"
+                                pattern="^[A-Za-z\u0600-\u06FF0-9\s\-\.,#\/]+$"
                                 title="يمكن إدخال حروف وأرقام ورموز العنوان"
                                 placeholder="مثال: شارع الملك فيصل 123"
                                 required
@@ -226,7 +227,7 @@
                                 <option value="" disabled selected>اختر</option>
                             </select>
                         </label>
-                        <label class="field">
+                        <!-- <label class="field">
                             <span>ارفع ملف <small class="note">(اختياري)</small></span>
                             <input
                                 id="letter_file"
@@ -242,7 +243,7 @@
                                     <span id="preview_pdf_name" style="margin-right: 8px;"></span>
                                 </div>
                             </div>
-                        </label>
+                        </label> -->
                     </div>
                 </fieldset>
 
@@ -262,6 +263,7 @@
             <span id="toastMessage"></span>
         </div>
 
+                <input type="hidden" id="college_id" name="college_id" />
         <script src="{{ asset('form-assets/trainee-app/app.js') }}" defer></script>
     </body>
 </html>

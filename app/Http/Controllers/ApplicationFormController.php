@@ -62,21 +62,48 @@ class ApplicationFormController extends Controller
     {
         $institutionId = $request->query('institution_id');
 
-        $query = Major::select('majors.id', 'majors.name');
+        // If an institution_id is provided, fetch majors that are linked to
+        // colleges belonging to that institution via the college_major pivot.
         if ($institutionId) {
-            $query->whereHas('institutions', function ($q) use ($institutionId) {
-                $q->where('institutions.id', $institutionId);
-            });
+            $majors = Major::whereHas('colleges', function ($q) use ($institutionId) {
+                $q->where('colleges.institution_id', $institutionId);
+            })->select('majors.id', 'majors.name')->get();
+        } else {
+            $majors = Major::select('majors.id', 'majors.name')->get();
         }
 
-        $data = $query->get()
-            ->map(fn ($major) => [
-                'id' => $major->id,
-                'name' => is_array($major->name) ? ($major->name['ar'] ?? ($major->name['en'] ?? reset($major->name))) : $major->name,
-            ])
-            ->values();
+        $data = $majors->map(fn ($major) => [
+            'id' => $major->id,
+            'name' => is_array($major->name) ? ($major->name['ar'] ?? ($major->name['en'] ?? reset($major->name))) : $major->name,
+        ])->values();
 
         return response()->json($data);
+    }
+
+    /**
+     * Return colleges linked to a given major (used to auto-fill institution)
+     */
+    public function majorColleges(Request $request)
+    {
+        $majorId = $request->query('major_id');
+
+        if (! $majorId) {
+            return response()->json([], 200);
+        }
+
+        $major = Major::find($majorId);
+        if (! $major) {
+            return response()->json([], 200);
+        }
+
+        $colleges = $major->colleges()->select('colleges.id', 'colleges.name', 'colleges.institution_id')->get()
+            ->map(fn ($c) => [
+                'id' => $c->id,
+                'name' => is_array($c->name) ? ($c->name['ar'] ?? ($c->name['en'] ?? reset($c->name))) : $c->name,
+                'institution_id' => $c->institution_id,
+            ])->values();
+
+        return response()->json($colleges);
     }
 
     public function administratives()
@@ -153,6 +180,7 @@ class ApplicationFormController extends Controller
             'address' => ['required', 'string', 'max:255'],
             'street' => ['required', 'string', 'max:255', 'regex:/^[\p{Arabic}A-Za-z0-9\s\-\.,#\/]+$/u'],
             'institution_id' => ['required', 'integer', 'exists:institutions,id'],
+            'college_id' => ['nullable', 'integer', 'exists:colleges,id'],
             'major_id' => ['required', 'integer', 'exists:majors,id'],
             'training_hours' => ['required', 'integer', 'min:1', 'max:999'],
             'administrative_id' => ['required', 'integer', 'exists:administratives,id'],
@@ -174,6 +202,19 @@ class ApplicationFormController extends Controller
 
                 // Step 1: Create or update trainee record
                 // Use updateOrCreate to handle case where trainee with same national_id already exists
+                // If college_id wasn't provided by the frontend, try to infer it from the selected major
+                if (empty($validated['college_id']) && !empty($validated['major_id'])) {
+                    $major = Major::find($validated['major_id']);
+                    if ($major) {
+                        $firstCollege = $major->colleges()->first();
+                        if ($firstCollege) {
+                            $validated['college_id'] = $firstCollege->id;
+                            // ensure institution_id matches the college's institution if missing/incorrect
+                            $validated['institution_id'] = $firstCollege->institution_id ?? $validated['institution_id'];
+                        }
+                    }
+                }
+
                 $trainee = Trainees::updateOrCreate(
                     ['national_id' => $validated['national_id']], // Find by national_id
                     [
@@ -182,6 +223,7 @@ class ApplicationFormController extends Controller
                         'dob' => $dobFormatted,
                         'address' => $validated['address'],
                         'institution_id' => $validated['institution_id'],
+                        'college_id' => $validated['college_id'] ?? null,
                         'major_id' => $validated['major_id'],
                     ]
                 );
