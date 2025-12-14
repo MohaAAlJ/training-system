@@ -88,7 +88,6 @@ class ApplicationsTable
                 TextColumn::make('created_at')
                     ->label('تاريخ الإنشاء')
                     ->dateTime('Y-m-d')
-                    ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
@@ -128,6 +127,7 @@ class ApplicationsTable
                     }),
                 TrashedFilter::make(),
             ])
+
             ->recordActions([
                 ViewAction::make(),
                 EditAction::make(),
@@ -141,3 +141,4 @@ class ApplicationsTable
             ]);
     }
 }
+
