@@ -30,7 +30,7 @@ class User extends Authenticatable
         self::ROLE_ADMINISTRATIVE => 'إداري',
         self::ROLE_DEPARTMENT => 'رئيس قسم',
         self::ROLE_MOH => 'وزارة الصحة',
-        self::ROLE_INSTITUTION => 'مشرف كلية',
+        self::ROLE_INSTITUTION => 'مشرف كلي',
     ];
 
     /**
@@ -135,10 +135,5 @@ class User extends Authenticatable
             'status' => 'string',
             'role' => 'integer',
         ];
-    }
-
-    public function college()
-    {
-        return $this->hasOne(College::class);
     }
 }

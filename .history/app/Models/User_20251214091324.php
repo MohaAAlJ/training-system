@@ -136,9 +136,4 @@ class User extends Authenticatable
             'role' => 'integer',
         ];
     }
-
-    public function college()
-    {
-        return $this->hasOne(College::class);
-    }
 }

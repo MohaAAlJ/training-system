@@ -137,8 +137,7 @@ class User extends Authenticatable
         ];
     }
 
-    public function college()
-    {
-        return $this->hasOne(College::class);
-    }
+    public function college() {
+    return $this->hasOne(College::class);
+}
 }
