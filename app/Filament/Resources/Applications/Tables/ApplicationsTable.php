@@ -88,7 +88,7 @@ class ApplicationsTable
                 TextColumn::make('created_at')
                     ->label('تاريخ الإنشاء')
                     ->dateTime('Y-m-d')
-                    ->sortable()
+                            'approved' => 'تأكيد الطلب',
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([

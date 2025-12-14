@@ -81,7 +81,7 @@ class ApplicationsForm
                             ->options([
                                 'pending' => 'طلب جديد',
                                 'waiting' => 'استيعاب',
-                                'approved' => 'قبول جامعة',
+                                'approved' => 'تأكيد الطلب',
                                 'active' => 'بدء العمل',
                                 'completed' => 'انتهى',
                                 'rejected' => 'مرفوض',
