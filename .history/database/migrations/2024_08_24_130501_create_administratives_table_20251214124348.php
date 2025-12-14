@@ -14,20 +14,20 @@ return new class extends Migration
     {
         Schema::create('administratives', function (Blueprint $table) {
             $table->id();
-
+            
             // Administrative Info
             $table->string('title'); // Administrative title/role
             $table->string('head_of_administrative'); // Head of this administrative unit
             Schema::table('administratives', function (Blueprint $table) {
-                $table->boolean('is_medical')->default(false)->after('title');
-            });
-
+    $table->boolean('is_medical')->default(false)->after('title');
+});
+            
             // Foreign Keys
             $table->foreignIdFor(User::class, 'user_id')
                 ->constrained()
                 ->cascadeOnDelete();
             $table->index('user_id');
-
+            
             $table->timestamps();
             $table->softDeletes();
         });

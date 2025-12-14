@@ -6,8 +6,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 use Filament\Forms\Components\Toggle;
-use Filament\Forms\Concerns\InteractsWithForms;
-use Filament\Forms\Contracts\HasForms;
+use Filament\Forms\Get;
 
 class AdministrativesForm
 {
@@ -37,8 +36,8 @@ class AdministrativesForm
                 Select::make('user_id')
                     ->label('المدير الطبي')
                     ->relationship('user', 'name')
-                    ->hidden(fn($get) => ! $get('is_medical')) 
-                    ->required(fn($get) => $get('is_medical')),
+                    ->hidden(fn(Get $get) => ! $get('is_medical')) // مخفي إذا لم تكن طبية
+                    ->required(fn(Get $get) => $get('is_medical')),
             ]);
     }
 }
