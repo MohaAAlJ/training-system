@@ -37,7 +37,7 @@ class AdministrativesForm
                 Select::make('user_id')
                     ->label('المدير الطبي')
                     ->relationship('user', 'name')
-                    ->hidden(fn($get) => ! $get('is_medical')) 
+                    ->hidden(fn($get) => ! $get('is_medical')) /
                     ->required(fn($get) => $get('is_medical')),
             ]);
     }

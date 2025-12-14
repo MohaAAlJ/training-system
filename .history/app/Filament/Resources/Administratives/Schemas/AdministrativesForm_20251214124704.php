@@ -6,8 +6,6 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 use Filament\Forms\Components\Toggle;
-use Filament\Forms\Concerns\InteractsWithForms;
-use Filament\Forms\Contracts\HasForms;
 
 class AdministrativesForm
 {
@@ -23,22 +21,17 @@ class AdministrativesForm
                     ->label('رئيس الإدارة')
                     ->required()
                     ->maxLength(255),
-                Toggle::make('is_medical')
-                    ->label('هل هذه إدارة طبية؟')
-                    ->onColor('success')
-                    ->offColor('danger')
-                    ->live(),
+                    Toggle::make('is_medical')
+                ->label('هل هذه إدارة طبية؟')
+                ->onColor('success')
+                ->offColor('danger')
+                ->live(),
                 Select::make('user_id')
                     ->label('المستخدم المسؤول')
                     ->relationship('user', 'name')
                     ->searchable()
                     ->preload()
                     ->required(),
-                Select::make('user_id')
-                    ->label('المدير الطبي')
-                    ->relationship('user', 'name')
-                    ->hidden(fn($get) => ! $get('is_medical')) 
-                    ->required(fn($get) => $get('is_medical')),
             ]);
     }
 }
