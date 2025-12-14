@@ -18,9 +18,7 @@ return new class extends Migration
             // Administrative Info
             $table->string('title'); // Administrative title/role
             $table->string('head_of_administrative'); // Head of this administrative unit
-            Schema::table('administratives', function (Blueprint $table) {
-                $table->boolean('is_medical')->default(false)->after('title');
-            });
+            $table->boolean('is_medical')->default(false);
 
             // Foreign Keys
             $table->foreignIdFor(User::class, 'user_id')
