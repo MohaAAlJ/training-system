@@ -26,6 +26,9 @@ class UserFactory extends Factory
         ];
     }
 
+    /**
+     * حالة لإنشاء مدير نظام
+     */
     public function admin(): static
     {
         return $this->state(fn(array $attributes) => [
