@@ -31,6 +31,7 @@ class Institution extends Model
         return $this->hasMany(College::class);
     }
 
+    // إذا أردت الوصول للتخصصات عبر الكليات (HasManyThrough)
     public function majors() {
         return $this->hasManyThrough(
             Major::class, 

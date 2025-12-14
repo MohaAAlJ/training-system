@@ -31,12 +31,13 @@ class Institution extends Model
         return $this->hasMany(College::class);
     }
 
+    // إذا أردت الوصول للتخصصات عبر الكليات (HasManyThrough)
     public function majors() {
         return $this->hasManyThrough(
             Major::class, 
             College::class,
-            'institution_id',  
-            'college_id'       
+            'institution_id',  // Foreign key on colleges table
+            'college_id'       // Foreign key on college_major table
         );
     }
 
