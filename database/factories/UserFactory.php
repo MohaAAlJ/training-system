@@ -6,7 +6,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
-
+use App\Helpers\Constans;
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\User>
  */
@@ -30,7 +30,7 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password' => Hash::make('password'),
             'status' => fake()->randomElement(['active', 'inactive', 'banned']),
-            'role' => User::ROLE_ADMIN, // Default to admin for seeding
+            'role' => Constans::ROLE_ADMIN, // Default to admin for seeding
             'remember_token' => Str::random(10),
         ];
     }
@@ -51,7 +51,7 @@ class UserFactory extends Factory
     public function admin(): static
     {
         return $this->state(fn(array $attributes) => [
-            'role' => User::ROLE_ADMIN,
+            'role' => Constans::ROLE_ADMIN,
         ]);
     }
 
@@ -61,7 +61,7 @@ class UserFactory extends Factory
     public function administrative(): static
     {
         return $this->state(fn(array $attributes) => [
-            'role' => User::ROLE_ADMINISTRATIVE,
+            'role' => Constans::ROLE_ADMINISTRATIVE,
         ]);
     }
 
@@ -71,7 +71,7 @@ class UserFactory extends Factory
     public function department(): static
     {
         return $this->state(fn(array $attributes) => [
-            'role' => User::ROLE_DEPARTMENT,
+            'role' => Constans::ROLE_DEPARTMENT,
         ]);
     }
 
@@ -81,7 +81,7 @@ class UserFactory extends Factory
     public function moh(): static
     {
         return $this->state(fn(array $attributes) => [
-            'role' => User::ROLE_MOH,
+            'role' => Constans::ROLE_MOH,
         ]);
     }
 
@@ -91,7 +91,7 @@ class UserFactory extends Factory
     public function institution(): static
     {
         return $this->state(fn(array $attributes) => [
-            'role' => User::ROLE_INSTITUTION,
+            'role' => Constans::ROLE_INSTITUTION,
         ]);
     }
 }
