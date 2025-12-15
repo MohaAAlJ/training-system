@@ -2,11 +2,9 @@
 
 namespace App\Filament\Resources\Users\Schemas;
 
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
-use App\Helpers\Constans;
+use Filament\Schemas\Components\Section;
+use Filament\Infolists\Components\TextEntry;
 
 class UsersInfolist
 {
@@ -14,22 +12,46 @@ class UsersInfolist
     {
         return $schema
             ->components([
-                TextInput::make('name')
-                    ->label('الاسم')
-                    ->disabled(),
+                Section::make('معلومات الحساب')
+                    ->schema([
+                        TextEntry::make('name')
+                            ->label('الاسم'),
 
-                TextInput::make('email')
-                    ->label('البريد الإلكتروني')
-                    ->disabled(),
+                        TextEntry::make('email')
+                            ->label('البريد الإلكتروني'),
 
-                Select::make('role')
-                    ->label('الدور')
-                    ->options(Constans::ROLE_LABELS)
-                    ->disabled(),
+                        TextEntry::make('role')
+                            ->label('الدور')
+                            ->getStateUsing(
+                                fn ($record) => \App\Helpers\Constans::ROLE_LABELS[$record->role] ?? $record->role
+                            )
+                            ->badge()
+                            ->color('info'),
 
-                Toggle::make('status')
-                    ->label('نشط')
-                    ->disabled(),
+                        TextEntry::make('status')
+                            ->label('الحالة')
+                            ->badge()
+                            ->color(fn (string $state) => match ($state) {
+                                'active' => 'success',
+                                'pending' => 'warning',
+                                'blocked' => 'danger',
+                                default => 'gray',
+                            }),
+                    ])
+                    ->columns(2),
+
+                Section::make('معلومات النظام')
+                    ->schema([
+                        TextEntry::make('created_at')
+                            ->label('تاريخ الإنشاء')
+                            ->dateTime('Y-m-d H:i'),
+
+                        TextEntry::make('updated_at')
+                            ->label('آخر تحديث')
+                            ->dateTime('Y-m-d H:i'),
+                    ])
+                    ->columns(2)
+                    ->collapsed(),
             ]);
     }
 }

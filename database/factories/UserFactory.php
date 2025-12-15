@@ -69,18 +69,18 @@ class UserFactory extends Factory
     public function institutionSupervisor(): static
     {
         return $this->state(fn(array $attributes) => [
-            'role' => Constans::ROLE_COLLAGE,
+            'role' => Constans::ROLE_COLLEGE,
         ]);
 
     }
 
     /**
-     * Set user role to Collage
+     * Set user role to College
      */
     public function collage(): static
     {
         return $this->state(fn(array $attributes) => [
-            'role' => Constans::ROLE_COLLAGE,
+            'role' => Constans::ROLE_COLLEGE,
         ]);
     }
 }

@@ -58,9 +58,9 @@ class User extends Authenticatable
     /**
      * Check if user is institution/college supervisor (can only view their faculty training requests)
      */
-    public function isCollage(): bool
+    public function isCollege(): bool
     {
-        return $this->role === Constans::ROLE_COLLAGE;
+        return $this->role === Constans::ROLE_COLLEGE;
     }
 
     /**
