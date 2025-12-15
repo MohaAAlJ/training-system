@@ -15,7 +15,7 @@ class Applications extends Model
         'department_id',
         'administrative_id',
         'street',
-        'training_hours',
+        'duration',
         'training_type',
         'start_date',
         'end_date',
@@ -29,7 +29,7 @@ class Applications extends Model
         'end_date' => 'date',
         'accepted_at' => 'datetime',
         'status' => 'string',
-        'training_hours' => 'integer',
+        'duration' => 'integer',
     ];
 
     public function trainee()

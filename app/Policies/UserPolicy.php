@@ -22,7 +22,8 @@ class UserPolicy
      */
     public function before(User $user, $ability)
     {
-        if ($user->isAdmin()) {
+        // Grant all abilities to full-access users (admins and administrative)
+        if ($user->hasFullAccess()) {
             return true;
         }
     }
@@ -33,36 +34,55 @@ class UserPolicy
         return $user->hasFullAccess() || $user->isDepartment() || $user->isCollage() || $user->isMOH();
     }
 
-    public function view(User $user, User $model): bool
+    public function view(User $user, $model): bool
     {
-        // Allow viewing self or any user if has full access
-        return $user->hasFullAccess() || $user->id === $model->id;
+        // If viewing a User model: allow full access or self
+        if ($model instanceof User) {
+            return $user->hasFullAccess() || $user->id === $model->id;
+        }
+
+        // If viewing an Application (or other model), allow full access or specific rules
+        if ($model instanceof \App\Models\Applications) {
+            return $user->hasFullAccess() || $user->isMOH();
+        }
+
+        // Default: allow only full access
+        return $user->hasFullAccess();
     }
 
     public function create(User $user): bool
     {
-        // Only full-access roles may create users
+        // For creating Users: require full access
+        // For creating Applications (policy mapped to this class) we also allow full access
         return $user->hasFullAccess();
     }
 
-    public function update(User $user, User $model): bool
+    public function update(User $user, $model): bool
     {
-        // Full access or editing own profile
-        return $user->hasFullAccess() || $user->id === $model->id;
-    }
+        if ($model instanceof User) {
+            return $user->hasFullAccess() || $user->id === $model->id;
+        }
 
-    public function delete(User $user, User $model): bool
-    {
-        // Only full-access roles can delete users
+        if ($model instanceof \App\Models\Applications) {
+            // Allow admins and administrative users to update applications
+            return $user->hasFullAccess();
+        }
+
         return $user->hasFullAccess();
     }
 
-    public function restore(User $user, User $model): bool
+    public function delete(User $user, $model): bool
+    {
+        // Only full-access roles can delete users or applications
+        return $user->hasFullAccess();
+    }
+
+    public function restore(User $user, $model): bool
     {
         return $user->isAdmin();
     }
 
-    public function forceDelete(User $user, User $model): bool
+    public function forceDelete(User $user, $model): bool
     {
         return $user->isAdmin();
     }

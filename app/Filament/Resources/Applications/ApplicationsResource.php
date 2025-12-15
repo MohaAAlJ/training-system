@@ -1,6 +1,6 @@
 <?php
 namespace App\Filament\Resources\Applications;
-
+use app\Filament\Resources\Applications\Pages\CreateApplications;
 use App\Filament\Resources\Applications\Pages\EditApplications;
 use App\Filament\Resources\Applications\Pages\ListApplications;
 use App\Filament\Resources\Applications\Pages\ViewApplications;
@@ -26,7 +26,7 @@ class ApplicationsResource extends Resource
     protected static ?string $modelLabel = 'طلب';
     protected static ?string $pluralModelLabel = 'الطلبات';
     protected static ?string $navigationLabel = 'الطلبات';
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 3;
 
     public static function form(Schema $schema): Schema
     {
@@ -54,6 +54,7 @@ class ApplicationsResource extends Resource
     {
         return [
             'index' => ListApplications::route('/'),
+            'create' => CreateApplications::route('/create'),
             'view' => ViewApplications::route('/{record}'),
             'edit' => EditApplications::route('/{record}/edit'),
         ];

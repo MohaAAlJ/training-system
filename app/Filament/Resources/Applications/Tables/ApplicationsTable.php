@@ -63,13 +63,13 @@ class ApplicationsTable
                         default => 'gray',
                     })
                     ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'pending' => 'طلب جديد',
-                        'waiting' => 'استيعاب',
-                        'approved' => 'قبول جامعة',
-                        'active' => 'بدء العمل',
-                        'completed' => 'انتهى',
-                        'rejected' => 'مرفوض',
-                        'paused' => 'منقطع',
+                                'pending' => 'طلب جديد',
+                                'approved' => 'استيعاب',
+                                'waiting' => 'لم يستلم عمل بعد',
+                                'active' => 'بدء العمل',
+                                'completed' => 'انتهى',
+                                'rejected' => 'مرفوض',
+                                'paused' => 'منقطع',
                         default => $state,
                     }),
                 TextColumn::make('duration')

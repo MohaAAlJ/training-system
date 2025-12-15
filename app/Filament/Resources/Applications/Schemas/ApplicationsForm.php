@@ -55,14 +55,13 @@ class ApplicationsForm
                                     ->options(fn (callable $get) => $get('institution_id') ? \App\Models\College::where('institution_id', $get('institution_id'))->pluck('name->ar', 'id') : [])
                                     ->searchable()
                                     ->reactive()
-                                    ->required()
-                                    ->dependsOn('institution_id'),
+                                    ->required(),
                                 Select::make('major_id')
                                     ->label('التخصص')
                                     ->options(fn (callable $get) => $get('college_id') ? \App\Models\Major::whereHas('colleges', function ($q) use ($get) { $q->where('colleges.id', $get('college_id')); })->pluck('name->ar', 'id') : [])
                                     ->searchable()
-                                    ->required()
-                                    ->dependsOn('college_id'),
+                                    ->required(),
+
                             ]),
                     ])->columns(1),
 
@@ -70,6 +69,26 @@ class ApplicationsForm
 
                 Fieldset::make('تفاصيل الطلب')
                     ->schema([
+                        Select::make('training_type')
+                            ->label('نوع التدريب')
+                            ->options([
+                                'professional' => 'مزاولة مهنة',
+                                'cooperative' => 'تدريب جامعي',
+                            ]),
+                        TextInput::make('duration')
+                                    ->label('مدة التدريب (بالساعات)')
+                                    ->numeric()
+                                    ->minValue(1)
+                                    ->maxValue(1000)
+                                    ->required()
+                                    ->default(100)
+                                    ->suffix('ساعة'),
+                        Select::make('administrative_id')
+                            ->label('الادارة')
+                            ->relationship('administrative', 'title')
+                            ->searchable()
+                            ->preload()
+                            ->required(),
                         Select::make('department_id')
                             ->label('القسم')
                             ->relationship('department', 'name_location')
@@ -89,8 +108,8 @@ class ApplicationsForm
                             ->label('الحالة')
                             ->options([
                                 'pending' => 'طلب جديد',
-                                'waiting' => 'استيعاب',
-                                'approved' => 'تأكيد الطلب',
+                                'approved' => 'استيعاب',
+                                'waiting' => 'لم يستلم عمل بعد',
                                 'active' => 'بدء العمل',
                                 'completed' => 'انتهى',
                                 'rejected' => 'مرفوض',

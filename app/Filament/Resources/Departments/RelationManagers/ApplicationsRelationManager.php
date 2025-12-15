@@ -89,10 +89,13 @@ class ApplicationsRelationManager extends RelationManager
                         Select::make('status')
                             ->label('الحالة')
                             ->options([
-                                'pending' => 'قيد الانتظار',
-                                'approved' => 'مقبول',
+                                'pending' => 'طلب جديد',
+                                'approved' => 'استيعاب',
+                                'waiting' => 'لم يستلم عمل بعد',
+                                'active' => 'بدء العمل',
+                                'completed' => 'انتهى',
                                 'rejected' => 'مرفوض',
-                                'completed' => 'مكتمل',
+                                'paused' => 'منقطع',
                             ])
                             ->default('pending')
                             ->required(),
@@ -150,11 +153,14 @@ class ApplicationsRelationManager extends RelationManager
                         default => 'gray',
                     })
                     ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'pending' => 'قيد الانتظار',
-                        'approved' => 'مقبول',
-                        'rejected' => 'مرفوض',
-                        'completed' => 'مكتمل',
-                        default => $state,
+                                'pending' => 'طلب جديد',
+                                'approved' => 'استيعاب',
+                                'waiting' => 'لم يستلم عمل بعد',
+                                'active' => 'بدء العمل',
+                                'completed' => 'انتهى',
+                                'rejected' => 'مرفوض',
+                                'paused' => 'منقطع',
+                            default => $state,
                     }),
                 TextColumn::make('duration')
                     ->label('مدة التدريب (أيام)')
@@ -179,11 +185,14 @@ class ApplicationsRelationManager extends RelationManager
                 SelectFilter::make('status')
                     ->label('الحالة')
                     ->options([
-                        'pending' => 'قيد الانتظار',
-                        'approved' => 'مقبول',
-                        'rejected' => 'مرفوض',
-                        'completed' => 'مكتمل',
-                    ]),
+                                'pending' => 'طلب جديد',
+                                'approved' => 'استيعاب',
+                                'waiting' => 'لم يستلم عمل بعد',
+                                'active' => 'بدء العمل',
+                                'completed' => 'انتهى',
+                                'rejected' => 'مرفوض',
+                                'paused' => 'منقطع',
+                            ]),
                 SelectFilter::make('trainee_id')
                     ->label('المتدرب')
                     ->relationship('trainee', 'full_name')
