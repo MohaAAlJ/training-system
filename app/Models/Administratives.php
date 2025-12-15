@@ -8,11 +8,12 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Administratives extends Model
 {
     use SoftDeletes, HasFactory;
-    
+
     protected $table = 'administratives';
     protected $fillable = [
         'title',
         'user_id',
+        'head_of_administrative',
         'medical_head_user_id',
         'is_medical',
     ];

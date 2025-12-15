@@ -8,4 +8,8 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateDepartments extends CreateRecord
 {
     protected static string $resource = DepartmentsResource::class;
+    protected function getCreatedNotificationTitle(): ?string
+{
+    return 'تمت العملية بنجاح'; // or "Completed"
+}
 }

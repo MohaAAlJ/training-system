@@ -43,7 +43,7 @@ class ApplicationsInfolist
                             ->label('الإدارة'),
                         TextEntry::make('street')
                             ->label('الشارع'),
-                        TextEntry::make('training_hours')
+                        TextEntry::make('duration')
                             ->label('عدد ساعات التدريب'),
                         TextEntry::make('training_type')
                             ->label('نوع التدريب')
@@ -67,8 +67,8 @@ class ApplicationsInfolist
                             })
                             ->formatStateUsing(fn (string $state): string => match ($state) {
                                 'pending' => 'طلب جديد',
-                                'waiting' => 'استيعاب',
-                                'approved' => 'قبول جامعة',
+                                'approved' => 'استيعاب',
+                                'waiting' => 'لم يستلم عمل بعد',
                                 'active' => 'بدء العمل',
                                 'completed' => 'انتهى',
                                 'rejected' => 'مرفوض',

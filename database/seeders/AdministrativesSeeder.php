@@ -28,7 +28,7 @@ class AdministrativesSeeder extends Seeder
                 'name' => 'مدير ' . $directorateData['title'],
                 'email' => 'manager_' . rand(100, 999) . '@moh.gov.ps',
                 'password' => Hash::make('password'),
-                'role' => Constans::ROLE_ADMINISTRATIVE, 
+                'role' => Constans::ROLE_ADMINISTRATIVE,
                 'status' => 'active',
             ]);
 
