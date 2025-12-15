@@ -11,7 +11,7 @@ class Constans
     public const ROLE_ADMINISTRATIVE = 2;
     public const ROLE_DEPARTMENT = 3;
     public const ROLE_MOH = 4;
-    public const ROLE_COLLAGE = 5;
+    public const ROLE_COLLEGE = 5;
 
     /**
      * Role labels in Arabic
@@ -21,6 +21,6 @@ class Constans
         self::ROLE_ADMINISTRATIVE => 'إداري',
         self::ROLE_DEPARTMENT => 'رئيس قسم',
         self::ROLE_MOH => 'وزارة الصحة',
-        self::ROLE_COLLAGE => 'مشرف كلية',
+        self::ROLE_COLLEGE => 'مشرف كلية',
     ];
 }
