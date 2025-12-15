@@ -29,7 +29,7 @@ use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use filament\Models\user;
+use App\Models\User as AppUser;
 
 class ApplicationsRelationManager extends RelationManager
 {
@@ -187,6 +187,6 @@ class ApplicationsRelationManager extends RelationManager
                 ->withoutGlobalScopes([
                     SoftDeletingScope::class,
                 ])
-                ->when(auth()->user() && method_exists(auth()->user(), 'isMOH') && auth()->user()->isMOH(), fn(Builder $q) => $q->where('training_type', 'professional')));
+            );
     }
 }
