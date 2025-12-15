@@ -20,9 +20,13 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class UsersResource extends Resource
 {
+    protected static ?string $modelLabel = 'المستخدم';
+    protected static ?string $pluralModelLabel = 'المستخدمين';
+    protected static ?string $navigationLabel = 'المستخدمين';
+    protected static ?int $navigationSort = 4;
     protected static ?string $model = User::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUserGroup;
 
     public static function form(Schema $schema): Schema
     {

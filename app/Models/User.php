@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use app\Helpers\Constans;
+use App\Helpers\Constans;
 class User extends Authenticatable
 {
     use HasFactory, Notifiable, SoftDeletes;
@@ -58,9 +58,9 @@ class User extends Authenticatable
     /**
      * Check if user is institution/college supervisor (can only view their faculty training requests)
      */
-    public function isCollage(): bool
+    public function isCollege(): bool
     {
-        return $this->role === Constans::ROLE_COLLAGE;
+        return $this->role === Constans::ROLE_COLLEGE;
     }
 
     /**
@@ -100,19 +100,16 @@ class User extends Authenticatable
     ];
 
     /**
-     * Get the attributes that should be cast.
+     * The attributes that should be cast.
      *
-     * @return array<string, string>
+     * @var array<string, string>
      */
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-            'status' => 'string',
-            'role' => 'integer',
-        ];
-    }
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+        'status' => 'string',
+        'role' => 'integer',
+    ];
 
     public function college()
     {
