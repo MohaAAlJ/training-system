@@ -5,8 +5,6 @@ use App\Models\Major;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use App\Models\Institution;
-
 
 return new class extends Migration
 {
@@ -120,7 +118,7 @@ return new class extends Migration
                 'برنامج العلوم الإدارية' => ['بكالوريوس إدارة الأعمال', 'دبلوم الإدارة اللوجستية']
             ],
             'كلية مجتمع الأقصى للدراسات المتوسطة' => [
-                'قسم العلوم التكنولوجية' => ['دبلوم أمن المعلومات', 'دبلوم برمجة تطبيقات الهواتف الذكية', 'دبلوم الوسائط المتعددة'],
+                'قسم العلوم التكنولوجية' => ['دبلوم أمن المعلومات', 'دبلوم برمجة تطبيقات الهواتف الذكية', 'الوسائط المتعددة'],
                 'قسم المهن الطبية' => ['دبلوم العلاج الوظيفي'],
                 'قسم الإعلام' => ['دبلوم العلاقات العامة'],
                 'قسم العلوم الإنسانية' => ['دبلوم تربية الطفل'],
