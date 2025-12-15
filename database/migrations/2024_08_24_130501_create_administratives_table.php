@@ -18,13 +18,17 @@ return new class extends Migration
             // Administrative Info
             $table->string('title'); // Administrative title/role
             $table->boolean('is_medical')->default(false);
-            $table->string('head_of_administrative'); // Head of this administrative unit
 
             // Foreign Keys
             $table->foreignIdFor(User::class, 'user_id')
                 ->constrained()
                 ->cascadeOnDelete();
+            $table->foreignIdFor(User::class, 'medical_head_user_id')
+                ->nullable()
+                ->constrained('users')
+                ->cascadeOnDelete();
             $table->index('user_id');
+            $table->index('medical_head_user_id');
 
             $table->timestamps();
             $table->softDeletes();
