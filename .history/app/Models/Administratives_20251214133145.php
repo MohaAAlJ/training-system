@@ -26,11 +26,6 @@ class Administratives extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function medicalHead()
-    {
-        return $this->belongsTo(User::class, 'medical_head_user_id');
-    }
-
     public function departments()
     {
         return $this->hasMany(Departments::class, 'administrative_id');
