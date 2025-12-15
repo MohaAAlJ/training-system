@@ -36,13 +36,13 @@ return new class extends Migration
 
             // Application-specific fields
             $table->string('street')->nullable();
-            $table->integer('training_hours');
+            $table->integer('duration')->nullable();
             $table->string('training_type')->nullable();
 
             // Application lifecycle
             $table->date('start_date')->nullable();
             $table->date('end_date')->nullable();
-            $table->enum('status', ['pending', 'waiting', 'approved', 'active', 'completed', 'rejected', 'paused'])->default('pending');
+            $table->enum('status', ['pending', 'approved', 'waiting', 'active', 'completed', 'rejected', 'paused'])->default('pending');
             $table->string('application_letter')->nullable();
             $table->dateTime('accepted_at')->nullable();
             $table->string('tags')->nullable();

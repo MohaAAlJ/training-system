@@ -21,7 +21,7 @@ class AuthServiceProvider extends ServiceProvider
 
     protected $policies = [
         // No policies registered while debugging.
-        //  User::class => UserPolicy::class,
+         User::class => UserPolicy::class,
     ];
 
     /**
