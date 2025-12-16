@@ -44,7 +44,7 @@ class ApplicationsForm
                                 TextInput::make('full_name')
                                     ->label('الاسم الكامل')
                                     ->required()
-                                    ->maxLength(10)
+                                    ->maxLength(100)
                                     ->extraAttributes([
                                         'oninput' => "this.value = this.value.replace(/[^A-Za-z\\u0600-\\u06FF ]/g,'').slice(0,150)",
                                     ])
@@ -142,12 +142,12 @@ class ApplicationsForm
                         TextInput::make('duration')
                                     ->label('مدة التدريب (بالساعات)')
                                     ->numeric()
-                                    ->minValue(100)
+                                    ->minValue(20)
                                     ->maxValue(1000)
                                     ->required()
                                     ->default(100)
                                     ->suffix('ساعة')
-                                    ->rules(['integer','min:100','max:1000']),
+                                    ->rules(['integer','min:20','max:1000']),
 
                         Select::make('administrative_id')
                             ->label('الادارة')
