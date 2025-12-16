@@ -35,13 +35,18 @@ class UsersForm
                 Select::make('role')
                     ->label('الدور')
                     ->options(Constans::ROLE_LABELS)
-                    ->required(),
+                    ->required()
+                    ->reactive()
+                    ->afterStateUpdated(fn($state, $set) =>
+                        $state != Constans::ROLE_COLLEGE ? ($set('institution_id', null) || $set('college_id', null)) : null
+                    ),
 
                 Select::make('institution_id')
                     ->label('المؤسسة')
                     ->options(fn () => \App\Models\Institution::all()->mapWithKeys(fn($i) => [$i->id => $i->getTranslation('name','ar')])->toArray())
                     ->placeholder('اختر المؤسسة')
                     ->visible(fn (callable $get) => $get('role') == Constans::ROLE_COLLEGE)
+                    ->reactive()
                     ->required(fn (callable $get) => $get('role') == Constans::ROLE_COLLEGE)
                     ->searchable()
                     ->dehydrated(false)
