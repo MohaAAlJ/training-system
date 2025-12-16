@@ -46,9 +46,9 @@ class ApplicationsForm
                                     ->required()
                                     ->maxLength(10)
                                     ->extraAttributes([
-                                        'oninput' => "this.value = this.value.replace(/[^A-Za-z\\u0600-\\u06FF ]/g,'').slice(0,100)",
+                                        'oninput' => "this.value = this.value.replace(/[^A-Za-z\\u0600-\\u06FF ]/g,'').slice(0,150)",
                                     ])
-                                    ->rules(['string','max:150','regex:/^[A-Za-z\\u0600-\\u06FF\\s]+$/u']),
+                                    ->rules(['string','max:150','regex:/^[A-Za-z\x{0600}-\x{06FF}\s]+$/u']),
                                 TextInput::make('phone_number')
                                     ->label('رقم الهاتف')
                                     ->tel()
