@@ -49,7 +49,7 @@ class UsersForm
                     ->reactive()
                     ->required(fn (callable $get) => $get('role') == Constans::ROLE_COLLEGE)
                     ->searchable()
-                    ->dehydrated(false)
+                    // ->dehydrated(false)
                     ->columnSpanFull(),
 
                 Select::make('college_id')
@@ -59,7 +59,7 @@ class UsersForm
                     ->visible(fn (callable $get) => $get('role') == Constans::ROLE_COLLEGE)
                     ->required(fn (callable $get) => $get('role') == Constans::ROLE_COLLEGE)
                     ->searchable()
-                    ->dehydrated(false)
+                   // ->dehydrated(false)
                     ->columnSpanFull(),
 
                 Toggle::make('status')

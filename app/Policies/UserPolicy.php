@@ -30,8 +30,9 @@ class UserPolicy
 
     public function viewAny(User $user): bool
     {
-        // Admins covered by before(); administrative users can list users
-        return $user->hasFullAccess() || $user->isDepartment() || $user->isCollege() || $user->isMOH();
+        // Admins covered by before(); administrative users can list users.
+        // Also allow MOH and college supervisors to view applications lists
+        return $user->hasFullAccess() || $user->isDepartment() || $user->isMOH() || $user->isCollege();
     }
 
     public function view(User $user, $model): bool
@@ -41,28 +42,19 @@ class UserPolicy
             return $user->hasFullAccess() || $user->id === $model->id;
         }
 
-        // If viewing an Application (or other model), allow full access or specific rules
+        // Default: allow only full access for other models
         if ($model instanceof \App\Models\Applications) {
-            // Full-access always allowed
-            if ($user->hasFullAccess()) {
-                return true;
-            }
-
-            // MOH users can view professional applications
+            // Applications-specific rules (previously in ApplicationsPolicy)
             if ($user->isMOH()) {
                 return true;
             }
 
-            // College users can view applications for trainees from their college
             if ($user->isCollege()) {
                 $trainee = $model->trainee;
-                if ($trainee && $user->college && $trainee->college_id === $user->college->id) {
-                    return true;
-                }
-                return false;
+                return $trainee && $user->college && $trainee->college_id === $user->college->id;
             }
 
-            return false;
+            return $user->hasFullAccess();
         }
 
         // Default: allow only full access
