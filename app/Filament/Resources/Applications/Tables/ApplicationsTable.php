@@ -129,8 +129,12 @@ class ApplicationsTable
             ])
 
             ->recordActions([
-                ViewAction::make(),
-                EditAction::make(),
+                ViewAction::make()
+                    ->color('danger')
+                    ->outlined(),
+                EditAction::make()
+                    ->color('danger')
+                    ->outlined(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
