@@ -20,5 +20,24 @@ class CreateUsers extends CreateRecord
                 $college->save();
             }
         }
+        // Also persist institution_id/college_id on the user record
+        if ($this->record) {
+            $updated = false;
+            if (!empty($state['college_id']) && $this->record->college_id !== ($state['college_id'] ?? null)) {
+                $this->record->college_id = $state['college_id'];
+                $updated = true;
+            }
+            if (!empty($state['institution_id']) && $this->record->institution_id !== ($state['institution_id'] ?? null)) {
+                $this->record->institution_id = $state['institution_id'];
+                $updated = true;
+            }
+            if (isset($state['role']) && $this->record->role !== ($state['role'] ?? null)) {
+                $this->record->role = $state['role'];
+                $updated = true;
+            }
+            if ($updated) {
+                $this->record->save();
+            }
+        }
     }
 }

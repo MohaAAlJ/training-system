@@ -21,6 +21,8 @@ class User extends Authenticatable
         'password',
         'status',
         'role',
+        'institution_id',
+        'college_id',
     ];
 
     /**
@@ -89,6 +91,11 @@ class User extends Authenticatable
         return $this->hasMany(Administratives::class, 'user_id');
     }
 
+    public function institution()
+    {
+        return $this->belongsTo(\App\Models\Institution::class, 'institution_id');
+    }
+
     /**
      * The attributes that should be hidden for serialization.
      *
@@ -113,6 +120,6 @@ class User extends Authenticatable
 
     public function college()
     {
-        return $this->hasOne(College::class);
+        return $this->belongsTo(College::class, 'college_id');
     }
 }
