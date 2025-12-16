@@ -31,7 +31,7 @@ class UserPolicy
     public function viewAny(User $user): bool
     {
         // Admins covered by before(); administrative users can list users
-        return $user->hasFullAccess() || $user->isDepartment() || $user->isCollage() || $user->isMOH();
+        return $user->hasFullAccess() || $user->isDepartment() || $user->isCollege() || $user->isMOH();
     }
 
     public function view(User $user, $model): bool
@@ -43,7 +43,26 @@ class UserPolicy
 
         // If viewing an Application (or other model), allow full access or specific rules
         if ($model instanceof \App\Models\Applications) {
-            return $user->hasFullAccess() || $user->isMOH();
+            // Full-access always allowed
+            if ($user->hasFullAccess()) {
+                return true;
+            }
+
+            // MOH users can view professional applications
+            if ($user->isMOH()) {
+                return true;
+            }
+
+            // College users can view applications for trainees from their college
+            if ($user->isCollege()) {
+                $trainee = $model->trainee;
+                if ($trainee && $user->college && $trainee->college_id === $user->college->id) {
+                    return true;
+                }
+                return false;
+            }
+
+            return false;
         }
 
         // Default: allow only full access
@@ -54,7 +73,7 @@ class UserPolicy
     {
         // For creating Users: require full access
         // For creating Applications (policy mapped to this class) we also allow full access
-        return $user->hasFullAccess();
+        return $user->hasFullAccess() || $user->isCollege();
     }
 
     public function update(User $user, $model): bool
@@ -64,8 +83,17 @@ class UserPolicy
         }
 
         if ($model instanceof \App\Models\Applications) {
-            // Allow admins and administrative users to update applications
-            return $user->hasFullAccess();
+            if ($user->hasFullAccess()) {
+                return true;
+            }
+
+            // College users can update applications only for their college
+            if ($user->isCollege()) {
+                $trainee = $model->trainee;
+                return $trainee && $user->college && $trainee->college_id === $user->college->id;
+            }
+
+            return false;
         }
 
         return $user->hasFullAccess();
