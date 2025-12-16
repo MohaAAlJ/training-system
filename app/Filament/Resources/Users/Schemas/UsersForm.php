@@ -37,12 +37,19 @@ class UsersForm
                     ->options(Constans::ROLE_LABELS)
                     ->required(),
 
+                Select::make('institution_id')
+                    ->label('المؤسسة')
+                    ->options(fn () => \App\Models\Institution::all()->mapWithKeys(fn($i) => [$i->id => $i->getTranslation('name','ar')])->toArray())
+                    ->placeholder('اختر المؤسسة')
+                    ->visible(fn (callable $get) => $get('role') == Constans::ROLE_COLLEGE)
+                    ->required(fn (callable $get) => $get('role') == Constans::ROLE_COLLEGE)
+                    ->searchable()
+                    ->dehydrated(false)
+                    ->columnSpanFull(),
+
                 Select::make('college_id')
                     ->label('الكلية')
-                    ->options(function () {
-                        $cols = College::all()->mapWithKeys(fn($c) => [$c->id => $c->getTranslation('name','ar')])->toArray();
-                        return $cols ?: [];
-                    })
+                    ->options(fn (callable $get) => $get('institution_id') ? College::where('institution_id', $get('institution_id'))->get()->mapWithKeys(fn($c) => [$c->id => $c->getTranslation('name','ar')])->toArray() : [])
                     ->placeholder('اختر الكلية')
                     ->visible(fn (callable $get) => $get('role') == Constans::ROLE_COLLEGE)
                     ->required(fn (callable $get) => $get('role') == Constans::ROLE_COLLEGE)
