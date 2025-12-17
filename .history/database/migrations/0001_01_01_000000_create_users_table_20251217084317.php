@@ -27,7 +27,10 @@ return new class extends Migration
             $table->softDeletes();
         });
 
-        // Foreign keys are added in a separate migration after institutions and colleges tables are created
+        Schema::table('users', function (Blueprint $table) {
+            $table->foreign('institution_id')->references('id')->on('institutions')->onDelete('set null');
+            $table->foreign('college_id')->references('id')->on('colleges')->onDelete('set null');
+        });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
