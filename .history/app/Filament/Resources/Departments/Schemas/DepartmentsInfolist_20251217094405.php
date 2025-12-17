@@ -25,14 +25,14 @@ class DepartmentsInfolist
                         TextEntry::make('status')
                             ->label('الحالة')
                             ->badge()
-                            ->color(fn (mixed $state): string => match ($state) {
-                                true => 'success',
-                                false => 'danger',
+                            ->color(fn (string $state): string => match ($state) {
+                                'active' => 'success',
+                                'inactive' => 'danger',
                                 default => 'gray',
                             })
-                            ->formatStateUsing(fn (mixed $state): string => match ($state) {
-                                true => 'نشط',
-                                false => 'غير نشط',
+                            ->formatStateUsing(fn (string $state): string => match ($state) {
+                                'active' => 'نشط',
+                                'inactive' => 'غير نشط',
                                 default => $state,
                             }),
                     ])->columns(2),

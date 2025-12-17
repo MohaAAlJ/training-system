@@ -88,6 +88,7 @@ class DepartmentsTable
                 ViewAction::make(),
                 EditAction::make(),
                 DeleteAction::make()->visible(fn() => Auth::user()?->isAdmin() ?? false),
+                ForceDeleteAction::make()->visible(fn() => Auth::user()?->isAdmin() ?? false),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
