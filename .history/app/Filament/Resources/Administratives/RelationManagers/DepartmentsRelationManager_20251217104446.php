@@ -131,10 +131,10 @@ class DepartmentsRelationManager extends RelationManager
                 CreateAction::make()->visible(static fn() => Auth::user()?->isAdmin() ?? false),
             ])
             ->recordActions([
-                EditAction::make()->visible(static fn() => Auth::user()?->isAdmin() ?? false),
-                DeleteAction::make()->visible(static fn() => Auth::user()?->isAdmin() ?? false),
-                ForceDeleteAction::make()->visible(static fn() => Auth::user()?->isAdmin() ?? false),
-                RestoreAction::make()->visible(static fn() => Auth::user()?->isAdmin() ?? false),
+                EditAction::make(),
+                DeleteAction::make(),
+                ForceDeleteAction::make(),
+                RestoreAction::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

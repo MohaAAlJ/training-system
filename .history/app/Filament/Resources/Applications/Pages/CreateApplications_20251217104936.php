@@ -17,15 +17,6 @@ class CreateApplications extends CreateRecord
         return 'تمت العملية بنجاح'; // or "Completed"
     }
 
-    public function mount(): void
-    {
-        // Authorize only admin and college supervisor
-        if (!Auth::user()?->isAdmin() && !Auth::user()?->isCollegeSupervisor()) {
-            abort(403, 'Unauthorized to create applications');
-        }
-        parent::mount();
-    }
-
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         // Assemble dob from dob_day/dob_month/dob_year if provided
@@ -78,6 +69,7 @@ class CreateApplications extends CreateRecord
         return [
             Action::make('save')
                 ->label('حفظ')
+                // ->icon('heroicon-o-check')
                 ->action(function () {
                     $this->create();
                 })

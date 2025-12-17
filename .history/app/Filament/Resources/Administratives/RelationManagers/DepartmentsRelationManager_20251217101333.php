@@ -2,15 +2,6 @@
 
 namespace App\Filament\Resources\Administratives\RelationManagers;
 
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\CreateAction;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
-use Filament\Actions\ForceDeleteAction;
-use Filament\Actions\ForceDeleteBulkAction;
-use Filament\Actions\RestoreAction;
-use Filament\Actions\RestoreBulkAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -22,8 +13,18 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
-use Filament\Tables\Filters\SelectFilter;
-use Filament\Tables\Filters\TrashedFilter;
+
+// --- تصحيح المسارات (Imports) الهامة جداً ---
+use Filament\Tables\Actions\CreateAction;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\ForceDeleteAction;
+use Filament\Tables\Actions\RestoreAction;
+use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\ForceDeleteBulkAction;
+use Filament\Tables\Actions\RestoreBulkAction;
+// -------------------------------------------
 
 class DepartmentsRelationManager extends RelationManager
 {
@@ -88,7 +89,8 @@ class DepartmentsRelationManager extends RelationManager
                     ->color('primary'),
                 ToggleColumn::make('status')
                     ->label('الحالة')
-                    ->disabled(static fn() => ! Auth::user()?->isAdmin() ?? false)
+                    // استخدام auth()->user() مباشرة لضمان الدقة
+                    ->disabled(fn() => ! auth()->user()->isAdmin()) 
                     ->onIcon('heroicon-m-check-circle')
                     ->offIcon('heroicon-m-x-circle')
                     ->onColor('success')
@@ -102,52 +104,28 @@ class DepartmentsRelationManager extends RelationManager
                     ->dateTime('Y-m-d')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->label('تاريخ التحديث')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('deleted_at')
-                    ->label('تاريخ الحذف')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-            ])
-            ->filters([
-                SelectFilter::make('status')
-                    ->label('الحالة')
-                    ->options([
-                        'active' => 'نشط',
-                        'inactive' => 'غير نشط',
-                    ]),
-                SelectFilter::make('user_id')
-                    ->label('المسؤول')
-                    ->relationship('user', 'name')
-                    ->searchable()
-                    ->preload(),
-                TrashedFilter::make(),
             ])
             ->headerActions([
-                CreateAction::make()->visible(static fn() => Auth::user()?->isAdmin() ?? false),
+                // الآن ستظهر لأننا استخدمنا الكلاس الصحيح من Tables\Actions
+                CreateAction::make()->visible(fn() => auth()->user()->isAdmin()),
             ])
             ->recordActions([
-                EditAction::make()->visible(static fn() => Auth::user()?->isAdmin() ?? false),
-                DeleteAction::make()->visible(static fn() => Auth::user()?->isAdmin() ?? false),
-                ForceDeleteAction::make()->visible(static fn() => Auth::user()?->isAdmin() ?? false),
-                RestoreAction::make()->visible(static fn() => Auth::user()?->isAdmin() ?? false),
+                // أزرار التعديل والحذف ستظهر الآن
+                EditAction::make()->visible(fn() => auth()->user()->isAdmin()),
+                DeleteAction::make()->visible(fn() => auth()->user()->isAdmin()),
+                ForceDeleteAction::make()->visible(fn() => auth()->user()->isAdmin()),
+                RestoreAction::make()->visible(fn() => auth()->user()->isAdmin()),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make()->visible(static fn() => Auth::user()?->isAdmin() ?? false),
-                    ForceDeleteBulkAction::make()->visible(static fn() => Auth::user()?->isAdmin() ?? false),
-                    RestoreBulkAction::make()->visible(static fn() => Auth::user()?->isAdmin() ?? false),
+                    DeleteBulkAction::make()->visible(fn() => auth()->user()->isAdmin()),
+                    ForceDeleteBulkAction::make()->visible(fn() => auth()->user()->isAdmin()),
+                    RestoreBulkAction::make()->visible(fn() => auth()->user()->isAdmin()),
                 ]),
             ])
-            ->modifyQueryUsing(
-                fn(Builder $query) => $query
-                    ->withoutGlobalScopes([
-                        SoftDeletingScope::class,
-                    ])
-            );
+            ->modifyQueryUsing(fn(Builder $query) => $query
+                ->withoutGlobalScopes([
+                    SoftDeletingScope::class,
+                ]));
     }
 }

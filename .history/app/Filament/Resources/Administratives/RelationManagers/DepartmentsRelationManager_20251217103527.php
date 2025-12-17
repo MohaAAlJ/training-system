@@ -127,9 +127,7 @@ class DepartmentsRelationManager extends RelationManager
                     ->preload(),
                 TrashedFilter::make(),
             ])
-            ->headerActions([
-                CreateAction::make()->visible(static fn() => Auth::user()?->isAdmin() ?? false),
-            ])
+            
             ->recordActions([
                 EditAction::make()->visible(static fn() => Auth::user()?->isAdmin() ?? false),
                 DeleteAction::make()->visible(static fn() => Auth::user()?->isAdmin() ?? false),
