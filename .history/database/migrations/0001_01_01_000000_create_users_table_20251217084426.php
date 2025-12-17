@@ -22,18 +22,12 @@ return new class extends Migration
             $table->unsignedTinyInteger('role')->default(1); // 1=Admin, 2=Administrative, 3=Department, 4=MOH, 5=Institution
             $table->unsignedBigInteger('institution_id')->nullable();
             $table->unsignedBigInteger('college_id')->nullable();
-            $table->unsignedBigInteger('institution_id')->nullable();
-            $table->unsignedBigInteger('college_id')->nullable();
             $table->rememberToken();
             $table->timestamps();
             $table->softDeletes();
         });
 
         // Foreign keys are added in a separate migration after institutions and colleges tables are created
-        // Schema::table('users', function (Blueprint $table) {
-        //     $table->foreign('institution_id')->references('id')->on('institutions')->onDelete('set null');
-        //     $table->foreign('college_id')->references('id')->on('colleges')->onDelete('set null');
-        // });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
