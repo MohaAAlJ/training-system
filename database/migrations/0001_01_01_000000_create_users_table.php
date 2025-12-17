@@ -22,8 +22,6 @@ return new class extends Migration
             $table->unsignedTinyInteger('role')->default(1); // 1=Admin, 2=Administrative, 3=Department, 4=MOH, 5=Institution
             $table->unsignedBigInteger('institution_id')->nullable();
             $table->unsignedBigInteger('college_id')->nullable();
-            $table->unsignedBigInteger('institution_id')->nullable();
-            $table->unsignedBigInteger('college_id')->nullable();
             $table->rememberToken();
             $table->timestamps();
             $table->softDeletes();
