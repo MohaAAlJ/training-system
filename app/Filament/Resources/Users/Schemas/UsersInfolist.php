@@ -36,7 +36,12 @@ class UsersInfolist
                                 'pending' => 'warning',
                                 'blocked' => 'danger',
                                 default => 'gray',
-                            }),
+                            })
+                            ->formatStateUsing(fn (string $state): string => (function ($state) {
+                                $key = 'translation.status.' . $state;
+                                $translated = \Illuminate\Support\Facades\Lang::get($key, [], 'ar');
+                                return $translated === $key ? $state : $translated;
+                            })($state)),
                     ])
                     ->columns(2),
 

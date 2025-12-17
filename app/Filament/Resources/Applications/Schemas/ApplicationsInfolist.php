@@ -65,16 +65,11 @@ class ApplicationsInfolist
                                 'paused' => 'warning',
                                 default => 'gray',
                             })
-                            ->formatStateUsing(fn (string $state): string => match ($state) {
-                                'pending' => 'طلب جديد',
-                                'approved' => 'استيعاب',
-                                'waiting' => 'لم يستلم عمل بعد',
-                                'active' => 'بدء العمل',
-                                'completed' => 'انتهى',
-                                'rejected' => 'مرفوض',
-                                'paused' => 'منقطع',
-                                default => $state,
-                            }),
+                            ->formatStateUsing(fn (string $state): string => (function ($state) {
+                                $key = 'translation.status.' . $state;
+                                $translated = \Illuminate\Support\Facades\Lang::get($key, [], 'ar');
+                                return $translated === $key ? $state : $translated;
+                            })($state)),
                         TextEntry::make('start_date')
                             ->label('تاريخ البدء')
                             ->date('Y-m-d'),
