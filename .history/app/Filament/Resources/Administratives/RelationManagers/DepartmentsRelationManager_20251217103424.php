@@ -23,7 +23,6 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Filament\Tables\Filters\SelectFilter;
-use Filament\Tables\Filters\TrashedFilter;
 
 class DepartmentsRelationManager extends RelationManager
 {
@@ -126,9 +125,6 @@ class DepartmentsRelationManager extends RelationManager
                     ->searchable()
                     ->preload(),
                 TrashedFilter::make(),
-            ])
-            ->headerActions([
-                CreateAction::make()->visible(static fn() => Auth::user()?->isAdmin() ?? false),
             ])
             ->recordActions([
                 EditAction::make()->visible(static fn() => Auth::user()?->isAdmin() ?? false),

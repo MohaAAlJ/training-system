@@ -78,6 +78,7 @@ class CreateApplications extends CreateRecord
         return [
             Action::make('save')
                 ->label('حفظ')
+                // ->icon('heroicon-o-check')
                 ->action(function () {
                     $this->create();
                 })

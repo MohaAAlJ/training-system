@@ -13,18 +13,9 @@ class CreateApplications extends CreateRecord
 {
     protected static string $resource = ApplicationsResource::class;
     protected function getCreatedNotificationTitle(): ?string
-    {
-        return 'تمت العملية بنجاح'; // or "Completed"
-    }
-
-    public function mount(): void
-    {
-        // Authorize only admin and college supervisor
-        if (!Auth::user()?->isAdmin() && !Auth::user()?->isCollegeSupervisor()) {
-            abort(403, 'Unauthorized to create applications');
-        }
-        parent::mount();
-    }
+{
+    return 'تمت العملية بنجاح'; // or "Completed"
+}
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
@@ -78,6 +69,7 @@ class CreateApplications extends CreateRecord
         return [
             Action::make('save')
                 ->label('حفظ')
+                // ->icon('heroicon-o-check')
                 ->action(function () {
                     $this->create();
                 })
@@ -94,4 +86,6 @@ class CreateApplications extends CreateRecord
     {
         return ApplicationsResource::getUrl('index');
     }
+
+
 }

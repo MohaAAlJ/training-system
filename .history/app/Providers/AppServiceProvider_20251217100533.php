@@ -6,8 +6,6 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 use App\Models\Administratives;
 use App\Policies\AdministrativePolicy;
-use App\Models\Departments;
-use App\Policies\DepartmentPolicy;
 
 class AppServiceProvider extends ServiceProvider
 {

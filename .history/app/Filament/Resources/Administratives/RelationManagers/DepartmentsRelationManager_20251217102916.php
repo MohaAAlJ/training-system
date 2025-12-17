@@ -22,8 +22,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
-use Filament\Tables\Filters\SelectFilter;
-use Filament\Tables\Filters\TrashedFilter;
 
 class DepartmentsRelationManager extends RelationManager
 {
@@ -88,7 +86,8 @@ class DepartmentsRelationManager extends RelationManager
                     ->color('primary'),
                 ToggleColumn::make('status')
                     ->label('الحالة')
-                    ->disabled(static fn() => ! Auth::user()?->isAdmin() ?? false)
+                    // Fix: Use auth()->user() and check isAdmin safely
+                    ->disabled(fn () => ! auth()->user()?->isAdmin())
                     ->onIcon('heroicon-m-check-circle')
                     ->offIcon('heroicon-m-x-circle')
                     ->onColor('success')
@@ -113,41 +112,27 @@ class DepartmentsRelationManager extends RelationManager
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->filters([
-                SelectFilter::make('status')
-                    ->label('الحالة')
-                    ->options([
-                        'active' => 'نشط',
-                        'inactive' => 'غير نشط',
-                    ]),
-                SelectFilter::make('user_id')
-                    ->label('المسؤول')
-                    ->relationship('user', 'name')
-                    ->searchable()
-                    ->preload(),
-                TrashedFilter::make(),
-            ])
             ->headerActions([
-                CreateAction::make()->visible(static fn() => Auth::user()?->isAdmin() ?? false),
+                // Fix: Closure uses auth helper
+                CreateAction::make()->visible(fn () => auth()->user()?->isAdmin()),
             ])
             ->recordActions([
-                EditAction::make()->visible(static fn() => Auth::user()?->isAdmin() ?? false),
-                DeleteAction::make()->visible(static fn() => Auth::user()?->isAdmin() ?? false),
-                ForceDeleteAction::make()->visible(static fn() => Auth::user()?->isAdmin() ?? false),
-                RestoreAction::make()->visible(static fn() => Auth::user()?->isAdmin() ?? false),
+                // Fix: Correct Action classes + Closures
+                EditAction::make()->visible(fn () => auth()->user()?->isAdmin()),
+                DeleteAction::make()->visible(fn () => auth()->user()?->isAdmin()),
+                ForceDeleteAction::make()->visible(fn () => auth()->user()?->isAdmin()),
+                RestoreAction::make()->visible(fn () => auth()->user()?->isAdmin()),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make()->visible(static fn() => Auth::user()?->isAdmin() ?? false),
-                    ForceDeleteBulkAction::make()->visible(static fn() => Auth::user()?->isAdmin() ?? false),
-                    RestoreBulkAction::make()->visible(static fn() => Auth::user()?->isAdmin() ?? false),
+                    DeleteBulkAction::make()->visible(fn () => auth()->user()?->isAdmin()),
+                    ForceDeleteBulkAction::make()->visible(fn () => auth()->user()?->isAdmin()),
+                    RestoreBulkAction::make()->visible(fn () => auth()->user()?->isAdmin()),
                 ]),
             ])
-            ->modifyQueryUsing(
-                fn(Builder $query) => $query
-                    ->withoutGlobalScopes([
-                        SoftDeletingScope::class,
-                    ])
-            );
+            ->modifyQueryUsing(fn (Builder $query) => $query
+                ->withoutGlobalScopes([
+                    SoftDeletingScope::class,
+                ]));
     }
 }

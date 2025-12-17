@@ -38,10 +38,10 @@ class EditApplications extends EditRecord
             DeleteAction::make()->visible(static fn() => Auth::user()?->isAdmin() ?? false)
                 ->color('danger')
                 ->outlined(),
-            ForceDeleteAction::make()->visible(static fn() => Auth::user()?->isAdmin() ?? false)
+            ForceDeleteAction::make()-
                 ->color('danger')
                 ->outlined(),
-            RestoreAction::make()->visible(static fn() => Auth::user()?->isAdmin() ?? false)
+            RestoreAction::make()
                 ->color('danger')
                 ->outlined(),
         ];

@@ -22,8 +22,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
-use Filament\Tables\Filters\SelectFilter;
-use Filament\Tables\Filters\TrashedFilter;
 
 class DepartmentsRelationManager extends RelationManager
 {
@@ -64,69 +62,15 @@ class DepartmentsRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
-            ->recordTitleAttribute('name_location')
-            ->columns([
-                TextColumn::make('name_location')
-                    ->label('اسم القسم والموقع')
-                    ->searchable()
-                    ->sortable(),
-                TextColumn::make('user.name')
-                    ->label('المسؤول')
-                    ->searchable(),
-                TextColumn::make('total_capacity')
-                    ->label('السعة')
-                    ->sortable(),
-                TextColumn::make('registered_count')
-                    ->label('المسجلين')
-                    ->state(function ($record) {
-                        return DB::table('applications')
-                            ->where('department_id', $record->id)
-                            ->whereIn('status', ['active', 'completed'])
-                            ->count();
-                    })
-                    ->badge()
-                    ->color('primary'),
-                ToggleColumn::make('status')
-                    ->label('الحالة')
-                    ->disabled(static fn() => ! Auth::user()?->isAdmin() ?? false)
-                    ->onIcon('heroicon-m-check-circle')
-                    ->offIcon('heroicon-m-x-circle')
-                    ->onColor('success')
-                    ->offColor('danger')
-                    ->beforeStateUpdated(function ($record, $state) {
-                        $record->status = $state ? 'active' : 'inactive';
-                        $record->save();
-                    }),
-                TextColumn::make('created_at')
-                    ->label('تاريخ الإنشاء')
-                    ->dateTime('Y-m-d')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->label('تاريخ التحديث')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('deleted_at')
-                    ->label('تاريخ الحذف')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-            ])
-            ->filters([
-                SelectFilter::make('status')
-                    ->label('الحالة')
-                    ->options([
-                        'active' => 'نشط',
-                        'inactive' => 'غير نشط',
-                    ]),
-                SelectFilter::make('user_id')
-                    ->label('المسؤول')
-                    ->relationship('user', 'name')
-                    ->searchable()
-                    ->preload(),
-                TrashedFilter::make(),
-            ])
+    }
+}
+
+
+
+    
+/*
+    
+            
             ->headerActions([
                 CreateAction::make()->visible(static fn() => Auth::user()?->isAdmin() ?? false),
             ])
@@ -143,11 +87,9 @@ class DepartmentsRelationManager extends RelationManager
                     RestoreBulkAction::make()->visible(static fn() => Auth::user()?->isAdmin() ?? false),
                 ]),
             ])
-            ->modifyQueryUsing(
-                fn(Builder $query) => $query
-                    ->withoutGlobalScopes([
-                        SoftDeletingScope::class,
-                    ])
-            );
+            ->modifyQueryUsing(fn(Builder $query) => $query
+                ->withoutGlobalScopes([
+                    SoftDeletingScope::class,
+                ]));
     }
-}
+                */

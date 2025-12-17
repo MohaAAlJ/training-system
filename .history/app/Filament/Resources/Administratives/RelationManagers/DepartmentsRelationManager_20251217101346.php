@@ -2,10 +2,13 @@
 
 namespace App\Filament\Resources\Administratives\RelationManagers;
 
+use Filament\Actions\AssociateAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\DissociateAction;
+use Filament\Actions\DissociateBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\ForceDeleteBulkAction;
@@ -17,13 +20,13 @@ use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
-use Filament\Tables\Filters\SelectFilter;
-use Filament\Tables\Filters\TrashedFilter;
 
 class DepartmentsRelationManager extends RelationManager
 {
@@ -63,6 +66,7 @@ class DepartmentsRelationManager extends RelationManager
 
     public function table(Table $table): Table
     {
+        $user = Auth::user();
         return $table
             ->recordTitleAttribute('name_location')
             ->columns([
@@ -88,7 +92,7 @@ class DepartmentsRelationManager extends RelationManager
                     ->color('primary'),
                 ToggleColumn::make('status')
                     ->label('الحالة')
-                    ->disabled(static fn() => ! Auth::user()?->isAdmin() ?? false)
+                    ->disabled(fn() => ! $user->isAdmin())
                     ->onIcon('heroicon-m-check-circle')
                     ->offIcon('heroicon-m-x-circle')
                     ->onColor('success')
@@ -113,41 +117,23 @@ class DepartmentsRelationManager extends RelationManager
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->filters([
-                SelectFilter::make('status')
-                    ->label('الحالة')
-                    ->options([
-                        'active' => 'نشط',
-                        'inactive' => 'غير نشط',
-                    ]),
-                SelectFilter::make('user_id')
-                    ->label('المسؤول')
-                    ->relationship('user', 'name')
-                    ->searchable()
-                    ->preload(),
-                TrashedFilter::make(),
-            ])
             ->headerActions([
-                CreateAction::make()->visible(static fn() => Auth::user()?->isAdmin() ?? false),
+                CreateAction::make()->visible(fn() => $user->isAdmin()),
             ])
             ->recordActions([
-                EditAction::make()->visible(static fn() => Auth::user()?->isAdmin() ?? false),
-                DeleteAction::make()->visible(static fn() => Auth::user()?->isAdmin() ?? false),
-                ForceDeleteAction::make()->visible(static fn() => Auth::user()?->isAdmin() ?? false),
-                RestoreAction::make()->visible(static fn() => Auth::user()?->isAdmin() ?? false),
+                EditAction::make()->visible(fn() => $user->isAdmin()),
+                DeleteAction::make()->visible(fn() => $user->isAdmin()),
+                ForceDeleteAction::make()->visible(fn() => $user->isAdmin()),
+                RestoreAction::make()->visible(fn() => $user->isAdmin()),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make()->visible(static fn() => Auth::user()?->isAdmin() ?? false),
-                    ForceDeleteBulkAction::make()->visible(static fn() => Auth::user()?->isAdmin() ?? false),
-                    RestoreBulkAction::make()->visible(static fn() => Auth::user()?->isAdmin() ?? false),
+                    DeleteBulkAction::make()->visible(fn() => $user->isAdmin()),
+                    ForceDeleteBulkAction::make()->visible(fn() => $user->isAdmin()),
+                    RestoreBulkAction::make()->visible(fn() => $user->isAdmin()),
                 ]),
             ])
-            ->modifyQueryUsing(
-                fn(Builder $query) => $query
-                    ->withoutGlobalScopes([
-                        SoftDeletingScope::class,
-                    ])
-            );
-    }
-}
+            ->modifyQueryUsing(fn(Builder $query) => $query
+                ->withoutGlobalScopes([
+                    SoftDeletingScope::class,
+                ]));

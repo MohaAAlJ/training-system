@@ -22,8 +22,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
-use Filament\Tables\Filters\SelectFilter;
-use Filament\Tables\Filters\TrashedFilter;
 
 class DepartmentsRelationManager extends RelationManager
 {
@@ -88,7 +86,7 @@ class DepartmentsRelationManager extends RelationManager
                     ->color('primary'),
                 ToggleColumn::make('status')
                     ->label('الحالة')
-                    ->disabled(static fn() => ! Auth::user()?->isAdmin() ?? false)
+                    ->disabled(fn() => ! Auth::user()?->isAdmin() ?? false)
                     ->onIcon('heroicon-m-check-circle')
                     ->offIcon('heroicon-m-x-circle')
                     ->onColor('success')
@@ -113,41 +111,26 @@ class DepartmentsRelationManager extends RelationManager
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->filters([
-                SelectFilter::make('status')
-                    ->label('الحالة')
-                    ->options([
-                        'active' => 'نشط',
-                        'inactive' => 'غير نشط',
-                    ]),
-                SelectFilter::make('user_id')
-                    ->label('المسؤول')
-                    ->relationship('user', 'name')
-                    ->searchable()
-                    ->preload(),
-                TrashedFilter::make(),
-            ])
             ->headerActions([
-                CreateAction::make()->visible(static fn() => Auth::user()?->isAdmin() ?? false),
+                CreateAction::make()->visible(fn() => Auth::user()?->isAdmin() ?? false),
             ])
             ->recordActions([
-                EditAction::make()->visible(static fn() => Auth::user()?->isAdmin() ?? false),
-                DeleteAction::make()->visible(static fn() => Auth::user()?->isAdmin() ?? false),
-                ForceDeleteAction::make()->visible(static fn() => Auth::user()?->isAdmin() ?? false),
-                RestoreAction::make()->visible(static fn() => Auth::user()?->isAdmin() ?? false),
+                EditAction::make()->visible(fn() => Auth::user()?->isAdmin() ?? false),
+                DeleteAction::make()->visible(fn() => Auth::user()?->isAdmin() ?? false),
+                ForceDeleteAction::make()->visible(fn() => Auth::user()?->isAdmin() ?? false),
+                RestoreAction::make()->visible(fn() => Auth::user()?->isAdmin() ?? false),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make()->visible(static fn() => Auth::user()?->isAdmin() ?? false),
-                    ForceDeleteBulkAction::make()->visible(static fn() => Auth::user()?->isAdmin() ?? false),
-                    RestoreBulkAction::make()->visible(static fn() => Auth::user()?->isAdmin() ?? false),
+                    DeleteBulkAction::make()->visible(fn() => Auth::user()?->isAdmin() ?? false),
+                    ForceDeleteBulkAction::make()->visible(fn() => Auth::user()?->isAdmin() ?? false),
+                    RestoreBulkAction::make()->visible(fn() => Auth::user()?->isAdmin() ?? false),
                 ]),
             ])
-            ->modifyQueryUsing(
-                fn(Builder $query) => $query
-                    ->withoutGlobalScopes([
-                        SoftDeletingScope::class,
-                    ])
-            );
+            ->modifyQueryUsing(fn(Builder $query) => $query
+                ->withoutGlobalScopes([
+                    SoftDeletingScope::class,
+                ]));
     }
 }
+    }

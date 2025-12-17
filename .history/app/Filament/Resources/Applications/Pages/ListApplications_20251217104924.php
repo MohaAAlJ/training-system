@@ -5,7 +5,6 @@ use filament\App\Filament\Resources\Applications\Pages\CreateApplications;
 use Filament\Actions\CreateAction;
 use App\Filament\Resources\Applications\ApplicationsResource;
 use Filament\Resources\Pages\ListRecords;
-use Illuminate\Support\Facades\Auth;
 
 class ListApplications extends ListRecords
 {
@@ -15,8 +14,7 @@ class ListApplications extends ListRecords
     {
         return [
             CreateAction::make()
-                ->label('إضافة طلب')
-                ->visible(static fn() => Auth::user()?->isAdmin() || Auth::user()?->isCollegeSupervisor() ?? false),
+                ->label('إضافة طلب'),
         ];
     }
 }
