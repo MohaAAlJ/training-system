@@ -4,14 +4,11 @@ namespace App\Filament\Resources\Applications\Tables;
 
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Actions\ViewAction;
-use Illuminate\Support\Facades\Auth;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -19,7 +16,7 @@ use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Filament\Notifications\Notification;
+use App\Helpers\Constans;
 use Filament\Forms\Components\DatePicker;
 
 class ApplicationsTable
@@ -68,16 +65,11 @@ class ApplicationsTable
                         'paused' => 'warning',
                         default => 'gray',
                     })
-                    ->formatStateUsing(fn(string $state): string => match ($state) {
-                        'pending' => 'طلب جديد',
-                        'approved' => 'استيعاب',
-                        'waiting' => 'لم يستلم عمل بعد',
-                        'active' => 'بدء العمل',
-                        'completed' => 'انتهى',
-                        'rejected' => 'مرفوض',
-                        'paused' => 'منقطع',
-                        default => $state,
-                    }),
+                    ->formatStateUsing(fn (string $state): string => (function($state) {
+                        $key = 'translation.status.' . $state;
+                        $translated = \Illuminate\Support\Facades\Lang::get($key, [], 'ar');
+                        return $translated === $key ? $state : $translated;
+                    })($state)),
                 TextColumn::make('duration')
                     ->label('مدة التدريب (أيام)')
                     ->getStateUsing(fn($record) => $record->start_date && $record->end_date ? $record->end_date->diffInDays($record->start_date) : '-')
@@ -99,15 +91,10 @@ class ApplicationsTable
             ->filters([
                 SelectFilter::make('status')
                     ->label('الحالة')
-                    ->options([
-                        'pending' => 'طلب جديد',
-                        'waiting' => 'استيعاب',
-                        'approved' => 'قبول جامعة',
-                        'active' => 'بدء العمل',
-                        'completed' => 'انتهى',
-                        'rejected' => 'مرفوض',
-                        'paused' => 'منقطع',
-                    ]),
+                    ->options(fn () => array_combine(
+                        Constans::STATUSES,
+                        array_map(fn($s) => \Illuminate\Support\Facades\Lang::get("translation.status.$s", [], 'ar'), Constans::STATUSES)
+                    )),
                 SelectFilter::make('department_id')
                     ->label('القسم')
                     ->relationship('department', 'name_location')
@@ -140,38 +127,13 @@ class ApplicationsTable
                     ->outlined(),
 
                 EditAction::make()
-                    ->color('primary')
-                    ->outlined()
-                    ->visible(fn() => ! Auth::user()->isCollegeSupervisor()),
-
-                Action::make('moveToWaiting')
-                    ->label('تحويل لقائمة الانتظار')
-                    ->icon('heroicon-m-arrow-path') 
-                    ->color('success')
-                    ->button()
-                    ->visible(
-                        fn($record) =>
-                        Auth::user()->isCollegeSupervisor() &&
-                            $record->status === 'approved'
-                    )
-                    ->requiresConfirmation()
-                    ->modalHeading('تغيير حالة الطلب')
-                    ->modalDescription('هل أنت متأكد من تحويل حالة هذا الطالب إلى "لم يستلم عمل بعد" (Waiting)؟')
-                    ->action(function ($record) {
-                        $record->update(['status' => 'waiting']);
-
-                        Notification::make()
-                            ->title('تم تحديث الحالة بنجاح')
-                            ->success()
-                            ->send();
-                    }),
-
-                DeleteAction::make()->visible(fn() => Auth::user()?->isAdmin() ?? false),
+                    ->color('danger')
+                    ->outlined(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make()->visible(fn() => Auth::user()?->isAdmin() ?? false),
-                    ForceDeleteBulkAction::make()->visible(fn() => Auth::user()?->isAdmin() ?? false),
+                    DeleteBulkAction::make(),
+                    ForceDeleteBulkAction::make(),
                     RestoreBulkAction::make(),
                 ]),
             ]);

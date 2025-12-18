@@ -17,7 +17,10 @@ class User extends Authenticatable implements FilamentUser
 
     protected $fillable = ['name', 'email', 'password', 'role', 'status'];
     protected $hidden = ['password', 'remember_token'];
-    protected $casts = ['role' => 'integer'];
+    protected $casts = [
+        'role' => 'integer',
+        'password' => 'hashed',
+    ];
 
 
     public function administrative(): HasOne

@@ -14,6 +14,7 @@ use Filament\Actions\Action;
 use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\Auth;
+use App\Helpers\Constans;
 
 class ApplicationsForm
 {
@@ -207,18 +208,11 @@ class ApplicationsForm
 
                         Select::make('status')
                             ->label('الحالة')
-                            ->options([
-                                'pending' => 'طلب جديد',
-                                'approved' => 'استيعاب',
-                                'waiting' => 'لم يستلم عمل بعد',
-                                'active' => 'بدء العمل',
-                                'completed' => 'انتهى',
-                                'rejected' => 'مرفوض',
-                                'paused' => 'منقطع',
-                            ])
-                            ->default('pending')
-                            ->hidden(fn() => Auth::user()->isCollegeSupervisor())
-                            ->dehydrated()
+                            ->options(fn () => array_combine(
+                                Constans::STATUSES,
+                                array_map(fn($s) => \Illuminate\Support\Facades\Lang::get("translation.status.$s", [], 'ar'), Constans::STATUSES)
+                            ))
+                            ->default(\App\Helpers\Constans::STATUS_PENDING)
                             ->required()
                             ->live()
                             ->afterStateUpdated(fn($state, $set) => $state === 'active' ? $set('accepted_at', now()) : null),
