@@ -20,14 +20,17 @@ class CreateApplications extends CreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
+        // 1. ضبط الحالة لمشرف الكلية
         if (Auth::user()->isCollegeSupervisor()) {
             $data['status'] = 'waiting';
         }
 
+        // 2. تجميع تاريخ الميلاد إذا جاء مفصولاً (اختياري حسب تصميمك)
         if (empty($data['dob']) && isset($data['dob_year'])) {
             $data['dob'] = $data['dob_year'] . '-' . str_pad($data['dob_month'] ?? 1, 2, '0', STR_PAD_LEFT) . '-' . str_pad($data['dob_day'] ?? 1, 2, '0', STR_PAD_LEFT);
         }
 
+        // 3. إنشاء المتدرب الجديد (لأننا في صفحة Create)
         if (empty($data['trainee_id'])) {
             DB::beginTransaction();
             try {
@@ -48,6 +51,7 @@ class CreateApplications extends CreateRecord
                 DB::commit();
             } catch (\Throwable $e) {
                 DB::rollBack();
+                // يمكن إضافة إشعار خطأ هنا
                 throw $e;
             }
         }

@@ -19,7 +19,7 @@ class EditApplications extends EditRecord
         return [
             Action::make('save')
                 ->label('حفظ التعديلات')
-                ->action(fn() => $this->save())
+                ->action(fn() => $this->save()) // يحفظ الطلب فقط
                 ->color('primary'),
 
             Action::make('cancel')

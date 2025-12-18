@@ -105,20 +105,25 @@ class ApplicationsForm
                             ->label('المؤسسة التعليمية')
                             ->options(fn() => Institution::all()->pluck('name', 'id'))
                             ->default(fn() => Auth::user()->isCollegeSupervisor() ? Auth::user()->college?->institution_id : null)
+                            // في التعديل نعرض القيمة من العلاقة
                             ->formatStateUsing(fn($record) => $record?->trainee?->institution_id)
                             ->disabled(fn() => Auth::user()->isCollegeSupervisor() || request()->routeIs('*.edit'))
                             ->dehydrated(fn($context) => $context === 'create')
-                            ->required(fn() => Auth::user()->isAdmin())
+                            ->required(fn()=>)
                             ->reactive(),
 
                         Select::make('college_id')
                             ->label('الكلية')
                             ->options(function (callable $get) {
+                                // --- الإضافة المهمة هنا ---
+                                // إذا كان المستخدم مشرف كلية، نجلب كليات مؤسسته مباشرة
                                 if (Auth::user()->isCollegeSupervisor() && Auth::user()->college) {
                                     return College::where('institution_id', Auth::user()->college->institution_id)
                                         ->pluck('name', 'id');
                                 }
+                                // ------------------------
 
+                                // الوضع الطبيعي للأدمن
                                 $institutionId = $get('institution_id');
                                 if ($institutionId) {
                                     return College::where('institution_id', $institutionId)->pluck('name', 'id');
@@ -126,20 +131,26 @@ class ApplicationsForm
                                 return [];
                             })
                             ->default(fn() => Auth::user()->isCollegeSupervisor() ? Auth::user()->college_id : null)
+                            // ... باقي الكود (formatStateUsing, disabled, etc.)
                             ->formatStateUsing(fn($record) => $record?->trainee?->college_id)
                             ->disabled(fn() => Auth::user()->isCollegeSupervisor() || request()->routeIs('*.edit'))
                             ->dehydrated(fn($context) => $context === 'create')
-                            ->required(fn() => Auth::user()->isAdmin())
+                            ->required()
                             ->reactive(),
 
                         Select::make('major_id')
                             ->label('التخصص')
                             ->options(function (callable $get) {
+                                // --- الإضافة المهمة هنا ---
+                                // إذا كان المستخدم مشرف كلية، نجلب تخصصات كليته مباشرة
                                 if (Auth::user()->isCollegeSupervisor() && Auth::user()->college) {
                                     return Major::whereHas('colleges', function ($q) {
                                         $q->where('colleges.id', Auth::user()->college_id);
                                     })->pluck('name', 'id');
                                 }
+                                // ------------------------
+
+                                // الوضع الطبيعي للأدمن
                                 $collegeId = $get('college_id');
                                 if ($collegeId) {
                                     return Major::whereHas('colleges', fn($q) => $q->where('colleges.id', $collegeId))->pluck('name', 'id');
@@ -147,6 +158,7 @@ class ApplicationsForm
                                 return [];
                             })
                             ->formatStateUsing(fn($record) => $record?->trainee?->major_id)
+                            // ... باقي الكود
                             ->disabled(fn($context) => $context === 'edit')
                             ->dehydrated(fn($context) => $context === 'create')
                             ->searchable()
@@ -173,7 +185,7 @@ class ApplicationsForm
                             ->numeric()
                             ->default(100)
                             ->suffix('ساعة')
-                            ->disabled(fn() => ! Auth::user()->isAdmin())
+                            ->disabled(fn() => ! Auth::user()->isAdmin()) // فقط الأدمن يعدل المدة
                             ->required(),
 
                         Select::make('administrative_id')
