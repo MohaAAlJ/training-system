@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\Auth;
 
 class ApplicationsResource extends Resource
 {
+
     protected static ?string $model = Applications::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClipboardDocumentList;
@@ -31,7 +32,10 @@ class ApplicationsResource extends Resource
     protected static ?string $pluralModelLabel = 'الطلبات';
     protected static ?string $navigationLabel = 'الطلبات';
     protected static ?int $navigationSort = 3;
-
+    public static function getNavigationBadge(): ?string
+{
+    return static::getModel()::count();
+}
     public static function form(Schema $schema): Schema
     {
         return ApplicationsForm::configure($schema);

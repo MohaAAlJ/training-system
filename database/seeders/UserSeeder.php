@@ -13,12 +13,48 @@ class UserSeeder extends Seeder
         User::create([
             'name' => 'Moha',
             'email' => 'Moha@admins.com',
-            'password' => Hash::make('123$$'),
+            'password' => Hash::make('123'),
+            'role' => 1,
+            'status' => 'active',
         ]);
         User::create([
             'name' => 'admin',
             'email' => 'a@admin.com',
             'password' => Hash::make('123'),
+            'role' => 1,
+            'status' => 'active',
+        ]);
+        User::create([
+            'name' => 'iug supervisor',
+            'email' => 'iug@college.com',
+            'password' => Hash::make('123'),
+            'role' => 5,
+            'college_id' => 1,
+            'institution_id' => 1,
+            'status' => 'active',
+        ]);
+        User::create([
+            'name' => 'aug supervisor',
+            'email' => 'aug@college.com',
+            'password' => Hash::make('123'),
+            'role' => 5,
+            'college_id' => 2,
+            'institution_id' => 2,
+            'status' => 'active',
+        ]);
+        User::create([
+            'name' => 'Department head',
+            'email' => 'de@department.com',
+            'password' => Hash::make('123'),
+            'role' => 3,
+        ]);
+        User::create([
+            'name' => 'adminstrative head',
+            'email' => 'ad@adminstrative.com',
+            'password' => Hash::make('123'),
+            'role' => 2,
         ]);
     }
-}
+    }
+
+

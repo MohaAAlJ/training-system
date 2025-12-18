@@ -9,7 +9,7 @@ class TraineesSeeder extends Seeder
 {
     public function run(): void
     {
-        // Create 50 random trainees
-        Trainees::factory()->count(50)->create();
+        // // Create 50 random trainees
+        // Trainees::factory()->count(50)->create();
     }
 }
