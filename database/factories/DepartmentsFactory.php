@@ -3,15 +3,16 @@
 namespace Database\Factories;
 
 use App\Models\User;
-use App\Models\Administratives;
+use App\Models\Sections;
+use App\Models\Departments;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class DepartmentsFactory extends Factory
+class SectionsFactory extends Factory
 {
     public function definition(): array
     {
-        // Arabic departments with locations
-        $departments = [
+        // Arabic sections with locations
+        $sections = [
             'قسم الطوارئ - المبنى الرئيسي',
             'قسم العناية المركزة - الطابق الثاني',
             'قسم الباطنية - المبنى أ',
@@ -30,11 +31,11 @@ class DepartmentsFactory extends Factory
         ];
 
         return [
-            'name_location' => $this->faker->randomElement($departments),
+            'name_location' => $this->faker->randomElement($sections),
             'status' => $this->faker->randomElement(['active', 'inactive']),
             'total_capacity' => $this->faker->numberBetween(5, 20),
             'user_id' => User::factory(),
-            'administrative_id' => Administratives::factory(),
+            'Departments_id' => Departments::factory(),
         ];
     }
 }

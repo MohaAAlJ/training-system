@@ -7,11 +7,9 @@ const endpoints = {
     majorColleges: (majorId) =>
         `/WelcomeForm/Form/api/major-colleges?major_id=${majorId ?? ""}`,
     trainingFocus: "/WelcomeForm/Form/api/training-types",
-    administratives: "/WelcomeForm/Form/api/administratives",
-    departments: (administrativeId, majorId) =>
-        `/WelcomeForm/Form/api/departments?administrative_id=${
-            administrativeId ?? ""
-        }&major_id=${majorId ?? ""}`,
+    departments: "/WelcomeForm/Form/api/departments",
+    sections: (departmentId) =>
+        `/WelcomeForm/Form/api/sections?department_id=${departmentId ?? ""}`,
     submit: "/WelcomeForm/Form",
 };
 
@@ -23,8 +21,8 @@ const message = document.getElementById("formMessage");
 const addressSelect = document.getElementById("address");
 const institutionSelect = document.getElementById("institution_id");
 const majorSelect = document.getElementById("major_id");
-const administrativeSelect = document.getElementById("administrative_id");
 const departmentSelect = document.getElementById("department_id");
+const sectionSelect = document.getElementById("section_id");
 const trainingTypeSelect = document.getElementById("training_type");
 const dobInput = document.getElementById("dob");
 const dobDay = document.getElementById("dob_day");
@@ -115,28 +113,26 @@ async function loadOptions(select, url, fallbackData, labelKey = "name") {
     }
 }
 
-async function loadAdministratives() {
+async function loadDepartments() {
     await loadOptions(
-        administrativeSelect,
-        endpoints.administratives,
-        fallback.administratives
+        departmentSelect,
+        endpoints.departments,
+        fallback.departments
     );
-    populateOptions(departmentSelect, []);
+    populateOptions(sectionSelect, []);
 }
 
-async function filterDepartments(adminId, majorId) {
+async function filterSections(deptId) {
     try {
-        const res = await fetch(endpoints.departments(adminId, majorId));
+        const res = await fetch(endpoints.sections(deptId));
         if (!res.ok) throw new Error("Request failed");
         const data = await res.json();
-        populateOptions(departmentSelect, data);
+        populateOptions(sectionSelect, data, "name_location");
     } catch (err) {
-        const data = fallback.departments.filter(
-            (d) =>
-                (!adminId || d.administrative_id == adminId) &&
-                (!majorId || d.major_ids.includes(Number(majorId)))
+        const data = (fallback.sections || []).filter(
+            (s) => !deptId || s.department_id == deptId
         );
-        populateOptions(departmentSelect, data);
+        populateOptions(sectionSelect, data, "name_location");
     }
 }
 
@@ -149,17 +145,10 @@ institutionSelect.addEventListener("change", (e) => {
     loadOptions(majorSelect, endpoints.majors(instId), [], "name");
 });
 
-administrativeSelect.addEventListener("change", (e) => {
-    filterDepartments(e.target.value, majorSelect.value);
+departmentSelect.addEventListener("change", (e) => {
+    filterSections(e.target.value);
 });
-
 majorSelect.addEventListener("change", (e) => {
-    // Only filter departments if administrative is already selected
-    if (administrativeSelect.value) {
-        filterDepartments(administrativeSelect.value, e.target.value);
-    }
-    // Auto-fill institution based on selected major (pick first linked college)
-    (async function () {
         try {
             const res = await fetch(endpoints.majorColleges(e.target.value));
             if (!res.ok) return;
@@ -336,8 +325,8 @@ form.addEventListener("submit", async (e) => {
         endpoints.trainingFocus,
         fallback.trainingFocus
     );
-    populateOptions(departmentSelect, []);
-    loadAdministratives();
+    populateOptions(sectionSelect, []);
+    loadDepartments();
 
     // Add smooth entrance animation to the form
     const heroElement = document.querySelector(".hero");

@@ -136,8 +136,11 @@
                         </label>
                         <label class="field">
                             <span>المحافظة *</span>
-                            <select id="address" name="address" required>
+                            <select id="governorate_id" name="governorate_id" required>
                                 <option value="" disabled selected>اختر </option>
+                                @foreach(\App\Models\Governorate::all() as $g)
+                                    <option value="{{ $g->id }}">{{ $g->name_ar }}</option>
+                                @endforeach
                             </select>
                         </label>
                         <label class="field">
@@ -198,8 +201,8 @@
                         <label class="field">
                             <span>الدوائر *</span>
                             <select
-                                id="administrative_id"
-                                name="administrative_id"
+                                id="department_id"
+                                name="department_id"
                                 required
                             >
                                 <option value="" disabled selected>اختر</option>
@@ -209,8 +212,8 @@
                         <label class="field">
                             <span>القسم *</span>
                             <select
-                                id="department_id"
-                                name="department_id"
+                                id="section_id"
+                                name="section_id"
                                 required
                             >
                                 <option value="" disabled selected>اختر</option>

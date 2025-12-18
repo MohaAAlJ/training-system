@@ -5,6 +5,8 @@ namespace App\Filament\Resources\Applications\Schemas;
 use App\Models\Institution;
 use App\Models\College;
 use App\Models\Major;
+use App\Models\Sections;
+use App\Models\Administrative;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
@@ -177,16 +179,18 @@ class ApplicationsForm
                             ->disabled(fn() => ! Auth::user()->isAdmin())
                             ->required(),
 
-                        Select::make('administrative_id')
-                            ->label('الادارة')
-                            ->relationship('administrative', 'title')
+                        Select::make('department_id')
+                            ->label('الدائرة')
+                            ->options(fn() => Administrative::all()->pluck('name', 'id'))
+                            ->searchable()
                             ->preload()
-                            ->disabled(fn() => ! Auth::user()->isAdmin() && ! Auth::user()->isCollegeSupervisor())
+                            ->disabled(fn() => ! Auth::user()->isAdmin())
                             ->required(),
 
-                        Select::make('department_id')
+                        Select::make('section_id')
                             ->label('القسم')
-                            ->relationship('department', 'name_location')
+                            ->options(fn() => Sections::all()->pluck('name_location', 'id'))
+                            ->searchable()
                             ->preload()
                             ->disabled(fn() => ! Auth::user()->isAdmin() && ! Auth::user()->isCollegeSupervisor())
                             ->required(),

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Applications;
-use App\Models\Administratives;
+use App\Models\sections;
 use App\Models\Departments;
 use App\Models\Institution;
 use App\Models\Major;
@@ -106,25 +106,25 @@ class ApplicationFormController extends Controller
         return response()->json($colleges);
     }
 
-    public function administratives()
+    public function departments()
     {
-        $data = Administratives::select('id', 'title')->get()
-            ->map(fn ($adm) => [
-                'id' => $adm->id,
-                'name' => $adm->title,
+        $data = Departments::select('id', 'name_location')->get()
+            ->map(fn ($dept) => [
+                'id' => $dept->id,
+                'name' => $dept->name_location,
             ])
             ->values();
 
         return response()->json($data);
     }
 
-    public function departments(Request $request)
+    public function sections(Request $request)
     {
-        $administrativeId = $request->query('administrative_id');
+        $administrativeId = $request->query('department_id');
 
-        $query = Departments::active()->select('id', 'name_location', 'administrative_id');
+        $query = Sections::active()->select('id', 'name_location', 'department_id');
         if ($administrativeId) {
-            $query->where('administrative_id', $administrativeId);
+            $query->where('department_id', $administrativeId);
         }
 
         $data = $query->get()

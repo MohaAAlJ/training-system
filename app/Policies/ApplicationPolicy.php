@@ -25,12 +25,12 @@ class ApplicationPolicy
             return $Applications->trainee->college_id === $user->college?->id;
         }
 
-        if ($user->isDepartmentHead()) {
-            return $Applications->department_id === $user->department?->id;
+        if ($user->isSectionHead()) {
+            return $Applications->section_id === $user->Sections?->id;
         }
 
-        if ($user->isAdministrative()) {
-            return $Applications->department->administrative_id === $user->administrative?->id;
+        if ($user->isDepartment()) {
+            return $Applications->department->department_id === $user->department?->department_id;
         }
 
         if ($user->isMinistry()) {
@@ -52,15 +52,15 @@ class ApplicationPolicy
             return true;
         }
 
-        if ($user->isDepartmentHead()) {
-            return $Applications->department_id === $user->department?->id;
+        if ($user->isSectionHead()) {
+            return $Applications->section_id === $user->Sections?->id;
         }
 
         if ($user->isCollegeSupervisor()) {
             return $Applications->trainee->college_id === $user->college?->id;
         }
 
-        if ($user->isAdministrative()) {
+        if ($user->isDepartment()) {
 
             if ($user->isGeneralTrainingManager()) {
                 return true;

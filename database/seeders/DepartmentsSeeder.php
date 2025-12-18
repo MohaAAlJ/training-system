@@ -2,29 +2,44 @@
 
 namespace Database\Seeders;
 
+use App\Models\Administrative;
+use App\Models\User;
+use App\Helpers\Constans;
 use Illuminate\Database\Seeder;
-use App\Models\Departments;
-use App\Models\Administratives;
+use Illuminate\Support\Facades\Hash;
 
 class DepartmentsSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        // Create 5 Directorates (Administratives)
-        // For each Directorate, create 3 Departments
+        $directorates = [
+            ['title' => 'الإدارة العامة لتنمية القوى البشرية', 'is_medical' => false],
+            ['title' => 'الإدارة العامة للمستشفيات', 'is_medical' => true],
+            ['title' => 'الإدارة العامة للرعاية الأولية', 'is_medical' => true],
+            ['title' => 'الإدارة العامة للهندسة والصيانة', 'is_medical' => false],
+            ['title' => 'الإدارة العامة للشؤون الإدارية', 'is_medical' => false],
+            ['title' => 'الإدارة العامة للصيدلة', 'is_medical' => true],
+            ['title' => 'وحدة تكنولوجيا المعلومات', 'is_medical' => false],
+            ['title' => 'وحدة العلاقات العامة والإعلام', 'is_medical' => false],
+        ];
 
-        Administratives::factory()
-            ->count(5)
-            ->create()
-            ->each(function ($admin) {
-                Departments::factory()
-                    ->count(3)
-                    ->create([
-                        'administrative_id' => $admin->id
-                    ]);
-            });
+        foreach ($directorates as $directorateData) {
+            // Ensure unique email addresses to avoid duplicate key errors during seeding
+            $uniqueSuffix = uniqid();
+            $manager = User::factory()->create([
+                'name' => 'مدير ' . $directorateData['title'],
+                'email' => 'manager_' . $uniqueSuffix . '@moh.gov.ps',
+                'password' => Hash::make('password'),
+                'role' => Constans::ROLE_DEPARTMENT,
+                'status' => 'active',
+            ]);
+
+            $data = [
+                'name' => $directorateData['title'],
+                'user_id' => $manager->id,
+            ];
+
+            Administrative::create($data);
+        }
     }
 }

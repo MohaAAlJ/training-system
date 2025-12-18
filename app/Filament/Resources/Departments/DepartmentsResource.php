@@ -6,28 +6,29 @@ use App\Filament\Resources\Departments\Pages\CreateDepartments;
 use App\Filament\Resources\Departments\Pages\EditDepartments;
 use App\Filament\Resources\Departments\Pages\ListDepartments;
 use App\Filament\Resources\Departments\Pages\ViewDepartments;
+use App\Filament\Resources\Departments\RelationManagers\SectionsRelationManager;
 use App\Filament\Resources\Departments\Schemas\DepartmentsForm;
 use App\Filament\Resources\Departments\Schemas\DepartmentsInfolist;
 use App\Filament\Resources\Departments\Tables\DepartmentsTable;
-use App\Models\Departments;
+use App\Models\Administrative;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use App\Filament\Resources\Departments\RelationManagers\ApplicationsRelationManager;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Auth;
 
 class DepartmentsResource extends Resource
 {
-    protected static ?string $model = Departments::class;
+    protected static ?string $model = Administrative::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingOffice;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingOffice2;
     // Arabic labels
-    protected static ?string $modelLabel = 'القسم';
-    protected static ?string $pluralModelLabel = 'الأقسام';
-    protected static ?string $navigationLabel = 'الأقسام';
+    protected static ?string $modelLabel = 'الدائرة';
+    protected static ?string $pluralModelLabel = 'الدوائر';
+    protected static ?string $navigationLabel = 'الدوائر';
     protected static ?int $navigationSort = 1;
 
     public static function form(Schema $schema): Schema
@@ -47,7 +48,8 @@ class DepartmentsResource extends Resource
     public static function getRelations(): array
     {
         return [
-            ApplicationsRelationManager::class,
+
+            SectionsRelationManager::class,
         ];
     }
 
@@ -70,17 +72,14 @@ class DepartmentsResource extends Resource
             return $query;
         }
 
-        if ($user->isAdministrative()) {
-
-            $query->where('administrative_id', $user->administrative?->id);
-
-            if ($user->administrative?->is_medical === true) {
-                $query->where('is_medical', true);
-            }
-
-            return $query;
-        }
-
         return $query->whereRaw('1 = 0');
+    }
+
+    public static function getRecordRouteBindingEloquentQuery(): Builder
+    {
+        return parent::getRecordRouteBindingEloquentQuery()
+            ->withoutGlobalScopes([
+                SoftDeletingScope::class,
+            ]);
     }
 }

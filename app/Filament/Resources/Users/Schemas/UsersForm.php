@@ -21,7 +21,7 @@ class UsersForm
                     ->required()
                     ->maxLength(255),
 
-                TextInput::make('email')    
+                TextInput::make('email')
                     ->label('البريد الإلكتروني')
                     ->email()
                     ->required()
@@ -65,11 +65,11 @@ class UsersForm
                     ->searchable()
                     ->columnSpanFull(),
 
-                Toggle::make('status')
-                    ->label('نشط')
+                Select::make('status')
+                    ->label('الحالة')
                     ->inline(false),
             ]);
 
-            
+
     }
 }
