@@ -14,7 +14,6 @@ use Filament\Actions\Action;
 use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\Auth;
-use App\Helpers\Constans;
 
 class ApplicationsForm
 {
@@ -106,6 +105,7 @@ class ApplicationsForm
                             ->label('المؤسسة التعليمية')
                             ->options(fn() => Institution::all()->pluck('name', 'id'))
                             ->default(fn() => Auth::user()->isCollegeSupervisor() ? Auth::user()->college?->institution_id : null)
+                            // في التعديل نعرض القيمة من العلاقة
                             ->formatStateUsing(fn($record) => $record?->trainee?->institution_id)
                             ->disabled(fn() => Auth::user()->isCollegeSupervisor() || request()->routeIs('*.edit'))
                             ->dehydrated(fn($context) => $context === 'create')
@@ -208,11 +208,18 @@ class ApplicationsForm
 
                         Select::make('status')
                             ->label('الحالة')
-                            ->options(fn () => array_combine(
-                                Constans::STATUSES,
-                                array_map(fn($s) => \Illuminate\Support\Facades\Lang::get("translation.status.$s", [], 'ar'), Constans::STATUSES)
-                            ))
-                            ->default(\App\Helpers\Constans::STATUS_PENDING)
+                            ->options([
+                                'pending' => 'طلب جديد',
+                                'approved' => 'استيعاب',
+                                'waiting' => 'لم يستلم عمل بعد',
+                                'active' => 'بدء العمل',
+                                'completed' => 'انتهى',
+                                'rejected' => 'مرفوض',
+                                'paused' => 'منقطع',
+                            ])
+                            ->default('pending')
+                            ->hidden(fn() => Auth::user()->isCollegeSupervisor())
+                            ->dehydrated()
                             ->required()
                             ->live()
                             ->afterStateUpdated(fn($state, $set) => $state === 'active' ? $set('accepted_at', now()) : null),
