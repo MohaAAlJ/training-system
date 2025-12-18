@@ -14,15 +14,17 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->string('password');
-            $table->tinyInteger('role')->default(1); // 1:Admin, 2:Admin Manager, 3:Dept Manager, 4:Section Head
-            $table->enum('status', ['active', 'inactive', 'banned'])->default('active');
-            $table->rememberToken();
-            $table->timestamps();
-            $table->softDeletes();
+    $table->string('name');
+    $table->string('email')->unique();
+    $table->string('password');
+    $table->tinyInteger('role')->default(1); // 1:Admin, 2:Admin Manager, 3:Dept Manager, 4:Section Head
+    $table->enum('status', ['active', 'inactive', 'banned'])->default('active');
+    $table->rememberToken();
+    $table->timestamps();
+    $table->softDeletes();
         });
+
+        // Foreign keys are added in a separate migration after institutions and colleges tables are created
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();

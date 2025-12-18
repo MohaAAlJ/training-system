@@ -5,8 +5,6 @@ namespace App\Filament\Resources\Applications\Schemas;
 use App\Models\Institution;
 use App\Models\College;
 use App\Models\Major;
-use App\Models\Sections;
-use App\Models\Administrative;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
@@ -16,7 +14,6 @@ use Filament\Actions\Action;
 use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\Auth;
-use App\Helpers\Constans;
 
 class ApplicationsForm
 {
@@ -108,6 +105,7 @@ class ApplicationsForm
                             ->label('المؤسسة التعليمية')
                             ->options(fn() => Institution::all()->pluck('name', 'id'))
                             ->default(fn() => Auth::user()->isCollegeSupervisor() ? Auth::user()->college?->institution_id : null)
+                            // في التعديل نعرض القيمة من العلاقة
                             ->formatStateUsing(fn($record) => $record?->trainee?->institution_id)
                             ->disabled(fn() => Auth::user()->isCollegeSupervisor() || request()->routeIs('*.edit'))
                             ->dehydrated(fn($context) => $context === 'create')
@@ -117,11 +115,14 @@ class ApplicationsForm
                         Select::make('college_id')
                             ->label('الكلية')
                             ->options(function (callable $get) {
+                                
                                 if (Auth::user()->isCollegeSupervisor() && Auth::user()->college) {
                                     return College::where('institution_id', Auth::user()->college->institution_id)
                                         ->pluck('name', 'id');
                                 }
+                                // ------------------------
 
+                                // الوضع الطبيعي للأدمن
                                 $institutionId = $get('institution_id');
                                 if ($institutionId) {
                                     return College::where('institution_id', $institutionId)->pluck('name', 'id');
@@ -129,20 +130,26 @@ class ApplicationsForm
                                 return [];
                             })
                             ->default(fn() => Auth::user()->isCollegeSupervisor() ? Auth::user()->college_id : null)
+                            // ... باقي الكود (formatStateUsing, disabled, etc.)
                             ->formatStateUsing(fn($record) => $record?->trainee?->college_id)
                             ->disabled(fn() => Auth::user()->isCollegeSupervisor() || request()->routeIs('*.edit'))
                             ->dehydrated(fn($context) => $context === 'create')
-                            ->required(fn() => Auth::user()->isAdmin())
+                            ->required()
                             ->reactive(),
 
                         Select::make('major_id')
                             ->label('التخصص')
                             ->options(function (callable $get) {
+                                // --- الإضافة المهمة هنا ---
+                                // إذا كان المستخدم مشرف كلية، نجلب تخصصات كليته مباشرة
                                 if (Auth::user()->isCollegeSupervisor() && Auth::user()->college) {
                                     return Major::whereHas('colleges', function ($q) {
                                         $q->where('colleges.id', Auth::user()->college_id);
                                     })->pluck('name', 'id');
                                 }
+                                // ------------------------
+
+                                // الوضع الطبيعي للأدمن
                                 $collegeId = $get('college_id');
                                 if ($collegeId) {
                                     return Major::whereHas('colleges', fn($q) => $q->where('colleges.id', $collegeId))->pluck('name', 'id');
@@ -150,6 +157,7 @@ class ApplicationsForm
                                 return [];
                             })
                             ->formatStateUsing(fn($record) => $record?->trainee?->major_id)
+                            // ... باقي الكود
                             ->disabled(fn($context) => $context === 'edit')
                             ->dehydrated(fn($context) => $context === 'create')
                             ->searchable()
@@ -176,21 +184,19 @@ class ApplicationsForm
                             ->numeric()
                             ->default(100)
                             ->suffix('ساعة')
-                            ->disabled(fn() => ! Auth::user()->isAdmin())
+                            ->disabled(fn() => ! Auth::user()->isAdmin()) // فقط الأدمن يعدل المدة
+                            ->required(),
+
+                        Select::make('administrative_id')
+                            ->label('الادارة')
+                            ->relationship('administrative', 'title')
+                            ->preload()
+                            ->disabled(fn() => ! Auth::user()->isAdmin() && ! Auth::user()->isCollegeSupervisor())
                             ->required(),
 
                         Select::make('department_id')
-                            ->label('الدائرة')
-                            ->options(fn() => Administrative::all()->pluck('name', 'id'))
-                            ->searchable()
-                            ->preload()
-                            ->disabled(fn() => ! Auth::user()->isAdmin())
-                            ->required(),
-
-                        Select::make('section_id')
                             ->label('القسم')
-                            ->options(fn() => Sections::all()->pluck('name_location', 'id'))
-                            ->searchable()
+                            ->relationship('department', 'name_location')
                             ->preload()
                             ->disabled(fn() => ! Auth::user()->isAdmin() && ! Auth::user()->isCollegeSupervisor())
                             ->required(),
@@ -212,11 +218,18 @@ class ApplicationsForm
 
                         Select::make('status')
                             ->label('الحالة')
-                            ->options(fn () => array_combine(
-                                Constans::STATUSES,
-                                array_map(fn($s) => \Illuminate\Support\Facades\Lang::get("translation.status.$s", [], 'ar'), Constans::STATUSES)
-                            ))
-                            ->default(\App\Helpers\Constans::STATUS_PENDING)
+                            ->options([
+                                'pending' => 'طلب جديد',
+                                'approved' => 'استيعاب',
+                                'waiting' => 'لم يستلم عمل بعد',
+                                'active' => 'بدء العمل',
+                                'completed' => 'انتهى',
+                                'rejected' => 'مرفوض',
+                                'paused' => 'منقطع',
+                            ])
+                            ->default('pending')
+                            ->hidden(fn() => Auth::user()->isCollegeSupervisor())
+                            ->dehydrated()
                             ->required()
                             ->live()
                             ->afterStateUpdated(fn($state, $set) => $state === 'active' ? $set('accepted_at', now()) : null),

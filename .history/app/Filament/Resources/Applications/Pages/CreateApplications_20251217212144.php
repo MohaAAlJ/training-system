@@ -20,6 +20,7 @@ class CreateApplications extends CreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
+        // 1. ضبط الحالة لمشرف الكلية
         if (Auth::user()->isCollegeSupervisor()) {
             $data['status'] = 'waiting';
         }

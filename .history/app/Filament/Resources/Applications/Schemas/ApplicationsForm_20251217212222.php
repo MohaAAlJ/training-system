@@ -5,8 +5,6 @@ namespace App\Filament\Resources\Applications\Schemas;
 use App\Models\Institution;
 use App\Models\College;
 use App\Models\Major;
-use App\Models\Sections;
-use App\Models\Administrative;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
@@ -16,7 +14,6 @@ use Filament\Actions\Action;
 use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\Auth;
-use App\Helpers\Constans;
 
 class ApplicationsForm
 {
@@ -179,18 +176,16 @@ class ApplicationsForm
                             ->disabled(fn() => ! Auth::user()->isAdmin())
                             ->required(),
 
-                        Select::make('department_id')
-                            ->label('الدائرة')
-                            ->options(fn() => Administrative::all()->pluck('name', 'id'))
-                            ->searchable()
+                        Select::make('administrative_id')
+                            ->label('الادارة')
+                            ->relationship('administrative', 'title')
                             ->preload()
-                            ->disabled(fn() => ! Auth::user()->isAdmin())
+                            ->disabled(fn() => ! Auth::user()->isAdmin() && ! Auth::user()->isCollegeSupervisor())
                             ->required(),
 
-                        Select::make('section_id')
+                        Select::make('department_id')
                             ->label('القسم')
-                            ->options(fn() => Sections::all()->pluck('name_location', 'id'))
-                            ->searchable()
+                            ->relationship('department', 'name_location')
                             ->preload()
                             ->disabled(fn() => ! Auth::user()->isAdmin() && ! Auth::user()->isCollegeSupervisor())
                             ->required(),
@@ -212,11 +207,18 @@ class ApplicationsForm
 
                         Select::make('status')
                             ->label('الحالة')
-                            ->options(fn () => array_combine(
-                                Constans::STATUSES,
-                                array_map(fn($s) => \Illuminate\Support\Facades\Lang::get("translation.status.$s", [], 'ar'), Constans::STATUSES)
-                            ))
-                            ->default(\App\Helpers\Constans::STATUS_PENDING)
+                            ->options([
+                                'pending' => 'طلب جديد',
+                                'approved' => 'استيعاب',
+                                'waiting' => 'لم يستلم عمل بعد',
+                                'active' => 'بدء العمل',
+                                'completed' => 'انتهى',
+                                'rejected' => 'مرفوض',
+                                'paused' => 'منقطع',
+                            ])
+                            ->default('pending')
+                            ->hidden(fn() => Auth::user()->isCollegeSupervisor())
+                            ->dehydrated()
                             ->required()
                             ->live()
                             ->afterStateUpdated(fn($state, $set) => $state === 'active' ? $set('accepted_at', now()) : null),
