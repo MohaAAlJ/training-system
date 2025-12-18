@@ -49,7 +49,11 @@ class Sections extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function Administrative()
+    public function department()
+    {
+        return $this->belongsTo(Departments::class, 'department_id');
+    }
+    public function administrative()
     {
         return $this->belongsTo(Administrative::class, 'Administrative_id');
     }

@@ -7,7 +7,6 @@ use App\Models\User;
 use App\Models\Applications;
 use App\Models\Trainees;
 use App\Models\Departments;
-use App\Models\Administratives;
 use App\Models\College;
 use App\Models\Institution;
 use App\Models\Major;
@@ -31,7 +30,7 @@ class AuthServiceProvider extends ServiceProvider
         User::class => UserPolicy::class,
         Applications::class => UserPolicy::class,
         Trainees::class => UserPolicy::class,
-        Departments::class => UserPolicy::class,
+        Departments::class => \App\Policies\DepartmentsPolicy::class,
         Sections::class => UserPolicy::class,
         College::class => UserPolicy::class,
         Institution::class => UserPolicy::class,

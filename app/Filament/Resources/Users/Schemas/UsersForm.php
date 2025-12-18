@@ -67,7 +67,6 @@ class UsersForm
 
                 Select::make('status')
                     ->label('الحالة')
-                    ->inline(false),
             ]);
 
 
