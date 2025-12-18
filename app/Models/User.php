@@ -23,14 +23,14 @@ class User extends Authenticatable implements FilamentUser
     ];
 
 
-    public function administrative(): HasOne
-    {
-        return $this->hasOne(Administratives::class, 'user_id');
-    }
-
     public function department(): HasOne
     {
         return $this->hasOne(Departments::class, 'user_id');
+    }
+
+    public function sections(): HasOne
+    {
+        return $this->hasOne(Sections::class, 'user_id');
     }
 
     public function college(): HasOne
@@ -49,14 +49,14 @@ class User extends Authenticatable implements FilamentUser
         return $this->role === Constans::ROLE_ADMIN;
     }
 
-    public function isAdministrative(): bool
-    {
-        return $this->role === Constans::ROLE_ADMINISTRATIVE;
-    }
-
-    public function isDepartmentHead(): bool
+    public function isDepartment(): bool
     {
         return $this->role === Constans::ROLE_DEPARTMENT;
+    }
+
+    public function isSectionHead(): bool
+    {
+        return $this->role === Constans::ROLE_SECTION;
     }
 
     public function isCollegeSupervisor(): bool

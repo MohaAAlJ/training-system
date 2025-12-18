@@ -12,11 +12,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('administratives', function (Blueprint $table) {
+        Schema::create('departments', function (Blueprint $table) {
             $table->id();
 
-            // Administrative Info
-            $table->string('title'); // Administrative title/role
+            // Department Info
+            $table->string('title'); // Department title/role
             $table->boolean('is_medical')->default(false);
 
             // Foreign Keys
@@ -40,6 +40,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('administratives');
+        Schema::dropIfExists('departments');
     }
 };

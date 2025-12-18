@@ -7,24 +7,25 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Departments extends Model
+class Sections extends Model
 {
     use SoftDeletes, HasFactory;
 
-    protected $table = 'departments';
+    protected $table = 'sections';
     protected $fillable = [
         'name_location',
         'status',
         'total_capacity',
         'user_id',
-        'administrative_id',
+        'Administrative_id',
+        'governorate_id',
     ];
     protected $casts = [
         'status' => 'string',
     ];
 
     /**
-     * Scope a query to only include active departments.
+     * Scope a query to only include active sections.
      */
     public function scopeActive(Builder $query): void
     {
@@ -48,13 +49,18 @@ class Departments extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function administrative()
+    public function Administrative()
     {
-        return $this->belongsTo(Administratives::class, 'administrative_id');
+        return $this->belongsTo(Administrative::class, 'Administrative_id');
+    }
+
+    public function governorate()
+    {
+        return $this->belongsTo(Governorate::class, 'governorate_id');
     }
 
     public function applications()
     {
-        return $this->hasMany(Applications::class, 'department_id');
+        return $this->hasMany(Applications::class, 'section_id');
     }
 }

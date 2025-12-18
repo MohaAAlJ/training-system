@@ -1,8 +1,8 @@
 <?php
 
 namespace App\Http\Controllers;
-
 use App\Models\Administratives;
+use App\Models\sections;
 use App\Models\Departments;
 use App\Models\Institution;
 use App\Models\Major;
@@ -49,32 +49,32 @@ class FormDataController extends Controller
         return response()->json($data);
     }
 
-    public function administratives()
+    public function departments()
     {
-        $data = Administratives::select('id', 'title')->get()
-            ->map(fn ($adm) => [
-                'id' => $adm->id,
-                'name' => $adm->title,
+        $data = Departments::select('id', 'name_location')->get()
+            ->map(fn ($dept) => [
+                'id' => $dept->id,
+                'name' => $dept->name_location,
             ])
             ->values();
 
         return response()->json($data);
     }
 
-    public function departments(Request $request)
+    public function sections(Request $request)
     {
-        $administrativeId = $request->query('administrative_id');
+        $administrativeId = $request->query('department_id');
 
-        $query = Departments::select('id', 'name_location', 'administrative_id');
+        $query = Sections::active()->select('id', 'name_location', 'department_id');
         if ($administrativeId) {
-            $query->where('administrative_id', $administrativeId);
+            $query->where('department_id', $administrativeId);
         }
 
         $data = $query->get()
             ->map(fn ($dept) => [
                 'id' => $dept->id,
                 'name' => $dept->name_location,
-                'administrative_id' => $dept->administrative_id,
+                'department_id' => $dept->department_id,
             ])
             ->values();
 
@@ -85,7 +85,6 @@ class FormDataController extends Controller
     {
         $data = [
             ['id' => 'cooperative', 'name' => 'تدريب تعاوني'],
-            ['id' => 'internship', 'name' => 'تدريب صيفي'],
             ['id' => 'professional', 'name' => 'مزاولة مهنة'],
         ];
 

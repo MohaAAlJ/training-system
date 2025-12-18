@@ -5,15 +5,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-class Administratives extends Model
+class Departments extends Model
 {
     use SoftDeletes, HasFactory;
 
-    protected $table = 'administratives';
+    protected $table = 'departments';
     protected $fillable = [
         'title',
         'user_id',
-        'head_of_administrative',
+        'head_of_department',
         'medical_head_user_id',
         'is_medical',
     ];
@@ -34,6 +34,11 @@ class Administratives extends Model
 
     public function departments()
     {
-        return $this->hasMany(Departments::class, 'administrative_id');
+        return $this->hasMany(Departments::class, 'department_id');
+    }
+
+    public function applications()
+    {
+        return $this->hasMany(Applications::class, 'department_id');
     }
 }

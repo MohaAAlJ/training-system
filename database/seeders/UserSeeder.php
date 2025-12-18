@@ -43,16 +43,16 @@ class UserSeeder extends Seeder
             'status' => 'active',
         ]);
         User::create([
-            'name' => 'Department head',
-            'email' => 'de@department.com',
+            'name' => 'section head',
+            'email' => 'de@section.com',
             'password' => Hash::make('123'),
-            'role' => 3,
+            'role' => 4,
         ]);
         User::create([
-            'name' => 'adminstrative head',
-            'email' => 'ad@adminstrative.com',
+            'name' => 'department head',
+            'email' => 'ad@department.com',
             'password' => Hash::make('123'),
-            'role' => 2,
+            'role' => 3,
         ]);
     }
     }

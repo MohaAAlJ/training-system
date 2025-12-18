@@ -23,15 +23,15 @@ class TraineesPolicy
             return $trainee->college_id === $user->college?->id;
         }
 
-        if ($user->isDepartmentHead()) {
+        if ($user->isSectionHead()) {
             return $trainee->applications()
-                ->where('department_id', $user->department?->id)
+                ->where('section_id', $user->Sections?->id)
                 ->exists();
         }
 
-        if ($user->isAdministrative()) {
+        if ($user->isDepartment()) {
             return $trainee->applications()->whereHas('department', function ($q) use ($user) {
-                $q->where('administrative_id', $user->administrative?->id);
+                $q->where('department_id', $user->department?->id);
             })->exists();
         }
 

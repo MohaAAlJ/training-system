@@ -2,7 +2,7 @@
 
 namespace App\Policies;
 
-use App\Models\Departments;
+use App\Models\Sections;
 use App\Models\User;
 
 class DepartmentPolicy
@@ -12,14 +12,14 @@ class DepartmentPolicy
         return $user->isAdmin() || $user->isAdministrative();
     }
 
-    public function view(User $user, Departments $model): bool
+    public function view(User $user, Sections $model): bool
     {
         if ($user->isAdmin()) {
             return true;
         }
 
-        if ($user->isAdministrative()) {
-            return $model->administrative_id === $user->administrative?->id;
+        if ($user->isDepartment()) {
+            return $model->department_id === $user->department?->id;
         }
 
         return false;
@@ -30,12 +30,12 @@ class DepartmentPolicy
         return $user->isAdmin();
     }
 
-    public function update(User $user, Departments $model): bool
+    public function update(User $user, Sections $model): bool
     {
         return $user->isAdmin();
     }
 
-    public function delete(User $user, Departments $model): bool
+    public function delete(User $user, Sections $model): bool
     {
         return $user->isAdmin();
     }

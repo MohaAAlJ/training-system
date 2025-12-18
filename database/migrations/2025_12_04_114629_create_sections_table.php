@@ -1,7 +1,9 @@
 <?php
 
 use App\Models\User;
-use App\Models\Administratives;
+use App\Models\Administrative;
+use App\Models\Departments;
+use App\Models\Governorate;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -13,13 +15,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('departments', function (Blueprint $table) {
+        Schema::create('sections', function (Blueprint $table) {
             $table->id();
             $table->text('description')->nullable();
             $table->string('address')->nullable();
 
-            // Department Info
-            $table->string('name_location'); // Department name and location
+            // Section Info
+            $table->string('name_location'); // Section name and location
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->integer('total_capacity');
 
@@ -30,12 +32,17 @@ return new class extends Migration
                 ->nullOnDelete();
             $table->index('user_id');
 
-            $table->foreignIdFor(Administratives::class, 'administrative_id')
+            $table->foreignIdFor(Administrative::class, 'Administrative_id')
                 ->nullable()
                 ->constrained()
                 ->nullOnDelete();
-            $table->index('administrative_id');
+            $table->index('Administrative_id');
 
+            $table->foreignIdFor(Governorate::class, 'governorate_id')
+                ->nullable()
+                ->constrained()
+                ->nullOnDelete();
+            $table->index('governorate_id');
             $table->timestamps();
             $table->softDeletes();
         });
@@ -46,6 +53,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('departments');
+        Schema::dropIfExists('sections');
     }
 };

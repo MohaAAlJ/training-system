@@ -14,7 +14,7 @@ class Applications extends Model
     protected $fillable = [
         'training_type',
         'duration',
-        'administrative_id',
+        'section_id',
         'department_id',
         'start_date',
         'end_date',
@@ -22,7 +22,8 @@ class Applications extends Model
         'trainee_id',
         'application_letter',
         'tags',
-        'accepted_at'
+        'accepted_at',
+        'street'
     ];
     protected $casts = [
         'start_date' => 'date',
@@ -35,6 +36,11 @@ class Applications extends Model
     public function trainee()
     {
         return $this->belongsTo(Trainees::class, 'trainee_id');
+    }
+
+    public function section()
+    {
+        return $this->belongsTo(Sections::class, 'section_id');
     }
 
     public function department()
@@ -50,10 +56,5 @@ class Applications extends Model
     public function major()
     {
         return $this->belongsTo(Major::class);
-    }
-
-    public function administrative()
-    {
-        return $this->belongsTo(Administratives::class, 'administrative_id');
     }
 }

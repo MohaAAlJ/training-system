@@ -34,22 +34,22 @@ class UserFactory extends Factory
     }
 
     /**
-     * Set user role to Administrative
-     */
-    public function administrative(): static
-    {
-        return $this->state(fn(array $attributes) => [
-            'role' => Constans::ROLE_ADMINISTRATIVE,
-        ]);
-    }
-
-    /**
      * Set user role to Department
      */
     public function department(): static
     {
         return $this->state(fn(array $attributes) => [
             'role' => Constans::ROLE_DEPARTMENT,
+        ]);
+    }
+
+    /**
+     * Set user role to Department
+     */
+    public function section(): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'role' => Constans::ROLE_SECTION,
         ]);
     }
 

@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Departments\Schemas;
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Section;
 use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Components\IconEntry;
 
 class DepartmentsInfolist
 {
@@ -12,31 +13,23 @@ class DepartmentsInfolist
     {
         return $schema
             ->components([
-                Section::make('معلومات القسم')
+                Section::make('معلومات الإدارة')
                     ->schema([
-                        TextEntry::make('name_location')
-                            ->label('اسم القسم والموقع'),
-                        TextEntry::make('administrative.title')
-                            ->label('المديرية'),
+                        TextEntry::make('title')
+                            ->label('اسم الإدارة'),
                         TextEntry::make('user.name')
-                            ->label('المسؤول'),
-                        TextEntry::make('total_capacity')
-                            ->label('السعة الكلية'),
-                        TextEntry::make('status')
-                            ->label('الحالة')
-                            ->badge()
-                            ->color(fn (mixed $state): string => match ($state) {
-                                true => 'success',
-                                false => 'danger',
-                                default => 'gray',
-                            })
-                            ->formatStateUsing(fn (mixed $state): string => match ($state) {
-                                true => 'نشط',
-                                false => 'غير نشط',
-                                default => $state,
-                            }),
+                            ->label('رئيس الإدارة'),
+                        IconEntry::make('is_medical')
+                            ->label('إدارة طبية')
+                            ->boolean(),
+                        TextEntry::make('medicalHead.name')
+                            ->label('رئيس الإدارة الطبية')
+                            ->placeholder('-'),
+                        TextEntry::make('departments_count')
+                            ->label('عدد الأقسام')
+                            ->getStateUsing(fn ($record) => $record->departments()->count()),
                     ])->columns(2),
-                
+
                 Section::make('معلومات النظام')
                     ->schema([
                         TextEntry::make('created_at')
