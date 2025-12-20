@@ -4,65 +4,80 @@ namespace App\Policies;
 
 use App\Models\Applications;
 use App\Models\User;
-use Illuminate\Auth\Access\HandlesAuthorization;
+use App\Helpers\Constans;
 
 class ApplicationsPolicy
 {
-    use HandlesAuthorization;
 
-    /**
-     * Determine whether the user can view any models.
-     */
     public function viewAny(User $user): bool
     {
-        return true; // All users can view applications
+        return true;
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
-    public function view(User $user, Applications $applications): bool
+
+    public function view(User $user, Applications $Applications): bool
     {
-        return true; // All users can view applications
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        if ($user->isCollegeSupervisor()) {
+            return $Applications->trainee->college_id === $user->college?->id;
+        }
+
+        if ($user->isSectionHead()) {
+            return $Applications->section_id === $user->Sections?->id;
+        }
+
+        if ($user->isDepartment()) {
+            return $Applications->department->department_id === $user->department?->department_id;
+        }
+
+        if ($user->isMinistry()) {
+            return true;
+        }
+
+        return false;
     }
 
-    /**
-     * Determine whether the user can create models.
-     */
     public function create(User $user): bool
     {
-        return true; // Allow all users to create for now
+        return $user->isAdmin() || $user->isCollegeSupervisor() || $user->isMinistry();
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
-    public function update(User $user, Applications $applications): bool
+
+    public function update(User $user, Applications $Applications): bool
     {
-        return true; // Allow all users to update for now
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        if ($user->isSectionHead()) {
+            return $Applications->section_id === $user->Sections?->id;
+        }
+
+        if ($user->isCollegeSupervisor()) {
+            return $Applications->trainee->college_id === $user->college?->id;
+        }
+
+        if ($user->isDepartment()) {
+
+            if ($user->isGeneralTrainingManager()) {
+                return true;
+            }
+
+            return $Applications->department->administrative_id === $user->administrative?->id;
+        }
+
+        if ($user->isMinistry()) {
+            return true;
+        }
+
+        return false;
     }
 
-    /**
-     * Determine whether the user can delete the model.
-     */
-    public function delete(User $user, Applications $applications): bool
+    public function delete(User $user, Applications $Applications): bool
     {
-        return $user->hasFullAccess(); // Only full access can delete
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Applications $applications): bool
-    {
-        return $user->hasFullAccess();
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Applications $applications): bool
-    {
-        return $user->hasFullAccess();
+        return $user->isAdmin();
     }
 }
