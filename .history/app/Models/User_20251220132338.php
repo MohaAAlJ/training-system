@@ -81,7 +81,7 @@ class User extends Authenticatable implements FilamentUser
 
     public function isGeneralTrainingManager(): bool
     {
-        return $this->role === Constans::ROLE_TRAINING_MANAGER;
+        return 
     }
 
     public function canAccessPanel(Panel $panel): bool
