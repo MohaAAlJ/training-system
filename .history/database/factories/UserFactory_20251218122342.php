@@ -18,9 +18,10 @@ class UserFactory extends Factory
         return [
             'name' => $this->faker->name(),
             'email' => $this->faker->unique()->safeEmail(),
-            'password' => Hash::make('123'),
+            'email_verified_at' => now(),
+            'password' => Hash::make('password'),
             'status' => 'active',
-            'role' => Constans::ROLE_SECTION_HEAD,
+            'role' => Constans::ROLE_MOH,
             'remember_token' => Str::random(10),
         ];
     }
@@ -28,7 +29,7 @@ class UserFactory extends Factory
     public function admin(): static
     {
         return $this->state(fn(array $attributes) => [
-            'role' => Constans::ROLE_SYSTEM_ADMIN,
+            'role' => Constans::ROLE_ADMIN,
         ]);
     }
 
@@ -38,7 +39,7 @@ class UserFactory extends Factory
     public function administrative(): static
     {
         return $this->state(fn(array $attributes) => [
-            'role' => Constans::ROLE_ADMINISTRATIVE_MANAGER,
+            'role' => Constans::ROLE_ADMINISTRATIVE,
         ]);
     }
 
@@ -48,14 +49,7 @@ class UserFactory extends Factory
     public function department(): static
     {
         return $this->state(fn(array $attributes) => [
-            'role' => Constans::ROLE_DEPARTMENT_MANAGER,
-        ]);
-    }
-
-    public function sectionHead(): static
-    {
-        return $this->state(fn(array $attributes) => [
-            'role' => Constans::ROLE_SECTION_HEAD,
+            'role' => Constans::ROLE_DEPARTMENT,
         ]);
     }
 
@@ -70,12 +64,23 @@ class UserFactory extends Factory
     }
 
     /**
+     * Set user role to Institution
+     */
+    public function institutionSupervisor(): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'role' => Constans::ROLE_COLLEGE,
+        ]);
+
+    }
+
+    /**
      * Set user role to College
      */
     public function collage(): static
     {
         return $this->state(fn(array $attributes) => [
-            'role' => Constans::ROLE_COLLEGE_SUPERVISOR,
+            'role' => Constans::ROLE_COLLEGE,
         ]);
     }
 }

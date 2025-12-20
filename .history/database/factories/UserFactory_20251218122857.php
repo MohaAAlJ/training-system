@@ -20,7 +20,7 @@ class UserFactory extends Factory
             'email' => $this->faker->unique()->safeEmail(),
             'password' => Hash::make('123'),
             'status' => 'active',
-            'role' => Constans::ROLE_SECTION_HEAD,
+            'role' => Constans::ROLE_SECTION_HEAD, 
             'remember_token' => Str::random(10),
         ];
     }
@@ -52,12 +52,7 @@ class UserFactory extends Factory
         ]);
     }
 
-    public function sectionHead(): static
-    {
-        return $this->state(fn(array $attributes) => [
-            'role' => Constans::ROLE_SECTION_HEAD,
-        ]);
-    }
+    pub
 
     /**
      * Set user role to MOH

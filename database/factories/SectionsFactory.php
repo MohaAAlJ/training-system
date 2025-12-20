@@ -6,7 +6,7 @@ use App\Models\User;
 use App\Models\Administratives;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class DepartmentsFactory extends Factory
+class SectionsFactory extends Factory
 {
     public function definition(): array
     {

@@ -12,8 +12,6 @@ class Constans
     public const ROLE_DEPARTMENT_MANAGER = 3;       // مدير الدائرة العامة (مثل مدير عام الصيدلة)
     public const ROLE_SECTION_HEAD = 4;             // رئيس الشعبة/الفرع (المسؤول الميداني المباشر)
     public const ROLE_COLLEGE_SUPERVISOR = 5;       // مشرف الكلية/الجامعة
-    public const ROLE_MOH = 6;                      // وزارة الصحة
-    public const ROLE_TRAINING_MANAGER = 7;         // مدير التدريب
 
     /**
      * حالات الطلب - Application Statuses (Stored as Integers 1-8)
@@ -50,8 +48,6 @@ class Constans
         self::ROLE_DEPARTMENT_MANAGER => 'مدير الدائرة العامة',
         self::ROLE_SECTION_HEAD => 'رئيس الشعبة/الفرع',
         self::ROLE_COLLEGE_SUPERVISOR => 'مشرف كلية',
-        self::ROLE_MOH => 'وزارة الصحة',
-        self::ROLE_TRAINING_MANAGER => 'مدير التدريب',
     ];
 
     /**

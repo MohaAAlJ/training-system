@@ -64,10 +64,7 @@ class User extends Authenticatable implements FilamentUser
         return $this->role === Constans::ROLE_COLLEGE_SUPERVISOR;
     }
 
-    public function isSectionHead(): bool
-    {
-        return $this->role === Constans::ROLE_SECTION_HEAD;
-    }
+    
 
     public function isMinistry(): bool
     {
