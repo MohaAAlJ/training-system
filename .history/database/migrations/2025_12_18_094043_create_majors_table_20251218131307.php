@@ -226,16 +226,16 @@ return new class extends Migration {
         ];
 
         foreach ($majors as $index => $name) {
-            DB::table('majors')->insert([
-                'id' => $index + 1,
-                'name' => json_encode(['ar' => $name, 'en' => $name], JSON_UNESCAPED_UNICODE),
-                'code' => 'M-' . str_pad($index + 1, 3, '0', STR_PAD_LEFT),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-        }
+    DB::table('majors')->insert([
+        'id' => $index + 1,
+        // منع تشفير الحروف العربية لرموز Unicode
+        'name' => json_encode(['ar' => $name, 'en' => $name], JSON_UNESCAPED_UNICODE),
+        'code' => 'M-' . str_pad($index + 1, 3, '0', STR_PAD_LEFT),
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+}
     }
-
     public function down(): void
     {
         Schema::dropIfExists('majors');

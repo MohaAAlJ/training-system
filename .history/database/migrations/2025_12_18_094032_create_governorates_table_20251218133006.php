@@ -18,6 +18,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
+        // إضافة المحافظات الخمس مع دعم اللغة العربية الصريحة
         $governorates = [
             ['ar' => 'غزة', 'en' => 'Gaza'],
             ['ar' => 'شمال غزة', 'en' => 'North Gaza'],
@@ -28,6 +29,7 @@ return new class extends Migration
 
         foreach ($governorates as $gov) {
             DB::table('governorates')->insert([
+                // استخدام JSON_UNESCAPED_UNICODE هنا هو السر لظهور العربي بوضوح
                 'name' => json_encode($gov, JSON_UNESCAPED_UNICODE),
                 'created_at' => now(),
                 'updated_at' => now(),

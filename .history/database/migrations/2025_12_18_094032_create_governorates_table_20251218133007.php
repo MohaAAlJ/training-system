@@ -18,6 +18,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
+        // إضافة المحافظات الخمس مع دعم اللغة العربية الصريحة
         $governorates = [
             ['ar' => 'غزة', 'en' => 'Gaza'],
             ['ar' => 'شمال غزة', 'en' => 'North Gaza'],

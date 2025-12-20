@@ -11,11 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('departments', function (Blueprint $table) {
+        Schema::create('majors', function (Blueprint $table) {
             $table->id();
-            $table->string('title'); // مثال: الدائرة العامة للصيدلة
-            $table->boolean('is_medical')->default(false);
-            $table->foreignId('hod')->nullable()->constrained('users')->cascadeOnDelete(); // المدير العام للتخصص
+            $table->json('name');
+            $table->string('code')->unique()->nullable();
             $table->timestamps();
             $table->softDeletes();
         });
@@ -26,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('departments');
+        Schema::dropIfExists('majors');
     }
 };

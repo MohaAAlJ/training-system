@@ -85,16 +85,16 @@ return new class extends Migration {
         ];
 
         foreach ($colleges as $col) {
-            DB::table('colleges')->insert([
-                'id' => $col['id'],
-                'institution_id' => $col['inst_id'],
-                'name' => json_encode(['ar' => $col['name'], 'en' => $col['name']], JSON_UNESCAPED_UNICODE),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-        }
+    DB::table('colleges')->insert([
+        'id' => $col['id'],
+        'institution_id' => $col['inst_id'],
+        // تعديل التشفير ليدعم اللغة العربية الصريحة
+        'name' => json_encode(['ar' => $col['name'], 'en' => $col['name']], JSON_UNESCAPED_UNICODE),
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+}
     }
-
     public function down(): void
     {
         Schema::dropIfExists('colleges');

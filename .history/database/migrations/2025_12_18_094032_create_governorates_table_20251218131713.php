@@ -28,7 +28,7 @@ return new class extends Migration
 
         foreach ($governorates as $gov) {
             DB::table('governorates')->insert([
-                'name' => json_encode($gov, JSON_UNESCAPED_UNICODE),
+                'name' => json_encode($gov),
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);

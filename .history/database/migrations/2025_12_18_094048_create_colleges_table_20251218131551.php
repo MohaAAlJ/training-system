@@ -6,8 +6,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration {
-    public function up(): void
-    {
+    public function up(): void {
         Schema::create('colleges', function (Blueprint $table) {
             $table->id();
             $table->json('name');
@@ -95,8 +94,5 @@ return new class extends Migration {
         }
     }
 
-    public function down(): void
-    {
-        Schema::dropIfExists('colleges');
-    }
+    public function down(): void { Schema::dropIfExists('colleges'); }
 };

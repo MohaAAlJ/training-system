@@ -11,12 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('administratives', function (Blueprint $table) {
+        Schema::create('departments', function (Blueprint $table) {
             $table->id();
-            $table->string('title'); // مثال: إدارة مستشفى الأمل
-            $table->foreignId('hoa')->constrained('users')->cascadeOnDelete(); // مدير المنشأة
+            $table->string('title'); // مثال: الدائرة العامة للصيدلة
             $table->boolean('is_medical')->default(false);
-            $table->foreignId('medical_hoa')->nullable()->constrained('users')->cascadeOnDelete(); // المدير العام للمنشأة
+            $table->foreignId('user_id')->nullable->constrained('users')->cascadeOnDelete(); // المدير العام للتخصص
             $table->timestamps();
             $table->softDeletes();
         });
@@ -27,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('administratives');
+        Schema::dropIfExists('departments');
     }
 };

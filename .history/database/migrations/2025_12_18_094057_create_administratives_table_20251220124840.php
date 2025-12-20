@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('title'); // مثال: إدارة مستشفى الأمل
             $table->foreignId('hoa')->constrained('users')->cascadeOnDelete(); // مدير المنشأة
             $table->boolean('is_medical')->default(false);
-            $table->foreignId('medical_hoa')->nullable()->constrained('users')->cascadeOnDelete(); // المدير العام للمنشأة
+            $table->foreignId('medical_hoa')->constrained('users')->cascadeOnDelete(); // المدير العام للمنشأة
             $table->timestamps();
             $table->softDeletes();
         });

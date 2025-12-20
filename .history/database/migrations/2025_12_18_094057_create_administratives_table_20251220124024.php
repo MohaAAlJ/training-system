@@ -14,9 +14,9 @@ return new class extends Migration
         Schema::create('administratives', function (Blueprint $table) {
             $table->id();
             $table->string('title'); // مثال: إدارة مستشفى الأمل
-            $table->foreignId('hoa')->constrained('users')->cascadeOnDelete(); // مدير المنشأة
-            $table->boolean('is_medical')->default(false);
-            $table->foreignId('medical_hoa')->nullable()->constrained('users')->cascadeOnDelete(); // المدير العام للمنشأة
+            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete(); // مدير المنشأة
+            $table
+            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete(); // المدير العام للمنشأة
             $table->timestamps();
             $table->softDeletes();
         });

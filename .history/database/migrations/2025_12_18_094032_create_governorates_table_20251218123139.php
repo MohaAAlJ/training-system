@@ -14,10 +14,11 @@ return new class extends Migration
     {
         Schema::create('governorates', function (Blueprint $table) {
             $table->id();
-            $table->json('name');
+            $table->json('name'); // يدعم {'ar': '...', 'en': '...'}
             $table->timestamps();
         });
 
+        // 2. إضافة البيانات (Seeding)
         $governorates = [
             ['ar' => 'غزة', 'en' => 'Gaza'],
             ['ar' => 'شمال غزة', 'en' => 'North Gaza'],
@@ -28,7 +29,7 @@ return new class extends Migration
 
         foreach ($governorates as $gov) {
             DB::table('governorates')->insert([
-                'name' => json_encode($gov, JSON_UNESCAPED_UNICODE),
+                'name' => json_encode($gov),
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);

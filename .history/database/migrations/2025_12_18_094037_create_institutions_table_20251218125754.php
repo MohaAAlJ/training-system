@@ -5,16 +5,21 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
-return new class extends Migration {
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
     public function up(): void
     {
         Schema::create('institutions', function (Blueprint $table) {
             $table->id();
-            $table->json('name');
+            $table->json('name'); // اسم المؤسسة باللغتين العربية والإنجليزية
             $table->timestamps();
             $table->softDeletes();
         });
 
+        // قائمة المؤسسات التعليمية الـ 13 الثابتة بناءً على المستندات
         $institutions = [
             ['id' => 1, 'ar' => 'الجامعة الإسلامية', 'en' => 'The Islamic University of Gaza'],
             ['id' => 2, 'ar' => 'جامعة الأزهر', 'en' => 'Al-Azhar University'],
@@ -34,13 +39,16 @@ return new class extends Migration {
         foreach ($institutions as $inst) {
             DB::table('institutions')->insert([
                 'id' => $inst['id'],
-                'name' => json_encode(['ar' => $inst['ar'], 'en' => $inst['en']], JSON_UNESCAPED_UNICODE),
+                'name' => json_encode(['ar' => $inst['ar'], 'en' => $inst['en']]),
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
         }
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
         Schema::dropIfExists('institutions');
