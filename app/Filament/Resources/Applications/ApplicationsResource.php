@@ -83,15 +83,15 @@ class ApplicationsResource extends Resource
             });
         }
 
-        if ($user->isDepartmentHead()) {
-            return $query->where('department_id', $user->department?->id);
+        if ($user->isSectionHead()) {
+            return $query->where('section_id', $user->section?->id);
         }
 
-        if ($user->isAdministrative()) {
+        if ($user->isDepartment()) {
 
-            $query->where('administrative_id', $user->administrative?->id);
+            $query->where('department_id', $user->department?->id);
 
-            if ($user->administrative?->is_medical === true) {
+            if ($user->department?->is_medical === true) {
                 $query->whereHas('department', function ($q) {
                     $q->where('is_medical', true);
                 });

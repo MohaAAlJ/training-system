@@ -71,8 +71,8 @@ class SectionsResource extends Resource
             return $query;
         }
 
-        if ($user->isAdministrative()) {
-            $query->where('administrative_id', $user->administrative?->id);
+        if ($user->isDepartment()) {
+            $query->where('department_id', $user->department?->id);
             return $query;
         }
 

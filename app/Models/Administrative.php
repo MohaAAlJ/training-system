@@ -46,4 +46,13 @@ class Administrative extends Model
     {
         return $this->hasMany(Departments::class, 'administrative_id');
     }
+
+    /**
+     * Compatibility relationship for Filament forms/tables expecting `medicalHead`.
+     * Maps to the `medical_head_user_id` foreign key (points to `users.id`).
+     */
+    public function medicalHead()
+    {
+        return $this->belongsTo(User::class, 'medical_head_user_id');
+    }
 }

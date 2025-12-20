@@ -5,14 +5,14 @@ namespace App\Policies;
 use App\Models\Departments;
 use App\Models\User;
 
-class AdministrativePolicy
+class DepartmentsPolicy
 {
     public function viewAny(User $user): bool
     {
         return $user->isAdmin();
     }
 
-    public function view(User $user, Departments $model): bool
+    public function view(User $user, Departments $department): bool
     {
         return $user->isAdmin();
     }
@@ -22,12 +22,12 @@ class AdministrativePolicy
         return $user->isAdmin();
     }
 
-    public function update(User $user, Departments $model): bool
+    public function update(User $user, Departments $department): bool
     {
         return $user->isAdmin();
     }
 
-    public function delete(User $user, Departments $model): bool
+    public function delete(User $user, Departments $department): bool
     {
         return $user->isAdmin();
     }

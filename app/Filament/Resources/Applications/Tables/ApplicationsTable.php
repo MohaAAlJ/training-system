@@ -40,7 +40,7 @@ class ApplicationsTable
                     ->label('التخصص')
                     ->formatStateUsing(fn($state) => is_array($state) ? ($state['ar'] ?? $state['en'] ?? reset($state)) : $state)
                     ->toggleable(isToggledHiddenByDefault: false),
-                TextColumn::make('department.name_location')
+                TextColumn::make('department.title')
                     ->label('القسم')
                     ->searchable()
                     ->sortable(),
@@ -97,7 +97,7 @@ class ApplicationsTable
                     )),
                 SelectFilter::make('department_id')
                     ->label('القسم')
-                    ->relationship('department', 'name_location')
+                    ->relationship('department', 'title')
                     ->searchable()
                     ->preload(),
                 SelectFilter::make('trainee_id')

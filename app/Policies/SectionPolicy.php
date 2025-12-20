@@ -5,11 +5,11 @@ namespace App\Policies;
 use App\Models\Sections;
 use App\Models\User;
 
-class DepartmentPolicy
+class SectionPolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->isAdmin() || $user->isAdministrative();
+        return $user->isAdmin() || $user->isDepartment();
     }
 
     public function view(User $user, Sections $model): bool
@@ -18,7 +18,7 @@ class DepartmentPolicy
             return true;
         }
 
-        if ($user->isDepartment()) {
+        if ($user->isSectionHead()) {
             return $model->department_id === $user->department?->id;
         }
 

@@ -4,10 +4,10 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Gate;
-use App\Models\Administratives;
-use App\Policies\AdministrativePolicy;
+use App\Policies\DepartmentsPolicy;
 use App\Models\Departments;
-use App\Policies\DepartmentPolicy;
+use App\Models\Sections;
+use App\Policies\SectionPolicy;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -24,7 +24,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Gate::policy(Administratives::class, AdministrativePolicy::class);
-        Gate::policy(Departments::class, DepartmentPolicy::class);
+        Gate::policy(Departments::class, DepartmentsPolicy::class);
+        Gate::policy(Sections::class, SectionPolicy::class);
     }
 }

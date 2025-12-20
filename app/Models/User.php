@@ -10,6 +10,9 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\Departments;
+use App\Models\Sections;
+use App\Models\College;
 
 class User extends Authenticatable implements FilamentUser
 {
@@ -71,12 +74,12 @@ class User extends Authenticatable implements FilamentUser
 
     public function isMedicalManager(): bool
     {
-        return $this->isAdministrative() && $this->administrative?->is_medical === true;
+        return $this->isDepartment() && $this->department()?->getAttribute('is_medical') === true;
     }
 
     public function isGeneralTrainingManager(): bool
     {
-        return $this->isAdministrative() && $this->administrative?->is_medical === false;
+        return $this->isDepartment() && $this->department()?->getAttribute('is_medical') === false;
     }
 
     public function canAccessPanel(Panel $panel): bool

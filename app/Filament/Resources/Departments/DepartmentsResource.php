@@ -11,6 +11,7 @@ use App\Filament\Resources\Departments\Schemas\DepartmentsForm;
 use App\Filament\Resources\Departments\Schemas\DepartmentsInfolist;
 use App\Filament\Resources\Departments\Tables\DepartmentsTable;
 use App\Models\Administrative;
+use App\Models\Departments;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -22,7 +23,7 @@ use Illuminate\Support\Facades\Auth;
 
 class DepartmentsResource extends Resource
 {
-    protected static ?string $model = Administrative::class;
+    protected static ?string $model = Departments::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingOffice2;
     // Arabic labels
