@@ -16,15 +16,23 @@ class Trainees extends Model
         'full_name',
         'phone_number',
         'dob',
+        'governorate_id',
         'address',
+        'street',
         'institution_id',
         'major_id',
+        'training_hours',
     ];
     protected $casts = [
         'dob' => 'date',
     ];
 
     protected $dates = ['dob'];
+
+    public function governorate()
+    {
+        return $this->belongsTo(Governorate::class, 'governorate_id');
+    }
 
     public function institution()
     {

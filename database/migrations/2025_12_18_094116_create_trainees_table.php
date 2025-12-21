@@ -17,12 +17,15 @@ return new class extends Migration
             $table->string('full_name');
             $table->string('phone_number');
             $table->date('dob');
+            $table->foreignId('governorate_id')->nullable()->constrained('governorates')->nullOnDelete();
             $table->string('address')->nullable();
+            $table->string('street')->nullable();
 
             // الربط الأكاديمي
             $table->foreignId('institution_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('college_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('major_id')->nullable()->constrained()->nullOnDelete();
+            $table->integer('training_hours')->nullable();
 
             $table->timestamps();
             $table->softDeletes();

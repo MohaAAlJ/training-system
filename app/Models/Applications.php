@@ -21,6 +21,7 @@ class Applications extends Model
         'duration',
         'section_id',
         'department_id',
+        'administrative_id',
         'start_date',
         'end_date',
         'status',
@@ -52,6 +53,11 @@ class Applications extends Model
     public function department()
     {
         return $this->belongsTo(Departments::class, 'department_id');
+    }
+
+    public function administrative()
+    {
+        return $this->belongsTo(Administrative::class, 'administrative_id');
     }
 
     public function institution()

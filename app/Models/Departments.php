@@ -16,7 +16,6 @@ class Departments extends Model
         'head_of_department',
         'medical_head_user_id',
         'is_medical',
-        'administrative_id',
         'status',
         'total_capacity',
         'current_capacity',

@@ -21,7 +21,7 @@ class CreateApplications extends CreateRecord
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         if (Auth::user()->isCollegeSupervisor()) {
-            $data['status'] = 'waiting';
+            $data['status'] = \App\Helpers\Constans::STATUS_CONFIRMATION;
         }
 
         if (empty($data['dob']) && isset($data['dob_year'])) {
@@ -35,11 +35,14 @@ class CreateApplications extends CreateRecord
                     'full_name' => $data['full_name'] ?? 'New Trainee',
                     'national_id' => $data['national_id'] ?? null,
                     'phone_number' => $data['phone_number'] ?? null,
+                    'governorate_id' => $data['governorate_id'] ?? null,
                     'address' => $data['address'] ?? null,
+                    'street' => $data['street'] ?? null,
                     'dob' => $data['dob'] ?? null,
                     'college_id' => $data['college_id'] ?? null,
                     'institution_id' => $data['institution_id'] ?? null,
                     'major_id' => $data['major_id'] ?? null,
+                    'training_hours' => $data['training_hours'] ?? null,
                 ];
 
                 $trainee = Trainees::create($traineeData);
@@ -52,15 +55,26 @@ class CreateApplications extends CreateRecord
             }
         }
 
+        // Increment section capacity
+        if (isset($data['section_id'])) {
+            $section = \App\Models\Sections::find($data['section_id']);
+            if ($section) {
+                $section->increment('current_capacity');
+            }
+        }
+
         unset(
             $data['full_name'],
             $data['national_id'],
             $data['phone_number'],
+            $data['governorate_id'],
             $data['address'],
+            $data['street'],
             $data['dob'],
             $data['college_id'],
             $data['institution_id'],
             $data['major_id'],
+            $data['training_hours'],
             $data['dob_year'],
             $data['dob_month'],
             $data['dob_day']

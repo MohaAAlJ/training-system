@@ -20,22 +20,26 @@ class Constans
     /**
      * Application status constants
      */
-    public const STATUS_PENDING = 'pending';
-    public const STATUS_APPROVED = 'approved';
-    public const STATUS_WAITING = 'waiting';
-    public const STATUS_ACTIVE = 'active';
-    public const STATUS_COMPLETED = 'completed';
-    public const STATUS_REJECTED = 'rejected';
-    public const STATUS_PAUSED = 'paused';
+    public const STATUS_NEW = 1;
+    public const STATUS_INITIAL_APPROVE = 2;
+    public const STATUS_CONFIRMATION = 3;
+    public const STATUS_WAITING_LIST = 4;
+    public const STATUS_STRATED_TRAINING = 5;
+    public const STATUS_ENDED_TRAINING = 6;
+    public const STATUS_REJECTED = 7;
+    public const STATUS_DROPPED = 8;
+    public const STATUS_UNKNOWN = 9;
 
     public const STATUSES = [
-        self::STATUS_PENDING,
-        self::STATUS_APPROVED,
-        self::STATUS_WAITING,
-        self::STATUS_ACTIVE,
-        self::STATUS_COMPLETED,
+        self::STATUS_NEW,
+        self::STATUS_INITIAL_APPROVE,
+        self::STATUS_CONFIRMATION,
+        self::STATUS_WAITING_LIST,
+        self::STATUS_STRATED_TRAINING,
+        self::STATUS_ENDED_TRAINING,
         self::STATUS_REJECTED,
-        self::STATUS_PAUSED,
+        self::STATUS_DROPPED,
+        self::STATUS_UNKNOWN,
     ];
 
     /**
