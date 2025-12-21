@@ -14,11 +14,15 @@ class EditApplications extends EditRecord
 {
     protected static string $resource = ApplicationsResource::class;
 
-    public function mount(string|int $record): void
+    public static function authorizeAccess(): void
     {
-        parent::mount($record);
-        $application = $this->getRecord();
-        $this->authorize('update', $application);
+        $user = Auth::user();
+
+        if ($user && $user->isGeneralTrainingManager()) {
+            abort(403, 'Unauthorized');
+        }
+
+        parent::authorizeAccess();
     }
 
     protected function getHeaderActions(): array

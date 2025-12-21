@@ -15,8 +15,13 @@ class CreateApplications extends CreateRecord
 
     public function mount(): void
     {
-        $this->authorize('create', \App\Models\Applications::class);
+        $this->authorizeAccess();
         parent::mount();
+    }
+
+    protected function authorizeAccess(): void
+    {
+        abort_unless(\Illuminate\Support\Facades\Gate::allows('create', \App\Models\Applications::class), 403);
     }
 
     protected function getCreatedNotificationTitle(): ?string

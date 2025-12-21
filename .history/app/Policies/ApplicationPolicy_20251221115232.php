@@ -42,12 +42,22 @@ class ApplicationPolicy
 
     public function create(User $user): bool
     {
-        return $user->isAdmin() || $user->isCollegeSupervisor() || $user->isMinistry() || $user->isGeneralTrainingManager();
+        // Training managers cannot create applications
+        if ($user->isGeneralTrainingManager()) {
+            return false;
+        }
+
+        return $user->isAdmin() || $user->isCollegeSupervisor() || $user->isMinistry();
     }
 
 
     public function update(User $user, Applications $Applications): bool
     {
+        // Training managers cannot edit applications
+        if ($user->isGeneralTrainingManager()) {
+            return false;
+        }
+
         if ($user->isAdmin()) {
             return true;
         }
@@ -61,11 +71,6 @@ class ApplicationPolicy
         }
 
         if ($user->isAdministrative()) {
-
-            if ($user->isGeneralTrainingManager()) {
-                return true;
-            }
-
             return $Applications->department->administrative_id === $user->administrative?->id;
         }
 

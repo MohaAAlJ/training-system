@@ -13,10 +13,15 @@ class CreateApplications extends CreateRecord
 {
     protected static string $resource = ApplicationsResource::class;
 
-    public function mount(): void
+    public static function authorizeAccess(): void
     {
-        $this->authorize('create', \App\Models\Applications::class);
-        parent::mount();
+        $user = Auth::user();
+
+        if ($user && $user->isGeneralTrainingManager()) {
+            abort(403, 'Unauthorized');
+        }
+
+        parent::authorizeAccess();
     }
 
     protected function getCreatedNotificationTitle(): ?string
