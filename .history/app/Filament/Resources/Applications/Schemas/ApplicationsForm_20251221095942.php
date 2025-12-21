@@ -177,36 +177,20 @@ class ApplicationsForm
                             ->disabled(fn() => ! Auth::user()->isAdmin())
                             ->required(),
 
-                        Select::make('department_id')
-                            ->label('الدائرة (التخصص)')
-                            ->relationship('department', 'title')
+                        Select::make('administrative_id')
+                            ->label('الادارة')
+                            ->relationship('administrative', 'title')
                             ->preload()
-                            ->live()
-                            ->afterStateUpdated(function ($set) {
-                                $set('administrative_id', null);
-                                $set('section_id', null);
-                            })
                             ->disabled(fn() => ! Auth::user()->isAdmin() && ! Auth::user()->isCollegeSupervisor())
                             ->required(),
 
-                        Select::make('administrative_id')
-                            ->label('الادارة (المكان)')
-                            ->options(function (callable $get) {
-                                $deptId = $get('department_id');
-                                if (! $deptId) {
-                                    return [];
-                                }
-                                // Get admins that have sections with this department
-                                return \App\Models\Administratives::whereHas('sections', function ($query) use ($deptId) {
-                                    $query->where('department_id', $deptId);
-                                })->pluck('title', 'id');
-                            })
-                            ->searchable()
+                        Select::make('department_id')
+                            ->label('الدائرة')
+                            ->relationship('department', 'title')
                             ->preload()
-                            ->live()
-                            ->afterStateUpdated(fn($set) => $set('section_id', null))
-                            ->disabled(fn(callable $get) => ! $get('department_id') || (! Auth::user()->isAdmin() && ! Auth::user()->isCollegeSupervisor()))
-                            ->required(),
+                            ->disabled(fn() => ! Auth::user()->isAdmin() && ! Auth::user()->isCollegeSupervisor())
+                            ->required()
+                            ->live(),
 
                         Select::make('section_id')
                             ->label('القسم')
@@ -220,8 +204,6 @@ class ApplicationsForm
                                     ->where('department_id', $deptId)
                                     ->pluck('name_location', 'id');
                             })
-                            ->searchable()
-                            ->preload()
                             ->required()
                             ->disabled(fn(callable $get) => ! $get('administrative_id') || ! $get('department_id')),
 

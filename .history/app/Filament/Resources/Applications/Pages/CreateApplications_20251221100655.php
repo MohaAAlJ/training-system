@@ -18,13 +18,6 @@ class CreateApplications extends CreateRecord
         return 'تمت إضافة الطلب بنجاح';
     }
 
-    public function create(bool $another = false): void
-    {
-        DB::transaction(function () use ($another) {
-            parent::create($another);
-        });
-    }
-
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         if (Auth::user()->isCollegeSupervisor()) {
@@ -36,23 +29,19 @@ class CreateApplications extends CreateRecord
         }
 
         if (empty($data['trainee_id'])) {
-            try {
-                $traineeData = [
-                    'full_name' => $data['full_name'] ?? 'New Trainee',
-                    'national_id' => $data['national_id'] ?? null,
-                    'phone_number' => $data['phone_number'] ?? null,
-                    'address' => $data['address'] ?? null,
-                    'dob' => $data['dob'] ?? null,
-                    'college_id' => $data['college_id'] ?? null,
-                    'institution_id' => $data['institution_id'] ?? null,
-                    'major_id' => $data['major_id'] ?? null,
-                ];
+            $traineeData = [
+                'full_name' => $data['full_name'] ?? 'New Trainee',
+                'national_id' => $data['national_id'] ?? null,
+                'phone_number' => $data['phone_number'] ?? null,
+                'address' => $data['address'] ?? null,
+                'dob' => $data['dob'] ?? null,
+                'college_id' => $data['college_id'] ?? null,
+                'institution_id' => $data['institution_id'] ?? null,
+                'major_id' => $data['major_id'] ?? null,
+            ];
 
-                $trainee = Trainees::create($traineeData);
-                $data['trainee_id'] = $trainee->id;
-            } catch (\Throwable $e) {
-                throw $e;
-            }
+            $trainee = Trainees::create($traineeData);
+            $data['trainee_id'] = $trainee->id;
         }
 
         unset(

@@ -14,11 +14,8 @@ return new class extends Migration
         Schema::create('applications', function (Blueprint $table) {
             $table->id();
             $table->foreignId('trainee_id')->constrained('trainees')->cascadeOnDelete();
-            $table->foreignId('administrative_id')->constrained('administratives')->cascadeOnDelete();
             $table->foreignId('department_id')->constrained('departments')->cascadeOnDelete();
             $table->foreignId('section_id')->constrained('sections')->cascadeOnDelete();
-
-            $table->string('tags')->nullable();
 
             $table->string('training_type')->nullable();
             $table->date('start_date')->nullable();

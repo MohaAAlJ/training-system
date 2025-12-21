@@ -138,7 +138,7 @@ class ApplicationsTable
                     ->label('الحالة')
                     ->options(Constans::STATUS_LABELS),
                 SelectFilter::make('department_id')
-                    ->label('الدائرة')
+                    ->label('القسم')
                     ->relationship('department', 'title')
                     ->searchable()
                     ->preload(),

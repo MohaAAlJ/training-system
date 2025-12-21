@@ -18,13 +18,6 @@ class CreateApplications extends CreateRecord
         return 'تمت إضافة الطلب بنجاح';
     }
 
-    public function create(bool $another = false): void
-    {
-        DB::transaction(function () use ($another) {
-            parent::create($another);
-        });
-    }
-
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         if (Auth::user()->isCollegeSupervisor()) {
@@ -36,6 +29,7 @@ class CreateApplications extends CreateRecord
         }
 
         if (empty($data['trainee_id'])) {
+            DB::beginTransaction();
             try {
                 $traineeData = [
                     'full_name' => $data['full_name'] ?? 'New Trainee',
@@ -50,7 +44,10 @@ class CreateApplications extends CreateRecord
 
                 $trainee = Trainees::create($traineeData);
                 $data['trainee_id'] = $trainee->id;
+
+                DB::commit();
             } catch (\Throwable $e) {
+                DB::rollBack();
                 throw $e;
             }
         }

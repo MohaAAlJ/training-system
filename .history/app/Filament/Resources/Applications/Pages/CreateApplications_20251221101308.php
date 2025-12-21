@@ -36,6 +36,7 @@ class CreateApplications extends CreateRecord
         }
 
         if (empty($data['trainee_id'])) {
+            DB::beginTransaction();
             try {
                 $traineeData = [
                     'full_name' => $data['full_name'] ?? 'New Trainee',
@@ -50,7 +51,10 @@ class CreateApplications extends CreateRecord
 
                 $trainee = Trainees::create($traineeData);
                 $data['trainee_id'] = $trainee->id;
+
+                DB::commit();
             } catch (\Throwable $e) {
+                DB::rollBack();
                 throw $e;
             }
         }
