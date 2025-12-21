@@ -16,6 +16,38 @@ return new class extends Migration
             $table->json('name'); // {'ar': 'خانيونس', 'en': 'Khan Yunis'}
             $table->timestamps();
         });
+         DB::table('governorates')->insert([
+            [
+                'id' => 1,
+                'name_en' => 'Gaza City',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'id' => 2,
+                'name_en' => 'North Gaza',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'id' => 3,
+                'name_en' => 'Deir Al-Balah',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'id' => 4,
+                'name_en' => 'Khan Yunis',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'id' => 5,
+                'name_en' => 'Rafah',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ]);
     }
 
     /**

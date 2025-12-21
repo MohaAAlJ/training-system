@@ -74,12 +74,13 @@ class User extends Authenticatable implements FilamentUser
 
     public function isMedicalManager(): bool
     {
-        return $this->isDepartment() && $this->department()?->getAttribute('is_medical') === true;
+        return $this->role === Constans::ROLE_HOM;
+
     }
 
     public function isGeneralTrainingManager(): bool
     {
-        return $this->isDepartment() && $this->department()?->getAttribute('is_medical') === false;
+        return $this->role === Constans::ROLE_GTM;
     }
 
     public function canAccessPanel(Panel $panel): bool

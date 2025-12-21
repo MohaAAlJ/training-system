@@ -19,17 +19,23 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Auth;
+use UnitEnum;
 
 class SectionsResource extends Resource
 {
     protected static ?string $model = Sections::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingOffice;
+    protected static string | BackedEnum | null $activeNavigationIcon = Heroicon::BuildingOffice;
+
+
     // Arabic labels
     protected static ?string $modelLabel = 'القسم';
     protected static ?string $pluralModelLabel = 'الأقسام';
     protected static ?string $navigationLabel = 'الأقسام';
     protected static ?int $navigationSort = 2;
+
+    protected static string | UnitEnum | null $navigationGroup = 'إدارة المتدربين';
 
     public static function form(Schema $schema): Schema
     {

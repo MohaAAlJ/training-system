@@ -11,6 +11,7 @@ use App\Filament\Resources\Applications\Schemas\ApplicationsInfolist;
 use App\Filament\Resources\Applications\Tables\ApplicationsTable;
 use App\Models\Applications;
 use BackedEnum;
+use UnitEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -26,12 +27,14 @@ class ApplicationsResource extends Resource
     protected static ?string $model = Applications::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClipboardDocumentList;
-
+    protected static string | BackedEnum | null $activeNavigationIcon = Heroicon::ClipboardDocumentList; //filled icon when active
     // Arabic labels
     protected static ?string $modelLabel = 'طلب';
     protected static ?string $pluralModelLabel = 'الطلبات';
     protected static ?string $navigationLabel = 'الطلبات';
     protected static ?int $navigationSort = 3;
+    protected static string | UnitEnum | null $navigationGroup = 'إدارة المتدربين';
+    
     public static function getNavigationBadge(): ?string
 {
     return static::getModel()::count();

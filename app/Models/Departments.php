@@ -16,6 +16,11 @@ class Departments extends Model
         'head_of_department',
         'medical_head_user_id',
         'is_medical',
+        'administrative_id',
+        'status',
+        'total_capacity',
+        'current_capacity',
+        'location',
     ];
     protected $casts = [
         'created_at' => 'datetime',
@@ -49,6 +54,20 @@ class Departments extends Model
     public function headOfDepartment()
     {
         return $this->belongsTo(User::class, 'head_of_department');
+    }
+
+    /**
+     * Safely notify the head of department if set.
+     */
+    public function notifyHead($notification): void
+    {
+        $user = $this->headOfDepartment;
+
+        if (! $user || ! ($user->id ?? null)) {
+            return;
+        }
+
+        $user->notify($notification);
     }
     public function scopeMedical($query)
     {

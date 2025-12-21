@@ -12,6 +12,7 @@ use App\Filament\Resources\Trainees\Schemas\TraineesInfolist;
 use App\Filament\Resources\Trainees\Tables\TraineesTable;
 use App\Models\Trainees;
 use BackedEnum;
+use UnitEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -25,7 +26,11 @@ class TraineesResource extends Resource
     protected static ?string $model = Trainees::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedIdentification;
+    protected static string | BackedEnum | null $activeNavigationIcon = Heroicon::Identification; //filled icon when active
     // Arabic labels
+    protected static string | UnitEnum | null $navigationGroup = 'إدارة المتدربين';
+
+
     protected static ?string $modelLabel = 'المتدرب';
     protected static ?string $pluralModelLabel = 'المتدربين';
     protected static ?string $navigationLabel = 'المتدربين';

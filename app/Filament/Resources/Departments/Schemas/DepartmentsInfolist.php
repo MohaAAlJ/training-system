@@ -25,9 +25,9 @@ class DepartmentsInfolist
                         TextEntry::make('medicalHead.name')
                             ->label('رئيس الإدارة الطبية')
                             ->placeholder('-'),
-                        TextEntry::make('departments_count')
+                        TextEntry::make('sections_count')
                             ->label('عدد الأقسام')
-                            ->getStateUsing(fn ($record) => $record->departments()->count()),
+                            ->getStateUsing(fn ($record) => $record->sections()->count()),
                     ])->columns(2),
 
                 Section::make('معلومات النظام')
