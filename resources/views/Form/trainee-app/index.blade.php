@@ -139,7 +139,7 @@
                             <select id="governorate_id" name="governorate_id" required>
                                 <option value="" disabled selected>اختر </option>
                                 @foreach(\App\Models\Governorate::all() as $g)
-                                    <option value="{{ $g->id }}">{{ $g->name_ar }}</option>
+                                    <option value="{{ $g->id }}">{{ $g->name }}</option>
                                 @endforeach
                             </select>
                         </label>
@@ -199,7 +199,18 @@
                             <small class="note">رقم موجب أقل من 1000</small>
                         </label>
                         <label class="field">
-                            <span>الدوائر *</span>
+                            <span>المنشأة/الإدارة *</span>
+                            <select
+                                id="administrative_id"
+                                name="administrative_id"
+                                required
+                            >
+                                <option value="" disabled selected>اختر</option>
+                            </select>
+                            <small class="note"></small>
+                        </label>
+                        <label class="field">
+                            <span>الدائرة *</span>
                             <select
                                 id="department_id"
                                 name="department_id"
@@ -207,7 +218,7 @@
                             >
                                 <option value="" disabled selected>اختر</option>
                             </select>
-                            <small class="note"> </small>
+                            <small class="note"></small>
                         </label>
                         <label class="field">
                             <span>القسم *</span>

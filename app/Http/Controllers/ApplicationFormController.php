@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Applications;
-use App\Models\sections;
+use App\Models\Administrative;
+use App\Models\Sections;
 use App\Models\Departments;
 use App\Models\Institution;
 use App\Models\Major;
 use App\Models\Trainees;
+use App\Models\Governorate;
 use App\Helpers\Constans;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -33,26 +35,24 @@ class ApplicationFormController extends Controller
     /**
      * Public JSON endpoints to feed the form selects from the database.
      */
-    // public function addresses()
-    // {
-    //     // Gaza governorates - stored directly in applications.address field
-    //     $data = [
-    //         ['id' => 'شمال غزة', 'name' => 'شمال غزة'],
-    //         ['id' => 'غزة', 'name' => 'غزة'],
-    //         ['id' => 'الوسطى', 'name' => 'الوسطى'],
-    //         ['id' => 'خان يونس', 'name' => 'خان يونس'],
-    //         ['id' => 'رفح', 'name' => 'رفح'],
-    //     ];
+    public function addresses()
+    {
+        $data = Governorate::select('id', 'name')->get()
+            ->map(fn ($gov) => [
+                'id' => $gov->id,
+                'name' => $gov->name,
+            ])
+            ->values();
 
-    //     return response()->json($data);
-    // }
+        return response()->json($data);
+    }
 
     public function institutions()
     {
         $data = Institution::select('id', 'name')->get()
             ->map(fn ($inst) => [
                 'id' => $inst->id,
-                'name' => is_array($inst->name) ? ($inst->name['ar'] ?? ($inst->name['en'] ?? reset($inst->name))) : $inst->name,
+                'name' => $inst->name,
             ])
             ->values();
 
@@ -75,7 +75,7 @@ class ApplicationFormController extends Controller
 
         $data = $majors->map(fn ($major) => [
             'id' => $major->id,
-            'name' => is_array($major->name) ? ($major->name['ar'] ?? ($major->name['en'] ?? reset($major->name))) : $major->name,
+            'name' => $major->name,
         ])->values();
 
         return response()->json($data);
@@ -100,19 +100,42 @@ class ApplicationFormController extends Controller
         $colleges = $major->colleges()->select('colleges.id', 'colleges.name', 'colleges.institution_id')->get()
             ->map(fn ($c) => [
                 'id' => $c->id,
-                'name' => is_array($c->name) ? ($c->name['ar'] ?? ($c->name['en'] ?? reset($c->name))) : $c->name,
+                'name' => $c->name,
                 'institution_id' => $c->institution_id,
             ])->values();
 
         return response()->json($colleges);
     }
 
-    public function departments()
+    public function administratives()
     {
-        $data = Departments::select('id', 'name_location')->get()
+        $data = Administrative::select('id', 'title')->get()
+            ->map(fn ($adm) => [
+                'id' => $adm->id,
+                'name' => $adm->title,
+            ])
+            ->values();
+
+        return response()->json($data);
+    }
+
+    public function departments(Request $request)
+    {
+        $administrativeId = $request->query('administrative_id');
+
+        $query = Departments::query();
+
+        if ($administrativeId) {
+            // Filter departments that have sections in this administrative
+            $query->whereHas('sections', function ($q) use ($administrativeId) {
+                $q->where('administrative_id', $administrativeId);
+            });
+        }
+
+        $data = $query->select('id', 'title')->get()
             ->map(fn ($dept) => [
                 'id' => $dept->id,
-                'name' => $dept->name_location,
+                'name' => $dept->title,
             ])
             ->values();
 
@@ -121,18 +144,24 @@ class ApplicationFormController extends Controller
 
     public function sections(Request $request)
     {
-        $administrativeId = $request->query('department_id');
+        $departmentId = $request->query('department_id');
+        $administrativeId = $request->query('administrative_id');
 
-        $query = Sections::active()->select('id', 'name_location', 'department_id');
-        if ($administrativeId) {
-            $query->where('department_id', $administrativeId);
+        $query = Sections::query();
+
+        if ($departmentId) {
+            $query->where('department_id', $departmentId);
         }
 
-        $data = $query->get()
-            ->map(fn ($dept) => [
-                'id' => $dept->id,
-                'name' => $dept->name_location,
-                'administrative_id' => $dept->administrative_id,
+        if ($administrativeId) {
+            $query->where('administrative_id', $administrativeId);
+        }
+
+        // Return all sections for this pair, regardless of status for now
+        $data = $query->get(['id', 'name_location'])
+            ->map(fn ($sec) => [
+                'id' => $sec->id,
+                'name' => $sec->name_location,
             ])
             ->values();
 
@@ -199,8 +228,16 @@ class ApplicationFormController extends Controller
         $uploadedFile = $request->file('letter_file');
 
         try {
+            // Verify that the section belongs to the selected department and administrative
+            $section = Sections::where('id', $validated['section_id'])
+                ->where('department_id', $validated['department_id'])
+                ->where('administrative_id', $validated['administrative_id'])
+                ->firstOrFail();
+
+            $administrativeId = $validated['administrative_id'];
+
             // Use database transaction to ensure both trainee and application save together
-            $result = DB::transaction(function () use ($validated, $dobFormatted, $uploadedFile) {
+            $result = DB::transaction(function () use ($validated, $dobFormatted, $uploadedFile, $administrativeId) {
 
                 // Step 1: Create or update trainee record
                 // Use updateOrCreate to handle case where trainee with same national_id already exists
@@ -236,7 +273,7 @@ class ApplicationFormController extends Controller
                 $application = Applications::create([
                     'trainee_id' => $trainee->id,
                     'department_id' => $validated['department_id'],
-                    'administrative_id' => $validated['administrative_id'],
+                    'administrative_id' => $administrativeId,
                     'section_id' => $validated['section_id'],
                     'street' => $validated['street'],
                     'training_type' => $validated['training_type'],

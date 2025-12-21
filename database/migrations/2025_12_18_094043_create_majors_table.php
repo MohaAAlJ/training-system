@@ -10,7 +10,7 @@ return new class extends Migration {
     {
         Schema::create('majors', function (Blueprint $table) {
             $table->id();
-            $table->json('name');
+            $table->string('name');
             $table->string('code')->unique()->nullable();
             $table->timestamps();
             $table->softDeletes();
@@ -225,10 +225,10 @@ return new class extends Migration {
             'هندسة النظم الذكية'
         ];
 
-        foreach ($majors as $index => $name) {
+        foreach ($majors as $index => $major) {
             DB::table('majors')->insert([
                 'id' => $index + 1,
-                'name' => json_encode(['ar' => $name, 'en' => $name], JSON_UNESCAPED_UNICODE),
+                'name' => $major,
                 'code' => 'M-' . str_pad($index + 1, 3, '0', STR_PAD_LEFT),
                 'created_at' => now(),
                 'updated_at' => now(),
