@@ -7,9 +7,13 @@ const endpoints = {
     majorColleges: (majorId) =>
         `/WelcomeForm/Form/api/major-colleges?major_id=${majorId ?? ""}`,
     trainingFocus: "/WelcomeForm/Form/api/training-types",
-    departments: "/WelcomeForm/Form/api/departments",
-    sections: (departmentId) =>
-        `/WelcomeForm/Form/api/sections?department_id=${departmentId ?? ""}`,
+    administratives: "/WelcomeForm/Form/api/administratives",
+    departments: (adminId) =>
+        `/WelcomeForm/Form/api/departments?administrative_id=${adminId ?? ""}`,
+    sections: (deptId, adminId) =>
+        `/WelcomeForm/Form/api/sections?department_id=${
+            deptId ?? ""
+        }&administrative_id=${adminId ?? ""}`,
     submit: "/WelcomeForm/Form",
 };
 
@@ -21,6 +25,7 @@ const message = document.getElementById("formMessage");
 const governorateSelect = document.getElementById("governorate_id");
 const institutionSelect = document.getElementById("institution_id");
 const majorSelect = document.getElementById("major_id");
+const administrativeSelect = document.getElementById("administrative_id");
 const departmentSelect = document.getElementById("department_id");
 const sectionSelect = document.getElementById("section_id");
 const trainingTypeSelect = document.getElementById("training_type");
@@ -113,27 +118,10 @@ async function loadOptions(select, url, fallbackData, labelKey = "name") {
     }
 }
 
-async function loadDepartments() {
-    await loadOptions(
-        departmentSelect,
-        endpoints.departments,
-        fallback.departments
-    );
+async function loadAdministratives() {
+    await loadOptions(administrativeSelect, endpoints.administratives, []);
+    populateOptions(departmentSelect, []);
     populateOptions(sectionSelect, []);
-}
-
-async function filterSections(deptId) {
-    try {
-        const res = await fetch(endpoints.sections(deptId));
-        if (!res.ok) throw new Error("Request failed");
-        const data = await res.json();
-        populateOptions(sectionSelect, data, "name_location");
-    } catch (err) {
-        const data = (fallback.sections || []).filter(
-            (s) => !deptId || s.department_id == deptId
-        );
-        populateOptions(sectionSelect, data, "name_location");
-    }
 }
 
 if (governorateSelect) {
@@ -142,13 +130,21 @@ if (governorateSelect) {
     });
 }
 
+administrativeSelect.addEventListener("change", (e) => {
+    const adminId = e.target.value;
+    loadOptions(departmentSelect, endpoints.departments(adminId), [], "name");
+    populateOptions(sectionSelect, []);
+});
+
 institutionSelect.addEventListener("change", (e) => {
     const instId = e.target.value;
     loadOptions(majorSelect, endpoints.majors(instId), [], "name");
 });
 
 departmentSelect.addEventListener("change", (e) => {
-    filterSections(e.target.value);
+    const deptId = e.target.value;
+    const adminId = administrativeSelect.value;
+    loadOptions(sectionSelect, endpoints.sections(deptId, adminId), [], "name");
 });
 majorSelect.addEventListener("change", async (e) => {
     try {
@@ -327,8 +323,7 @@ form.addEventListener("submit", async (e) => {
         fallback.trainingFocus
     );
     populateOptions(sectionSelect, []);
-    loadDepartments();
-
+    loadAdministratives();
     // Add smooth entrance animation to the form
     const heroElement = document.querySelector(".hero");
     const formCard = document.querySelector(".card");

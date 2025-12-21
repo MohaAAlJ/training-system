@@ -10,7 +10,7 @@ return new class extends Migration {
     {
         Schema::create('colleges', function (Blueprint $table) {
             $table->id();
-            $table->json('name');
+            $table->string('name');
             $table->foreignId('institution_id')->constrained()->cascadeOnDelete();
             $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
@@ -88,7 +88,7 @@ return new class extends Migration {
             DB::table('colleges')->insert([
                 'id' => $col['id'],
                 'institution_id' => $col['inst_id'],
-                'name' => json_encode(['ar' => $col['name'], 'en' => $col['name']], JSON_UNESCAPED_UNICODE),
+                'name' => $col['name'],
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);

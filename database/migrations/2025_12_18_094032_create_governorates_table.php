@@ -13,37 +13,37 @@ return new class extends Migration
     {
         Schema::create('governorates', function (Blueprint $table) {
             $table->id();
-            $table->json('name'); // {'ar': 'خانيونس', 'en': 'Khan Yunis'}
+            $table->string('name');
             $table->timestamps();
         });
          DB::table('governorates')->insert([
             [
                 'id' => 1,
-                'name' => json_encode(['ar' => 'غزة', 'en' => 'Gaza City']),
+                'name' => 'غزة',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
                 'id' => 2,
-                'name' => json_encode(['ar' => 'شمال غزة', 'en' => 'North Gaza']),
+                'name' => 'شمال غزة',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
                 'id' => 3,
-                'name' => json_encode(['ar' => 'الوسطى', 'en' => 'Deir Al-Balah']),
+                'name' => 'الوسطى',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
                 'id' => 4,
-                'name' => json_encode(['ar' => 'خان يونس', 'en' => 'Khan Yunis']),
+                'name' => 'خان يونس',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
                 'id' => 5,
-                'name' => json_encode(['ar' => 'رفح', 'en' => 'Rafah']),
+                'name' => 'رفح',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],

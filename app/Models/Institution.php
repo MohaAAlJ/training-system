@@ -7,16 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Spatie\Translatable\HasTranslations;
 
 class Institution extends Model
 {
     /** @use HasFactory<\Database\Factories\InstitutionFactory> */
-    use HasFactory, SoftDeletes, HasTranslations;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = ['id','name'];
-
-    public $translatable = ['name'];
 
     protected $casts = [
         'created_at' => 'datetime',
