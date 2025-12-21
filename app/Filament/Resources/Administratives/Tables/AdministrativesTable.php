@@ -24,11 +24,11 @@ class AdministrativesTable
         return $table
             ->columns([
                 TextColumn::make('title')
-                    ->label('اسم المديرية')
+                    ->label('اسم الإدارة')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('user.name')
-                    ->label('رئيس المديرية')
+                    ->label('رئيس الإدارة')
                     ->searchable()
                     ->sortable(),
                 IconColumn::make('is_medical')
@@ -49,7 +49,7 @@ class AdministrativesTable
             ])
             ->filters([
                 SelectFilter::make('user_id')
-                    ->label('رئيس المديرية')
+                    ->label('رئيس الإدارة')
                     ->relationship('user', 'name')
                     ->searchable()
                     ->preload(),

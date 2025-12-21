@@ -10,6 +10,8 @@ use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Actions\ViewAction;
+use Filament\Forms\Components\ToggleButtons;
+use Filament\Tables\Columns\ToggleColumn;
 use Illuminate\Support\Facades\Auth;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -24,26 +26,31 @@ class DepartmentsTable
        return $table
             ->columns([
                 TextColumn::make('title')
-                    ->label('اسم المديرية')
+                    ->label('اسم الدائرة')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('user.name')
-                    ->label('رئيس المديرية')
+                    ->label('رئيس الدائرة')
                     ->searchable()
                     ->sortable(),
                 IconColumn::make('is_medical')
                     ->label('إدارة طبية')
                     ->boolean()
                     ->sortable(),
-                TextColumn::make('medicalHead.name')
-                    ->label('رئيس الإدارة الطبية')
-                    ->searchable()
-                    ->sortable()
-                    ->placeholder('-'),
                 TextColumn::make('sections_count')
                     ->label('عدد الأقسام')
                     ->counts('sections')
                     ->sortable(),
+                ToggleColumn::make('status')
+                    ->label('الحالة')
+                    ->onIcon('heroicon-m-check-circle')
+                    ->offIcon('heroicon-m-x-circle')
+                    ->onColor('success')
+                    ->offColor('danger')
+                    ->beforeStateUpdated(function ($record, $state) {
+                        $record->status = $state;
+                        $record->save();
+                    }),
                 TextColumn::make('created_at')
                     ->label('تاريخ الإنشاء')
                     ->dateTime('Y-m-d')

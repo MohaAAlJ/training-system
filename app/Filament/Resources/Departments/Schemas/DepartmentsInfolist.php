@@ -22,9 +22,6 @@ class DepartmentsInfolist
                         IconEntry::make('is_medical')
                             ->label('إدارة طبية')
                             ->boolean(),
-                        TextEntry::make('medicalHead.name')
-                            ->label('رئيس الإدارة الطبية')
-                            ->placeholder('-'),
                         TextEntry::make('sections_count')
                             ->label('عدد الأقسام')
                             ->getStateUsing(fn ($record) => $record->sections()->count()),

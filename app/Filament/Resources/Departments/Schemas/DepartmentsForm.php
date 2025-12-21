@@ -18,36 +18,34 @@ class DepartmentsForm
                     ->columns(2)
                     ->schema([
                         TextInput::make('title')
-                            ->label('اسم الإدارة')
-                            ->placeholder('مثال: الإدارة العامة للرعاية الأولية')
+                            ->label('اسم الدائرة')
+                            ->placeholder('مثال: دائرة الصيدلة')
                             ->required()
                             ->maxLength(255)
                             ->columnSpanFull(),
                         Toggle::make('is_medical')
-                            ->label('إدارة طبية')
-                            ->helperText('حدد إذا كانت هذه إدارة طبية أم لا')
+                            ->label('دائرة طبية')
+                            ->helperText('حدد إذا كانت هذه دائرة طبية أم لا')
                             ->onColor('success')
                             ->offColor('danger')
-                            ->live(),
+                            ->default(false),
+                        Toggle::make('status')
+                            ->label('نشطة')
+                            ->helperText('حدد إذا كانت الدائرة نشطة أم لا')
+                            ->onColor('success')
+                            ->offColor('danger')
+                            ->default(true),
                     ]),
                 Section::make('المستخدمون المسؤولون')
                     ->columns(2)
                     ->schema([
                         Select::make('user_id')
-                            ->label('رئيس الإدارة')
-                            ->helperText('اختر رئيس الإدارة')
+                            ->label('رئيس الدائرة')
+                            ->helperText('اختر رئيس الدائرة (اختياري)')
                             ->relationship('user', 'name')
                             ->searchable()
                             ->preload()
-                            ->required(),
-                        Select::make('medical_head_user_id')
-                            ->label('رئيس الإدارة الطبية')
-                            ->helperText('اختر رئيس الإدارة الطبية')
-                            ->relationship('medicalHead', 'name')
-                            ->searchable()
-                            ->preload()
-                            ->visible(fn($get) => $get('is_medical'))
-                            ->required(fn($get) => $get('is_medical')),
+                            ->nullable(),
                     ]),
             ]);
     }

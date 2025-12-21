@@ -17,9 +17,15 @@ class SectionsForm
                     ->required()
                     ->maxLength(255)
                     ->columnSpanFull(),
-                Select::make('Administrative_id')
-                    ->label('الدائرة')
-                    ->relationship('Administrative', 'title')
+                Select::make('administrative_id')
+                    ->label('الإدارة')
+                    ->relationship('administrative', 'title')
+                    ->searchable()
+                    ->preload()
+                    ->required(),
+                Select::make('department_id')
+                    ->label('القسم')
+                    ->relationship('department', 'title')
                     ->searchable()
                     ->preload()
                     ->required(),

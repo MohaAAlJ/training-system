@@ -18,7 +18,7 @@ class AdministrativesForm
                     ->columns(2)
                     ->schema([
                         TextInput::make('title')
-                            ->label('اسم الإدارة')
+                            ->label('اسم الدائرة')
                             ->placeholder('مثال: الإدارة العامة للرعاية الأولية')
                             ->required()
                             ->maxLength(255)

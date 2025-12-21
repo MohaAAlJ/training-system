@@ -28,7 +28,7 @@ class DepartmentsResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingOffice2;
     protected static string | BackedEnum | null $activeNavigationIcon = Heroicon::BuildingOffice2; //filled icon when active
        // Arabic labels
-    protected static ?string $modelLabel = 'الدائرة';
+    protected static ?string $modelLabel = 'الدوائر';
     protected static ?string $pluralModelLabel = 'الدوائر';
     protected static ?string $navigationLabel = 'الدوائر';
     protected static ?int $navigationSort = 2;
