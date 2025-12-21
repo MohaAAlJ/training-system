@@ -34,7 +34,7 @@ class TraineesResource extends Resource
     protected static ?string $modelLabel = 'المتدرب';
     protected static ?string $pluralModelLabel = 'المتدربين';
     protected static ?string $navigationLabel = 'المتدربين';
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 5;
 
 
     public static function form(Schema $schema): Schema

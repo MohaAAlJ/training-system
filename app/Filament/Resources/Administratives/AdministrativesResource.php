@@ -1,74 +1,75 @@
 <?php
 
-// namespace App\Filament\Resources\Departments;
+namespace App\Filament\Resources\Administratives;
 
-// use App\Filament\Resources\Departments\Pages\CreateDepartments;
-// use App\Filament\Resources\Departments\Pages\EditDepartments;
-// use App\Filament\Resources\Departments\Pages\ListDepartments;
-// use App\Filament\Resources\Departments\Pages\ViewDepartments;
-// use App\Filament\Resources\Departments\RelationManagers\SectionsRelationManager;
-// use App\Filament\Resources\Departments\Schemas\DepartmentsForm;
-// use App\Filament\Resources\Departments\Schemas\DepartmentsInfolist;
-// use App\Filament\Resources\Departments\Tables\DepartmentsTable;
-// use App\Models\Administrative;
-// use BackedEnum;
-// use Filament\Resources\Resource;
-// use Filament\Schemas\Schema;
-// use Filament\Support\Icons\Heroicon;
-// use Filament\Tables\Table;
-// use Illuminate\Database\Eloquent\Builder;
-// use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Filament\Resources\Administratives\Pages\CreateAdministratives;
+use App\Filament\Resources\Administratives\Pages\EditAdministratives;
+use App\Filament\Resources\Administratives\Pages\ListAdministratives;
+use App\Filament\Resources\Administratives\Pages\ViewAdministratives;
+use App\Filament\Resources\Administratives\RelationManagers\SectionsRelationManager;
+use App\Filament\Resources\Administratives\Schemas\AdministrativesForm;
+use App\Filament\Resources\Administratives\Schemas\AdministrativesInfolist;
+use App\Filament\Resources\Administratives\Tables\AdministrativesTable;
+use App\Models\Administrative;
+use BackedEnum;
+use Filament\Resources\Resource;
+use UnitEnum;
+use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-// class DepartmentsResource extends Resource
-// {
-//     protected static ?string $model = Administrative::class;
+class AdministrativesResource extends Resource
+{
+    protected static ?string $model = Administrative::class;
 
-//     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingOffice2;
-//     protected static string | BackedEnum | null $activeNavigationIcon = Heroicon::BuildingOffice2; //filled icon when active
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingOffice2;
+    protected static string | BackedEnum | null $activeNavigationIcon = Heroicon::BuildingOffice2; //filled icon when active
+    protected static string | UnitEnum | null $navigationGroup = 'إدارة المتدربين';
+    public static function form(Schema $schema): Schema
+    {
+        return AdministrativesForm::configure($schema);
+    }
 
-//     public static function form(Schema $schema): Schema
-//     {
-//         return DepartmentsForm::configure($schema);
-//     }
+    public static function infolist(Schema $schema): Schema
+    {
+        return AdministrativesInfolist::configure($schema);
+    }
 
-//     public static function infolist(Schema $schema): Schema
-//     {
-//         return DepartmentsInfolist::configure($schema);
-//     }
+    public static function table(Table $table): Table
+    {
 
-//     public static function table(Table $table): Table
-//     {
+        return AdministrativesTable::configure($table);
+    }
+    // Arabic labels
+    protected static ?string $modelLabel = 'الادارة';
+    protected static ?string $pluralModelLabel = 'الادارة';
+    protected static ?string $navigationLabel = 'الادارة';
+    protected static ?int $navigationSort = 1;
 
-//         return DepartmentsTable::configure($table);
-//     }
-//     // Arabic labels
-//     protected static ?string $modelLabel = 'الدائرة';
-//     protected static ?string $pluralModelLabel = 'الدوائر';
-//     protected static ?string $navigationLabel = 'الدوائر';
-//     protected static ?int $navigationSort = 1;
+    public static function getRelations(): array
+    {
+        return [
+            SectionsRelationManager::class,
+        ];
+    }
 
-//     public static function getRelations(): array
-//     {
-//         return [
-//             SectionsRelationManager::class,
-//         ];
-//     }
+    public static function getPages(): array
+    {
+        return [
+            'index' => ListAdministratives::route('/'),
+            'create' => CreateAdministratives::route('/create'),
+            'view' => ViewAdministratives::route('/{record}'),
+            'edit' => EditAdministratives::route('/{record}/edit'),
+        ];
+    }
 
-//     public static function getPages(): array
-//     {
-//         return [
-//             'index' => ListDepartments::route('/'),
-//             'create' => CreateDepartments::route('/create'),
-//             'view' => ViewDepartments::route('/{record}'),
-//             'edit' => EditDepartments::route('/{record}/edit'),
-//         ];
-//     }
-
-//     public static function getRecordRouteBindingEloquentQuery(): Builder
-//     {
-//         return parent::getRecordRouteBindingEloquentQuery()
-//             ->withoutGlobalScopes([
-//                 SoftDeletingScope::class,
-//             ]);
-//     }
-// }
+    public static function getRecordRouteBindingEloquentQuery(): Builder
+    {
+        return parent::getRecordRouteBindingEloquentQuery()
+            ->withoutGlobalScopes([
+                SoftDeletingScope::class,
+            ]);
+    }
+}

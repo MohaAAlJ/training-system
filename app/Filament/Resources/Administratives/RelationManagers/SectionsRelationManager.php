@@ -25,9 +25,9 @@ use Illuminate\Support\Facades\Auth;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
 
-class DepartmentsRelationManager extends RelationManager
+class SectionsRelationManager extends RelationManager
 {
-    protected static string $relationship = 'departments';
+    protected static string $relationship = 'sections';
 
     public function form(Schema $schema): Schema
     {
@@ -38,6 +38,12 @@ class DepartmentsRelationManager extends RelationManager
                     ->required()
                     ->maxLength(255)
                     ->columnSpanFull(),
+                Select::make('department_id')
+                    ->label('القسم')
+                    ->relationship('department', 'title')
+                    ->searchable()
+                    ->preload()
+                    ->required(),
                 Select::make('user_id')
                     ->label('المسؤول')
                     ->relationship('user', 'name')
@@ -80,7 +86,7 @@ class DepartmentsRelationManager extends RelationManager
                     ->label('المسجلين')
                     ->state(function ($record) {
                         return DB::table('applications')
-                            ->where('department_id', $record->id)
+                            ->where('section_id', $record->id)
                             ->whereIn('status', ['active', 'completed'])
                             ->count();
                     })

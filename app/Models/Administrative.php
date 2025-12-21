@@ -13,7 +13,7 @@ class Administrative extends Model
     protected $table = 'administratives';
 
     protected $fillable = [
-        'name',
+        'title',
         'user_id',
         'is_medical',
         'medical_head_user_id',
@@ -39,16 +39,10 @@ class Administrative extends Model
      */
     public function sections()
     {
-        return $this->hasMany(Sections::class, 'Administrative_id');
+        return $this->hasMany(Sections::class, 'administrative_id');
     }
 
-    /**
-     * Get all departments under this administrative.
-     */
-    public function departments()
-    {
-        return $this->hasMany(Departments::class, 'administrative_id');
-    }
+
 
     /**
      * Compatibility relationship for Filament forms/tables expecting `medicalHead`.

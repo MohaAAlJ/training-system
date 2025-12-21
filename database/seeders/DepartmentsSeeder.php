@@ -35,7 +35,7 @@ class DepartmentsSeeder extends Seeder
             ]);
 
             $data = [
-                'name' => $directorateData['title'],
+                'title' => $directorateData['title'],
                 'user_id' => $manager->id,
             ];
 

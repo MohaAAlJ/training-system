@@ -19,7 +19,7 @@ class SectionsForm
                     ->columnSpanFull(),
                 Select::make('Administrative_id')
                     ->label('الدائرة')
-                    ->relationship('Administrative', 'name')
+                    ->relationship('Administrative', 'title')
                     ->searchable()
                     ->preload()
                     ->required(),
