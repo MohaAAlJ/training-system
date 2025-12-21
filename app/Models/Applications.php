@@ -17,6 +17,7 @@ class Applications extends Model
 
     protected $table = 'applications';
     protected $fillable = [
+        'id',
         'training_type',
         'duration',
         'section_id',

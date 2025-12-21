@@ -18,7 +18,7 @@ const fallback = {};
 
 const form = document.getElementById("applicationForm");
 const message = document.getElementById("formMessage");
-const addressSelect = document.getElementById("address");
+const governorateSelect = document.getElementById("governorate_id");
 const institutionSelect = document.getElementById("institution_id");
 const majorSelect = document.getElementById("major_id");
 const departmentSelect = document.getElementById("department_id");
@@ -136,9 +136,11 @@ async function filterSections(deptId) {
     }
 }
 
-addressSelect.addEventListener("change", () => {
-    setMessage("");
-});
+if (governorateSelect) {
+    governorateSelect.addEventListener("change", () => {
+        setMessage("");
+    });
+}
 
 institutionSelect.addEventListener("change", (e) => {
     const instId = e.target.value;
@@ -148,30 +150,29 @@ institutionSelect.addEventListener("change", (e) => {
 departmentSelect.addEventListener("change", (e) => {
     filterSections(e.target.value);
 });
-majorSelect.addEventListener("change", (e) => {
-        try {
-            const res = await fetch(endpoints.majorColleges(e.target.value));
-            if (!res.ok) return;
-            const data = await res.json();
-            if (Array.isArray(data) && data.length > 0) {
-                const first = data[0];
-                if (first.institution_id && institutionSelect) {
-                    institutionSelect.value = first.institution_id;
-                }
-                // set hidden college_id field to the first linked college id
-                const collegeInput = document.getElementById("college_id");
-                if (collegeInput) {
-                    collegeInput.value = first.id ?? "";
-                }
-            } else {
-                const collegeInput = document.getElementById("college_id");
-                if (collegeInput) collegeInput.value = "";
+majorSelect.addEventListener("change", async (e) => {
+    try {
+        const res = await fetch(endpoints.majorColleges(e.target.value));
+        if (!res.ok) return;
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+            const first = data[0];
+            if (first.institution_id && institutionSelect) {
+                institutionSelect.value = first.institution_id;
             }
-        } catch (err) {
+            // set hidden college_id field to the first linked college id
+            const collegeInput = document.getElementById("college_id");
+            if (collegeInput) {
+                collegeInput.value = first.id ?? "";
+            }
+        } else {
             const collegeInput = document.getElementById("college_id");
             if (collegeInput) collegeInput.value = "";
         }
-    })();
+    } catch (err) {
+        const collegeInput = document.getElementById("college_id");
+        if (collegeInput) collegeInput.value = "";
+    }
 });
 
 // Handle DOB dropdowns - combine to dd/mm/yyyy format for the hidden field
@@ -266,7 +267,7 @@ form.addEventListener("submit", async (e) => {
     }
 
     const formData = new FormData(form);
-    formData.append("status", "pending");
+    // status is set by server to STATUS_NEW (1)
 
     // Debug: log key fields
     try {
@@ -314,7 +315,7 @@ form.addEventListener("submit", async (e) => {
 });
 
 (async function init() {
-    await loadOptions(addressSelect, endpoints.addresses, fallback.addresses);
+    // governorateSelect is already populated by Blade @foreach
     await loadOptions(
         institutionSelect,
         endpoints.institutions,

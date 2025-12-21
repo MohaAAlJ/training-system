@@ -55,26 +55,26 @@ class ApplicationsTable
                 TextColumn::make('status')
                     ->label('الحالة')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
-                        'pending' => 'info',
-                        'waiting' => 'warning',
-                        'approved' => 'primary',
-                        'active' => 'success',
-                        'completed' => 'gray',
-                        'rejected' => 'danger',
-                        'paused' => 'warning',
+                    ->color(fn ($state): string => match ((int)$state) {
+                        1 => 'info',
+                        2 => 'primary',
+                        3 => 'primary',
+                        4 => 'warning',
+                        5 => 'success',
+                        6 => 'gray',
+                        7 => 'danger',
+                        8 => 'danger',
                         default => 'gray',
                     })
-                    ->formatStateUsing(fn (string $state): string => (function($state) {
+                    ->formatStateUsing(fn ($state): string => (function($state) {
                         $key = 'translation.status.' . $state;
                         $translated = \Illuminate\Support\Facades\Lang::get($key, [], 'ar');
                         return $translated === $key ? $state : $translated;
                     })($state)),
-                TextColumn::make('duration')
-                    ->label('مدة التدريب (أيام)')
-                    ->getStateUsing(fn($record) => $record->start_date && $record->end_date ? $record->end_date->diffInDays($record->start_date) : '-')
-                    ->sortable(query: fn(Builder $query, string $direction) => $query->orderBy('end_date', $direction))
-                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('trainee.training_hours')
+                    ->label('ساعات التدريب')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: false),
                 TextColumn::make('accepted_at')
                     ->label('تاريخ القبول')
                     ->dateTime('Y-m-d')

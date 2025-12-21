@@ -8,6 +8,7 @@ use App\Models\Departments;
 use App\Models\Institution;
 use App\Models\Major;
 use App\Models\Trainees;
+use App\Helpers\Constans;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -32,19 +33,19 @@ class ApplicationFormController extends Controller
     /**
      * Public JSON endpoints to feed the form selects from the database.
      */
-    public function addresses()
-    {
-        // Gaza governorates - stored directly in applications.address field
-        $data = [
-            ['id' => 'شمال غزة', 'name' => 'شمال غزة'],
-            ['id' => 'غزة', 'name' => 'غزة'],
-            ['id' => 'الوسطى', 'name' => 'الوسطى'],
-            ['id' => 'خان يونس', 'name' => 'خان يونس'],
-            ['id' => 'رفح', 'name' => 'رفح'],
-        ];
+    // public function addresses()
+    // {
+    //     // Gaza governorates - stored directly in applications.address field
+    //     $data = [
+    //         ['id' => 'شمال غزة', 'name' => 'شمال غزة'],
+    //         ['id' => 'غزة', 'name' => 'غزة'],
+    //         ['id' => 'الوسطى', 'name' => 'الوسطى'],
+    //         ['id' => 'خان يونس', 'name' => 'خان يونس'],
+    //         ['id' => 'رفح', 'name' => 'رفح'],
+    //     ];
 
-        return response()->json($data);
-    }
+    //     return response()->json($data);
+    // }
 
     public function institutions()
     {
@@ -177,7 +178,7 @@ class ApplicationFormController extends Controller
             ],
             'national_id' => ['required', 'digits:9'],
             'phone_number' => ['required', 'regex:/^97[02]5[69]\d{7}$/'],
-            'address' => ['required', 'string', 'max:255'],
+            'governorate_id' => ['required', 'integer', 'exists:governorates,id'],
             'street' => ['required', 'string', 'max:255', 'regex:/^[\p{Arabic}A-Za-z0-9\s\-\.,#\/]+$/u'],
             'institution_id' => ['required', 'integer', 'exists:institutions,id'],
             'college_id' => ['nullable', 'integer', 'exists:colleges,id'],
@@ -185,6 +186,7 @@ class ApplicationFormController extends Controller
             'training_hours' => ['required', 'integer', 'min:1', 'max:999'],
             'administrative_id' => ['required', 'integer', 'exists:administratives,id'],
             'department_id' => ['required', 'integer', 'exists:departments,id'],
+            'section_id' => ['required', 'integer', 'exists:sections,id'],
             'training_type' => ['required', 'string', 'max:100'],
             'letter_file' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
         ]);
@@ -221,10 +223,12 @@ class ApplicationFormController extends Controller
                         'full_name' => $validated['full_name'],
                         'phone_number' => $validated['phone_number'],
                         'dob' => $dobFormatted,
-                        'address' => $validated['address'],
+                        'governorate_id' => $validated['governorate_id'],
+                        'street' => $validated['street'],
                         'institution_id' => $validated['institution_id'],
                         'college_id' => $validated['college_id'] ?? null,
                         'major_id' => $validated['major_id'],
+                        'training_hours' => $validated['training_hours'],
                     ]
                 );
 
@@ -233,10 +237,10 @@ class ApplicationFormController extends Controller
                     'trainee_id' => $trainee->id,
                     'department_id' => $validated['department_id'],
                     'administrative_id' => $validated['administrative_id'],
+                    'section_id' => $validated['section_id'],
                     'street' => $validated['street'],
-                    'training_hours' => $validated['training_hours'],
                     'training_type' => $validated['training_type'],
-                    'status' => 'pending',
+                    'status' => Constans::STATUS_NEW,
                 ]);
 
                 // Step 3: Upload file with custom name: {application_id}_{trainee_id}.{extension}

@@ -10,7 +10,7 @@ class College extends Model
 {
     use HasFactory, HasTranslations;
 
-    protected $fillable = ['name', 'institution_id', 'user_id'];
+    protected $fillable = ['id','name', 'institution_id', 'user_id'];
     public $translatable = ['name'];
 
     public function institution()
