@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('departments', function (Blueprint $table) {
-            $table->id();
+            $table->id()->nullable(true);
             $table->string('title'); // مثال: الدائرة العامة للصيدلة
             $table->boolean('is_medical')->default(false);
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete(); // المدير العام للتخصص

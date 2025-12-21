@@ -7,11 +7,15 @@ class Constans
     /**
      * Role constants - stored as integers in database for easy extension
      */
-    public const ROLE_ADMIN = 1;
-    public const ROLE_DEPARTMENT = 2;
-    public const ROLE_SECTION = 3;
-    public const ROLE_MOH = 4;
-    public const ROLE_COLLEGE = 5;
+    public const ROLE_ADMIN = 1; //SUPER_ADMIN
+    public const ROLE_DEPARTMENT = 2; //DEPARTMENT HEAD
+    public const ROLE_SECTION = 3; //SECTION HEAD
+    public const ROLE_MOH = 4; //MINISTRY OF HEALTH
+    public const ROLE_COLLEGE = 5; //COLLEGE SUPERVISOR
+    public const ROLE_HOA = 6; //HEAD OF ADMINISTRATION
+    public const ROLE_HOM = 7; //HEAD OF MEDICAL
+    public const ROLE_GTM = 8; //GENERAL TRAINING MANAGER
+
 
     /**
      * Application status constants

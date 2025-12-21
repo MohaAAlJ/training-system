@@ -10,9 +10,9 @@ use App\Filament\Resources\Departments\RelationManagers\SectionsRelationManager;
 use App\Filament\Resources\Departments\Schemas\DepartmentsForm;
 use App\Filament\Resources\Departments\Schemas\DepartmentsInfolist;
 use App\Filament\Resources\Departments\Tables\DepartmentsTable;
-use App\Models\Administrative;
 use App\Models\Departments;
 use BackedEnum;
+use UnitEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -26,11 +26,14 @@ class DepartmentsResource extends Resource
     protected static ?string $model = Departments::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingOffice2;
-    // Arabic labels
+    protected static string | BackedEnum | null $activeNavigationIcon = Heroicon::BuildingOffice2; //filled icon when active
+       // Arabic labels
     protected static ?string $modelLabel = 'الدائرة';
     protected static ?string $pluralModelLabel = 'الدوائر';
     protected static ?string $navigationLabel = 'الدوائر';
     protected static ?int $navigationSort = 1;
+
+    protected static string | UnitEnum | null $navigationGroup = 'إدارة المتدربين';
 
     public static function form(Schema $schema): Schema
     {

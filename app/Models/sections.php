@@ -16,8 +16,10 @@ class Sections extends Model
         'name_location',
         'status',
         'total_capacity',
+        'current_capacity',
+        'department_id',
         'user_id',
-        'Administrative_id',
+        'administrative_id',
         'governorate_id',
     ];
     protected $casts = [

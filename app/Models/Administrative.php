@@ -15,12 +15,15 @@ class Administrative extends Model
     protected $fillable = [
         'name',
         'user_id',
+        'is_medical',
+        'medical_head_user_id',
     ];
 
     protected $casts = [
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
+        'is_medical' => 'boolean',
     ];
 
     /**

@@ -11,6 +11,7 @@ use App\Filament\Resources\Users\Schemas\UsersInfolist;
 use App\Filament\Resources\Users\Tables\UsersTable;
 use App\Models\User;
 use BackedEnum;
+use UnitEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -25,8 +26,10 @@ class UsersResource extends Resource
     protected static ?string $navigationLabel = 'المستخدمين';
     protected static ?int $navigationSort = 4;
     protected static ?string $model = User::class;
+    protected static string | UnitEnum | null $navigationGroup = 'إدارة المتدربين';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUserGroup;
+    protected static string | BackedEnum | null $activeNavigationIcon = Heroicon::UserGroup; //filled icon when active
 
     public static function form(Schema $schema): Schema
     {
