@@ -35,8 +35,13 @@ class ApplicationsForm
                             ->formatStateUsing(fn($record) => $record?->trainee?->full_name)
                             ->disabled(fn($context) => $context === 'edit')
                             ->dehydrated(fn($context) => $context === 'create')
-                            ->regex('/^[A-Za-z\u0621-\u064A\s]+$/u')
+                            ->regex('/^[A-Za-z\p{Arabic}\s]+$/u')
                             ->maxLength(255)
+                            ->validationMessages([
+                                'required' => __('validation.custom.full_name.required'),
+                                'regex' => __('validation.custom.full_name.regex'),
+                                'max' => __('validation.custom.full_name.max'),
+                            ])
                             ->required()
                             ->suffixAction(
                                 Action::make('edit_trainee_details')
@@ -89,6 +94,11 @@ class ApplicationsForm
                             ->maxLength(9)
                             ->regex('/^\d{9}$/')
                             ->helperText('9 أرقام فقط')
+                            ->validationMessages([
+                                'required' => __('validation.custom.national_id.required'),
+                                'regex' => __('validation.custom.national_id.regex'),
+                                'digits' => __('validation.custom.national_id.digits'),
+                            ])
                             ->required(),
 
                         TextInput::make('phone_number')
@@ -101,6 +111,10 @@ class ApplicationsForm
                             ->minLength(12)
                             ->maxLength(12)
                             ->helperText('مثال: 970591234567 أو 972561234567')
+                            ->validationMessages([
+                                'required' => __('validation.custom.phone_number.required'),
+                                'regex' => __('validation.custom.phone_number.regex'),
+                            ])
                             ->required(),
 
                         Select::make('governorate_id')
@@ -117,7 +131,7 @@ class ApplicationsForm
                             ->formatStateUsing(fn($record) => $record?->trainee?->street)
                             ->disabled(fn($context) => $context === 'edit')
                             ->dehydrated(fn($context) => $context === 'create')
-                            ->regex('/^[A-Za-z\u0621-\u064A0-9\s\-\.,#\/]+$/u')
+                            ->regex('/^[A-Za-z\p{Arabic}0-9\s\-\.,#\/]+$/u')
                             ->maxLength(255)
                             ->required(),
 
@@ -174,11 +188,14 @@ class ApplicationsForm
 
                         Select::make('institution_id')
                             ->label('المؤسسة التعليمية')
-                            ->options(fn() => Institution::all()->pluck('name', 'id'))
+                            ->options(fn() => Institution::query()->get()->pluck('name', 'id')->toArray())
                             ->default(fn() => Auth::user()->isCollegeSupervisor() ? Auth::user()->college?->institution_id : null)
                             ->formatStateUsing(fn($record) => $record?->trainee?->institution_id)
                             ->disabled(fn() => Auth::user()->isCollegeSupervisor() || request()->routeIs('*.edit'))
                             ->dehydrated(fn($context) => $context === 'create')
+                            ->validationMessages([
+                                'required' => __('validation.custom.institution_id.required'),
+                            ])
                             ->required(fn() => Auth::user()->isAdmin())
                             ->reactive(),
 
@@ -187,12 +204,17 @@ class ApplicationsForm
                             ->options(function (callable $get) {
                                 if (Auth::user()->isCollegeSupervisor() && Auth::user()->college) {
                                     return College::where('institution_id', Auth::user()->college->institution_id)
-                                        ->pluck('name', 'id');
+                                        ->get()
+                                        ->pluck('name', 'id')
+                                        ->toArray();
                                 }
 
                                 $institutionId = $get('institution_id');
                                 if ($institutionId) {
-                                    return College::where('institution_id', $institutionId)->pluck('name', 'id');
+                                    return College::where('institution_id', $institutionId)
+                                        ->get()
+                                        ->pluck('name', 'id')
+                                        ->toArray();
                                 }
                                 return [];
                             })
@@ -200,20 +222,29 @@ class ApplicationsForm
                             ->formatStateUsing(fn($record) => $record?->trainee?->college_id)
                             ->disabled(fn() => Auth::user()->isCollegeSupervisor() || request()->routeIs('*.edit'))
                             ->dehydrated(fn($context) => $context === 'create')
+                            ->validationMessages([
+                                'required' => __('validation.custom.college_id.required'),
+                            ])
                             ->required(fn() => Auth::user()->isAdmin())
                             ->reactive(),
 
                         Select::make('major_id')
                             ->label('التخصص')
                             ->options(function (callable $get) {
-                                if (Auth::user()->isCollegeSupervisor() && Auth::user()->college) {
+                                if (Auth::user()->isCollegeSupervisor() && Auth::user()->college?->id) {
                                     return Major::whereHas('colleges', function ($q) {
-                                        $q->where('colleges.id', Auth::user()->college_id);
-                                    })->pluck('name', 'id');
+                                        $q->where('colleges.id', Auth::user()->college->id);
+                                    })
+                                    ->get()
+                                    ->pluck('name', 'id')
+                                    ->toArray();
                                 }
                                 $collegeId = $get('college_id');
                                 if ($collegeId) {
-                                    return Major::whereHas('colleges', fn($q) => $q->where('colleges.id', $collegeId))->pluck('name', 'id');
+                                    return Major::whereHas('colleges', fn($q) => $q->where('colleges.id', $collegeId))
+                                        ->get()
+                                        ->pluck('name', 'id')
+                                        ->toArray();
                                 }
                                 return [];
                             })
@@ -221,6 +252,9 @@ class ApplicationsForm
                             ->disabled(fn($context) => $context === 'edit')
                             ->dehydrated(fn($context) => $context === 'create')
                             ->searchable()
+                            ->validationMessages([
+                                'required' => __('validation.custom.major_id.required'),
+                            ])
                             ->required()
                             ->preload(),
 
@@ -270,7 +304,7 @@ class ApplicationsForm
                         Select::make('section_id')
                             ->label('القسم')
                             ->options(function (callable $get) {
-                                $query = \App\Models\Sections::query();
+                                $query = Sections::query();
 
                                 if ($adminId = $get('administrative_id')) {
                                     $query->where('administrative_id', $adminId);
@@ -310,7 +344,7 @@ class ApplicationsForm
                                 Constans::STATUSES,
                                 array_map(fn($s) => \Illuminate\Support\Facades\Lang::get("translation.status.$s", [], 'ar'), Constans::STATUSES)
                             ))
-                            ->default(\App\Helpers\Constans::STATUS_PENDING)
+                            ->default(Constans::STATUS_CONFIRMATION)
                             ->required()
                             ->live()
                             ->afterStateUpdated(fn($state, $set) => $state === 'active' ? $set('accepted_at', now()) : null),

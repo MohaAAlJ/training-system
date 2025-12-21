@@ -3,13 +3,15 @@
 return [
     // Centralized translations for dynamic items (status, etc.)
     'status' => [
-        'pending' => 'طلب جديد',
-        'approved' => 'استيعاب',
-        'waiting' => 'لم يستلم عمل بعد',
-        'active' => 'بدء العمل',
-        'completed' => 'انتهى',
-        'rejected' => 'مرفوض',
-        'paused' => 'منقطع',
+        1 => 'طلب جديد',
+        2 => 'استيعاب',
+        3 => 'قبول جامعي',
+        4 => 'في قائمة الانتظار',
+        5 => 'بدء التدريب',
+        6 => 'انتهى التدريب',
+        7 => 'مرفوض',
+        8 => 'مغادرة',
+        9 => 'غير معروف',
     ],
 
     // Gaza Governorates
