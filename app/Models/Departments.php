@@ -126,11 +126,6 @@ class Departments extends Model
 //         return $this->belongsTo(User::class);
 //     }
 
-//     public function administrative()
-//     {
-//         return $this->belongsTo(Administrative::class, 'administrative_id');
-//     }
-
 //     public function applications()
 //     {
 //         return $this->hasMany(Applications::class, 'department_id');

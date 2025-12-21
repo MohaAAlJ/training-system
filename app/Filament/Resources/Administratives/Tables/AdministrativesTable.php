@@ -40,10 +40,7 @@ class AdministrativesTable
                     ->searchable()
                     ->sortable()
                     ->placeholder('-'),
-                TextColumn::make('departments_count')
-                    ->label('عدد الأقسام')
-                    ->counts('departments')
-                    ->sortable(),
+
                 TextColumn::make('created_at')
                     ->label('تاريخ الإنشاء')
                     ->dateTime('Y-m-d')

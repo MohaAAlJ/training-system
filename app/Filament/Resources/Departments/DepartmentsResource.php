@@ -31,7 +31,7 @@ class DepartmentsResource extends Resource
     protected static ?string $modelLabel = 'الدائرة';
     protected static ?string $pluralModelLabel = 'الدوائر';
     protected static ?string $navigationLabel = 'الدوائر';
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 2;
 
     protected static string | UnitEnum | null $navigationGroup = 'إدارة المتدربين';
 

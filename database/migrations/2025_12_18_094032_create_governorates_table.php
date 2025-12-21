@@ -19,31 +19,31 @@ return new class extends Migration
          DB::table('governorates')->insert([
             [
                 'id' => 1,
-                'name_en' => 'Gaza City',
+                'name' => json_encode(['ar' => 'غزة', 'en' => 'Gaza City']),
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
                 'id' => 2,
-                'name_en' => 'North Gaza',
+                'name' => json_encode(['ar' => 'شمال غزة', 'en' => 'North Gaza']),
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
                 'id' => 3,
-                'name_en' => 'Deir Al-Balah',
+                'name' => json_encode(['ar' => 'الوسطى', 'en' => 'Deir Al-Balah']),
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
                 'id' => 4,
-                'name_en' => 'Khan Yunis',
+                'name' => json_encode(['ar' => 'خان يونس', 'en' => 'Khan Yunis']),
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
                 'id' => 5,
-                'name_en' => 'Rafah',
+                'name' => json_encode(['ar' => 'رفح', 'en' => 'Rafah']),
                 'created_at' => now(),
                 'updated_at' => now(),
             ],

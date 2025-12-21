@@ -29,7 +29,7 @@ class SectionsTable
                     ->label('اسم القسم والموقع')
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('administrative.name')
+                TextColumn::make('administrative.title')
                     ->label('الدائرة')
                     ->searchable()
                     ->sortable(),
@@ -74,7 +74,7 @@ class SectionsTable
                     ]),
                 SelectFilter::make('administrative_id')
                     ->label('الدائرة')
-                    ->relationship('administrative', 'name')
+                    ->relationship('administrative', 'title')
                     ->searchable()
                     ->preload(),
                 SelectFilter::make('user_id')

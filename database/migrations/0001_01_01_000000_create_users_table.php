@@ -16,8 +16,11 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
+            $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->tinyInteger('role')->default(1); // 1:Admin, 2:Admin Manager, 3:Dept Manager, 4:Section Head
+            $table->unsignedBigInteger('college_id')->nullable();
+            $table->unsignedBigInteger('institution_id')->nullable();
             $table->enum('status', ['active', 'inactive', 'banned'])->default('active');
             $table->rememberToken();
             $table->timestamps();

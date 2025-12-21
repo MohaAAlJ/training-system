@@ -57,7 +57,7 @@ class Sections extends Model
     }
     public function administrative()
     {
-        return $this->belongsTo(Administrative::class, 'Administrative_id');
+        return $this->belongsTo(Administrative::class, 'administrative_id');
     }
 
     public function governorate()
