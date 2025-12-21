@@ -13,6 +13,7 @@ class Governorate extends Model
     protected $table = 'governorates';
 
     protected $fillable = [
+        'id',
         'name',
     ];
 

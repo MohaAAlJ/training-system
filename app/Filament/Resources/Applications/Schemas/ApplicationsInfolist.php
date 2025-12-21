@@ -25,8 +25,10 @@ class ApplicationsInfolist
                         TextEntry::make('trainee.dob')
                             ->label('تاريخ الميلاد')
                             ->date('Y-m-d'),
-                        TextEntry::make('trainee.address')
-                            ->label('العنوان'),
+                        TextEntry::make('trainee.governorate.name')
+                            ->label('المحافظة'),
+                        TextEntry::make('trainee.street')
+                            ->label('الشارع'),
                         TextEntry::make('trainee.institution.name')
                             ->label('المؤسسة التعليمية')
                             ->formatStateUsing(fn ($state) => is_array($state) ? ($state['ar'] ?? $state['en'] ?? reset($state)) : $state),
@@ -37,13 +39,13 @@ class ApplicationsInfolist
                 Section::make('تفاصيل التدريب')
                     ->columns(2)
                     ->schema([
-                        TextEntry::make('department.name_location')
-                            ->label('القسم'),
+                        TextEntry::make('department.title')
+                            ->label('القسم / الدائرة'),
+                        TextEntry::make('section.name_location')
+                            ->label('المكان / الشعبة'),
                         TextEntry::make('administrative.title')
                             ->label('الإدارة'),
-                        TextEntry::make('street')
-                            ->label('الشارع'),
-                        TextEntry::make('duration')
+                        TextEntry::make('trainee.training_hours')
                             ->label('عدد ساعات التدريب'),
                         TextEntry::make('training_type')
                             ->label('نوع التدريب')
@@ -55,17 +57,18 @@ class ApplicationsInfolist
                         TextEntry::make('status')
                             ->label('الحالة')
                             ->badge()
-                            ->color(fn (string $state): string => match ($state) {
-                                'pending' => 'info',
-                                'waiting' => 'warning',
-                                'approved' => 'primary',
-                                'active' => 'success',
-                                'completed' => 'gray',
-                                'rejected' => 'danger',
-                                'paused' => 'warning',
+                            ->color(fn ($state): string => match ((int)$state) {
+                                1 => 'info',
+                                2 => 'primary',
+                                3 => 'primary',
+                                4 => 'warning',
+                                5 => 'success',
+                                6 => 'gray',
+                                7 => 'danger',
+                                8 => 'danger',
                                 default => 'gray',
                             })
-                            ->formatStateUsing(fn (string $state): string => (function ($state) {
+                            ->formatStateUsing(fn ($state): string => (function ($state) {
                                 $key = 'translation.status.' . $state;
                                 $translated = \Illuminate\Support\Facades\Lang::get($key, [], 'ar');
                                 return $translated === $key ? $state : $translated;

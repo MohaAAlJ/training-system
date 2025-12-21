@@ -11,6 +11,7 @@ class Trainees extends Model
 
     protected $table = 'trainees';
     protected $fillable = [
+        'id',
         'national_id',
         'college_id',
         'full_name',

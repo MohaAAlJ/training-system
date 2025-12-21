@@ -14,12 +14,11 @@ class Institution extends Model
     /** @use HasFactory<\Database\Factories\InstitutionFactory> */
     use HasFactory, SoftDeletes, HasTranslations;
 
-    protected $fillable = ['name'];
+    protected $fillable = ['id','name'];
 
     public $translatable = ['name'];
 
     protected $casts = [
-        'name' => 'array',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',

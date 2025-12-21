@@ -13,6 +13,7 @@ class Administrative extends Model
     protected $table = 'administratives';
 
     protected $fillable = [
+        'id',
         'title',
         'user_id',
         'is_medical',

@@ -14,7 +14,7 @@ class Major extends Model
     /** @use HasFactory<\Database\Factories\MajorFactory> */
     use HasFactory, SoftDeletes, HasTranslations;
 
-    protected $fillable = ['name', 'code'];
+    protected $fillable = ['id','name', 'code'];
     public $translatable = ['name'];
 
     /** Relations */

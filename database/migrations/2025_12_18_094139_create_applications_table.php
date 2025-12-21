@@ -23,7 +23,7 @@ return new class extends Migration
             $table->string('street')->nullable();
             $table->date('start_date')->nullable();
             $table->date('end_date')->nullable();
-            $table->string('status')->default('new');
+            $table->integer('status')->default(1);
 
             $table->text('tags')->nullable();
             $table->text('application_letter')->nullable();

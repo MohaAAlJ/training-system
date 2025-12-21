@@ -347,7 +347,7 @@ class ApplicationsForm
                             ->default(Constans::STATUS_CONFIRMATION)
                             ->required()
                             ->live()
-                            ->afterStateUpdated(fn($state, $set) => $state === 'active' ? $set('accepted_at', now()) : null),
+                            ->afterStateUpdated(fn($state, $set) => (int)$state === Constans::STATUS_WAITING_LIST ? $set('accepted_at', now()) : null),
                     ])->columns(2),
 
                 Fieldset::make('المستندات والملاحظات')

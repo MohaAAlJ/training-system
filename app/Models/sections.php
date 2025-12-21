@@ -13,6 +13,7 @@ class Sections extends Model
 
     protected $table = 'sections';
     protected $fillable = [
+        'id',
         'name_location',
         'status',
         'total_capacity',
