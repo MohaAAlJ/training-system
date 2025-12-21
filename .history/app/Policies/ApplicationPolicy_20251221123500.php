@@ -42,7 +42,7 @@ class ApplicationPolicy
 
     public function create(User $user): bool
     {
-        return $user->isAdmin() || $user->isCollegeSupervisor();
+        return $user->isAdmin() || $user->isCollegeSupervisor() || $user->isMinistry();
     }
 
 

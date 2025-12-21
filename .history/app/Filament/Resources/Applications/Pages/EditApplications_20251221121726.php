@@ -14,6 +14,13 @@ class EditApplications extends EditRecord
 {
     protected static string $resource = ApplicationsResource::class;
 
+    public function mount(string|int $record): void
+    {
+        parent::mount($record);
+        $application = $this->getRecord();
+        $this->authorize('update', $application);
+    }
+
     protected function getHeaderActions(): array
     {
         return [

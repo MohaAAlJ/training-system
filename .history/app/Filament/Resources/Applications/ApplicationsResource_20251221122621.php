@@ -16,6 +16,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Auth;
 
@@ -66,6 +67,26 @@ class ApplicationsResource extends Resource
             'view' => ViewApplications::route('/{record}'),
             'edit' => EditApplications::route('/{record}/edit'),
         ];
+    }
+
+    public static function canCreate(): bool
+    {
+        return Auth::user()?->can('create', Applications::class) ?? false;
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        return Auth::user()?->can('update', $record) ?? false;
+    }
+
+    public static function canView(Model $record): bool
+    {
+        return Auth::user()?->can('view', $record) ?? false;
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return Auth::user()?->can('delete', $record) ?? false;
     }
 
     public static function getEloquentQuery(): Builder

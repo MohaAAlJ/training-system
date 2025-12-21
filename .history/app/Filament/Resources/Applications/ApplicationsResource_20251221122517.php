@@ -68,6 +68,11 @@ class ApplicationsResource extends Resource
         ];
     }
 
+    public static function canCreate(): bool
+    {
+        return Auth::user()?->can('create', Applications::class) ?? false;
+    }
+
     public static function getEloquentQuery(): Builder
     {
         $query = parent::getEloquentQuery();

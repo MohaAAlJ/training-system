@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\Applications\Pages;
 
 use App\Filament\Resources\Applications\ApplicationsResource;
-use App\Models\Applications;
 use Filament\Actions\Action;
 use Filament\Resources\Pages\CreateRecord;
 use App\Models\Trainees;

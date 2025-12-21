@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\Applications;
 
-use App\Filament\Resources\Applications\Pages\CreateApplications;
+use app\Filament\Resources\Applications\Pages\CreateApplications;
 use App\Filament\Resources\Applications\Pages\EditApplications;
 use App\Filament\Resources\Applications\Pages\ListApplications;
 use App\Filament\Resources\Applications\Pages\ViewApplications;

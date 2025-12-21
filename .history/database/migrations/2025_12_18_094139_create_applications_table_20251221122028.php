@@ -20,11 +20,11 @@ return new class extends Migration
 
             $table->string('tags')->nullable();
 
-            $table->tinyInteger('training_type')->nullable();
+            $table->tinyInteger('training_type')->nullable()
             $table->date('start_date')->nullable();
             $table->date('end_date')->nullable();
             $table->integer('duration')->nullable();
-            $table->tinyInteger('status')->default(1); 
+            $table->tinyInteger('status')->default(1); // حالة الطلب من 1 إلى 8
 
             $table->text('application_letter')->nullable();
             $table->timestamp('accepted_at')->nullable();

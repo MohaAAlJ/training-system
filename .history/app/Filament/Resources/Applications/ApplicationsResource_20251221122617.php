@@ -68,6 +68,26 @@ class ApplicationsResource extends Resource
         ];
     }
 
+    public static function canCreate(): bool
+    {
+        return Auth::user()?->can('create', Applications::class) ?? false;
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        return Auth::user()?->can('update', $record) ?? false;
+    }
+
+    public static function canView(Model $record): bool
+    {
+        return Auth::user()?->can('view', $record) ?? false;
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return Auth::user()?->can('delete', $record) ?? false;
+    }
+
     public static function getEloquentQuery(): Builder
     {
         $query = parent::getEloquentQuery();

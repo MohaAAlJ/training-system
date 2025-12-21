@@ -32,10 +32,10 @@ class AuthServiceProvider extends ServiceProvider
 
     protected $policies = [
         User::class => UserPolicy::class,
-        Applications::class => ApplicationPolicy::class,
-        Trainees::class => TraineesPolicy::class,
-        Departments::class => DepartmentPolicy::class,
-        Administratives::class => AdministrativePolicy::class,
+        Applications::class => UserPolicy::class,
+        Trainees::class => UserPolicy::class,
+        Departments::class => UserPolicy::class,
+        Administratives::class => UserPolicy::class,
         College::class => UserPolicy::class,
         Institution::class => UserPolicy::class,
         Major::class => UserPolicy::class,

@@ -9,7 +9,6 @@ use App\Policies\AdministrativePolicy;
 use App\Models\Departments;
 use App\Policies\DepartmentPolicy;
 use App\Models\Applications;
-use App\Policies\ApplicationPolicy;
 
 class AppServiceProvider extends ServiceProvider
 {
