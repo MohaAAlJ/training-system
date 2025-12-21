@@ -109,7 +109,7 @@ class UserSeeder extends Seeder
             'name' => 'ER Pharmacy Section Head',
             'email' => 'er_pharmacy@admin.com',
             'password' => Hash::make('password'),
-            'role' => Constans::ROLE_SECTION,
+            'role' => Constans::ROLE_SECTION_HEAD,
             'status' => 'active',
         ]);
 

@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
-use App\Models\Administrative;
+use App\Models\Administratives;
 use App\Models\Departments;
 use App\Models\Sections;
 use App\Models\College;
@@ -20,7 +20,7 @@ class UserSeeder extends Seeder
             'name' => 'System Admin',
             'email' => 'admin@admin.com',
             'password' => Hash::make('password'),
-            'role' => Constans::ROLE_ADMIN,
+            'role' => Constans::ROLE_SYSTEM_ADMIN,
             'status' => 'active',
         ]);
 
@@ -29,7 +29,7 @@ class UserSeeder extends Seeder
             'name' => 'Training Manager',
             'email' => 'manager@admin.com',
             'password' => Hash::make('password'),
-            'role' => Constans::ROLE_GTM,
+            'role' => Constans::ROLE_TRAINING_MANAGER,
             'status' => 'active',
         ]);
 
@@ -47,7 +47,7 @@ class UserSeeder extends Seeder
             'name' => 'College Supervisor',
             'email' => 'college@admin.com',
             'password' => Hash::make('password'),
-            'role' => Constans::ROLE_COLLEGE,
+            'role' => Constans::ROLE_COLLEGE_SUPERVISOR,
             'status' => 'active',
         ]);
         // Assign to existing College (e.g., ID 3: IT College at IUG)
@@ -69,7 +69,7 @@ class UserSeeder extends Seeder
             'name' => 'Hospital Director',
             'email' => 'hospital@admin.com',
             'password' => Hash::make('password'),
-            'role' => Constans::ROLE_HOA,
+            'role' => Constans::ROLE_ADMINISTRATIVE_MANAGER,
             'status' => 'active',
         ]);
 
@@ -77,7 +77,7 @@ class UserSeeder extends Seeder
             'name' => 'Medical Director',
             'email' => 'medical@admin.com',
             'password' => Hash::make('password'),
-            'role' => Constans::ROLE_HOM, // Ensure this role ID exists in Constants or logic
+            'role' => Constans::ROLE_MEDICAL_MANAGER, // Ensure this role ID exists in Constants or logic
             'status' => 'active',
         ]);
 
@@ -94,7 +94,7 @@ class UserSeeder extends Seeder
             'name' => 'Pharmacy Head',
             'email' => 'pharmacy@admin.com',
             'password' => Hash::make('password'),
-            'role' => Constans::ROLE_DEPARTMENT,
+            'role' => Constans::ROLE_DEPARTMENT_MANAGER,
             'status' => 'active',
         ]);
 
@@ -109,7 +109,7 @@ class UserSeeder extends Seeder
             'name' => 'ER Pharmacy Section Head',
             'email' => 'er_pharmacy@admin.com',
             'password' => Hash::make('password'),
-            'role' => Constans::ROLE_SECTION,
+            'role' => Constans::ROLE_SECTION_HEAD,
             'status' => 'active',
         ]);
 
