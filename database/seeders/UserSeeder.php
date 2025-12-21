@@ -19,7 +19,14 @@ class UserSeeder extends Seeder
         User::create([
             'name' => 'System Admin',
             'email' => 'admin@admin.com',
-            'password' => Hash::make('password'),
+            'password' => Hash::make('123'),
+            'role' => Constans::ROLE_ADMIN,
+            'status' => 'active',
+        ]);
+        User::create([
+            'name' => 'moha Admin',
+            'email' => 'Moha@admins.com',
+            'password' => Hash::make('123'),
             'role' => Constans::ROLE_ADMIN,
             'status' => 'active',
         ]);
@@ -28,7 +35,7 @@ class UserSeeder extends Seeder
         User::create([
             'name' => 'Training Manager',
             'email' => 'manager@admin.com',
-            'password' => Hash::make('password'),
+            'password' => Hash::make('123'),
             'role' => Constans::ROLE_GTM,
             'status' => 'active',
         ]);
@@ -37,7 +44,7 @@ class UserSeeder extends Seeder
         User::create([
             'name' => 'Ministry User',
             'email' => 'moh@admin.com',
-            'password' => Hash::make('password'),
+            'password' => Hash::make('123'),
             'role' => Constans::ROLE_MOH,
             'status' => 'active',
         ]);
@@ -46,7 +53,7 @@ class UserSeeder extends Seeder
         $collegeUser = User::create([
             'name' => 'College Supervisor',
             'email' => 'college@admin.com',
-            'password' => Hash::make('password'),
+            'password' => Hash::make('123'),
             'role' => Constans::ROLE_COLLEGE,
             'status' => 'active',
         ]);
@@ -68,7 +75,7 @@ class UserSeeder extends Seeder
         $hoaUser = User::create([
             'name' => 'Hospital Director',
             'email' => 'hospital@admin.com',
-            'password' => Hash::make('password'),
+            'password' => Hash::make('123'),
             'role' => Constans::ROLE_HOA,
             'status' => 'active',
         ]);
@@ -76,7 +83,7 @@ class UserSeeder extends Seeder
         $medicalHoaUser = User::create([
             'name' => 'Medical Director',
             'email' => 'medical@admin.com',
-            'password' => Hash::make('password'),
+            'password' => Hash::make('123'),
             'role' => Constans::ROLE_HOM,
             'status' => 'active',
         ]);
@@ -93,7 +100,7 @@ class UserSeeder extends Seeder
         $hodUser = User::create([
             'name' => 'Pharmacy Head',
             'email' => 'pharmacy@admin.com',
-            'password' => Hash::make('password'),
+            'password' => Hash::make('123'),
             'role' => Constans::ROLE_DEPARTMENT,
             'status' => 'active',
         ]);
@@ -108,7 +115,7 @@ class UserSeeder extends Seeder
         $hosUser = User::create([
             'name' => 'ER Pharmacy Section Head',
             'email' => 'er_pharmacy@admin.com',
-            'password' => Hash::make('password'),
+            'password' => Hash::make('123'),
             'role' => Constans::ROLE_SECTION,
             'status' => 'active',
         ]);
