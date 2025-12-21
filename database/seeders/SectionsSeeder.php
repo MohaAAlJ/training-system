@@ -85,9 +85,9 @@ class SectionsSeeder extends Seeder
                 'name_location' => $secData['name_location'],
                 'administrative_id' => $secData['admin_id'],
                 'department_id' => $secData['dept_id'],
-                'hos' => $hos->id,
+                'user_id' => $hos->id,
                 'total_capacity' => $secData['capacity'],
-                'status' => true,
+                'status' => 'active',
             ]);
         }
     }

@@ -57,7 +57,7 @@ class UserSeeder extends Seeder
         } else {
             // Fallback: Create valid college with institution_id
             College::create([
-                'name' => ['ar' => 'كلية تجريبية', 'en' => 'Test College'],
+                'name' => 'كلية تجريبية',
                 'institution_id' => 1, // Islamic University
                 'user_id' => $collegeUser->id,
             ]);
@@ -77,15 +77,15 @@ class UserSeeder extends Seeder
             'name' => 'Medical Director',
             'email' => 'medical@admin.com',
             'password' => Hash::make('password'),
-            'role' => Constans::ROLE_HOM, // Ensure this role ID exists in Constants or logic
+            'role' => Constans::ROLE_HOM,
             'status' => 'active',
         ]);
 
         $admin = Administrative::create([
             'title' => 'General Hospital',
-            'hoa' => $hoaUser->id,
+            'user_id' => $hoaUser->id,
             'is_medical' => true,
-            'medical_hoa' => $medicalHoaUser->id,
+            'medical_head_user_id' => $medicalHoaUser->id,
         ]);
 
 
@@ -101,7 +101,7 @@ class UserSeeder extends Seeder
         $dept = Departments::create([
             'title' => 'Pharmacy',
             'is_medical' => true,
-            'hod' => $hodUser->id,
+            'user_id' => $hodUser->id,
         ]);
 
         // 7. Section: ER Pharmacy (Location)
@@ -117,9 +117,9 @@ class UserSeeder extends Seeder
             'name_location' => 'ER Pharmacy Unit',
             'administrative_id' => $admin->id,
             'department_id' => $dept->id,
-            'hos' => $hosUser->id,
+            'user_id' => $hosUser->id,
             'total_capacity' => 5,
-            'status' => true,
+            'status' => 'active',
         ]);
     }
 }

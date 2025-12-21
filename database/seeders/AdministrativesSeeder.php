@@ -64,8 +64,8 @@ class AdministrativesSeeder extends Seeder
             Administrative::create([
                 'title' => $adminData['title'],
                 'is_medical' => $adminData['is_medical'],
-                'hoa' => $hoa->id,
-                'medical_hoa' => $medicalHoaId,
+                'user_id' => $hoa->id,
+                'medical_head_user_id' => $medicalHoaId,
             ]);
         }
     }
