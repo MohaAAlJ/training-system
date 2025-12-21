@@ -19,6 +19,7 @@ return new class extends Migration
             $table->foreignId('governorate_id')->nullable()->constrained('governorates')->nullOnDelete();
             $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete(); // رئيس الشعبة
             $table->integer('total_capacity')->default(0);
+            $table->integer('current_capacity')->default(0);
             $table->string('status')->default('active'); // حالة الفرع
             $table->timestamps();
             $table->softDeletes();

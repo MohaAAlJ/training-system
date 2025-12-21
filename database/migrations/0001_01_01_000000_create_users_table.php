@@ -18,9 +18,7 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->tinyInteger('role')->default(1); // 1:Admin, 2:Admin Manager, 3:Dept Manager, 4:Section Head
-            $table->unsignedBigInteger('college_id')->nullable();
-            $table->unsignedBigInteger('institution_id')->nullable();
+            $table->tinyInteger('role')->default(null)->nullable(); // 1:Admin,, 2:Dept Manager, 3:Section Head, 4:ministry of health, 5:College Supervisor, 6: head of adminstrative, 7:head of medical 8: training manager
             $table->enum('status', ['active', 'inactive', 'banned'])->default('active');
             $table->rememberToken();
             $table->timestamps();
