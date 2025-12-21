@@ -26,7 +26,7 @@ class EditUsers extends EditRecord
     protected function afterSave(): void
     {
         $state = $this->form->getState();
-        if (!empty($state['college_id']) && $this->record && $this->record->role == \App\Helpers\Constans::ROLE_COLLEGE_SUPERVISOR) {
+        if (!empty($state['college_id']) && $this->record && $this->record->role == \App\Helpers\Constans::ROLE_COLLEGE) {
             $college = College::find($state['college_id']);
             if ($college) {
                 $college->user_id = $this->record->id;
@@ -53,7 +53,7 @@ class EditUsers extends EditRecord
             }
         }
         // If role changed away from college, clear any college pointing to this user
-        if ($this->record && $this->record->role != \App\Helpers\Constans::ROLE_COLLEGE_SUPERVISOR) {
+        if ($this->record && $this->record->role != \App\Helpers\Constans::ROLE_COLLEGE) {
             College::where('user_id', $this->record->id)->update(['user_id' => null]);
         }
     }

@@ -32,6 +32,8 @@ class UsersTable
                 TextColumn::make('created_at')->label('تاريخ الإنشاء')->dateTime('Y-m-d H:i')->sortable(),
                 ToggleColumn::make('status')
                     ->label('الحالة')
+                    ->onIcon('heroicon-m-check')
+                    ->offIcon('heroicon-m-x')
                     ->onColor('success')
                     ->offColor('danger')
                     ->disabled(fn($record) => $record->id === Auth::id())

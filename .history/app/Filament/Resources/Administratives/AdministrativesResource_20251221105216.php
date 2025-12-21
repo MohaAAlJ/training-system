@@ -49,6 +49,7 @@ class AdministrativesResource extends Resource
     public static function getRelations(): array
     {
         return [
+            \App\Filament\Resources\Administratives\RelationManagers\SectionsRelationManager::class,
         ];
     }
 

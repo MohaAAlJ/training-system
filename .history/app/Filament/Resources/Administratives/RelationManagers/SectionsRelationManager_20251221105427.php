@@ -25,9 +25,9 @@ use Illuminate\Support\Facades\Auth;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
 
-class DepartmentsRelationManager extends RelationManager
+class SectionsRelationManager extends RelationManager
 {
-    protected static string $relationship = 'departments';
+    protected static string $relationship = 'sections';
 
     public function form(Schema $schema): Schema
     {
@@ -38,9 +38,9 @@ class DepartmentsRelationManager extends RelationManager
                     ->required()
                     ->maxLength(255)
                     ->columnSpanFull(),
-                Select::make('user_id')
+                Select::make('hos')
                     ->label('المسؤول')
-                    ->relationship('user', 'name')
+                    ->relationship('hosUser', 'name')
                     ->searchable()
                     ->preload()
                     ->required(),
@@ -53,10 +53,10 @@ class DepartmentsRelationManager extends RelationManager
                 Select::make('status')
                     ->label('الحالة')
                     ->options([
-                        'active' => 'نشط',
-                        'inactive' => 'غير نشط',
+                        1 => 'نشط',
+                        0 => 'غير نشط',
                     ])
-                    ->default('active')
+                    ->default(1)
                     ->required(),
             ]);
     }
@@ -70,7 +70,7 @@ class DepartmentsRelationManager extends RelationManager
                     ->label('اسم القسم والموقع')
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('user.name')
+                TextColumn::make('hosUser.name')
                     ->label('المسؤول')
                     ->searchable(),
                 TextColumn::make('total_capacity')
@@ -80,7 +80,7 @@ class DepartmentsRelationManager extends RelationManager
                     ->label('المسجلين')
                     ->state(function ($record) {
                         return DB::table('applications')
-                            ->where('department_id', $record->id)
+                            ->where('section_id', $record->id)
                             ->whereIn('status', ['active', 'completed'])
                             ->count();
                     })
@@ -92,11 +92,7 @@ class DepartmentsRelationManager extends RelationManager
                     ->onIcon('heroicon-m-check-circle')
                     ->offIcon('heroicon-m-x-circle')
                     ->onColor('success')
-                    ->offColor('danger')
-                    ->beforeStateUpdated(function ($record, $state) {
-                        $record->status = $state ? 'active' : 'inactive';
-                        $record->save();
-                    }),
+                    ->offColor('danger'),
                 TextColumn::make('created_at')
                     ->label('تاريخ الإنشاء')
                     ->dateTime('Y-m-d')

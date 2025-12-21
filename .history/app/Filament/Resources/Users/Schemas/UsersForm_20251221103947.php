@@ -66,14 +66,11 @@ class UsersForm
                     ->searchable()
                     ->columnSpanFull(),
 
-                Toggle::make('status')
-                    ->label('نشط')
-                    ->inline(false)
-                    ->onColor('success')
-                    ->offColor('danger')
-                    ->default('active')
-                    ->formatStateUsing(fn($state) => $state === 'active')
-                    ->dehydrateStateUsing(fn($state) => $state ? 'active' : 'inactive'),
+                Select::make('status')
+                    ->label('الحالة')
+                    ->options(Constans::USER_STATUS_LABELS)
+                    ->default(Constans::USER_STATUS_ACTIVE)
+                    ->required(),
             ]);
     }
 }

@@ -68,12 +68,7 @@ class UsersForm
 
                 Toggle::make('status')
                     ->label('نشط')
-                    ->inline(false)
-                    ->onColor('success')
-                    ->offColor('danger')
-                    ->default('active')
-                    ->formatStateUsing(fn($state) => $state === 'active')
-                    ->dehydrateStateUsing(fn($state) => $state ? 'active' : 'inactive'),
+                    ->inline(false),
             ]);
     }
 }

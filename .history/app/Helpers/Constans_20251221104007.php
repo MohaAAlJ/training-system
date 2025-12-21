@@ -8,9 +8,9 @@ class Constans
      * الأدوار - Roles (Stored as Integers 1-5)
      */
     public const ROLE_SYSTEM_ADMIN = 1;           // مدير النظام العام
-    public const ROLE_ADMINISTRATIVE_MANAGER = 2;   // رئيس الادارة (مثل رئيس مستشفى الأمل)
-    public const ROLE_DEPARTMENT_MANAGER = 3;       // رئيس الدائرة (مثل رئيس دائرة الصيدلة)
-    public const ROLE_SECTION_HEAD = 4;             // رئيس القسم (المسؤول الميداني المباشر)
+    public const ROLE_ADMINISTRATIVE_MANAGER = 2;   // مدير المنشأة (مثل مدير مستشفى الأمل)
+    public const ROLE_DEPARTMENT_MANAGER = 3;       // مدير الدائرة العامة (مثل مدير عام الصيدلة)
+    public const ROLE_SECTION_HEAD = 4;             // رئيس الشعبة/الفرع (المسؤول الميداني المباشر)
     public const ROLE_COLLEGE_SUPERVISOR = 5;       // مشرف الكلية/الجامعة
     public const ROLE_MOH = 6;                      // وزارة الصحة
     public const ROLE_TRAINING_MANAGER = 7;         // مدير التدريب
@@ -47,10 +47,10 @@ class Constans
      */
     public const ROLE_LABELS = [
         self::ROLE_SYSTEM_ADMIN => 'مدير النظام',
-        self::ROLE_ADMINISTRATIVE_MANAGER => 'رئيس الادارة',
-        self::ROLE_DEPARTMENT_MANAGER => 'رئيس الدائرة',
-        self::ROLE_SECTION_HEAD => 'رئيس القسم',
-        self::ROLE_COLLEGE_SUPERVISOR => 'مشرف الكلية',
+        self::ROLE_ADMINISTRATIVE_MANAGER => 'مدير المنشأة/المستشفى',
+        self::ROLE_DEPARTMENT_MANAGER => 'مدير الدائرة العامة',
+        self::ROLE_SECTION_HEAD => 'رئيس الشعبة/الفرع',
+        self::ROLE_COLLEGE_SUPERVISOR => 'مشرف كلية',
         self::ROLE_MOH => 'وزارة الصحة',
         self::ROLE_TRAINING_MANAGER => 'مدير التدريب',
         self::ROLE_MEDICAL_MANAGER => 'مدير طبي',

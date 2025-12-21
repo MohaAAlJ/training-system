@@ -69,6 +69,8 @@ class UsersForm
                 Toggle::make('status')
                     ->label('نشط')
                     ->inline(false)
+                    ->onIcon('heroicon-m-check')
+                    ->offIcon('heroicon-m-x')
                     ->onColor('success')
                     ->offColor('danger')
                     ->default('active')

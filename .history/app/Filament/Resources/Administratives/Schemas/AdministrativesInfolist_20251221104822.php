@@ -27,6 +27,7 @@ class AdministrativesInfolist
                             ->placeholder('-'),
                         TextEntry::make('departments_count')
                             ->label('عدد الأقسام')
+                            ->getStateUsing(fn($record) => $record->departments()->count()),
                     ])->columns(2),
 
                 Section::make('معلومات النظام')

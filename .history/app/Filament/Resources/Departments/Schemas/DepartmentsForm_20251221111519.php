@@ -25,13 +25,7 @@ class DepartmentsForm
                     ->default(false),
                 Select::make('hod')
                     ->label('رئيس الدائرة')
-                    ->relationship(
-                        name: 'hodUser',
-                        titleAttribute: 'name',
-                        modifyQueryUsing: fn($query) => $query
-                            ->where('role', \App\Helpers\Constans::ROLE_DEPARTMENT_MANAGER)
-                            ->where('status', 'active')
-                    )
+                    ->relationship('hodUser', 'name')
                     ->searchable()
                     ->preload()
                     ->nullable(),
