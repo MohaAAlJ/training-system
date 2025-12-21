@@ -24,8 +24,8 @@ class AdministrativesResource extends Resource
 {
     protected static ?string $model = Administrative::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingOffice2;
-    protected static string | BackedEnum | null $activeNavigationIcon = Heroicon::BuildingOffice2; //filled icon when active
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingLibrary;
+    protected static string | BackedEnum | null $activeNavigationIcon = Heroicon::BuildingLibrary; //filled icon when active
     protected static string | UnitEnum | null $navigationGroup = 'إدارة المتدربين';
     public static function form(Schema $schema): Schema
     {
@@ -43,9 +43,9 @@ class AdministrativesResource extends Resource
         return AdministrativesTable::configure($table);
     }
     // Arabic labels
-    protected static ?string $modelLabel = 'الادارة';
-    protected static ?string $pluralModelLabel = 'الادارة';
-    protected static ?string $navigationLabel = 'الادارة';
+    protected static ?string $modelLabel = 'الإدارة';
+    protected static ?string $pluralModelLabel = 'الإدارة';
+    protected static ?string $navigationLabel = 'الإدارة';
     protected static ?int $navigationSort = 1;
 
     public static function getRelations(): array

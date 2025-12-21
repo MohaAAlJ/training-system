@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Administrative;
+use App\Models\Departments;
 use App\Models\User;
 use App\Helpers\Constans;
 use Illuminate\Database\Seeder;
@@ -39,7 +40,7 @@ class DepartmentsSeeder extends Seeder
                 'user_id' => $manager->id,
             ];
 
-            Administrative::create($data);
+            Departments::create($data);
         }
     }
 }
