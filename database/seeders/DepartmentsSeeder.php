@@ -34,7 +34,7 @@ class DepartmentsSeeder extends Seeder
             Departments::create([
                 'title' => $deptData['title'],
                 'is_medical' => $deptData['is_medical'],
-                'hod' => $hod->id,
+                'user_id' => $hod->id,
             ]);
         }
     }
