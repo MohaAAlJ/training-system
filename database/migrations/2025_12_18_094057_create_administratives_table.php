@@ -14,7 +14,9 @@ return new class extends Migration
         Schema::create('administratives', function (Blueprint $table) {
             $table->id();
             $table->string('title'); // مثال: إدارة مستشفى الأمل
+            $table->boolean('is_medical')->default(false);
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete(); // مدير المنشأة
+            $table->foreignId('medical_head_user_id')->nullable()->constrained('users')->nullOnDelete(); // رئيس الإدارة الطبية
             $table->timestamps();
             $table->softDeletes();
         });
