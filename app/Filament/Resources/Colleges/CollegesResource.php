@@ -32,7 +32,7 @@ class CollegesResource extends Resource
     protected static ?string $modelLabel = 'الكليات';
     protected static ?string $pluralModelLabel = 'الكليات';
     protected static ?string $navigationLabel = 'الكليات';
-    protected static ?int $navigationSort = 7;
+    protected static ?int $navigationSort = 6;
     public static function form(Schema $schema): Schema
     {
         return CollegesForm::configure($schema);

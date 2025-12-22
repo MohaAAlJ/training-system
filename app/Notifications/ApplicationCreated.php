@@ -30,12 +30,21 @@ class ApplicationCreated extends Notification
         $departmentName = optional($this->application->department)->title
             ?? optional($this->application->department)->name_location
             ?? 'غير محدد';
+        $sectionName = optional($this->application->section)->name_location ?? 'غير محدد';
+        $adminName = optional($this->application->administrative)->title ?? 'غير محدد';
 
         return FilamentNotification::make()
             ->title('طلب تدريب جديد')
-            ->body("تمت إضافة طلب تدريب جديد من: {$traineeName} - القسم: {$departmentName}")
+            ->body("المتدرب: {$traineeName}\nالإدارة: {$adminName}\nالقسم: {$sectionName}\nالدائرة: {$departmentName}")
             ->icon('heroicon-o-document-plus')
             ->iconColor('success')
+            ->actions([
+                \Filament\Notifications\Actions\Action::make('view')
+                    ->label('عرض الطلب')
+                    ->button()
+                    ->url(\App\Filament\Resources\Applications\ApplicationsResource::getUrl('view', ['record' => $this->application]))
+                    ->markAsRead(),
+            ])
             ->getDatabaseMessage();
     }
 
