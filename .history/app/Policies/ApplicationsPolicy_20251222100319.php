@@ -42,7 +42,7 @@ class ApplicationsPolicy
 
     public function create(User $user): bool
     {
-        return $user->isAdmin() || $user->isCollegeSupervisor();
+        return $user->isAdmin() || $user->isCollegeSupervisor() || $user->isMinistry();
     }
 
 
@@ -67,6 +67,10 @@ class ApplicationsPolicy
             }
 
             return $Applications->department->administrative_id === $user->administrative?->id;
+        }
+
+        if ($user->isMinistry()) {
+            return true;
         }
 
         return false;

@@ -33,10 +33,6 @@ class ApplicationsPolicy
             return $Applications->department->department_id === $user->department?->department_id;
         }
 
-        if ($user->isMinistry()) {
-            return true;
-        }
-
         return false;
     }
 
@@ -67,6 +63,10 @@ class ApplicationsPolicy
             }
 
             return $Applications->department->administrative_id === $user->administrative?->id;
+        }
+
+        if ($user->isMinistry()) {
+            return true;
         }
 
         return false;

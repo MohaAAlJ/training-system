@@ -158,7 +158,7 @@ class ApplicationsTable
                     ->color('danger')
                     ->outlined(),
 
-                Action::make('moh_confirm')
+                TableAction::make('moh_confirm')
                     ->label('تأكيد')
                     ->color('success')
                     ->icon('heroicon-o-check')
