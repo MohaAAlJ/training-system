@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\Departments;
 use App\Models\Sections;
 use App\Models\College;
+use App\Models\Administrative;
 
 class User extends Authenticatable implements FilamentUser
 {
@@ -41,6 +42,11 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasOne(College::class, 'user_id');
     }
 
+    public function administrative(): HasOne
+    {
+        return $this->hasOne(Administrative::class, 'user_id');
+    }
+
     public function trainees()
     {
         return $this->college()?->trainees();
@@ -55,6 +61,16 @@ class User extends Authenticatable implements FilamentUser
     public function isDepartment(): bool
     {
         return $this->role === Constans::ROLE_DEPARTMENT;
+    }
+
+    public function isDepartmentHead(): bool
+    {
+        return $this->isDepartment();
+    }
+
+    public function isAdministrative(): bool
+    {
+        return $this->role === Constans::ROLE_HOA;
     }
 
     public function isSectionHead(): bool
