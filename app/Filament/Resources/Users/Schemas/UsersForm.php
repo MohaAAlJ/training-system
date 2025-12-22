@@ -44,29 +44,38 @@ class UsersForm
 
                 Select::make('institution_id')
                     ->label('المؤسسة')
-                    ->options(fn () => \App\Models\Institution::all()->mapWithKeys(fn($i) => [$i->id => $i->getTranslation('name','ar')])->toArray())
+                    ->options(fn () => \App\Models\Institution::all()->pluck('name', 'id')->toArray())
                     ->placeholder('اختر المؤسسة')
                     ->visible(fn (callable $get) => $get('role') == Constans::ROLE_COLLEGE)
                     ->reactive()
                     ->required(fn (callable $get) => $get('role') == Constans::ROLE_COLLEGE)
+                    ->default(fn () => Auth::user()->isCollegeSupervisor() ? Auth::user()->college?->institution_id : null)
+                    ->disabled(fn () => Auth::user()->isCollegeSupervisor() && !Auth::user()->isAdmin())
                     ->dehydrated(false)
                     ->searchable()
                     ->columnSpanFull(),
 
                 Select::make('college_id')
                     ->label('الكلية')
-                    ->options(fn (callable $get) => $get('institution_id') ? College::where('institution_id', $get('institution_id'))->get()->mapWithKeys(fn($c) => [$c->id => $c->getTranslation('name','ar')])->toArray() : [])
+                    ->options(fn (callable $get) => $get('institution_id') ? College::where('institution_id', $get('institution_id'))->pluck('name', 'id')->toArray() : [])
                     ->placeholder('اختر الكلية')
                     ->visible(fn (callable $get) => $get('role') == Constans::ROLE_COLLEGE)
                     ->required(fn (callable $get) => $get('role') == Constans::ROLE_COLLEGE)
+                    ->default(fn () => Auth::user()->isCollegeSupervisor() ? Auth::user()->college?->id : null)
+                    ->disabled(fn () => Auth::user()->isCollegeSupervisor() && !Auth::user()->isAdmin())
                     ->dehydrated(false)
                     ->reactive()
                     ->afterStateUpdated(fn($state, $set) => $state ? $set('institution_id', College::find($state)?->institution_id) : null)
                     ->searchable()
                     ->columnSpanFull(),
 
-                Select::make('status')
-                    ->label('الحالة')
+                Toggle::make('status')
+                            ->label('نشطة')
+                            ->helperText('حدد إذا كانت الدائرة نشطة أم لا')
+                            ->onColor('success')
+                            ->offColor('danger')
+                            ->default(true),
+
             ]);
 
 
