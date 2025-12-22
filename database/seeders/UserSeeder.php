@@ -117,6 +117,19 @@ class UserSeeder extends Seeder
             'is_medical' => true,
             'user_id' => $hodUser->id,
         ]);
+        $hodUser = User::create([
+            'name' => 'IT Head',
+            'email' => 'it@admin.com',
+            'password' => Hash::make('123'),
+            'role' => Constans::ROLE_DEPARTMENT,
+            'status' => 'active',
+        ]);
+
+        $dept = Departments::create([
+            'title' => 'IT Department',
+            'is_medical' => false,
+            'user_id' => $hodUser->id,
+        ]);
 
         // 7. Section: ER Pharmacy (Location)
         $hosUser = User::create([

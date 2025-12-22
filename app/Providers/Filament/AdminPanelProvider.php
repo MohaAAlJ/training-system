@@ -41,6 +41,7 @@ class AdminPanelProvider extends PanelProvider
                 'danger' => Color::Red,
             ])
 
+            ->databaseNotifications()
             ->collapsibleNavigationGroups(false)
             ->sidebarCollapsibleOnDesktop(true)
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')

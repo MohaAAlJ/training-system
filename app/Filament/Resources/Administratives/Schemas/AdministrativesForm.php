@@ -36,14 +36,18 @@ class AdministrativesForm
                         Select::make('user_id')
                             ->label('رئيس الإدارة')
                             ->helperText('اختر رئيس الإدارة')
-                            ->relationship('user', 'name')
+                            ->relationship('user', 'name', function ($query) {
+                                return $query->where('role', \App\Helpers\Constans::ROLE_HOA);
+                            })
                             ->searchable()
                             ->preload()
                             ->required(),
                         Select::make('medical_head_user_id')
                             ->label('رئيس الإدارة الطبية')
                             ->helperText('اختر رئيس الإدارة الطبية')
-                            ->relationship('medicalHead', 'name')
+                            ->relationship('medicalHead', 'name', function ($query) {
+                                return $query->where('role', \App\Helpers\Constans::ROLE_HOM);
+                            })
                             ->searchable()
                             ->preload()
                             ->visible(fn($get) => $get('is_medical'))
