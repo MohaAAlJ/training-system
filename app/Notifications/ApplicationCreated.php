@@ -39,11 +39,12 @@ class ApplicationCreated extends Notification
             ->icon('heroicon-o-document-plus')
             ->iconColor('success')
             ->actions([
-                \Filament\Notifications\Actions\Action::make('view')
+                \Filament\Actions\Action::make('view')
                     ->label('عرض الطلب')
                     ->button()
                     ->url(\App\Filament\Resources\Applications\ApplicationsResource::getUrl('view', ['record' => $this->application]))
-                    ->markAsRead(),
+                    // ->markAsRead() // markAsRead might not be available on generic Action
+            ,
             ])
             ->getDatabaseMessage();
     }

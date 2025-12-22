@@ -32,7 +32,7 @@ class AuthServiceProvider extends ServiceProvider
         Trainees::class => UserPolicy::class,
         Departments::class => \App\Policies\DepartmentsPolicy::class,
         Sections::class => UserPolicy::class,
-        College::class => UserPolicy::class,
+        College::class => \App\Policies\CollegePolicy::class,
         Institution::class => UserPolicy::class,
         Major::class => UserPolicy::class,
     ];
