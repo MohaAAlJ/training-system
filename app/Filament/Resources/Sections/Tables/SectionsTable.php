@@ -30,6 +30,10 @@ class SectionsTable
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('administrative.title')
+                    ->label('الإدارة')
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('department.title')
                     ->label('الدائرة')
                     ->searchable()
                     ->sortable(),

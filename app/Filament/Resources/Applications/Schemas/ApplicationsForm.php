@@ -294,7 +294,15 @@ class ApplicationsForm
 
                         Select::make('department_id')
                             ->label('الدائرة')
-                            ->relationship('department', 'title')
+                            ->options(function (callable $get) {
+                                $adminId = $get('administrative_id');
+                                if (!$adminId) {
+                                    return \App\Models\Departments::all()->pluck('title', 'id');
+                                }
+                                return \App\Models\Departments::whereHas('sections', function ($q) use ($adminId) {
+                                    $q->where('administrative_id', $adminId);
+                                })->pluck('title', 'id');
+                            })
                             ->searchable()
                             ->preload()
                             ->reactive()

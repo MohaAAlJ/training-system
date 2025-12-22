@@ -40,10 +40,21 @@ class ApplicationsTable
                     ->label('التخصص')
                     ->formatStateUsing(fn($state) => is_array($state) ? ($state['ar'] ?? $state['en'] ?? reset($state)) : $state)
                     ->toggleable(isToggledHiddenByDefault: false),
+                TextColumn::make('administrative.title')
+                    ->label('الإدارة')
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable(),
                 TextColumn::make('department.title')
+                    ->label('الدائرة')
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable(),
+                TextColumn::make('section.name_location')
                     ->label('القسم')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(),
                 TextColumn::make('start_date')
                     ->label('تاريخ البدء')
                     ->date('Y-m-d')
