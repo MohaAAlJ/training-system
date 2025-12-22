@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('title'); // مثال: الدائرة العامة للصيدلة
             $table->boolean('is_medical')->default(false);
             $table->boolean('status')->default(true); // نشط أو غير نشط
-            $table->foreignIdFor(User::class)->constrained('users')->cascadeOnDelete()->nullable(true); // المدير العام للتخصص
+            $table->foreignIdFor(\App\Models\User::class)->constrained('users')->cascadeOnDelete()->nullable(true); // المدير العام للتخصص
             $table->timestamps();
             $table->softDeletes();
         });

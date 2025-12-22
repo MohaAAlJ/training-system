@@ -15,6 +15,7 @@ class Governorate extends Model
         'name',
     ];
 
+    // هذا السطر مهم جداً لكي يقبل المودل مصفوفة ويحولها لـ JSON
     protected $casts = [
         'name' => 'array',
     ];

@@ -4,8 +4,9 @@ use App\Models\College;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Validation\Rules\In;
 use App\Models\Institution;
-use App\Models\User;
+use A
 
 return new class extends Migration {
     public function up(): void

@@ -19,9 +19,9 @@ return new class extends Migration
             $table->id();
             $table->string('name_location'); 
             $table->foreignIdFor(Administrative::class)->constrained('administratives')->cascadeOnDelete();
-            $table->foreignIdFor(Departments::class, 'department_id')->constrained('departments')->cascadeOnDelete();
+            $table->foreignIdFor(Departments::class)->constrained('departments')->cascadeOnDelete();
             $table->foreignIdFor(Governorate::class)->nullable()->constrained('governorates')->nullOnDelete();
-            $table->foreignIdFor(User::class)->nullable()->constrained('users')->nullOnDelete(); 
+            $table->foreignIdFor(User::class)->nullable()->constrained('users')->nullOnDelete(); // رئيس الشعبة
             $table->integer('total_capacity')->default(0);
             $table->integer('current_capacity')->default(0);
             $table->string('status')->default('active'); 

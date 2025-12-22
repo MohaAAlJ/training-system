@@ -4,16 +4,15 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use App\Models\CollegeMajor;
-use App\Models\College;
-use App\Models\Major;
+\App\Models\College
 
 return new class extends Migration {
     public function up(): void
     {
         Schema::create('college_major', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(College::class)->constrained()->cascadeOnDelete();
-            $table->foreignIdFor(Major::class)->constrained()->cascadeOnDelete();
+            $table->foreignIdFor(::class)->constrained()->cascadeOnDelete();
+            $table->foreignIdFor(\App\Models\Major::class)->constrained()->cascadeOnDelete();
             $table->unique(['college_id', 'major_id']);
         });
 

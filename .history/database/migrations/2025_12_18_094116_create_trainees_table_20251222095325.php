@@ -28,7 +28,7 @@ return new class extends Migration
             // الربط الأكاديمي
             $table->foreignIdFor(Institution::class)->nullable()->constrained()->nullOnDelete();
             $table->foreignIdFor(College::class)->nullable()->constrained()->nullOnDelete();
-            $table->foreignIdFor(Major::class)->nullable()->constrained()->nullOnDelete();
+            $table->foreignIdFor('major_id')->nullable()->constrained()->nullOnDelete();
             $table->integer('training_hours')->nullable();
 
             $table->timestamps();

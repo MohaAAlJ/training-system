@@ -3,10 +3,6 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use App\Models\Governorate;
-use App\Models\Institution;
-use App\Models\College;
-use App\Models\Major;
 
 return new class extends Migration
 {
@@ -21,14 +17,14 @@ return new class extends Migration
             $table->string('full_name');
             $table->string('phone_number');
             $table->date('dob');
-            $table->foreignIdFor(Governorate::class)->nullable()->constrained('governorates')->nullOnDelete();
+            $table->foreignIdFor('governorate_id')->nullable()->constrained('governorates')->nullOnDelete();
             $table->string('address')->nullable();
             $table->string('street')->nullable();
 
             // الربط الأكاديمي
-            $table->foreignIdFor(Institution::class)->nullable()->constrained()->nullOnDelete();
-            $table->foreignIdFor(College::class)->nullable()->constrained()->nullOnDelete();
-            $table->foreignIdFor(Major::class)->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('institution_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('college_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('major_id')->nullable()->constrained()->nullOnDelete();
             $table->integer('training_hours')->nullable();
 
             $table->timestamps();

@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Schema;
 use App\Models\Trainees;
 use App\Models\Administrative;
 use App\Models\Departments;
-use App\Models\Sections;
+use App\Models\Section;
 
 return new class extends Migration
 {
@@ -17,10 +17,10 @@ return new class extends Migration
     {
         Schema::create('applications', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(Trainees::class, 'trainee_id')->constrained('trainees')->cascadeOnDelete();
+            $table->foreignIdFor(Trainees::class)->constrained('trainees')->cascadeOnDelete();
             $table->foreignIdFor(Administrative::class)->constrained('administratives')->cascadeOnDelete();
-            $table->foreignIdFor(Departments::class, 'department_id')->constrained('departments')->cascadeOnDelete();
-            $table->foreignIdFor(Sections::class, 'section_id')->constrained('sections')->cascadeOnDelete();
+            $table->foreignIdFor(Departments::class)->constrained('departments')->cascadeOnDelete();
+            $table->foreignIdFor(Section::class)->constrained('sections')->cascadeOnDelete();
 
             $table->string('training_type')->nullable();
             $table->integer('duration')->nullable();

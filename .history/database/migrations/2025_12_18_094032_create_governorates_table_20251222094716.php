@@ -11,10 +11,11 @@ return new class extends Migration
     {
         Schema::create('governorates', function (Blueprint $table) {
             $table->id();
-            $table->json('name');
+            $table->json('name'); // عمود من نوع JSON
             $table->timestamps();
         });
 
+        // تجهيز البيانات لتكون جاهزة للإدخال المباشر
         $governorates = [
             ['name' => ['ar' => 'غزة', 'en' => 'Gaza']],
             ['name' => ['ar' => 'شمال غزة', 'en' => 'North Gaza']],
