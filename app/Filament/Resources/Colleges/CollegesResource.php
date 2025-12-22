@@ -29,7 +29,6 @@ class CollegesResource extends Resource
         return ! ($user->isMinistry() || $user->isCollegeSupervisor());
     }
 
-    protected static string | UnitEnum | null $navigationGroup = 'إدارة المتدربين';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::EyeSlash;
     protected static string | BackedEnum | null $activeNavigationIcon = Heroicon::Eye; //filled icon when active

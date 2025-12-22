@@ -76,16 +76,6 @@
                         </label>
                         <label class="field">
                             <span>تاريخ الميلاد *</span>
-                            {{-- Option 1: Native date picker (calendar with scroll wheel for year)
-                            <input
-                                id="dob_picker"
-                                type="date"
-                                min="{{ date('Y-m-d', strtotime('-60 years')) }}"
-                                max="{{ date('Y-m-d', strtotime('-20 years')) }}"
-                                required
-                            />
-                            --}}
-                            {{-- Option 2: Dropdown selects for day/month/year --}}
                             <div class="dob-selects" style="display: flex; gap: 8px;">
                                 <select id="dob_day" required style="flex: 1; text-align: center;">
                                     <option value="" disabled selected>اليوم</option>
@@ -139,12 +129,12 @@
                             <select id="governorate_id" name="governorate_id" required>
                                 <option value="" disabled selected>اختر </option>
                                 @foreach(\App\Models\Governorate::all() as $g)
-                                    <option value="{{ $g->id }}">{{ $g->name }}</option>
+                                    <option value="{{ $g->id }}">{{ is_array($g->name) ? ($g->name['ar'] ?? reset($g->name)) : $g->name }}</option>
                                 @endforeach
                             </select>
                         </label>
                         <label class="field">
-                            <span>اسم الشارع *</span>
+                            <span>عنوان/شارع *</span>
                             <input
                                 id="street"
                                 name="street"
@@ -162,28 +152,42 @@
 
                 <fieldset>
                     <legend>
-                        <span class="legend-icon">🏢</span>الجهة والتدريب
+                        <span class="legend-icon">🏢</span>بيانات التدريب
                     </legend>
                     <div class="grid two">
-                        <label class="field">
-                            <span>جامعة/كلية *</span>
+                         <label class="field" id="training_type_field">
+                            <span>نوع التدريب *</span>
                             <select
-                                id="institution_id"
-                                name="institution_id"
+                                id="training_type"
+                                name="training_type"
                                 required
                             >
                                 <option value="" disabled selected>اختر</option>
                             </select>
+                        </label>
 
-                            <small class="note"></small>
-                        </label>
-                        <label class="field">
-                            <span>التخصص *</span>
-                            <select id="major_id" name="major_id" required>
-                                <option value="" disabled selected>اختر</option>
-                            </select>
-                            <small class="note"> </small>
-                        </label>
+                        <!-- Conditional: University data -->
+                        <div id="university_data_container" style="display: none;">
+                            <label class="field" id="institution_field">
+                                <span>مؤسسة تعليمية *</span>
+                                <select
+                                    id="institution_id"
+                                    name="institution_id"
+                                    required
+                                >
+                                    <option value="" disabled selected>اختر</option>
+                                </select>
+                                <small class="note"></small>
+                            </label>
+                            <label class="field" id="major_field">
+                                <span>التخصص *</span>
+                                <select id="major_id" name="major_id" required>
+                                    <option value="" disabled selected>اختر</option>
+                                </select>
+                                <small class="note"> </small>
+                            </label>
+                        </div>
+
                         <label class="field">
                             <span>عدد ساعات التدريب *</span>
                             <input
@@ -199,7 +203,7 @@
                             <small class="note">رقم موجب أقل من 1000</small>
                         </label>
                         <label class="field">
-                            <span>المنشأة/الإدارة *</span>
+                            <span>مكان التدريب *</span>
                             <select
                                 id="administrative_id"
                                 name="administrative_id"
@@ -210,7 +214,7 @@
                             <small class="note"></small>
                         </label>
                         <label class="field">
-                            <span>الدائرة *</span>
+                            <span>تخصص *</span>
                             <select
                                 id="department_id"
                                 name="department_id"
@@ -231,33 +235,6 @@
                             </select>
                             <small class="note"> </small>
                         </label>
-                        <label class="field" id="training_type_field">
-                            <span>نوع التدريب *</span>
-                            <select
-                                id="training_type"
-                                name="training_type"
-                                required
-                            >
-                                <option value="" disabled selected>اختر</option>
-                            </select>
-                        </label>
-                        <!-- <label class="field">
-                            <span>ارفع ملف <small class="note">(اختياري)</small></span>
-                            <input
-                                id="letter_file"
-                                name="letter_file"
-                                type="file"
-                                accept="image/*,application/pdf"
-                            />
-                            <small class="note">pdf أو صورة بحد أقصى 2MB</small>
-                            <div id="file_preview" style="margin-top: 10px; display: none;">
-                                <img id="preview_image" style="max-width: 200px; max-height: 200px; border-radius: 8px; border: 1px solid var(--border);" />
-                                <div id="preview_pdf" style="display: none; padding: 12px; background: #f5f5f5; border-radius: 8px; border: 1px solid var(--border);">
-                                    <span style="font-size: 24px;">📄</span>
-                                    <span id="preview_pdf_name" style="margin-right: 8px;"></span>
-                                </div>
-                            </div>
-                        </label> -->
                     </div>
                 </fieldset>
 

@@ -26,7 +26,6 @@ class AdministrativesResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingLibrary;
     protected static string | BackedEnum | null $activeNavigationIcon = Heroicon::BuildingLibrary; //filled icon when active
-    protected static string | UnitEnum | null $navigationGroup = 'إدارة المتدربين';
     public static function form(Schema $schema): Schema
     {
         return AdministrativesForm::configure($schema);

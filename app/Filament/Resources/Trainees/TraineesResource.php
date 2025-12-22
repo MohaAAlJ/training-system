@@ -30,6 +30,7 @@ class TraineesResource extends Resource
     // Arabic labels
     protected static string | UnitEnum | null $navigationGroup = 'إدارة المتدربين';
 
+    protected static ?int $navigationSort = 3;
 
     protected static ?string $modelLabel = 'المتدرب';
     protected static ?string $pluralModelLabel = 'المتدربين';
@@ -38,7 +39,6 @@ class TraineesResource extends Resource
     {
         return static::getEloquentQuery()->count();
     }
-    protected static ?int $navigationSort = 3;
 
 
     public static function form(Schema $schema): Schema

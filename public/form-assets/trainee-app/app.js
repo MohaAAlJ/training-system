@@ -29,6 +29,9 @@ const administrativeSelect = document.getElementById("administrative_id");
 const departmentSelect = document.getElementById("department_id");
 const sectionSelect = document.getElementById("section_id");
 const trainingTypeSelect = document.getElementById("training_type");
+const universityContainer = document.getElementById(
+    "university_data_container"
+);
 const dobInput = document.getElementById("dob");
 const dobDay = document.getElementById("dob_day");
 const dobMonth = document.getElementById("dob_month");
@@ -170,6 +173,30 @@ majorSelect.addEventListener("change", async (e) => {
         if (collegeInput) collegeInput.value = "";
     }
 });
+
+if (trainingTypeSelect) {
+    trainingTypeSelect.addEventListener("change", (e) => {
+        const val = parseInt(e.target.value);
+        // ID 1 is University (based on Constans::TRAINING_TYPE_UNIVERSITY)
+        const isUniversity = val === 1;
+
+        if (universityContainer) {
+            universityContainer.style.display = isUniversity
+                ? "contents"
+                : "none";
+        }
+
+        if (institutionSelect) institutionSelect.required = isUniversity;
+        if (majorSelect) majorSelect.required = isUniversity;
+
+        if (!isUniversity) {
+            if (institutionSelect) institutionSelect.value = "";
+            if (majorSelect) majorSelect.value = "";
+            const collegeInput = document.getElementById("college_id");
+            if (collegeInput) collegeInput.value = "";
+        }
+    });
+}
 
 // Handle DOB dropdowns - combine to dd/mm/yyyy format for the hidden field
 function updateDobHiddenField() {
@@ -324,7 +351,7 @@ form.addEventListener("submit", async (e) => {
     );
     populateOptions(sectionSelect, []);
     loadAdministratives();
-    // Add smooth entrance animation to the form
+    // Start smooth entrance animation instantly
     const heroElement = document.querySelector(".hero");
     const formCard = document.querySelector(".card");
 
@@ -332,23 +359,23 @@ form.addEventListener("submit", async (e) => {
         heroElement.style.opacity = "0";
         heroElement.style.transform = "translateY(-20px)";
 
-        setTimeout(() => {
+        requestAnimationFrame(() => {
             heroElement.style.transition =
                 "opacity 0.5s ease, transform 0.5s ease";
             heroElement.style.opacity = "1";
             heroElement.style.transform = "translateY(0)";
-        }, 100);
+        });
     }
 
     if (formCard) {
         formCard.style.opacity = "0";
         formCard.style.transform = "translateY(20px)";
 
-        setTimeout(() => {
+        requestAnimationFrame(() => {
             formCard.style.transition =
                 "opacity 0.6s ease, transform 0.6s ease";
             formCard.style.opacity = "1";
             formCard.style.transform = "translateY(0)";
-        }, 300);
+        });
     }
 })();
