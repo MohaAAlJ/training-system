@@ -57,17 +57,24 @@ class UserSeeder extends Seeder
             'role' => Constans::ROLE_COLLEGE,
             'status' => 'active',
         ]);
-        // Assign to existing College (e.g., ID 3: IT College at IUG)
+        // Assign to existing College (ID 3: IT College)
         $college = College::find(3);
         if ($college) {
             $college->update(['user_id' => $collegeUser->id]);
-        } else {
-            // Fallback: Create valid college with institution_id
-            College::create([
-                'name' => 'كلية تجريبية',
-                'institution_id' => 1, // Islamic University
-                'user_id' => $collegeUser->id,
-            ]);
+        }
+
+        // Another Supervisor for a different college
+        $nursingSupervisor = User::create([
+            'name' => 'Nursing Supervisor',
+            'email' => 'nursing@admin.com',
+            'password' => Hash::make('123'),
+            'role' => Constans::ROLE_COLLEGE,
+            'status' => 'active',
+        ]);
+        // Assign to College (ID 6: Nursing College)
+        $nursingCollege = College::find(6);
+        if ($nursingCollege) {
+            $nursingCollege->update(['user_id' => $nursingSupervisor->id]);
         }
 
 

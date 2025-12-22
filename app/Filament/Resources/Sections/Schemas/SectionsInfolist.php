@@ -16,7 +16,9 @@ class SectionsInfolist
                     ->schema([
                         TextEntry::make('name_location')
                             ->label('اسم القسم والموقع'),
-                        TextEntry::make('Administrative.name')
+                        TextEntry::make('administrative.title')
+                            ->label('الإدارة'),
+                        TextEntry::make('department.title')
                             ->label('الدائرة'),
                         TextEntry::make('user.name')
                             ->label('المسؤول'),
