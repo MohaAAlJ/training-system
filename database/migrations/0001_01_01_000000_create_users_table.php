@@ -4,6 +4,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use App\Models\User;
+use Illuminate\Support\Facades\Hash;
+use App\Helpers\Constans;
 
 return new class extends Migration
 {
@@ -39,7 +41,15 @@ return new class extends Migration
             $table->longText('payload');
             $table->integer('last_activity')->index();
         });
+        User::create([
+            'name' => 'moha Admin',
+            'email' => 'Moha@admins.com',
+            'password' => Hash::make('123'),
+            'role' => Constans::ROLE_ADMIN,
+            'status' => 'active',
+        ]);
     }
+
 
     /**
      *  Reverse the migrations.
