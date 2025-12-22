@@ -244,6 +244,7 @@ class ApplicationsForm
                         DatePicker::make('start_date')
                             ->label('تاريخ البدء')
                             ->native(false)
+                            // Disabled for everyone EXCEPT Admin
                             ->disabled(fn() => ! Auth::user()->isAdmin())
                             ->required(fn() => Auth::user()->isAdmin())
                             ->dehydrated(),
@@ -251,6 +252,7 @@ class ApplicationsForm
                         DatePicker::make('end_date')
                             ->label('تاريخ الانتهاء')
                             ->native(false)
+                            // Disabled for everyone EXCEPT Admin
                             ->disabled(fn() => ! Auth::user()->isAdmin())
                             ->required(fn() => Auth::user()->isAdmin())
                             ->afterOrEqual('start_date')
@@ -259,9 +261,8 @@ class ApplicationsForm
                         Select::make('status')
                             ->label('الحالة')
                             ->options(Constans::STATUS_LABELS)
-                            ->default(Constans::STATUS_NEW)
-                            ->disabled(fn() => ! Auth::user()->isAdmin())
-                            ->required(fn() => Auth::user()->isAdmin())
+                            ->default(\App\Helpers\Constans::STATUS_NEW)
+                            ->required()
                             ->live()
                             ->afterStateUpdated(fn($state, $set) => $state === Constans::STATUS_CONFIRMATION ? $set('accepted_at', now()) : null),
                     ])->columns(2),

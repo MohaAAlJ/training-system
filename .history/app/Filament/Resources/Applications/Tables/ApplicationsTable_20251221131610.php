@@ -100,6 +100,8 @@ class ApplicationsTable
                         }
                     }),
 
+                // Assuming flow is 1->2->3->4->5? Or 3->5 directly? User checklist said "Update status 4->5".
+                // Let's assume they pick up from status 4.
                 ToggleColumn::make('start_training')
                     ->label('بدء التدريب')
                     ->state(fn($record) => $record->status >= Constans::STATUS_START_TRAINING)

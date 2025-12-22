@@ -9,7 +9,6 @@ use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Actions\ViewAction;
-use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -84,22 +83,43 @@ class ApplicationsTable
                         }
                     }),
 
-                // College Supervisor / MOH: Confirm (2 -> 3)
+                // College Supervisor (2 -> 3) OR Ministry (1 -> 2)
                 ToggleColumn::make('confirm_acceptance')
                     ->label('تأكيد القبول')
-                    ->state(fn($record) => $record->status >= Constans::STATUS_CONFIRMATION)
+                    ->state(function ($record) {
+                        // For Ministry, "ON" means Status is at least 2 (Initial Approve)
+                        if (Auth::user()->isMinistry()) {
+                            return $record->status >= Constans::STATUS_INITIAL_APPROVE;
+                        }
+                        // For College, "ON" means Status is at least 3 (Confirmation)
+                        return $record->status >= Constans::STATUS_CONFIRMATION;
+                    })
                     ->onColor('success')
                     ->offColor('danger')
-                    ->disabled(fn($record) => $record->status < Constans::STATUS_INITIAL_APPROVE || $record->status > Constans::STATUS_CONFIRMATION)
+                    ->disabled(function ($record) {
+                        if (Auth::user()->isMinistry()) {
+                            // Enabled for Status 1 (to turn ON) or Status 2 (to turn OFF). Disabled if progressed further (> 2).
+                            return $record->status > Constans::STATUS_INITIAL_APPROVE;
+                        }
+                        // Existing logic for College Supervisor
+                        return $record->status < Constans::STATUS_INITIAL_APPROVE || $record->status > Constans::STATUS_CONFIRMATION;
+                    })
                     ->visible(fn() => Auth::user()->isCollegeSupervisor() || Auth::user()->isMinistry())
                     ->updateStateUsing(function ($record, $state) {
-                        if ($state) {
-                            $record->update(['status' => Constans::STATUS_CONFIRMATION]);
+                        if (Auth::user()->isMinistry()) {
+                            // Ministry Flow: 1 <-> 2
+                            $record->update(['status' => $state ? Constans::STATUS_INITIAL_APPROVE : Constans::STATUS_NEW]);
                         } else {
-                            $record->update(['status' => Constans::STATUS_INITIAL_APPROVE]);
+                            // College Flow: 2 <-> 3
+                            if ($state) {
+                                $record->update(['status' => Constans::STATUS_CONFIRMATION]);
+                            } else {
+                                $record->update(['status' => Constans::STATUS_INITIAL_APPROVE]);
+                            }
                         }
                     }),
 
+                // HOS: Start Training (4 -> 5)
                 ToggleColumn::make('start_training')
                     ->label('بدء التدريب')
                     ->state(fn($record) => $record->status >= Constans::STATUS_START_TRAINING)

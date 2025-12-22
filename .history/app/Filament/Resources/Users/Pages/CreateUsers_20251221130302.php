@@ -19,13 +19,14 @@ class CreateUsers extends CreateRecord
     protected function afterCreate(): void
     {
         $state = $this->form->getState();
-        if (!empty($state['college_id']) && $this->record && $this->record->role == \App\Helpers\Constans::ROLE_COLLEGE_SUPERVISOR) {
+        if (!empty($state['college_id']) && $this->record && $this->record->role == \App\Helpers\Constans::) {
             $college = College::find($state['college_id']);
             if ($college) {
                 $college->user_id = $this->record->id;
                 $college->save();
             }
         }
+        // Also persist institution_id/college_id on the user record
         if ($this->record) {
             $updated = false;
             if (!empty($state['college_id']) && $this->record->college_id !== ($state['college_id'] ?? null)) {

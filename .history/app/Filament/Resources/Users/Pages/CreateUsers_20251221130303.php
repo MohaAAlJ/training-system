@@ -26,6 +26,7 @@ class CreateUsers extends CreateRecord
                 $college->save();
             }
         }
+        // Also persist institution_id/college_id on the user record
         if ($this->record) {
             $updated = false;
             if (!empty($state['college_id']) && $this->record->college_id !== ($state['college_id'] ?? null)) {

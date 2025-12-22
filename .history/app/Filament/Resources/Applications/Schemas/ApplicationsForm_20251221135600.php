@@ -239,6 +239,7 @@ class ApplicationsForm
                             ->searchable()
                             ->preload()
                             ->required()
+                            ->live()
                             ->disabled(fn(callable $get) => ! $get('administrative_id') || ! $get('department_id')),
 
                         DatePicker::make('start_date')
@@ -259,7 +260,7 @@ class ApplicationsForm
                         Select::make('status')
                             ->label('الحالة')
                             ->options(Constans::STATUS_LABELS)
-                            ->default(Constans::STATUS_NEW)
+                            ->default(\App\Helpers\Constans::STATUS_NEW)
                             ->disabled(fn() => ! Auth::user()->isAdmin())
                             ->required(fn() => Auth::user()->isAdmin())
                             ->live()

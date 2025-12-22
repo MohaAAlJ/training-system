@@ -18,10 +18,11 @@ use App\Helpers\Constans;
 
 class ApplicationsForm
 {
-    // Helper to decode JSON names
+    // دالة مساعدة لفك تشفير الاسم المترجم
     protected static function getLocalizedName($model)
     {
         if (!$model) return '';
+        // إذا كان الاسم مصفوفة أو JSON
         $name = $model->name;
         if (is_string($name)) {
             $decoded = json_decode($name, true);
@@ -53,6 +54,7 @@ class ApplicationsForm
                             ->suffixAction(
                                 Action::make('edit_trainee_details')
                                     ->icon('heroicon-m-pencil-square')
+                                    ->tooltip('تعديل بيانات المتدرب الأصلية')
                                     ->label('تعديل')
                                     ->visible(fn($context) => $context === 'edit' && (Auth::user()->isAdmin() || Auth::user()->isCollegeSupervisor()))
                                     ->modalHeading('تعديل بيانات المتدرب')
@@ -80,7 +82,10 @@ class ApplicationsForm
                                     ])
                                     ->action(function ($record, $data) {
                                         $record->trainee->update($data);
-                                        \Filament\Notifications\Notification::make()->title('تم التحديث')->success()->send();
+                                        \Filament\Notifications\Notification::make()
+                                            ->title('تم تحديث بيانات المتدرب بنجاح')
+                                            ->success()
+                                            ->send();
                                     })
                             ),
 
@@ -115,13 +120,7 @@ class ApplicationsForm
 
                         Select::make('institution_id')
                             ->label('المؤسسة التعليمية')
-                            ->options(function () {
-                                if (Auth::user()->isCollegeSupervisor() && Auth::user()->college) {
-                                    $inst = Auth::user()->college->institution;
-                                    return [$inst->id => self::getLocalizedName($inst)];
-                                }
-                                return Institution::all()->mapWithKeys(fn($item) => [$item->id => self::getLocalizedName($item)]);
-                            })
+                            ->options(fn() => Institution::all()->mapWithKeys(fn($item) => [$item->id => self::getLocalizedName($item)]))
                             ->default(fn() => Auth::user()->isCollegeSupervisor() ? Auth::user()->college?->institution_id : null)
                             ->formatStateUsing(fn($record) => $record?->trainee?->institution_id)
                             ->disabled(fn() => Auth::user()->isCollegeSupervisor() || request()->routeIs('*.edit'))
@@ -133,8 +132,9 @@ class ApplicationsForm
                             ->label('الكلية')
                             ->options(function (callable $get) {
                                 if (Auth::user()->isCollegeSupervisor() && Auth::user()->college) {
-                                    $col = Auth::user()->college;
-                                    return [$col->id => self::getLocalizedName($col)];
+                                    return College::where('institution_id', Auth::user()->college->institution_id)
+                                        ->get()
+                                        ->mapWithKeys(fn($item) => [$item->id => self::getLocalizedName($item)]);
                                 }
 
                                 $institutionId = $get('institution_id');
@@ -186,6 +186,7 @@ class ApplicationsForm
                                 if (Auth::user()->isMinistry()) return Constans::TRAINING_TYPE_PROFESSIONAL;
                                 return null;
                             })
+                            // فقط الأدمن يستطيع تغيير النوع، الباقي ثابت
                             ->disabled(fn() => ! Auth::user()->isAdmin())
                             ->dehydrated()
                             ->required(),
@@ -195,6 +196,7 @@ class ApplicationsForm
                             ->numeric()
                             ->default(100)
                             ->suffix('ساعة')
+                            // تم التعديل: السماح للمشرف بالتعديل
                             ->disabled(fn() => ! Auth::user()->isAdmin() && ! Auth::user()->isCollegeSupervisor())
                             ->required(),
 
@@ -207,6 +209,7 @@ class ApplicationsForm
                                 $set('administrative_id', null);
                                 $set('section_id', null);
                             })
+                            // تم التعديل: السماح للمشرف بالاختيار
                             ->disabled(fn() => ! Auth::user()->isAdmin() && ! Auth::user()->isCollegeSupervisor())
                             ->required(),
 
@@ -214,7 +217,9 @@ class ApplicationsForm
                             ->label('الادارة (المكان)')
                             ->options(function (callable $get) {
                                 $deptId = $get('department_id');
-                                if (! $deptId) return [];
+                                if (! $deptId) {
+                                    return [];
+                                }
                                 return \App\Models\Administratives::whereHas('sections', function ($query) use ($deptId) {
                                     $query->where('department_id', $deptId);
                                 })->pluck('title', 'id');
@@ -223,6 +228,7 @@ class ApplicationsForm
                             ->preload()
                             ->live()
                             ->afterStateUpdated(fn($set) => $set('section_id', null))
+                            // تم التعديل: السماح للمشرف بالاختيار إذا اختار الدائرة
                             ->disabled(fn(callable $get) => ! $get('department_id') || (! Auth::user()->isAdmin() && ! Auth::user()->isCollegeSupervisor()))
                             ->required(),
 
@@ -231,7 +237,9 @@ class ApplicationsForm
                             ->options(function (callable $get) {
                                 $adminId = $get('administrative_id');
                                 $deptId = $get('department_id');
-                                if (! $adminId || ! $deptId) return [];
+                                if (! $adminId || ! $deptId) {
+                                    return [];
+                                }
                                 return \App\Models\Sections::where('administrative_id', $adminId)
                                     ->where('department_id', $deptId)
                                     ->pluck('name_location', 'id');
@@ -244,24 +252,23 @@ class ApplicationsForm
                         DatePicker::make('start_date')
                             ->label('تاريخ البدء')
                             ->native(false)
-                            ->disabled(fn() => ! Auth::user()->isAdmin())
-                            ->required(fn() => Auth::user()->isAdmin())
+                            ->disabled(fn() => ! Auth::user()->isAdmin() && ! Auth::user()->isCollegeSupervisor())
+                            ->required(fn() => Auth::user()->isAdmin() || Auth::user()->isCollegeSupervisor())
                             ->dehydrated(),
 
                         DatePicker::make('end_date')
                             ->label('تاريخ الانتهاء')
                             ->native(false)
-                            ->disabled(fn() => ! Auth::user()->isAdmin())
-                            ->required(fn() => Auth::user()->isAdmin())
+                            ->disabled(fn() => ! Auth::user()->isAdmin() && ! Auth::user()->isCollegeSupervisor())
+                            ->required(fn() => Auth::user()->isAdmin() || Auth::user()->isCollegeSupervisor())
                             ->afterOrEqual('start_date')
                             ->dehydrated(),
 
                         Select::make('status')
                             ->label('الحالة')
                             ->options(Constans::STATUS_LABELS)
-                            ->default(Constans::STATUS_NEW)
-                            ->disabled(fn() => ! Auth::user()->isAdmin())
-                            ->required(fn() => Auth::user()->isAdmin())
+                            ->default(\App\Helpers\Constans::STATUS_NEW)
+                            ->required()
                             ->live()
                             ->afterStateUpdated(fn($state, $set) => $state === Constans::STATUS_CONFIRMATION ? $set('accepted_at', now()) : null),
                     ])->columns(2),

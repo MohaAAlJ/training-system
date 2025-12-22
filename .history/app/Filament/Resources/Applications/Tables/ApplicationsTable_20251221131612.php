@@ -100,6 +100,7 @@ class ApplicationsTable
                         }
                     }),
 
+                // Let's assume they pick up from status 4.
                 ToggleColumn::make('start_training')
                     ->label('بدء التدريب')
                     ->state(fn($record) => $record->status >= Constans::STATUS_START_TRAINING)
