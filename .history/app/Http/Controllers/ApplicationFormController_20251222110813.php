@@ -173,8 +173,8 @@ class ApplicationFormController extends Controller
     public function trainingTypes()
     {
         $data = [
-            ['id' => Constans::TRAINING_TYPE_UNIVERSITY, 'name' => Constans::TRAINING_TYPES[Constans::TRAINING_TYPE_UNIVERSITY]],
-            ['id' => Constans::TRAINING_TYPE_PRACTICE, 'name' => Constans::TRAINING_TYPES[Constans::TRAINING_TYPE_PRACTICE]],
+            ['id' => 'cooperative', 'name' => 'تدريب جامعي'],
+            ['id' => 'professional', 'name' => 'مزاولة مهنة'],
         ];
 
         return response()->json($data);

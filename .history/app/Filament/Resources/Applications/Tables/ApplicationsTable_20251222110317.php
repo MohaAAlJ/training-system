@@ -18,6 +18,8 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use App\Helpers\Constans;
 use Filament\Forms\Components\DatePicker;
+use Illuminate\Support\Facades\Auth;
+use App\Models\Applications;
 
 class ApplicationsTable
 {
@@ -38,15 +40,6 @@ class ApplicationsTable
                 TextColumn::make('trainee.major.name')
                     ->label('التخصص')
                     ->toggleable(isToggledHiddenByDefault: false),
-                TextColumn::make('training_type_label')
-                    ->label('نوع التدريب')
-                    ->badge()
-                    ->color(fn($state) => match ($state) {
-                        'تدريب جامعي' => 'info',
-                        'مزاولة مهنة' => 'success',
-                        default => 'gray',
-                    })
-                    ->toggleable(),
                 TextColumn::make('administrative.title')
                     ->label('الإدارة')
                     ->searchable()
@@ -113,10 +106,6 @@ class ApplicationsTable
                         Constans::STATUSES,
                         array_map(fn($s) => \Illuminate\Support\Facades\Lang::get("translation.status.$s", [], 'ar'), Constans::STATUSES)
                     )),
-                SelectFilter::make('training_type')
-                    ->label('نوع التدريب')
-                    ->options(Constans::TRAINING_TYPES)
-                    ->visible(fn() => auth()->user()->isAdmin() || auth()->user()->isDepartment() || auth()->user()->isHOA() || auth()->user()->isGeneralTrainingManager()),
                 SelectFilter::make('department_id')
                     ->label('القسم')
                     ->relationship('department', 'title')

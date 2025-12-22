@@ -27,7 +27,7 @@ class ApplicationsFactory extends Factory
             'administrative_id' => Administrative::factory(),
             'department_id' => Departments::factory(),
             'section_id' => Sections::factory(),
-            'training_type' => $this->faker->randomElement(array_keys(Constans::TRAINING_TYPES)),
+            'training_type' => $this->faker->word,
             'duration' => $this->faker->numberBetween(1, 12),
             'street' => $this->faker->streetName,
             'start_date' => $this->faker->date(),

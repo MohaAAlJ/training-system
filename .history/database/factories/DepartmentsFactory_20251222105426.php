@@ -20,9 +20,14 @@ class DepartmentsFactory extends Factory
     {
         return [
             'title' => $this->faker->jobTitle . ' Department',
-            'status' => $this->faker->boolean, // Migration defines boolean
+            'status' => $this->faker->randomElement(['active', 'inactive']),
+            'total_capacity' => $this->faker->numberBetween(10, 50),
+            'current_capacity' => 0,
             'user_id' => User::factory(),
+            'head_of_department' => User::factory(), // Added missing field based on model
+            'medical_head_user_id' => $this->faker->boolean ? User::factory() : null, // Added missing field
             'is_medical' => $this->faker->boolean,
+            'location' => $this->faker->address, // Added based on model fillable
         ];
     }
 }

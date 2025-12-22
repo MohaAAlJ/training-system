@@ -2,14 +2,14 @@
 
 namespace Database\Factories;
 
-use App\Models\Departments;
+use App\Models\Administrative;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Departments>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Administrative>
  */
-class DepartmentsFactory extends Factory
+class AdministrativeFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -19,10 +19,10 @@ class DepartmentsFactory extends Factory
     public function definition(): array
     {
         return [
-            'title' => $this->faker->jobTitle . ' Department',
-            'status' => $this->faker->boolean, // Migration defines boolean
-            'user_id' => User::factory(),
+            'title' => $this->faker->company,
             'is_medical' => $this->faker->boolean,
+            'user_id' => User::factory(),
+            'medical_head_user_id' => $this->faker->boolean ? User::factory() : null,
         ];
     }
 }

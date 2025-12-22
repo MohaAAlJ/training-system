@@ -19,9 +19,12 @@ class DepartmentsFactory extends Factory
     public function definition(): array
     {
         return [
-            'title' => $this->faker->jobTitle . ' Department',
-            'status' => $this->faker->boolean, // Migration defines boolean
+            'name_location' => $this->faker->city, // Updated to match likely column name from model view earlier or verify
+            'status' => $this->faker->randomElement(['active', 'inactive']),
+            'total_capacity' => $this->faker->numberBetween(10, 50),
+            'current_capacity' => 0,
             'user_id' => User::factory(),
+            'administrative_id' => null, // Can be set via state
             'is_medical' => $this->faker->boolean,
         ];
     }

