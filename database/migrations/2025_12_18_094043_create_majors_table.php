@@ -4,13 +4,14 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use App\Models\Major;
 
 return new class extends Migration {
     public function up(): void
     {
         Schema::create('majors', function (Blueprint $table) {
             $table->id();
-            $table->json('name');
+            $table->string('name');
             $table->string('code')->unique()->nullable();
             $table->timestamps();
             $table->softDeletes();
@@ -225,14 +226,8 @@ return new class extends Migration {
             'هندسة النظم الذكية'
         ];
 
-        foreach ($majors as $index => $name) {
-            DB::table('majors')->insert([
-                'id' => $index + 1,
-                'name' => json_encode(['ar' => $name, 'en' => $name], JSON_UNESCAPED_UNICODE),
-                'code' => 'M-' . str_pad($index + 1, 3, '0', STR_PAD_LEFT),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+        foreach ($majors as $major) {
+            Major::create(['name' => $major]);
         }
     }
 
