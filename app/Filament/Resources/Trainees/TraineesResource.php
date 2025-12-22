@@ -38,6 +38,7 @@ class TraineesResource extends Resource
     {
         return static::getEloquentQuery()->count();
     }
+    protected static ?int $navigationSort = 3;
 
 
     public static function form(Schema $schema): Schema
