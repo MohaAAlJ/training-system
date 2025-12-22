@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use App\Models\Trainees;
-use App\Models\Administratives;
+use App\Models\Administrative;
 use App\Models\Departments;
 use App\Models\Sections;
 
@@ -18,7 +18,7 @@ return new class extends Migration
         Schema::create('applications', function (Blueprint $table) {
             $table->id();
             $table->foreignIdFor(Trainees::class, 'trainee_id')->constrained('trainees')->cascadeOnDelete();
-            $table->foreignIdFor(Administratives::class, 'administrative_id')->constrained('administratives')->cascadeOnDelete();
+            $table->foreignIdFor(Administrative::class, 'administrative_id')->constrained('administratives')->cascadeOnDelete();
             $table->foreignIdFor(Departments::class, 'department_id')->constrained('departments')->cascadeOnDelete();
             $table->foreignIdFor(Sections::class, 'section_id')->constrained('sections')->cascadeOnDelete();
 
