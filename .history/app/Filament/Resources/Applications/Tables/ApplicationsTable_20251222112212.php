@@ -117,11 +117,11 @@ class ApplicationsTable
                 SelectFilter::make('training_type')
                     ->label('نوع التدريب')
                     ->options(Constans::TRAINING_TYPES)
-                    ->visible(fn() => Auth::check() && (
+                    ->visible(fn() => \Illuminate\Support\Facades\Auth::check() && (
                         Auth::user()->isAdmin() ||
-                        Auth::user()->isDepartment() ||
-                        Auth::user()->isHOA() ||
-                        Auth::user()->isGeneralTrainingManager()
+                        \Illuminate\Support\Facades\Auth::user()->isDepartment() ||
+                        \Illuminate\Support\Facades\Auth::user()->isHOA() ||
+                        \Illuminate\Support\Facades\Auth::user()->isGeneralTrainingManager()
                     )),
                 SelectFilter::make('department_id')
                     ->label('القسم')
