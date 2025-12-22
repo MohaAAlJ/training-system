@@ -32,7 +32,7 @@ class ApplicationsResource extends Resource
     protected static ?string $modelLabel = 'طلب';
     protected static ?string $pluralModelLabel = 'الطلبات';
     protected static ?string $navigationLabel = 'الطلبات';
-    protected static ?int $navigationSort = 4;
+    protected static ?int $navigationSort = 1;
     protected static string | UnitEnum | null $navigationGroup = 'إدارة المتدربين';
 
     public static function getNavigationBadge(): ?string

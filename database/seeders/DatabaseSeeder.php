@@ -67,7 +67,7 @@ class DatabaseSeeder extends Seeder
 
     private function createTestUsers()
     {
-        $password = Hash::make('123'); // Fixed password for testing
+        $password = Hash::make('password'); // Fixed password for testing
 
         // Admin
         User::firstOrCreate(

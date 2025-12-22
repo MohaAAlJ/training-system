@@ -73,6 +73,7 @@ class ApplicationsTable
                     ->sortable(),
                 TextColumn::make('status')
                     ->label('الحالة')
+                    ->sortable()
                     ->badge()
                     ->color(fn($state): string => match ((int)$state) {
                         1 => 'info',

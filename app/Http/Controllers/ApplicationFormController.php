@@ -239,9 +239,9 @@ class ApplicationFormController extends Controller
             'phone_number' => ['required', 'regex:/^97[02]5[69]\d{7}$/'],
             'governorate_id' => ['required', 'integer', 'exists:governorates,id'],
             'street' => ['required', 'string', 'max:255', 'regex:/^[\p{Arabic}A-Za-z0-9\s\-\.,#\/]+$/u'],
-            'institution_id' => ['required', 'integer', 'exists:institutions,id'],
+            'institution_id' => ['required_if:training_type,' . Constans::TRAINING_TYPE_UNIVERSITY, 'nullable', 'integer', 'exists:institutions,id'],
             'college_id' => ['nullable', 'integer', 'exists:colleges,id'],
-            'major_id' => ['required', 'integer', 'exists:majors,id'],
+            'major_id' => ['required_if:training_type,' . Constans::TRAINING_TYPE_UNIVERSITY, 'nullable', 'integer', 'exists:majors,id'],
             'training_hours' => ['required', 'integer', 'min:1', 'max:999'],
             'administrative_id' => ['required', 'integer', 'exists:administratives,id'],
             'department_id' => ['required', 'integer', 'exists:departments,id'],
@@ -292,9 +292,9 @@ class ApplicationFormController extends Controller
                         'dob' => $dobFormatted,
                         'governorate_id' => $validated['governorate_id'],
                         'street' => $validated['street'],
-                        'institution_id' => $validated['institution_id'],
+                        'institution_id' => $validated['institution_id'] ?? null,
                         'college_id' => $validated['college_id'] ?? null,
-                        'major_id' => $validated['major_id'],
+                        'major_id' => $validated['major_id'] ?? null,
                         'training_hours' => $validated['training_hours'],
                     ]
                 );
