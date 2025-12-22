@@ -122,7 +122,7 @@ class ApplicationsForm
                             ->formatStateUsing(fn($record) => $record?->trainee?->governorate_id)
                             ->disabled(fn($context) => $context === 'edit')
                             ->dehydrated(fn($context) => $context === 'create')
-                            ->options(fn() => \Illuminate\Support\Facades\Lang::get('translation.governorates', [], 'ar'))
+                            ->options(fn() => \App\Models\Governorate::all()->pluck('name', 'id'))
                             ->searchable()
                             ->preload()
                             ->required(),
