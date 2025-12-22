@@ -16,11 +16,11 @@ return new class extends Migration
         });
 
         $governorates = [
-            ['name' => ['ar' => 'غزة', 'en' => 'Gaza']],
-            ['name' => ['ar' => 'شمال غزة', 'en' => 'North Gaza']],
-            ['name' => ['ar' => 'خانيونس', 'en' => 'Khan Yunis']],
-            ['name' => ['ar' => 'رفح', 'en' => 'Rafah']],
-            ['name' => ['ar' => 'دير البلح', 'en' => 'Deir al-Balah']],
+            ['name' => 'غزة'],
+            ['name' => 'شمال غزة'],
+            ['name' => 'خانيونس'],
+            ['name' => 'رفح'],
+            ['name' => 'دير البلح'],
         ];
 
         foreach ($governorates as $gov) {
