@@ -17,14 +17,14 @@ return new class extends Migration
     {
         Schema::create('sections', function (Blueprint $table) {
             $table->id();
-            $table->string('name_location');
-            $table->foreignIdFor(Administrative::class)->constrained()->cascadeOnDelete();
-            $table->foreignIdFor(Departments::class, 'department_id')->constrained('departments')->cascadeOnDelete();
-            $table->foreignIdFor(Governorate::class)->nullable()->constrained()->nullOnDelete();
-            $table->foreignIdFor(User::class)->nullable()->constrained()->nullOnDelete();
+            $table->string('name_location'); 
+            $table->foreignIdFor(Administrative::class)->cascadeOnDelete();
+            $table->foreignIdFor(Departments::class, 'department_id')->cascadeOnDelete();
+            $table->foreignIdFor(Governorate::class)->nullable()->constrained('governorates')->nullOnDelete();
+            $table->foreignIdFor(User::class)->nullable()->nullOnDelete(); 
             $table->integer('total_capacity')->default(0);
             $table->integer('current_capacity')->default(0);
-            $table->string('status')->default('active');
+            $table->string('status')->default('active'); 
             $table->timestamps();
             $table->softDeletes();
         });

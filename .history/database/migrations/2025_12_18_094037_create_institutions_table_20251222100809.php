@@ -3,7 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use App\Models\Institution;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration {
     public function up(): void
@@ -23,16 +23,21 @@ return new class extends Migration {
             ['name' => 'جامعة فلسطين'],
             ['name' => 'جامعة غزة'],
             ['name' => 'جامعة الإسراء'],
-            ['name' => 'الكلية الجامعية للعلوم التطبيقية'],
-            ['name' => 'كلية فلسطين التقنية - دير البلح'],
-            ['name' => 'الكلية الجامعية للعلوم والتكنولوجيا - خانيونس'],
-            ['name' => 'كلية نماء للعلوم والتكنولوجيا'],
-            ['name' => 'كلية مجتمع الأقصى للدراسات المتوسطة'],
-            ['name' => 'كلية تنمية القدرات الجامعية - خانيونس'],
+            ['id' => 8, 'name' => 'الكلية الجامعية للعلوم التطبيقية'],
+            ['id' => 9, 'name' => 'كلية فلسطين التقنية - دير البلح'],
+            ['id' => 10, 'name' => 'الكلية الجامعية للعلوم والتكنولوجيا - خانيونس'],
+            ['id' => 11, 'name' => 'كلية نماء للعلوم والتكنولوجيا'],
+            ['id' => 12, 'name' => 'كلية مجتمع الأقصى للدراسات المتوسطة'],
+            ['id' => 13, 'name' => 'كلية تنمية القدرات الجامعية - خانيونس'],
         ];
 
         foreach ($institutions as $inst) {
-            Institution::create($inst);
+            DB::table('institutions')->insert([
+                'id' => $inst['id'],
+                'name' => $inst['name'],
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
         }
     }
 

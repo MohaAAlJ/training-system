@@ -17,10 +17,10 @@ return new class extends Migration
     {
         Schema::create('applications', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(Trainees::class, 'trainee_id')->constrained()->cascadeOnDelete();
-            $table->foreignIdFor(Administrative::class)->constrained()->cascadeOnDelete();
-            $table->foreignIdFor(Departments::class, 'department_id')->constrained('departments')->cascadeOnDelete();
-            $table->foreignIdFor(Sections::class, 'section_id')->constrained('sections')->cascadeOnDelete();
+            $table->foreignIdFor(Trainees::class, 'trainee_id')->cascadeOnDelete();
+            $table->foreignIdFor(Administrative::class)->cascadeOnDelete();
+            $table->foreignIdFor(Departments::class, 'department_id')->cascadeOnDelete();
+            $table->foreignIdFor(Sections::class, 'section_id')->cascadeOnDelete();
 
             $table->string('training_type')->nullable();
             $table->integer('duration')->nullable();

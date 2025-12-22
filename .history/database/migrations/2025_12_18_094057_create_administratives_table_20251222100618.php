@@ -16,7 +16,7 @@ return new class extends Migration
             $table->id();
             $table->string('title'); // مثال: إدارة مستشفى الأمل
             $table->boolean('is_medical')->default(false);
-            $table->foreignIdFor(User::class)->constrained()->cascadeOnDelete(); // مدير المنشأة
+            $table->foreignIdFor(User::class)->constrained('users')->cascadeOnDelete(); // مدير المنشأة
             $table->foreignIdFor(User::class, 'medical_head_user_id')->nullable()->constrained('users')->cascadeOnDelete(); // رئيس الإدارة الطبية
             $table->timestamps();
             $table->softDeletes();

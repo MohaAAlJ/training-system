@@ -21,13 +21,13 @@ return new class extends Migration
             $table->string('full_name');
             $table->string('phone_number');
             $table->date('dob');
-            $table->foreignIdFor(Governorate::class)->nullable()->constrained()->nullOnDelete();
+            $table->foreignIdFor(Governorate::class)->nullable()->nullOnDelete();
             $table->string('address')->nullable();
             $table->string('street')->nullable();
 
             // الربط الأكاديمي
-            $table->foreignIdFor(Institution::class)->nullable()->constrained()->nullOnDelete();
-            $table->foreignIdFor(College::class)->nullable()->constrained()->nullOnDelete();
+            $table->foreignIdFor(Institution::class)->nullable()->nullOnDelete();
+            $table->foreignIdFor(College::class)->nullable()->nullOnDelete();
             $table->foreignIdFor(Major::class)->nullable()->constrained()->nullOnDelete();
             $table->integer('training_hours')->nullable();
 
