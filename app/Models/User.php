@@ -19,7 +19,7 @@ class User extends Authenticatable implements FilamentUser
 {
     use HasFactory, Notifiable, SoftDeletes;
 
-    protected $fillable = ['id','name', 'email', 'password', 'role', 'status'];
+    protected $fillable = ['id', 'name', 'email', 'password', 'role', 'status'];
     protected $hidden = ['password', 'remember_token'];
     protected $casts = [
         'role' => 'integer',
@@ -83,6 +83,11 @@ class User extends Authenticatable implements FilamentUser
         return $this->role === Constans::ROLE_COLLEGE;
     }
 
+    public function isHOA(): bool
+    {
+        return $this->role === Constans::ROLE_HOA;
+    }
+
     public function isMinistry(): bool
     {
         return $this->role === Constans::ROLE_MOH;
@@ -91,7 +96,6 @@ class User extends Authenticatable implements FilamentUser
     public function isMedicalManager(): bool
     {
         return $this->role === Constans::ROLE_HOM;
-
     }
 
     public function isGeneralTrainingManager(): bool

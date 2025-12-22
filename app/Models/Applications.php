@@ -39,7 +39,13 @@ class Applications extends Model
         'accepted_at' => 'datetime',
         'status' => 'string',
         'duration' => 'integer',
+        'training_type' => 'integer',
     ];
+
+    public function getTrainingTypeLabelAttribute(): string
+    {
+        return Constans::TRAINING_TYPES[$this->training_type] ?? 'غير محدد';
+    }
 
     public function trainee()
     {

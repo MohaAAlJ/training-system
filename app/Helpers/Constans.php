@@ -66,4 +66,15 @@ class Constans
         self::ROLE_HOM => 'رئيس الطب',
         self::ROLE_GTM => 'مدير التدريب العام',
     ];
+
+    /**
+     * Training Type constants
+     */
+    public const TRAINING_TYPE_UNIVERSITY = 1;
+    public const TRAINING_TYPE_PRACTICE = 2;
+
+    public const TRAINING_TYPES = [
+        self::TRAINING_TYPE_UNIVERSITY => 'تدريب جامعي',
+        self::TRAINING_TYPE_PRACTICE => 'مزاولة مهنة',
+    ];
 }
