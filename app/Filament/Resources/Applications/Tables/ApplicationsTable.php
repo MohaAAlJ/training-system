@@ -34,11 +34,9 @@ class ApplicationsTable
                     ->searchable(),
                 TextColumn::make('trainee.institution.name')
                     ->label('المؤسسة')
-                    ->formatStateUsing(fn($state) => is_array($state) ? ($state['ar'] ?? $state['en'] ?? reset($state)) : $state)
                     ->toggleable(isToggledHiddenByDefault: false),
                 TextColumn::make('trainee.major.name')
                     ->label('التخصص')
-                    ->formatStateUsing(fn($state) => is_array($state) ? ($state['ar'] ?? $state['en'] ?? reset($state)) : $state)
                     ->toggleable(isToggledHiddenByDefault: false),
                 TextColumn::make('administrative.title')
                     ->label('الإدارة')

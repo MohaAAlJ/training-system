@@ -30,11 +30,9 @@ class ApplicationsInfolist
                         TextEntry::make('trainee.street')
                             ->label('الشارع'),
                         TextEntry::make('trainee.institution.name')
-                            ->label('المؤسسة التعليمية')
-                            ->formatStateUsing(fn ($state) => is_array($state) ? ($state['ar'] ?? $state['en'] ?? reset($state)) : $state),
+                            ->label('المؤسسة التعليمية'),
                         TextEntry::make('trainee.major.name')
-                            ->label('التخصص')
-                            ->formatStateUsing(fn ($state) => is_array($state) ? ($state['ar'] ?? $state['en'] ?? reset($state)) : $state),
+                            ->label('التخصص'),
                     ]),
                 Section::make('تفاصيل التدريب')
                     ->columns(2)

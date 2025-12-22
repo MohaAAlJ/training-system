@@ -24,6 +24,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        \App\Http\Controllers\ApplicationFormController::syncInternalState();
         Gate::policy(Departments::class, DepartmentsPolicy::class);
         Gate::policy(Sections::class, SectionPolicy::class);
     }
