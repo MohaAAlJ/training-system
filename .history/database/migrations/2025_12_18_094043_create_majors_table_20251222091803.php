@@ -12,7 +12,6 @@ return new class extends Migration {
         Schema::create('majors', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('code')->unique()->nullable();
             $table->timestamps();
             $table->softDeletes();
         });
@@ -226,7 +225,7 @@ return new class extends Migration {
             'هندسة النظم الذكية'
         ];
 
-        foreach ($majors as $major) {
+        foreach ($majors as $index => $major) {
             Major::create(['name' => $major]);
         }
     }

@@ -17,6 +17,7 @@ return new class extends Migration {
             $table->softDeletes();
         });
 
+        // تم حذف الـ ID، سيأخذ أرقاماً تلقائية 1, 2, 3... بناءً على الترتيب
         $colleges = [
             ['institution_id' => 1, 'name' => 'كلية الطب'],
             ['institution_id' => 1, 'name' => 'كلية الهندسة'],

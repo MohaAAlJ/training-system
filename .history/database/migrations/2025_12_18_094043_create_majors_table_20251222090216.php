@@ -226,8 +226,9 @@ return new class extends Migration {
             'هندسة النظم الذكية'
         ];
 
-        foreach ($majors as $major) {
-            Major::create(['name' => $major]);
+        foreach ($majors as $index => $major) {
+            Major::create([$major]);
+                
         }
     }
 

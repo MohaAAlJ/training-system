@@ -304,6 +304,7 @@ return new class extends Migration {
             ['college_id' => 64, 'major_id' => 169],
         ];
 
+        // الآن الكود نظيف ويعمل بشكل صحيح
         foreach ($pivots as $pivot) {
             CollegeMajor::create($pivot);
         }

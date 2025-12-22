@@ -226,8 +226,11 @@ return new class extends Migration {
             'هندسة النظم الذكية'
         ];
 
-        foreach ($majors as $major) {
-            Major::create(['name' => $major]);
+        foreach ($pivots as $p) {
+            CollegeMajor::create([
+                'college_id' => $p[0], // القيمة الأولى في المصفوفة
+                'major_id'   => $p[1], // القيمة الثانية في المصفوفة
+            ]);
         }
     }
 

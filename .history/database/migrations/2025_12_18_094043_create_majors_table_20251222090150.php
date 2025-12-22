@@ -5,6 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 use App\Models\Major;
+use App\Models\CollegeMajor;
 
 return new class extends Migration {
     public function up(): void
@@ -226,8 +227,11 @@ return new class extends Migration {
             'هندسة النظم الذكية'
         ];
 
-        foreach ($majors as $major) {
-            Major::create(['name' => $major]);
+        foreach ($majors as $p) {
+            CollegeMajor::create([
+                'college_id' => $p[0], // القيمة الأولى في المصفوفة
+                'major_id'   => $p[1], // القيمة الثانية في المصفوفة
+            ]);
         }
     }
 

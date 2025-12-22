@@ -4,7 +4,6 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
-use App\Models\Major;
 
 return new class extends Migration {
     public function up(): void
@@ -226,8 +225,17 @@ return new class extends Migration {
             'هندسة النظم الذكية'
         ];
 
-        foreach ($majors as $major) {
-            Major::create(['name' => $major]);
+        foreach ($majors as $index => $major) {
+            // DB::table('majors')->insert([
+            //     'id' => $index + 1,
+            //     'name' => $major,
+            //     'code' => 'M-' . str_pad($index + 1, 3, '0', STR_PAD_LEFT),
+            //     'created_at' => now(),
+            //     'updated_at' => now(),
+            // ]);
+
+            Major::create([$major
+                
         }
     }
 
