@@ -31,7 +31,9 @@ class SectionsForm
                     ->required(),
                 Select::make('user_id')
                     ->label('المسؤول')
-                    ->relationship('user', 'name')
+                    ->relationship('user', 'name', function ($query) {
+                        return $query->where('role', \App\Helpers\Constans::ROLE_SECTION);
+                    })
                     ->searchable()
                     ->preload()
                     ->required(),

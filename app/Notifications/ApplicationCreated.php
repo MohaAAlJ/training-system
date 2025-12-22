@@ -2,15 +2,15 @@
 
 namespace App\Notifications;
 
-use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
-use Illuminate\Notifications\Messages\DatabaseMessage;
 use Illuminate\Notifications\Messages\MailMessage;
 use App\Models\Applications;
+use Filament\Notifications\Notification as FilamentNotification;
 
 class ApplicationCreated extends Notification
 {
-    use Queueable;
+    // Note: Queueable removed - notifications are sent synchronously
+    // Add "use Illuminate\Bus\Queueable;" and "use Queueable;" if you want async processing
 
     protected Applications $application;
 
@@ -24,14 +24,19 @@ class ApplicationCreated extends Notification
         return ['database'];
     }
 
-    public function toDatabase($notifiable)
+    public function toDatabase($notifiable): array
     {
-        return [
-            'message' => 'تمت إضافة طلب تدريب',
-            'application_id' => $this->application->id,
-            'trainee_name' => optional($this->application->trainee)->full_name,
-            'department' => optional($this->application->department)->title ?? optional($this->application->department)->name_location,
-        ];
+        $traineeName = optional($this->application->trainee)->full_name ?? 'غير معروف';
+        $departmentName = optional($this->application->department)->title
+            ?? optional($this->application->department)->name_location
+            ?? 'غير محدد';
+
+        return FilamentNotification::make()
+            ->title('طلب تدريب جديد')
+            ->body("تمت إضافة طلب تدريب جديد من: {$traineeName} - القسم: {$departmentName}")
+            ->icon('heroicon-o-document-plus')
+            ->iconColor('success')
+            ->getDatabaseMessage();
     }
 
     public function toMail($notifiable)
@@ -42,3 +47,4 @@ class ApplicationCreated extends Notification
             ->action('View application', url('/admin/applications/' . $this->application->id));
     }
 }
+
