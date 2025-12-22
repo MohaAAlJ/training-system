@@ -157,14 +157,6 @@ class ApplicationsTable
                 EditAction::make()
                     ->color('danger')
                     ->outlined(),
-
-                Action::make('moh_confirm')
-                    ->label('تأكيد')
-                    ->color('success')
-                    ->icon('heroicon-o-check')
-                    ->visible(fn($record) => Auth::user()->isMinistry() && $record->status == Constans::STATUS_INITIAL_APPROVE)
-                    ->requiresConfirmation()
-                    ->action(fn($record) => $record->update(['status' => Constans::STATUS_CONFIRMATION])),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

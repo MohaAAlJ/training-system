@@ -18,7 +18,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use App\Helpers\Constans;
 use Filament\Forms\Components\DatePicker;
-use Illuminate\Support\Facades\Auth;
+
 
 class ApplicationsTable
 {
@@ -117,11 +117,11 @@ class ApplicationsTable
                 SelectFilter::make('training_type')
                     ->label('نوع التدريب')
                     ->options(Constans::TRAINING_TYPES)
-                    ->visible(fn() => Auth::check() && (
-                        Auth::user()->isAdmin() ||
-                        Auth::user()->isDepartment() ||
-                        Auth::user()->isHOA() ||
-                        Auth::user()->isGeneralTrainingManager()
+                    ->visible(fn() => \Illuminate\Support\Facades\Auth::check() && (
+                        \Illuminate\Support\Facades\Auth::user()->isAdmin() ||
+                        \Illuminate\Support\Facades\Auth::user()->isDepartment() ||
+                        \Illuminate\Support\Facades\Auth::user()->isHOA() ||
+                        \Illuminate\Support\Facades\Auth::user()->isGeneralTrainingManager()
                     )),
                 SelectFilter::make('department_id')
                     ->label('القسم')
@@ -157,14 +157,6 @@ class ApplicationsTable
                 EditAction::make()
                     ->color('danger')
                     ->outlined(),
-
-                Action::make('moh_confirm')
-                    ->label('تأكيد')
-                    ->color('success')
-                    ->icon('heroicon-o-check')
-                    ->visible(fn($record) => Auth::user()->isMinistry() && $record->status == Constans::STATUS_INITIAL_APPROVE)
-                    ->requiresConfirmation()
-                    ->action(fn($record) => $record->update(['status' => Constans::STATUS_CONFIRMATION])),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

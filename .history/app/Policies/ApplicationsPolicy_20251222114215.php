@@ -69,6 +69,10 @@ class ApplicationsPolicy
             return $Applications->department->administrative_id === $user->administrative?->id;
         }
 
+        if ($user->isMinistry()) {
+            return true;
+        }
+
         return false;
     }
 
