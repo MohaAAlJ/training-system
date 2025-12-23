@@ -38,26 +38,20 @@ class GTMCapacityChart extends ChartWidget
 
         if ($user->isGeneralTrainingManager() || $user->isAdmin()) {
             $stats = Constans::getCapacityStats();
-            $total = $stats['total'];
-            $used = $stats['used'];
         } elseif ($user->isMedicalManager()) { // HOM
-            $total = \App\Models\Sections::whereHas('department', fn($q) => $q->where('is_medical', true))->sum('total_capacity');
-            $used = \App\Models\Applications::where('status', Constans::STATUS_STRATED_TRAINING)
-                ->whereHas('department', fn($q) => $q->where('is_medical', true))
-                ->count();
+            $stats = Constans::getCapacityStats(null, null, null, true);
         } elseif ($user->isHOA()) { // HOA
              $stats = Constans::getCapacityStats($user->administrative?->id);
-             $total = $stats['total'];
-             $used = $stats['used'];
         } elseif ($user->isDepartmentHead()) {
              $stats = Constans::getCapacityStats(null, $user->department?->id);
-             $total = $stats['total'];
-             $used = $stats['used'];
         } elseif ($user->isSectionHead()) {
              $stats = Constans::getCapacityStats(null, null, $user->sections?->id);
-             $total = $stats['total'];
-             $used = $stats['used'];
+        } else {
+            $stats = ['total' => 0, 'used' => 0, 'available' => 0];
         }
+
+        $total = $stats['total'];
+        $used = $stats['used'];
 
         $available = max(0, $total - $used);
 

@@ -81,20 +81,29 @@ class Constans
     /**
      * Helper to calculate capacity and usage
      */
-    public static function getCapacityStats(?int $administrativeId = null, ?int $departmentId = null, ?int $sectionId = null): array
+    public static function getCapacityStats(?int $administrativeId = null, ?int $departmentId = null, ?int $sectionId = null, bool $isMedical = false): array
     {
         // 1. Total Capacity from Sections
         $sectionsQuery = \App\Models\Sections::query();
+
+        if ($isMedical) {
+            $sectionsQuery->whereHas('department', fn($q) => $q->where('is_medical', true));
+        }
+
         if ($administrativeId) $sectionsQuery->where('administrative_id', $administrativeId);
         if ($departmentId) $sectionsQuery->where('department_id', $departmentId);
         if ($sectionId) $sectionsQuery->where('id', $sectionId);
 
-        $totalCapacity = $sectionsQuery->sum('total_capacity');
+        $totalCapacity = (int) $sectionsQuery->sum('total_capacity');
 
         // 2. Used Capacity (Active Applications)
-        // Assuming 'Used' means currently in training
+        // Active means currently in training (Status 5)
         $appsQuery = \App\Models\Applications::query()
-            ->where('status', self::STATUS_STRATED_TRAINING); // Active only
+            ->where('status', self::STATUS_STRATED_TRAINING);
+
+        if ($isMedical) {
+            $appsQuery->whereHas('department', fn($q) => $q->where('is_medical', true));
+        }
 
         if ($administrativeId) $appsQuery->where('administrative_id', $administrativeId);
         if ($departmentId) $appsQuery->where('department_id', $departmentId);
