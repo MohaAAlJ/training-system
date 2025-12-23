@@ -1,4 +1,4 @@
-<?php
+N<?php
 
 namespace App\Policies;
 
@@ -47,6 +47,10 @@ class TraineesPolicy
     {
         if ($user->isAdmin() || $user->isGeneralTrainingManager()) {
             return true;
+        }
+
+        if ($user->isCollegeSupervisor()) {
+            return $trainee->college_id === $user->college?->id;
         }
 
         return false;

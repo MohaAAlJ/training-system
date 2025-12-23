@@ -49,6 +49,10 @@ class TraineesPolicy
             return true;
         }
 
+        if ($user->isCollegeSupervisor()) {
+            return $trainee->college_id === $user->college?->id;
+        }
+
         return false;
     }
 

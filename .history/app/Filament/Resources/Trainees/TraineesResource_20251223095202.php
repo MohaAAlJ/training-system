@@ -89,8 +89,7 @@ class TraineesResource extends Resource
         }
 
         if ($user->isCollegeSupervisor()) {
-            $collegeId = \App\Models\College::where('user_id', $user->id)->value('id');
-            return $query->where('college_id', $collegeId);
+            return $query->where('college_id', $user->college?->id);
         }
 
         if ($user->isDepartmentHead()) {

@@ -166,7 +166,7 @@ class ApplicationsTable
                     ->label('تأكيد')
                     ->color('success')
                     ->icon('heroicon-o-check')
-                    ->visible(fn($record) => Auth::user()->isMinistry() && $record->status == Constans::STATUS_INITIAL_APPROVE)
+                    ->visible(fn($record) => (Auth::user()->isMinistry() || Auth::user()->isCollegeSupervisor()) && $record->status == Constans::STATUS_INITIAL_APPROVE)
                     ->requiresConfirmation()
                     ->action(fn($record) => $record->update(['status' => Constans::STATUS_CONFIRMATION])),
 

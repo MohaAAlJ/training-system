@@ -48,7 +48,7 @@ class ApplicationsForm
                                     ->icon('heroicon-m-pencil-square')
                                     ->tooltip('تعديل بيانات المتدرب الأصلية')
                                     ->label('تعديل')
-                                    ->visible(fn($context) => $context === 'edit' && Auth::user()->isAdmin())
+                                    ->visible(fn($context) => $context === 'edit' && (Auth::user()->isAdmin() || Auth::user()->isCollegeSupervisor()))
                                     ->modalHeading('تعديل بيانات المتدرب')
                                     ->mountUsing(fn($record, $form) => $form->fill([
                                         'full_name' => $record->trainee->full_name,
@@ -227,7 +227,7 @@ class ApplicationsForm
                                 }
                                 return [];
                             })
-                            ->default(fn() => Auth::user()->isCollegeSupervisor() ? Auth::user()->college?->id : null)
+                            ->default(fn() => Auth::user()->isCollegeSupervisor() ? \App\Models\College::where('user_id', Auth::user()->id)->value('id') : null)
                             ->formatStateUsing(fn($record) => $record?->trainee?->college_id)
                             ->disabled(fn() => Auth::user()->isCollegeSupervisor() || request()->routeIs('*.edit'))
                             ->dehydrated()

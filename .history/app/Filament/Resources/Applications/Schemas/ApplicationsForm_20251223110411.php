@@ -48,7 +48,7 @@ class ApplicationsForm
                                     ->icon('heroicon-m-pencil-square')
                                     ->tooltip('تعديل بيانات المتدرب الأصلية')
                                     ->label('تعديل')
-                                    ->visible(fn($context) => $context === 'edit' && Auth::user()->isAdmin())
+                                    ->visible(fn($context) => $context === 'edit' && (Auth::user()->isAdmin() || Auth::user()->isCollegeSupervisor()))
                                     ->modalHeading('تعديل بيانات المتدرب')
                                     ->mountUsing(fn($record, $form) => $form->fill([
                                         'full_name' => $record->trainee->full_name,

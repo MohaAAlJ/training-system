@@ -81,15 +81,14 @@ class ApplicationsResource extends Resource
         }
 
         if ($user->isCollegeSupervisor()) {
-            $collegeId = \App\Models\College::where('user_id', $user->id)->value('id');
             return $query->where('training_type', \App\Helpers\Constans::TRAINING_TYPE_UNIVERSITY)
-                ->whereHas('trainee', function ($q) use ($collegeId) {
-                    $q->where('college_id', $collegeId);
+                ->whereHas('trainee', function ($q) use ($user) {
+                    $q->where('college_id', $user->college?->id);
                 });
         }
 
         if ($user->isSectionHead()) {
-            return $query->where('section_id', $user->sections?->id);
+            return $query->where('section_id', $user->section?->id);
         }
 
         if ($user->isDepartment()) {

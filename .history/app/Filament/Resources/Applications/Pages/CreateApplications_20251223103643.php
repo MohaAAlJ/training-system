@@ -21,7 +21,7 @@ class CreateApplications extends CreateRecord
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         if (Auth::user()->isCollegeSupervisor()) {
-            $data['status'] = \App\Helpers\Constans::STATUS_WAITING_LIST;
+            $data['status'] = \App\Helpers\Constans::STATUS_NEW;
         }
 
         if (empty($data['dob']) && isset($data['dob_year'])) {

@@ -48,7 +48,7 @@ class ApplicationsForm
                                     ->icon('heroicon-m-pencil-square')
                                     ->tooltip('تعديل بيانات المتدرب الأصلية')
                                     ->label('تعديل')
-                                    ->visible(fn($context) => $context === 'edit' && Auth::user()->isAdmin())
+                                    ->visible(fn($context) => $context === 'edit' && (Auth::user()->isAdmin() || Auth::user()->isCollegeSupervisor()))
                                     ->modalHeading('تعديل بيانات المتدرب')
                                     ->mountUsing(fn($record, $form) => $form->fill([
                                         'full_name' => $record->trainee->full_name,
@@ -212,7 +212,8 @@ class ApplicationsForm
                             ->label('الكلية')
                             ->options(function (callable $get) {
                                 if (Auth::user()->isCollegeSupervisor()) {
-                                    return College::where('id', Auth::user()->college?->id)
+                                    $collegeId = \App\Models\College::where('user_id', Auth::user()->id)->value('id');
+                                    return College::where('id', $collegeId)
                                         ->get()
                                         ->pluck('name', 'id')
                                         ->toArray();
@@ -227,7 +228,7 @@ class ApplicationsForm
                                 }
                                 return [];
                             })
-                            ->default(fn() => Auth::user()->isCollegeSupervisor() ? Auth::user()->college?->id : null)
+                            ->default(fn() => Auth::user()->isCollegeSupervisor() ? \App\Models\College::where('user_id', Auth::user()->id)->value('id') : null)
                             ->formatStateUsing(fn($record) => $record?->trainee?->college_id)
                             ->disabled(fn() => Auth::user()->isCollegeSupervisor() || request()->routeIs('*.edit'))
                             ->dehydrated()
@@ -361,7 +362,7 @@ class ApplicationsForm
                                 Constans::STATUSES,
                                 array_map(fn($s) => \Illuminate\Support\Facades\Lang::get("translation.status.$s", [], 'ar'), Constans::STATUSES)
                             ))
-                            ->default(fn() => Auth::user()->isCollegeSupervisor() ? Constans::STATUS_WAITING_LIST : Constans::STATUS_NEW)
+                            ->default(fn() => Auth::user()->isCollegeSupervisor() ? \App\Helpers\Constans::STATUS_WAITING_LIST : \App\Helpers\Constans::STATUS_NEW)
                             ->disabled(fn() => ! Auth::user()->isAdmin())
                             ->dehydrated()
                             ->required()

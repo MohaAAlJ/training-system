@@ -17,7 +17,7 @@ class ApplicationsPolicy
 
     public function view(User $user, Applications $Applications): bool
     {
-        if ($user->isAdmin() || $user->isGeneralTrainingManager()) {
+        if ($user->isAdmin()) {
             return true;
         }
 
@@ -54,6 +54,10 @@ class ApplicationsPolicy
 
         if ($user->isSectionHead()) {
             return $Applications->section_id === $user->Sections?->id;
+        }
+
+        if ($user->isCollegeSupervisor()) {
+            return $Applications->trainee->college_id === $user->college?->id;
         }
 
         if ($user->isDepartment()) {
