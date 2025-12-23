@@ -21,6 +21,23 @@ class StudentsFinishingSoonWidget extends BaseWidget
 
     protected static ?string $heading = 'طلاب يقترب موعد انتهاء تدريبهم';
 
+    public static function canView(): bool
+    {
+        $user = Auth::user();
+        if (!$user) return false;
+
+        // Allowed for: GTM, Admin, HOA, HOM, Department Head, Section Head
+        // Hidden from: MOH (4), College Supervisor (5)
+        return in_array($user->role, [
+            Constans::ROLE_GTM,
+            Constans::ROLE_ADMIN,
+            Constans::ROLE_HOA,
+            Constans::ROLE_HOM,
+            Constans::ROLE_DEPARTMENT,
+            Constans::ROLE_SECTION,
+        ]);
+    }
+
     public function table(Table $table): Table
     {
         return $table
