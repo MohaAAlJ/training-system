@@ -9,15 +9,13 @@ use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Builder;
-use Filament\Actions\ViewAction;
-use Illuminate\Support\Facades\Lang;
 use Carbon\Carbon;
 use Filament\Actions\Action;
 
 class StudentsFinishingSoonWidget extends BaseWidget
 {
-    protected static ?int $sort = 2;
-    protected int | string | array $columnSpan = 1;
+    protected static ?int $sort = 3;
+    protected int | string | array $columnSpan = 'full';
 
     protected static ?string $heading = 'طلاب يقترب موعد انتهاء تدريبهم';
 
@@ -91,6 +89,7 @@ class StudentsFinishingSoonWidget extends BaseWidget
             ->actions([
                 Action::make('view')
                     ->label('عرض')
+                    ->icon('heroicon-o-eye')
                     ->url(fn (Applications $record): string => \App\Filament\Resources\Applications\ApplicationsResource::getUrl('view', ['record' => $record])),
             ])
             ->emptyStateHeading('لا يوجد طلاب تنتهي فترة تدريبهم قريباً');
