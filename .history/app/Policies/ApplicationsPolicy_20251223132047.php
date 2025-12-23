@@ -30,11 +30,7 @@ class ApplicationsPolicy
         }
 
         if ($user->isDepartment()) {
-            return $Applications->department_id === $user->department?->id &&
-                in_array((int)$Applications->status, [
-                    \App\Helpers\Constans::STATUS_STRATED_TRAINING,
-                    \App\Helpers\Constans::STATUS_ENDED_TRAINING
-                ]);
+            return $Applications->department->department_id === $user->department?->department_id;
         }
 
         if ($user->isMinistry()) {

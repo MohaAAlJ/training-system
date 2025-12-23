@@ -60,6 +60,11 @@ class ApplicationsPolicy
             return $Applications->section_id === $user->Sections?->id;
         }
 
+        // Allow MOH update if status is 2 (STATUS_INITIAL_APPROVE)
+        if ($user->isMinistry() && (int)$Applications->status === Constans::STATUS_INITIAL_APPROVE) {
+            return true;
+        }
+
         return false;
     }
 
