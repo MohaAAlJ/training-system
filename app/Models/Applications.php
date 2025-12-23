@@ -219,5 +219,112 @@ class Applications extends Model
                 }
             }
         });
-    }
+
+        static::updated(function (self $application) {
+            // Check if status changed
+            if ($application->isDirty('status')) {
+                $newStatus = (int) $application->status;
+                $originalStatus = (int) $application->getOriginal('status');
+
+                // Notification to send
+                $notificationToSend = null;
+
+                // 4 -> 5 : Waiting List -> Started Training
+                if ($originalStatus === Constans::STATUS_WAITING_LIST && $newStatus === Constans::STATUS_STRATED_TRAINING) {
+                    $notificationToSend = new \App\Notifications\TraineeStartedNotification($application);
+                }
+                // 5 -> 6 : Started Training -> Ended Training
+                elseif ($originalStatus === Constans::STATUS_STRATED_TRAINING && $newStatus === Constans::STATUS_ENDED_TRAINING) {
+                    $notificationToSend = new \App\Notifications\TraineeFinishedNotification($application);
+                }
+
+                if ($notificationToSend) {
+                     // Gather recipients: HOA, HOM, Dept Head, Section Head
+                     $recipients = collect();
+
+                     // Get related entities
+                     $section = $application->section;
+                     $department = $application->department;
+                     $administrative = $application->administrative;
+
+                     // 1. Role Section
+                     if ($section && $section->user_id) {
+                         $sectionHead = $section->user;
+                         if ($sectionHead && $sectionHead->role === Constans::ROLE_SECTION) {
+                             $recipients->push($sectionHead);
+                         }
+                     }
+
+                     // 2. Role Department
+                     if ($department) {
+                         $deptHead = $department->headOfDepartment;
+                         if ($deptHead && $deptHead->id && $deptHead->role === Constans::ROLE_DEPARTMENT) {
+                             $recipients->push($deptHead);
+                         }
+                         if ($department->user_id) {
+                            $deptUser = $department->user;
+                            if ($deptUser && $deptUser->role === Constans::ROLE_DEPARTMENT) {
+                                $recipients->push($deptUser);
+                            }
+                         }
+                     }
+
+                     // 3. Role HOA (Head of Administration)
+                     // If defined on administrative
+                     if ($administrative && $administrative->user_id) {
+                         $hoaUser = $administrative->user;
+                         if ($hoaUser && $hoaUser->role === Constans::ROLE_HOA) {
+                             $recipients->push($hoaUser);
+                         }
+                     }
+                     // If Section -> Administrative -> User
+                     if ($section && $section->administrative_id) {
+                        $sectionAdmin = $section->administrative;
+                        if ($sectionAdmin && $sectionAdmin->user_id) {
+                            $hoaUser = $sectionAdmin->user;
+                            if ($hoaUser && $hoaUser->role === Constans::ROLE_HOA) {
+                                $recipients->push($hoaUser);
+                            }
+                        }
+                    }
+
+                     // 4. Role HOM (Head of Medical) - ONLY if medical Department/Administrative
+                     $isMedical = false;
+                     if ($department && $department->is_medical) $isMedical = true;
+                     if ($administrative && $administrative->is_medical) $isMedical = true;
+
+                     if ($isMedical) {
+                         // Notify all HOM users (Broad notification like created?)
+                         // Request says: "ROLE_HOM gets a notification for all the section in a medical department"
+                         // This implies broadly notifying HOMs about activity in their domain.
+                         $homUsers = User::where('role', Constans::ROLE_HOM)->get();
+                         $recipients = $recipients->merge($homUsers);
+
+                         if ($administrative && $administrative->medical_head_user_id) {
+                             $medicalHead = $administrative->medicalHead;
+                             if ($medicalHead) $recipients->push($medicalHead);
+                         }
+                         if ($department && $department->medical_head_user_id) {
+                            $deptMedicalHead = $department->medicalHead;
+                            if ($deptMedicalHead) $recipients->push($deptMedicalHead);
+                        }
+                     }
+
+                     // Deduplicate and filter
+                     $recipients = $recipients->unique('id')->filter(function ($user) {
+                        return $user && $user->id && $user->status === 'active';
+                     })->values();
+
+                     // Send
+                     foreach ($recipients as $user) {
+                        try {
+                            $user->notify($notificationToSend);
+                        } catch (\Throwable $e) {
+                            logger()->error('Failed to notify user for status change ' . $user->id . ': ' . $e->getMessage());
+                        }
+                     }
+                }
+            }
+        });
+}
 }
