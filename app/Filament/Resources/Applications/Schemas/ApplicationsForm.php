@@ -55,7 +55,7 @@ class ApplicationsForm
                                         'national_id' => $record->trainee->national_id,
                                         'phone_number' => $record->trainee->phone_number,
                                         'dob' => $record->trainee->dob,
-                                        'address' => $record->trainee->address,
+                                        'street' => $record->trainee->street,
                                         'institution_id' => $record->trainee->institution_id,
                                         'college_id' => $record->trainee->college_id,
                                         'major_id' => $record->trainee->major_id,
@@ -65,7 +65,7 @@ class ApplicationsForm
                                         TextInput::make('full_name')->label('الاسم الكامل')->required(),
                                         TextInput::make('national_id')->label('رقم الهوية')->required(),
                                         TextInput::make('phone_number')->label('رقم الهاتف')->required(),
-                                        TextInput::make('address')->label('العنوان'),
+                                        TextInput::make('street')->label('المنطقة / الشارع'),
                                         DatePicker::make('dob')->label('تاريخ الميلاد')->native(false),
                                         // يمكن إضافة اختيار التخصص هنا أيضاً
                                         Select::make('major_id')

@@ -37,8 +37,8 @@ class TraineesForm
                 DatePicker::make('dob')
                     ->label('تاريخ الميلاد')
                     ->required(),
-                TextInput::make('address')
-                    ->label('العنوان')
+                TextInput::make('street')
+                    ->label('المنطقة / الشارع')
                     ->maxLength(255),
                 Select::make('institution_id')
                     ->label('المؤسسة التعليمية')
