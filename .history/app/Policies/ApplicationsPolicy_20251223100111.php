@@ -56,6 +56,10 @@ class ApplicationsPolicy
             return $Applications->section_id === $user->Sections?->id;
         }
 
+        if ($user->isCollegeSupervisor()) {
+            return $Applications->trainee->college_id === $user->college?->id;
+        }
+
         if ($user->isDepartment()) {
 
             if ($user->isGeneralTrainingManager()) {

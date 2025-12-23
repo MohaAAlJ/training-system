@@ -59,7 +59,7 @@ class GTMRecentApplications extends BaseWidget
                     ->since(),
             ])
             ->actions([
-                ViewAction::make(),
+                Tables\Actions\ViewAction::make(),
                 Action::make('initial_approve')
                     ->label('موافقة مبدئية')
                     ->color('success')

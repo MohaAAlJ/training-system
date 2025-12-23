@@ -14,7 +14,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\TrashedFilter;
-use Filament\Actions\DeleteAction;
+use Filament\Tables\Actions\DeleteAction;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -166,7 +166,7 @@ class ApplicationsTable
                     ->label('تأكيد')
                     ->color('success')
                     ->icon('heroicon-o-check')
-                    ->visible(fn($record) => Auth::user()->isMinistry() && $record->status == Constans::STATUS_INITIAL_APPROVE)
+                    ->visible(fn($record) => (Auth::user()->isMinistry() || Auth::user()->isCollegeSupervisor()) && $record->status == Constans::STATUS_INITIAL_APPROVE)
                     ->requiresConfirmation()
                     ->action(fn($record) => $record->update(['status' => Constans::STATUS_CONFIRMATION])),
 

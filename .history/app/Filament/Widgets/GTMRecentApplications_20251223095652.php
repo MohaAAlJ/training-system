@@ -8,9 +8,9 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
 use Illuminate\Support\Facades\Auth;
-use Filament\Actions\ViewAction;
-use Filament\Actions\Action;
-use Filament\Actions\DeleteAction;
+use Filament\Tables\Actions\ViewAction;
+use Filament\Tables\Actions\Action;
+use Filament\Tables\Actions\DeleteAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\TextInput;
 use Illuminate\Support\Facades\Lang;
@@ -59,7 +59,7 @@ class GTMRecentApplications extends BaseWidget
                     ->since(),
             ])
             ->actions([
-                ViewAction::make(),
+                Tables\Actions\ViewAction::make(),
                 Action::make('initial_approve')
                     ->label('موافقة مبدئية')
                     ->color('success')
