@@ -8,9 +8,10 @@ use Illuminate\Support\Facades\Auth;
 
 class GTMCapacityChart extends ChartWidget
 {
-    protected static ?int $sort = 2;
-    protected ?string $heading = 'توزيع السعة الاستيعابية';
-    protected ?string $maxHeight = '250px';
+    protected static ?int $sort = 1;
+    protected int | string | array $columnSpan = 1;
+    protected ?string $maxHeight = '120px';
+    protected ?string $heading = null;
 
     public static function canView(): bool
     {
@@ -40,7 +41,6 @@ class GTMCapacityChart extends ChartWidget
             $total = $stats['total'];
             $used = $stats['used'];
         } elseif ($user->isMedicalManager()) { // HOM
-            // Filter by Medical Departments
             $total = \App\Models\Sections::whereHas('department', fn($q) => $q->where('is_medical', true))->sum('total_capacity');
             $used = \App\Models\Applications::where('status', Constans::STATUS_STRATED_TRAINING)
                 ->whereHas('department', fn($q) => $q->where('is_medical', true))
@@ -67,10 +67,10 @@ class GTMCapacityChart extends ChartWidget
                     'label' => 'السعة',
                     'data' => [$used, $available],
                     'backgroundColor' => [
-                        '#f46a0fff',
-                        '#2279c5ff',
+                        '#f4600d',
+                        '#2279c5',
                     ],
-                    'hoverOffset' => 4,
+                    'borderWidth' => 0,
                 ],
             ],
             'labels' => ['مشغول', 'متاح'],
@@ -80,5 +80,23 @@ class GTMCapacityChart extends ChartWidget
     protected function getType(): string
     {
         return 'doughnut';
+    }
+
+    protected function getOptions(): array
+    {
+        return [
+            'plugins' => [
+                'legend' => [
+                    'display' => true,
+                    'position' => 'bottom',
+                    'labels' => [
+                        'usePointStyle' => true,
+                        'boxWidth' => 8,
+                        'font' => ['size' => 10]
+                    ],
+                ],
+            ],
+            'cutout' => '70%',
+        ];
     }
 }
