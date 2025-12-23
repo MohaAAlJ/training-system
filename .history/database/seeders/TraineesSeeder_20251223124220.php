@@ -26,7 +26,7 @@ class TraineesSeeder extends Seeder
         // IT
         $colIT = College::where('name', 'like', '%تكنولوجيا المعلومات%')->first();
         $majorDev = Major::where('name', 'like', '%برمجيات%')->first() ?? Major::first();
-
+        
         // الصيدلة
         $colPharma = College::where('name', 'like', '%الصيدلة%')->first();
         $majorPharma = Major::where('name', 'like', '%الصيدلة%')->first();
