@@ -92,12 +92,12 @@ class ApplicationsResource extends Resource
             return $query->where('section_id', $user->sections?->id);
         }
 
+        if ($user->isHOA()) {
+            return $query->where('administrative_id', $user->administrative?->id);
+        }
+
         if ($user->isDepartment()) {
-            $query->where('department_id', $user->department?->id)
-                ->whereIn('status', [
-                    \App\Helpers\Constans::STATUS_STRATED_TRAINING,
-                    \App\Helpers\Constans::STATUS_ENDED_TRAINING
-                ]);
+            $query->where('department_id', $user->department?->id);
 
             if ($user->department?->is_medical === true) {
                 $query->whereHas('department', function ($q) {

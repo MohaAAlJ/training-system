@@ -182,7 +182,7 @@ class ApplicationsTable
                     ->label('بدء التدريب')
                     ->color('success')
                     ->icon('heroicon-o-play')
-                    ->visible(fn($record) => Auth::user()->isGeneralTrainingManager() && $record->status == Constans::STATUS_CONFIRMATION)
+                    ->visible(fn($record) => Auth::user()->isGeneralTrainingManager() && $record->status == Constans::STATUS_WAITING_LIST)
                     ->form([
                         DatePicker::make('start_date')
                             ->label('تاريخ البدء')

@@ -30,11 +30,7 @@ class ApplicationsPolicy
         }
 
         if ($user->isDepartment()) {
-            return $Applications->department_id === $user->department?->id &&
-                in_array((int)$Applications->status, [
-                    \App\Helpers\Constans::STATUS_STRATED_TRAINING,
-                    \App\Helpers\Constans::STATUS_ENDED_TRAINING
-                ]);
+            return $Applications->department->department_id === $user->department?->department_id;
         }
 
         if ($user->isMinistry()) {
@@ -52,12 +48,21 @@ class ApplicationsPolicy
 
     public function update(User $user, Applications $Applications): bool
     {
-        if ($user->isAdmin() || $user->isGeneralTrainingManager()) {
+        if ($user->isAdmin()) {
             return true;
         }
 
         if ($user->isSectionHead()) {
             return $Applications->section_id === $user->Sections?->id;
+        }
+
+        if ($user->isDepartment()) {
+
+            if ($user->isGeneralTrainingManager()) {
+                return true;
+            }
+
+            return $Applications->department->administrative_id === $user->administrative?->id;
         }
 
         return false;
