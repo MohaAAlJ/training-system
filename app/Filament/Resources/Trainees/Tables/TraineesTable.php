@@ -37,8 +37,8 @@ class TraineesTable
                     ->label('تاريخ الميلاد')
                     ->date('Y-m-d')
                     ->sortable(),
-                TextColumn::make('address')
-                    ->label('العنوان')
+                TextColumn::make('street')
+                    ->label('المنطقة / الشارع')
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('institution.name')
                     ->label('المؤسسة التعليمية')

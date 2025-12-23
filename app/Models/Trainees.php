@@ -18,7 +18,6 @@ class Trainees extends Model
         'phone_number',
         'dob',
         'governorate_id',
-        'address',
         'street',
         'institution_id',
         'major_id',

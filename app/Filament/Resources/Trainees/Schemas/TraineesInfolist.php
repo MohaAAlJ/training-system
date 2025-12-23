@@ -23,8 +23,8 @@ class TraineesInfolist
                         TextEntry::make('dob')
                             ->label('تاريخ الميلاد')
                             ->date('Y-m-d'),
-                        TextEntry::make('address')
-                            ->label('العنوان'),
+                        TextEntry::make('street')
+                            ->label('المنطقة / الشارع'),
                         TextEntry::make('institution.name')
                             ->label('المؤسسة التعليمية')
                             ->formatStateUsing(fn ($state) => is_array($state) ? ($state['ar'] ?? $state['en'] ?? reset($state)) : $state),
