@@ -17,6 +17,23 @@ class DashboardStatsOverview extends BaseWidget
     protected static ?int $sort = 1;
     protected int | string | array $columnSpan = 1;
 
+    public static function canView(): bool
+    {
+        $user = Auth::user();
+        if (!$user) return false;
+
+        // Hidden from: MOH (4), College Supervisor (5)
+        // These roles currently have no stats logic in getStats()
+        return in_array($user->role, [
+            Constans::ROLE_GTM,
+            Constans::ROLE_ADMIN,
+            Constans::ROLE_HOA,
+            Constans::ROLE_HOM,
+            Constans::ROLE_DEPARTMENT,
+            Constans::ROLE_SECTION,
+        ]);
+    }
+
     protected function getStats(): array
     {
         $user = Auth::user();
