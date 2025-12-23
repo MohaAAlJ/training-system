@@ -9,6 +9,8 @@ use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Actions\ViewAction;
+use Illuminate\Support\Facades\Lang;
 use Carbon\Carbon;
 
 class StudentsFinishingSoonWidget extends BaseWidget
@@ -86,9 +88,8 @@ class StudentsFinishingSoonWidget extends BaseWidget
                     ->color(fn ($state) => $state === 'ينتهي اليوم' ? 'danger' : 'warning'),
             ])
             ->actions([
-                Tables\Actions\Action::make('view')
+                ViewAction::make()
                     ->label('عرض')
-                    ->icon('heroicon-o-eye')
                     ->url(fn (Applications $record): string => \App\Filament\Resources\Applications\ApplicationsResource::getUrl('view', ['record' => $record])),
             ])
             ->emptyStateHeading('لا يوجد طلاب تنتهي فترة تدريبهم قريباً');
