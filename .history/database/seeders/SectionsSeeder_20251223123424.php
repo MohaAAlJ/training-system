@@ -34,7 +34,7 @@ class SectionsSeeder extends Seeder
         $govKhanYunis = Governorate::where('name', 'like', '%خانيونس%')->first(); // للأمل
         $govDeir = Governorate::where('name', 'like', '%دير البلح%')->first();   // للدير
         // قيمة افتراضية (1) في حال لم يتم العثور على المحافظة
-        $khanYunisId = $govKhanYunis ? $govKhanYunis->id : 3;
+        $khanYunisId = $govKhanYunis ? $govKhanYunis->id : 3; 
         $deirId = $govDeir ? $govDeir->id : 5;
 
         if (!$amalHospital || !$deirCenter || !$amalCity) return;
@@ -44,25 +44,25 @@ class SectionsSeeder extends Seeder
             // --- أقسام مستشفى الأمل (خانيونس) ---
             [
                 'name' => 'صيدلية الأمل',
-                'admin_id' => $amalHospital->id,
+                'admin_id' => $amalHospital->id, 
                 'dept_id' => $deptPharmacy->id,
-                'email' => 'hos_pharma_amal@system.com',
+                'email' => 'hos_pharma_amal@system.com', 
                 'user_name' => 'رئيس صيدلية الأمل',
                 'gov_id' => $khanYunisId // محافظة خانيونس
             ],
             [
                 'name' => 'الشبكات والدعم الفني',
-                'admin_id' => $amalHospital->id,
+                'admin_id' => $amalHospital->id, 
                 'dept_id' => $deptIT->id,
-                'email' => 'hos_it_amal@system.com',
+                'email' => 'hos_it_amal@system.com', 
                 'user_name' => 'رئيس IT الأمل',
                 'gov_id' => $khanYunisId
             ],
             [
                 'name' => 'مختبر المستشفى',
-                'admin_id' => $amalHospital->id,
+                'admin_id' => $amalHospital->id, 
                 'dept_id' => $deptLabs->id,
-                'email' => 'hos_lab_amal@system.com',
+                'email' => 'hos_lab_amal@system.com', 
                 'user_name' => 'رئيس مختبر الأمل',
                 'gov_id' => $khanYunisId
             ],
@@ -70,17 +70,17 @@ class SectionsSeeder extends Seeder
             // --- أقسام مركز الدير (دير البلح) ---
             [
                 'name' => 'صيدلية دير البلح',
-                'admin_id' => $deirCenter->id,
+                'admin_id' => $deirCenter->id, 
                 'dept_id' => $deptPharmacy->id,
-                'email' => 'hos_pharma_deir@system.com',
+                'email' => 'hos_pharma_deir@system.com', 
                 'user_name' => 'رئيس صيدلية الدير',
                 'gov_id' => $deirId // محافظة دير البلح
             ],
             [
                 'name' => 'برمجيات (دير)',
-                'admin_id' => $deirCenter->id,
+                'admin_id' => $deirCenter->id, 
                 'dept_id' => $deptIT->id,
-                'email' => 'hos_it_deir@system.com',
+                'email' => 'hos_it_deir@system.com', 
                 'user_name' => 'رئيس برمجيات الدير',
                 'gov_id' => $deirId
             ],
@@ -88,9 +88,9 @@ class SectionsSeeder extends Seeder
             // --- أقسام مدينة الأمل (خانيونس) ---
             [
                 'name' => 'قسم الإعلام',
-                'admin_id' => $amalCity->id,
+                'admin_id' => $amalCity->id, 
                 'dept_id' => $deptMedia->id,
-                'email' => 'hos_media@system.com',
+                'email' => 'hos_media@system.com', 
                 'user_name' => 'رئيس قسم الإعلام',
                 'gov_id' => $khanYunisId
             ],
