@@ -16,8 +16,16 @@ class TraineesForm
                 TextInput::make('national_id')
                     ->label('رقم الهوية')
                     ->required()
-                    ->maxLength(255)
-                    ->unique(ignoreRecord: true),
+                    ->maxLength(9)
+                    ->minLength(9)
+                    ->regex('/^\d+$/')
+                    ->unique(ignoreRecord: true)
+                    ->validationMessages([
+                        'unique' => 'رقم الهوية هذا مسجل مسبقاً في النظام.',
+                        'regex' => 'يجب أن يتكون رقم الهوية من 9 أرقام فقط.',
+                        'minLength' => 'يجب أن يتكون رقم الهوية من 9 أرقام.',
+                        'maxLength' => 'يجب أن يتكون رقم الهوية من 9 أرقام.',
+                    ]),
                 TextInput::make('full_name')
                     ->label('الاسم الكامل')
                     ->required()
