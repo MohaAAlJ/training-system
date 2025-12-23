@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Lang;
 
 class GTMRecentApplications extends BaseWidget
 {
-    protected static ?int $sort = 0;
+    protected static ?int $sort = 4;
     protected int | string | array $columnSpan = 'full';
 
     protected static ?string $heading = 'تحتاج إجراءات';
@@ -41,17 +41,24 @@ class GTMRecentApplications extends BaseWidget
             )
             ->columns([
                 Tables\Columns\TextColumn::make('trainee.full_name')
-                    ->label('اسم المتدرب'),
+                    ->label('اسم المتدرب')
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('administrative.title')
                     ->label('مكان التدريب'),
                 Tables\Columns\TextColumn::make('department.title')
-                    ->label('التخصص'),
+                    ->label('الدائرة'),
+                Tables\Columns\TextColumn::make('section.name_location')
+                    ->label('القسم'),
+                Tables\Columns\TextColumn::make('training_type')
+                    ->label('نوع التدريب')
+                    ->formatStateUsing(fn ($state) => Constans::TRAINING_TYPES[$state] ?? 'غير محدد'),
                 Tables\Columns\TextColumn::make('status')
                     ->label('الحالة')
                     ->formatStateUsing(fn($state) => Lang::get('translation.status.' . $state, [], 'ar'))
                     ->badge()
                     ->color(fn(string $state): string => match ((int)$state) {
                         Constans::STATUS_NEW => 'warning',
+                        Constans::STATUS_WAITING_LIST => 'primary',
                         Constans::STATUS_STRATED_TRAINING => 'success',
                         Constans::STATUS_REJECTED => 'danger',
                         default => 'gray',
@@ -59,7 +66,7 @@ class GTMRecentApplications extends BaseWidget
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('تاريخ التقديم')
                     ->dateTime()
-                    ->since(),
+                    ->sortable(),
             ])
             ->actions([
                 ViewAction::make(),
