@@ -16,32 +16,32 @@ class DepartmentsSeeder extends Seeder
 
         $departments = [
             [
-                'title' => 'الصيدلة',
-                'is_medical' => true,
+                'title' => 'الصيدلة', 
+                'is_medical' => true, 
                 'hod_email' => 'hod_pharma@system.com',
                 'hod_name' => 'د. مدير الصيدلة'
             ],
             [
-                'title' => 'تكنولوجيا المعلومات',
-                'is_medical' => false,
+                'title' => 'تكنولوجيا المعلومات', 
+                'is_medical' => false, 
                 'hod_email' => 'hod_it@system.com',
                 'hod_name' => 'م. مدير الـ IT'
             ],
             [
-                'title' => 'الإعلام',
-                'is_medical' => false,
+                'title' => 'الإعلام', 
+                'is_medical' => false, 
                 'hod_email' => 'hod_media@system.com',
                 'hod_name' => 'أ. مدير الإعلام'
             ],
             [
-                'title' => 'المختبرات',
-                'is_medical' => true,
+                'title' => 'المختبرات', 
+                'is_medical' => true, 
                 'hod_email' => null, // بدون مدير حسب الصورة
                 'hod_name' => null
             ],
             [
-                'title' => 'الإدارة العامة',
-                'is_medical' => false,
+                'title' => 'الإدارة العامة', 
+                'is_medical' => false, 
                 'hod_email' => 'hod_admin@system.com',
                 'hod_name' => 'أ. مدير الإدارة العامة'
             ],

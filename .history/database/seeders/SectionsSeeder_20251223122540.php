@@ -33,49 +33,37 @@ class SectionsSeeder extends Seeder
             // مستشفى الأمل
             [
                 'name' => 'صيدلية الأمل',
-                'admin_id' => $amalHospital->id,
-                'dept_id' => $deptPharmacy->id,
-                'email' => 'hos_pharma_amal@system.com',
-                'user_name' => 'رئيس صيدلية الأمل'
+                'admin_id' => $amalHospital->id, 'dept_id' => $deptPharmacy->id,
+                'email' => 'hos_pharma_amal@system.com', 'user_name' => 'رئيس صيدلية الأمل'
             ],
             [
                 'name' => 'الشبكات والدعم الفني',
-                'admin_id' => $amalHospital->id,
-                'dept_id' => $deptIT->id,
-                'email' => 'hos_it_amal@system.com',
-                'user_name' => 'رئيس IT الأمل'
+                'admin_id' => $amalHospital->id, 'dept_id' => $deptIT->id,
+                'email' => 'hos_it_amal@system.com', 'user_name' => 'رئيس IT الأمل'
             ],
             [
                 'name' => 'مختبر المستشفى',
-                'admin_id' => $amalHospital->id,
-                'dept_id' => $deptLabs->id,
-                'email' => 'hos_lab_amal@system.com',
-                'user_name' => 'رئيس مختبر الأمل'
+                'admin_id' => $amalHospital->id, 'dept_id' => $deptLabs->id,
+                'email' => 'hos_lab_amal@system.com', 'user_name' => 'رئيس مختبر الأمل'
             ],
 
             // مركز الدير
             [
                 'name' => 'صيدلية دير البلح',
-                'admin_id' => $deirCenter->id,
-                'dept_id' => $deptPharmacy->id,
-                'email' => 'hos_pharma_deir@system.com',
-                'user_name' => 'رئيس صيدلية الدير'
+                'admin_id' => $deirCenter->id, 'dept_id' => $deptPharmacy->id,
+                'email' => 'hos_pharma_deir@system.com', 'user_name' => 'رئيس صيدلية الدير'
             ],
             [
                 'name' => 'برمجيات (دير)',
-                'admin_id' => $deirCenter->id,
-                'dept_id' => $deptIT->id,
-                'email' => 'hos_it_deir@system.com',
-                'user_name' => 'رئيس برمجيات الدير'
+                'admin_id' => $deirCenter->id, 'dept_id' => $deptIT->id,
+                'email' => 'hos_it_deir@system.com', 'user_name' => 'رئيس برمجيات الدير'
             ],
 
             // مدينة الأمل
             [
                 'name' => 'قسم الإعلام',
-                'admin_id' => $amalCity->id,
-                'dept_id' => $deptMedia->id,
-                'email' => 'hos_media@system.com',
-                'user_name' => 'رئيس قسم الإعلام'
+                'admin_id' => $amalCity->id, 'dept_id' => $deptMedia->id,
+                'email' => 'hos_media@system.com', 'user_name' => 'رئيس قسم الإعلام'
             ],
         ];
 
