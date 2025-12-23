@@ -30,4 +30,4 @@ class DatabaseSeeder extends Seeder
         // 6. الطلبات (تعتمد على المتدربين والأقسام)
         $this->call(ApplicationsSeeder::class);
     }
-}
+}C
