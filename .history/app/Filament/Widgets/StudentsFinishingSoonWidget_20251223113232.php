@@ -10,7 +10,6 @@ use Filament\Widgets\TableWidget as BaseWidget;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Builder;
 use Carbon\Carbon;
-use Filament\Actions\Action;
 
 class StudentsFinishingSoonWidget extends BaseWidget
 {
@@ -87,7 +86,7 @@ class StudentsFinishingSoonWidget extends BaseWidget
                     ->color(fn ($state) => $state === 'ينتهي اليوم' ? 'danger' : 'warning'),
             ])
             ->actions([
-                Action::make('view')
+                Tables\Actions\Action::make('view')
                     ->label('عرض')
                     ->icon('heroicon-o-eye')
                     ->url(fn (Applications $record): string => \App\Filament\Resources\Applications\ApplicationsResource::getUrl('view', ['record' => $record])),
