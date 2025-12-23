@@ -52,7 +52,7 @@ class ApplicationsPolicy
 
     public function update(User $user, Applications $Applications): bool
     {
-        if ($user->isAdmin() || $user->isGeneralTrainingManager()) {
+        if ($user->isAdmin()) {
             return true;
         }
 

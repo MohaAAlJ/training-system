@@ -93,11 +93,8 @@ class ApplicationsResource extends Resource
         }
 
         if ($user->isDepartment()) {
-            $query->where('department_id', $user->department?->id)
-                ->whereIn('status', [
-                    \App\Helpers\Constans::STATUS_STRATED_TRAINING,
-                    \App\Helpers\Constans::STATUS_ENDED_TRAINING
-                ]);
+
+            $query->where('department_id', $user->department?->id);
 
             if ($user->department?->is_medical === true) {
                 $query->whereHas('department', function ($q) {
