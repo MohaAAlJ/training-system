@@ -15,8 +15,8 @@ use Carbon\Carbon;
 
 class StudentsFinishingSoonWidget extends BaseWidget
 {
-    protected static ?int $sort = 3;
-    protected int | string | array $columnSpan = 'full';
+    protected static ?int $sort = 2;
+    protected int | string | array $columnSpan = 1;
 
     protected static ?string $heading = 'طلاب يقترب موعد انتهاء تدريبهم';
 

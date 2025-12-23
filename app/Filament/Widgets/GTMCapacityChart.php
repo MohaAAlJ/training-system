@@ -10,8 +10,8 @@ class GTMCapacityChart extends ChartWidget
 {
     protected static ?int $sort = 1;
     protected int | string | array $columnSpan = 1;
-    protected ?string $maxHeight = '120px';
-    protected ?string $heading = null;
+    protected ?string $maxHeight = '260px';
+    protected ?string $heading = 'توزيع السعة الاستيعابية';
 
     public static function canView(): bool
     {
