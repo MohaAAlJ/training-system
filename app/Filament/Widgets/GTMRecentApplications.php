@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Lang;
 class GTMRecentApplications extends BaseWidget
 {
     protected static ?int $sort = 2;
-    protected int | string | array $columnSpan = 'full';
+    protected int | string | array $columnSpan = 1;
 
     protected static ?string $heading = 'أحدث الطلبات المقدمة';
 

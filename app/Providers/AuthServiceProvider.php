@@ -20,12 +20,6 @@ class AuthServiceProvider extends ServiceProvider
      *
      * @var array<class-string, class-string>
      */
-    // Policies disabled temporarily. Original mappings kept commented for reference.
-    // protected $policies = [
-    //     User::class => UserPolicy::class,
-    //     \App\Models\Applications::class => UserPolicy::class,
-    // ];
-
     protected $policies = [
         User::class => UserPolicy::class,
         Applications::class => UserPolicy::class,
