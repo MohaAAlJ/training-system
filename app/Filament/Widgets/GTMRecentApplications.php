@@ -17,15 +17,18 @@ use Illuminate\Support\Facades\Lang;
 
 class GTMRecentApplications extends BaseWidget
 {
-    protected static ?int $sort = 2;
-    protected int | string | array $columnSpan = 1;
+    protected static ?int $sort = 0;
+    protected int | string | array $columnSpan = 'full';
 
-    protected static ?string $heading = 'أحدث الطلبات المقدمة';
+    protected static ?string $heading = 'تحتاج إجراءات';
 
     public static function canView(): bool
     {
-        // Visible to GTM (8) and Admin (1)
-        return in_array(Auth::user()->role, [Constans::ROLE_GTM, Constans::ROLE_ADMIN]);
+        // Visible for roles that need to take actions
+        return in_array(Auth::user()->role, [
+            Constans::ROLE_GTM,
+            Constans::ROLE_ADMIN,
+        ]);
     }
 
     public function table(Table $table): Table
@@ -33,8 +36,8 @@ class GTMRecentApplications extends BaseWidget
         return $table
             ->query(
                 Applications::query()
+                    ->whereIn('status', [Constans::STATUS_NEW, Constans::STATUS_WAITING_LIST])
                     ->latest('created_at')
-                    ->limit(5)
             )
             ->columns([
                 Tables\Columns\TextColumn::make('trainee.full_name')

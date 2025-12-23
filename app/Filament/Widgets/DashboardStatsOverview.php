@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Auth;
 class DashboardStatsOverview extends BaseWidget
 {
     protected static ?int $sort = 1;
-    protected int | string | array $columnSpan = 2;
+    protected int | string | array $columnSpan = 1;
 
     protected function getStats(): array
     {
