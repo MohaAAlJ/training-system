@@ -235,7 +235,7 @@ class ApplicationFormController extends Controller
                     }
                 },
             ],
-            'national_id' => ['required', 'digits:9'],
+            'national_id' => ['required', 'digits:9', 'unique:trainees,national_id'],
             'phone_number' => ['required', 'regex:/^97[02]5[69]\d{7}$/'],
             'governorate_id' => ['required', 'integer', 'exists:governorates,id'],
             'street' => ['required', 'string', 'max:255', 'regex:/^[\p{Arabic}A-Za-z0-9\s\-\.,#\/]+$/u'],
@@ -248,6 +248,8 @@ class ApplicationFormController extends Controller
             'section_id' => ['required', 'integer', 'exists:sections,id'],
             'training_type' => ['required', 'integer', 'in:' . implode(',', array_keys(Constans::TRAINING_TYPES))],
             'letter_file' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
+        ], [
+            'national_id.unique' => 'رقم الهوية هذا مسجل مسبقاً في النظام.',
         ]);
 
         // Convert DOB from dd/mm/yyyy to Y-m-d format for database storage

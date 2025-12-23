@@ -25,12 +25,19 @@ class UsersForm
                     ->label('البريد الإلكتروني')
                     ->email()
                     ->required()
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->unique(ignoreRecord: true)
+                    ->validationMessages([
+                        'unique' => 'البريد الإلكتروني هذا مسجل مسبقاً في النظام.',
+                    ]),
+
+
 
                 TextInput::make('password')
                     ->label('كلمة المرور')
                     ->password()
                     ->dehydrated(fn ($state) => filled($state))
+                    ->required(fn (string $context): bool => $context === 'create')
                     ->maxLength(255),
 
                 Select::make('role')
