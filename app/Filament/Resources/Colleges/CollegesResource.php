@@ -30,8 +30,8 @@ class CollegesResource extends Resource
     }
 
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::EyeSlash;
-    protected static string | BackedEnum | null $activeNavigationIcon = Heroicon::Eye; //filled icon when active
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBookOpen;
+    protected static string | BackedEnum | null $activeNavigationIcon = Heroicon::BookOpen; //filled icon when active
     // Arabic labels
 
     protected static ?string $modelLabel = 'الكليات';
