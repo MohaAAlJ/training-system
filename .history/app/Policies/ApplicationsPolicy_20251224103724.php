@@ -50,9 +50,7 @@ class ApplicationsPolicy
         }
 
         if ($user->isMedicalManager()) {
-            $adminId = \App\Models\Administrative::where('medical_head_user_id', $user->id)->value('id');
-            return $Applications->administrative_id === $adminId &&
-                $Applications->department?->is_medical === true &&
+            return $Applications->department?->is_medical === true &&
                 in_array((int)$Applications->status, [
                     Constans::STATUS_STRATED_TRAINING,
                     Constans::STATUS_ENDED_TRAINING

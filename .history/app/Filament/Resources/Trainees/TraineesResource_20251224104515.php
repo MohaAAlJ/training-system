@@ -128,13 +128,23 @@ class TraineesResource extends Resource
         }
 
         if ($user->isAdministrative()) {
-            return $query->whereHas('applications', function ($q) use ($user) {
+            $query->whereHas('applications', function ($q) use ($user) {
                 $q->where('administrative_id', $user->administrative?->id)
                     ->whereIn('status', [
                         Constans::STATUS_STRATED_TRAINING,
                         Constans::STATUS_ENDED_TRAINING
                     ]);
             });
+
+            if ($user->administrative?->is_medical === true) {
+                $query->whereHas('applications', function ($q) {
+                    $q->whereHas('department', function ($dept) {
+                        $dept->where('is_medical', true);
+                    });
+                });
+            }
+
+            return $query;
         }
 
         if ($user->isMedicalManager()) {
