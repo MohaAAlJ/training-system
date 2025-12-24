@@ -98,11 +98,10 @@ class TraineesResource extends Resource
             $collegeId = \App\Models\College::where('user_id', $user->id)->value('id');
             return $query->where('college_id', $collegeId)
                 ->whereHas('applications', function ($q) {
-                    $q->where('training_type', Constans::TRAINING_TYPE_UNIVERSITY)
-                        ->whereIn('status', [
-                            Constans::STATUS_STRATED_TRAINING,
-                            Constans::STATUS_ENDED_TRAINING
-                        ]);
+                    $q->whereIn('status', [
+                        Constans::STATUS_STRATED_TRAINING,
+                        Constans::STATUS_ENDED_TRAINING
+                    ]);
                 });
         }
 
