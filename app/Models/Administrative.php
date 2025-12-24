@@ -53,4 +53,19 @@ class Administrative extends Model
     {
         return $this->belongsTo(User::class, 'medical_head_user_id');
     }
+
+    /**
+     * Get title with governorate name (from sections)
+     */
+    public function getNameWithGovernorateAttribute(): string
+    {
+        $section = $this->sections()->with('governorate')->first();
+        $govName = $section?->governorate?->name;
+
+        if (is_array($govName)) {
+            $govName = $govName['ar'] ?? reset($govName);
+        }
+
+        return $this->title . ($govName ? " - {$govName}" : '');
+    }
 }

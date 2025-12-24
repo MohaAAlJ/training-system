@@ -295,6 +295,7 @@ class ApplicationsForm
                         Select::make('administrative_id')
                             ->label('الإدارة')
                             ->relationship('administrative', 'title')
+                            ->getOptionLabelFromRecordUsing(fn (Administrative $record) => $record->name_with_governorate)
                             ->searchable()
                             ->preload()
                             ->reactive()
