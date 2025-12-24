@@ -332,7 +332,9 @@ class ApplicationsForm
                                     $query->where('department_id', $deptId);
                                 }
 
-                                return $query->pluck('name_location', 'id');
+                                return $query->get()
+                                    ->reject(fn($sec) => $sec->isFull())
+                                    ->pluck('name_location', 'id');
                             })
                             ->searchable()
                             ->preload()

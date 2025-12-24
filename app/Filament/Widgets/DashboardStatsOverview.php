@@ -22,11 +22,7 @@ class DashboardStatsOverview extends BaseWidget
 
     public function getColumnSpan(): int | string | array
     {
-        $user = Auth::user();
-        if ($user && in_array($user->role, [Constans::ROLE_MOH, Constans::ROLE_COLLEGE])) {
-            return 1; // It will take 1 column in a multi-column grid
-        }
-        return 'full';
+        return 1;
     }
 
     public static function canView(): bool
@@ -105,20 +101,15 @@ class DashboardStatsOverview extends BaseWidget
         elseif ($role === Constans::ROLE_SECTION) {
             $section = Sections::where('user_id', $user->id)->first();
             if ($section) {
-                // Determine current usage (count active applications in this section)
-                // Assuming 'active' implies being in training (STATUS_STRATED_TRAINING = 5)
-                // Or maybe just total accepted? Using STATUS_STRATED_TRAINING for now.
-                $currentTrainees = Applications::where('section_id', $section->id)
-                    ->whereIn('status', [Constans::STATUS_STRATED_TRAINING])
-                    ->count();
+                $cap = $section->getCapacityStats();
 
-                $stats[] = Stat::make('السعة الاستيعابية', $section->total_capacity)
+                $stats[] = Stat::make('السعة الاستيعابية', $cap['total'])
                     ->description("القسم: {$section->name_location}")
                     ->icon('heroicon-o-users');
 
-                $stats[] = Stat::make('المتدربين الحاليين', $currentTrainees)
-                    ->description("الأماكن المتاحة: " . max(0, $section->total_capacity - $currentTrainees))
-                    ->color($currentTrainees >= $section->total_capacity ? 'danger' : 'success')
+                $stats[] = Stat::make('المتدربين الحاليين', $cap['used'])
+                    ->description("الأماكن المتاحة: " . $cap['available'])
+                    ->color($cap['available'] <= 0 ? 'danger' : 'success')
                     ->icon('heroicon-o-user-group');
             }
         }
@@ -126,22 +117,17 @@ class DashboardStatsOverview extends BaseWidget
         // 2. DEPARTMENT HEAD (ROLE_DEPARTMENT = 2)
         // Show capacity for each section in their department + Sum
         elseif ($role === Constans::ROLE_DEPARTMENT) {
-            $department = Departments::where('user_id', $user->id)->with('sections')->first();
+            $department = Departments::where('user_id', $user->id)->first();
 
             if ($department) {
-                $totalCapacity = $department->sections->sum('total_capacity');
+                $cap = $department->getCapacityStats();
 
-                // Get active trainees in this department
-                $currentTrainees = Applications::where('department_id', $department->id)
-                    ->where('status', Constans::STATUS_STRATED_TRAINING)
-                    ->count();
-
-                $stats[] = Stat::make('إجمالي السعة (القسم)', $totalCapacity)
+                $stats[] = Stat::make('إجمالي السعة (القسم)', $cap['total'])
                     ->description("الدائرة: {$department->title}")
                     ->icon('heroicon-o-building-office');
 
-                $stats[] = Stat::make('إجمالي المتدربين', $currentTrainees)
-                     ->description("الشاغر كلياً: " . ($totalCapacity - $currentTrainees))
+                $stats[] = Stat::make('إجمالي المتدربين', $cap['used'])
+                     ->description("الشاغر كلياً: " . $cap['available'])
                      ->color('success');
 
             }
@@ -152,50 +138,46 @@ class DashboardStatsOverview extends BaseWidget
         // Migration: Sections has 'administrative_id'.
         // HOM (7): Capacity for Health related stuff.
         elseif ($role === Constans::ROLE_HOA || $role === Constans::ROLE_HOM) {
-
-
-
-            $sectionsQuery = Sections::query();
+            $cap = ['total' => 0, 'used' => 0, 'available' => 0];
+            $adminUnitTitle = '';
+            $sectionIds = [];
 
             if ($role === Constans::ROLE_HOA) {
-                // Find the Administrative where this user is the Manager
                 $adminUnit = \App\Models\Administrative::where('user_id', $user->id)->first();
                 if ($adminUnit) {
-                    $sectionsQuery->where('administrative_id', $adminUnit->id);
-                    // $stats[] = Stat::make('الوحدة الإدارية', $adminUnit->title)->color('primary');
+                    $cap = $adminUnit->getCapacityStats();
+                    $adminUnitTitle = "الوحدة الإدارية: {$adminUnit->title}";
+                    $sectionIds = $adminUnit->sections->pluck('id');
                 }
             } elseif ($role === Constans::ROLE_HOM) {
-                // Find Administrative where this user is Medical Head
                 $adminUnit = \App\Models\Administrative::where('medical_head_user_id', $user->id)->first();
-                 if ($adminUnit) {
-                    // Filter for Medical Departments only within this Admin?
-                    // "show capacity for health and applications for health related stuff"
-                    // Depts have `is_medical`.
-                    $sectionsQuery->where('administrative_id', $adminUnit->id)
-                                  ->whereHas('department', fn($q) => $q->where('is_medical', true));
+                if ($adminUnit) {
+                    // Logic to get ONLY medical section stats
+                    $sections = Sections::where('administrative_id', $adminUnit->id)
+                        ->whereHas('department', fn($q) => $q->where('is_medical', true))
+                        ->get();
 
-                    // $stats[] = Stat::make('الإدارة الطبية', $adminUnit->title)->color('danger');
+                    foreach($sections as $s) {
+                        $sCap = $s->getCapacityStats();
+                        $cap['total'] += $sCap['total'];
+                        $cap['used'] += $sCap['used'];
+                        $cap['available'] += $sCap['available'];
+                    }
+                    $adminUnitTitle = "الإدارة الطبية: {$adminUnit->title}";
+                    $sectionIds = $sections->pluck('id');
                 }
             }
-
-            // Calculate Aggregates
-            $sections = $sectionsQuery->get();
-            $totalCapacity = $sections->sum('total_capacity');
-            $sectionIds = $sections->pluck('id');
-
-            $currentTrainees = Applications::whereIn('section_id', $sectionIds)
-                ->where('status', Constans::STATUS_STRATED_TRAINING)
-                ->count();
 
             $pendingApps = Applications::whereIn('section_id', $sectionIds)
                 ->where('status', Constans::STATUS_NEW)
                 ->count();
 
-            $stats[] = Stat::make('إجمالي السعة الاستيعابية', $totalCapacity)
+            $stats[] = Stat::make('إجمالي السعة الاستيعابية', $cap['total'])
+                ->description($adminUnitTitle)
                 ->icon('heroicon-o-chart-bar');
 
-            $stats[] = Stat::make('المتدربين النشطين', $currentTrainees)
-                ->description("الشاغر: " . ($totalCapacity - $currentTrainees))
+            $stats[] = Stat::make('المتدربين النشطين', $cap['used'])
+                ->description("الشاغر: " . $cap['available'])
                 ->color('success');
 
             $stats[] = Stat::make('طلبات قيد الانتظار', $pendingApps)
