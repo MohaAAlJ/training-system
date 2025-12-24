@@ -104,98 +104,6 @@ class Applications extends Model
             $gtmUsers = User::where('role', Constans::ROLE_GTM)->get();
             $recipients = $recipients->merge($gtmUsers);
 
-            // Get related entities
-            $section = $application->section;
-            $department = $application->department;
-            $administrative = $application->administrative;
-
-            // ============================================================
-            // ROLE_SECTION (3): Gets notified when application is for THEIR section
-            // ============================================================
-            if ($section && $section->user_id) {
-                $sectionHead = $section->user;
-                if ($sectionHead && $sectionHead->role === Constans::ROLE_SECTION) {
-                    $recipients->push($sectionHead);
-                }
-            }
-
-            // ============================================================
-            // ROLE_DEPARTMENT (2): Gets notified when application is for THEIR department
-            // ============================================================
-            if ($department) {
-                // Check head_of_department relationship
-                $deptHead = $department->headOfDepartment;
-                if ($deptHead && $deptHead->id && $deptHead->role === Constans::ROLE_DEPARTMENT) {
-                    $recipients->push($deptHead);
-                }
-
-                // Also check user_id on department (some departments use this)
-                if ($department->user_id) {
-                    $deptUser = $department->user;
-                    if ($deptUser && $deptUser->role === Constans::ROLE_DEPARTMENT) {
-                        $recipients->push($deptUser);
-                    }
-                }
-            }
-
-            // ============================================================
-            // ROLE_HOA (6): Gets notified for anything in THEIR administrative
-            // ============================================================
-            if ($administrative && $administrative->user_id) {
-                $hoaUser = $administrative->user;
-                if ($hoaUser && $hoaUser->role === Constans::ROLE_HOA) {
-                    $recipients->push($hoaUser);
-                }
-            }
-
-            // Also get all HOA users who are linked to the administrative via the section
-            if ($section && $section->administrative_id) {
-                $sectionAdmin = $section->administrative;
-                if ($sectionAdmin && $sectionAdmin->user_id) {
-                    $hoaUser = $sectionAdmin->user;
-                    if ($hoaUser && $hoaUser->role === Constans::ROLE_HOA) {
-                        $recipients->push($hoaUser);
-                    }
-                }
-            }
-
-            // ============================================================
-            // ROLE_HOM (7): Gets notified when anything in MEDICAL department gets added
-            // ============================================================
-            $isMedical = false;
-
-            // Check if department is medical
-            if ($department && $department->is_medical) {
-                $isMedical = true;
-            }
-
-            // Check if administrative is medical
-            if ($administrative && $administrative->is_medical) {
-                $isMedical = true;
-            }
-
-            if ($isMedical) {
-                // Notify all HOM users
-                $homUsers = User::where('role', Constans::ROLE_HOM)->get();
-                $recipients = $recipients->merge($homUsers);
-
-                // Also notify the specific medical head if set on administrative
-                if ($administrative && $administrative->medical_head_user_id) {
-                    $medicalHead = $administrative->medicalHead;
-                    if ($medicalHead) {
-                        $recipients->push($medicalHead);
-                    }
-                }
-
-                // Notify medical head on department if set
-                if ($department && $department->medical_head_user_id) {
-                    $deptMedicalHead = $department->medicalHead;
-                    if ($deptMedicalHead) {
-                        $recipients->push($deptMedicalHead);
-                    }
-                }
-            }
-
             // ============================================================
             // Deduplicate and filter valid users
             // ============================================================
@@ -224,17 +132,16 @@ class Applications extends Model
             // Check if status changed
             if ($application->isDirty('status')) {
                 $newStatus = (int) $application->status;
-                $originalStatus = (int) $application->getOriginal('status');
 
                 // Notification to send
                 $notificationToSend = null;
 
-                // 4 -> 5 : Waiting List -> Started Training
-                if ($originalStatus === Constans::STATUS_WAITING_LIST && $newStatus === Constans::STATUS_STRATED_TRAINING) {
+                // Status 5 : Started Training
+                if ($newStatus === Constans::STATUS_STRATED_TRAINING) {
                     $notificationToSend = new \App\Notifications\TraineeStartedNotification($application);
                 }
-                // 5 -> 6 : Started Training -> Ended Training
-                elseif ($originalStatus === Constans::STATUS_STRATED_TRAINING && $newStatus === Constans::STATUS_ENDED_TRAINING) {
+                // Status 6 : Ended Training
+                elseif ($newStatus === Constans::STATUS_ENDED_TRAINING) {
                     $notificationToSend = new \App\Notifications\TraineeFinishedNotification($application);
                 }
 
