@@ -24,10 +24,15 @@ class GTMRecentApplications extends BaseWidget
 
     public static function canView(): bool
     {
-        // Visible for roles that need to take actions
-        return in_array(Auth::user()->role, [
+        $user = Auth::user();
+        if (!$user) return false;
+
+        // Visible for: GTM, Admin, College Supervisor, and MOH
+        return in_array($user->role, [
             Constans::ROLE_GTM,
             Constans::ROLE_ADMIN,
+            Constans::ROLE_COLLEGE,
+            Constans::ROLE_MOH,
         ]);
     }
 
@@ -36,12 +41,40 @@ class GTMRecentApplications extends BaseWidget
         return $table
             ->query(
                 Applications::query()
-                    ->whereIn('status', [Constans::STATUS_NEW, Constans::STATUS_WAITING_LIST])
+                    ->whereIn('status', [
+                        Constans::STATUS_NEW,
+                        Constans::STATUS_INITIAL_APPROVE,
+                        Constans::STATUS_CONFIRMATION,
+                        Constans::STATUS_WAITING_LIST
+                    ])
                     ->latest('created_at')
             )
+            ->modifyQueryUsing(function ($query) {
+                $user = Auth::user();
+
+                if ($user->isAdmin() || $user->isGeneralTrainingManager()) {
+                    return $query;
+                }
+
+                if ($user->isCollegeSupervisor()) {
+                    $collegeId = $user->college?->id;
+                    return $query->whereHas('trainee', function ($q) use ($collegeId) {
+                        $q->where('college_id', $collegeId);
+                    });
+                }
+
+                if ($user->isMinistry()) {
+                    return $query->where('training_type', Constans::TRAINING_TYPE_PRACTICE);
+                }
+
+                return $query;
+            })
             ->columns([
                 Tables\Columns\TextColumn::make('trainee.full_name')
                     ->label('اسم المتدرب')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('trainee.national_id')
+                    ->label('رقم الهوية')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('administrative.title')
                     ->label('مكان التدريب'),
@@ -58,7 +91,9 @@ class GTMRecentApplications extends BaseWidget
                     ->badge()
                     ->color(fn(string $state): string => match ((int)$state) {
                         Constans::STATUS_NEW => 'warning',
-                        Constans::STATUS_WAITING_LIST => 'primary',
+                        Constans::STATUS_INITIAL_APPROVE => 'info',
+                        Constans::STATUS_CONFIRMATION => 'primary',
+                        Constans::STATUS_WAITING_LIST => 'success',
                         Constans::STATUS_STRATED_TRAINING => 'success',
                         Constans::STATUS_REJECTED => 'danger',
                         default => 'gray',
@@ -72,17 +107,42 @@ class GTMRecentApplications extends BaseWidget
                 ViewAction::make(),
                 Action::make('initial_approve')
                     ->label('موافقة مبدئية')
-                    ->color('success')
+                    ->color('info')
                     ->icon('heroicon-o-check-circle')
-                    ->visible(fn($record) => Auth::user()->isGeneralTrainingManager() && $record->status == Constans::STATUS_NEW)
+                    ->visible(fn($record) => (Auth::user()->isGeneralTrainingManager() || Auth::user()->isAdmin()) && (int)$record->status === Constans::STATUS_NEW)
                     ->requiresConfirmation()
                     ->action(fn($record) => $record->update(['status' => Constans::STATUS_INITIAL_APPROVE])),
+
+                Action::make('confirm')
+                    ->label('تأكيد')
+                    ->color('success')
+                    ->icon('heroicon-o-check-badge')
+                    ->visible(fn($record) =>
+                        (int)$record->status === Constans::STATUS_INITIAL_APPROVE &&
+                        (Auth::user()->isAdmin() || Auth::user()->isCollegeSupervisor() || Auth::user()->isMinistry())
+                    )
+                    ->requiresConfirmation()
+                    ->action(fn($record) => $record->update([
+                        'status' => Constans::STATUS_CONFIRMATION,
+                        'accepted_at' => now(),
+                    ])),
+
+                Action::make('final_approve')
+                    ->label('اعتماد نهائي')
+                    ->color('success')
+                    ->icon('heroicon-o-check-circle')
+                    ->visible(fn($record) =>
+                        (Auth::user()->isGeneralTrainingManager() || Auth::user()->isAdmin()) &&
+                        (int)$record->status === Constans::STATUS_CONFIRMATION
+                    )
+                    ->requiresConfirmation()
+                    ->action(fn($record) => $record->update(['status' => Constans::STATUS_WAITING_LIST])),
 
                 Action::make('start_training')
                     ->label('بدء التدريب')
                     ->color('success')
                     ->icon('heroicon-o-play')
-                    ->visible(fn($record) => Auth::user()->isGeneralTrainingManager() && $record->status == Constans::STATUS_WAITING_LIST)
+                    ->visible(fn($record) => (Auth::user()->isGeneralTrainingManager() || Auth::user()->isAdmin()) && (int)$record->status === Constans::STATUS_WAITING_LIST)
                     ->form([
                         DatePicker::make('start_date')
                             ->label('تاريخ البدء')
@@ -111,6 +171,7 @@ class GTMRecentApplications extends BaseWidget
                     ->label('رفض')
                     ->modalHeading('رفض الطلب')
                     ->modalDescription('هل أنت متأكد من رفض هذا الطلب؟ سيتم نقله إلى قائمة المرفوضات.')
+                    ->visible(fn() => Auth::user()->isAdmin() || Auth::user()->isGeneralTrainingManager())
                     ->action(function ($record) {
                         $record->update(['status' => Constans::STATUS_REJECTED]);
                         $record->delete();
