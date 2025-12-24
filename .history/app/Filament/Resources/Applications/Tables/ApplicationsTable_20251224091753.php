@@ -195,56 +195,55 @@ class ApplicationsTable
                     ->label('موافقة مبدئية')
                     ->color('success')
                     ->icon('heroicon-o-check-circle')
-                    ->visible(fn($record) => Auth::user()->isGeneralTrainingManager() && $record->status == Constans::STATUS_NEW)
+                    ->visible(fn($record) => (Auth::user()->isAdmin() || Auth::user()->isGeneralTrainingManager()) && $record->status == Constans::STATUS_NEW)
                     ->requiresConfirmation()
                     ->action(fn($record) => $record->update(['status' => Constans::STATUS_INITIAL_APPROVE])),
 
+                Action::make('update_status_conf')
+                    ->label('تحديث الحالة')
+                    ->color('info')
+                    ->icon('heroicon-o-arrow-path')
+                    ->visible(fn($record) => Auth::user()->isAdmin() && $record->status == Constans::STATUS_CONFIRMATION)
+                    ->form([
+                        \Filament\Forms\Components\Select::make('status')
+                            ->label('الحالة الجديدة')
+                            ->options([
+                                Constans::STATUS_WAITING_LIST => \Illuminate\Support\Facades\Lang::get('translation.status.' . Constans::STATUS_WAITING_LIST, [], 'ar'),
+                                Constans::STATUS_STRATED_TRAINING => \Illuminate\Support\Facades\Lang::get('translation.status.' . Constans::STATUS_STRATED_TRAINING, [], 'ar'),
+                            ])
+                            ->required(),
+                    ])
+                    ->action(function ($record, array $data) {
+                        $record->update(['status' => $data['status']]);
+                    }),
+
                 Action::make('start_training')
-                    ->label('معالجة التأكيد')
+                    ->label('بدء التدريب')
                     ->color('success')
                     ->icon('heroicon-o-play')
                     ->visible(fn($record) => Auth::user()->isGeneralTrainingManager() && $record->status == Constans::STATUS_CONFIRMATION)
                     ->form([
-                        \Filament\Forms\Components\Select::make('new_status')
-                            ->label('الحالة الجديدة')
-                            ->options([
-                                Constans::STATUS_WAITING_LIST => 'قائمة الانتظار',
-                                Constans::STATUS_STRATED_TRAINING => 'بدء التدريب',
-                            ])
-                            ->required()
-                            ->reactive()
-                            ->default(Constans::STATUS_STRATED_TRAINING),
                         DatePicker::make('start_date')
                             ->label('تاريخ البدء')
                             ->required()
-                            ->default(now())
-                            ->visible(fn($get) => (int)$get('new_status') === Constans::STATUS_STRATED_TRAINING),
+                            ->default(now()),
                         TextInput::make('duration')
                             ->label('المدة (يوم)')
                             ->numeric()
                             ->required()
-                            ->default(45)
-                            ->visible(fn($get) => (int)$get('new_status') === Constans::STATUS_STRATED_TRAINING),
+                            ->default(30),
                     ])
                     ->action(function ($record, array $data) {
-                        $newStatus = (int)$data['new_status'];
+                        $startDate = \Carbon\Carbon::parse($data['start_date']);
+                        $duration = (int)$data['duration'];
+                        $endDate = $startDate->copy()->addDays($duration);
 
-                        if ($newStatus === Constans::STATUS_STRATED_TRAINING) {
-                            $startDate = \Carbon\Carbon::parse($data['start_date']);
-                            $duration = (int)$data['duration'];
-                            $endDate = $startDate->copy()->addDays($duration);
-
-                            $record->update([
-                                'status' => Constans::STATUS_STRATED_TRAINING,
-                                'start_date' => $startDate,
-                                'duration' => $duration,
-                                'end_date' => $endDate,
-                            ]);
-                        } else {
-                            $record->update([
-                                'status' => Constans::STATUS_WAITING_LIST,
-                            ]);
-                        }
+                        $record->update([
+                            'status' => Constans::STATUS_STRATED_TRAINING,
+                            'start_date' => $startDate,
+                            'duration' => $duration,
+                            'end_date' => $endDate,
+                        ]);
                     }),
 
                 DeleteAction::make()
