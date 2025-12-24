@@ -43,6 +43,14 @@ class Administrative extends Model
         return $this->hasMany(Sections::class, 'administrative_id');
     }
 
+    /**
+     * Get all applications for this administrative unit.
+     */
+    public function applications()
+    {
+        return $this->hasMany(Applications::class, 'administrative_id');
+    }
+
 
 
     /**
