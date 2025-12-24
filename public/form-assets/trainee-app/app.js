@@ -15,6 +15,10 @@ const endpoints = {
             deptId ?? ""
         }&administrative_id=${adminId ?? ""}`,
     submit: "/WelcomeForm/Form",
+    checkNationalId: (nationalId) =>
+        `/WelcomeForm/Form/api/check-national-id?national_id=${
+            nationalId ?? ""
+        }`,
 };
 
 // بيانات بديلة مؤقتة (أزلها عند توفر الـ API)
@@ -37,6 +41,7 @@ const dobDay = document.getElementById("dob_day");
 const dobMonth = document.getElementById("dob_month");
 const dobYear = document.getElementById("dob_year");
 const fullNameInput = document.getElementById("full_name");
+const nationalIdInput = document.getElementById("national_id");
 
 const getCsrfToken = () => {
     // First try meta tag (Laravel blade)
@@ -221,6 +226,33 @@ if (fullNameInput) {
     fullNameInput.addEventListener("input", handleNameInput);
 }
 
+// Check national ID uniqueness in real-time
+if (nationalIdInput) {
+    nationalIdInput.addEventListener("blur", async (e) => {
+        const nationalId = e.target.value;
+        if (nationalId.length === 9) {
+            try {
+                const res = await fetch(endpoints.checkNationalId(nationalId));
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.exists) {
+                        showToast(data.message, "error");
+                        setMessage(data.message, "error");
+                        nationalIdInput.classList.add("invalid");
+                    } else {
+                        nationalIdInput.classList.remove("invalid");
+                        if (message.textContent === data.message) {
+                            setMessage("");
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error("Error checking national ID", err);
+            }
+        }
+    });
+}
+
 // File preview handler
 const letterFileInput = document.getElementById("letter_file");
 const filePreview = document.getElementById("file_preview");
@@ -314,8 +346,20 @@ form.addEventListener("submit", async (e) => {
         });
 
         if (!res.ok) {
-            const bodyText = await res.text();
-            console.error("Submission failed", res.status, bodyText);
+            const body = await res.json();
+            if (res.status === 422 && body.errors) {
+                // Handle validation errors specifically
+                if (body.errors.national_id) {
+                    showToast(body.errors.national_id[0], "error");
+                    setMessage(body.errors.national_id[0], "error");
+                } else {
+                    const firstError = Object.values(body.errors)[0][0];
+                    showToast(firstError, "error");
+                    setMessage(firstError, "error");
+                }
+                return; // Stop execution
+            }
+            console.error("Submission failed", res.status, body);
             throw new Error("Submission failed");
         }
 

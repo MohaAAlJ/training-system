@@ -4,6 +4,7 @@ namespace App\Filament\Widgets;
 
 use App\Helpers\Constans;
 use App\Models\Sections;
+use App\Models\Administrative;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
@@ -52,20 +53,23 @@ class CapacityOverviewWidget extends BaseWidget
                 }
 
                 if ($user->isMedicalManager()) { // ROLE_HOM (7)
-                    // Sections in Medical Departments
-                    return $query->whereHas('department', function ($q) {
-                        $q->where('is_medical', true);
-                    });
+                    // Medical Manager should see ONLY medical departments WITHIN their administrative unit
+                    $adminUnit = Administrative::where('medical_head_user_id', $user->id)->first();
+                    if ($adminUnit) {
+                        return $query->where('administrative_id', $adminUnit->id)
+                            ->whereHas('department', function ($q) {
+                                $q->where('is_medical', true);
+                            });
+                    }
+                    return $query->whereRaw('0 = 1');
                 }
 
                 if ($user->isHOA()) { // ROLE_HOA (6)
-                    // Sections in their Administrative
-                    // Assuming user has administrative relationship
-                    // Or checking logical link (User -> Administrative -> Sections)
-                    if ($user->administrative) {
-                        return $query->where('administrative_id', $user->administrative->id);
+                    // HOA should see ALL departments/sections WITHIN their administrative unit
+                    $adminUnit = Administrative::where('user_id', $user->id)->first();
+                    if ($adminUnit) {
+                        return $query->where('administrative_id', $adminUnit->id);
                     }
-                    // Fallback or safety if no administrative assigned
                     return $query->whereRaw('0 = 1');
                 }
 
