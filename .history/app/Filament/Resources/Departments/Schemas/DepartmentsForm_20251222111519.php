@@ -42,9 +42,8 @@ class DepartmentsForm
                         Select::make('user_id')
                             ->label('رئيس الدائرة')
                             ->helperText('اختر رئيس الدائرة (اختياري)')
-                            ->relationship('user', 'name', function ($query, $get) {
-                                return $query->where('role', \App\Helpers\Constans::ROLE_DEPARTMENT)
-                                    ->free($get('user_id'));
+                            ->relationship('user', 'name', function ($query) {
+                                return $query->where('role', \App\Helpers\Constans::ROLE_DEPARTMENT);
                             })
                             ->searchable()
                             ->preload()
