@@ -37,6 +37,8 @@ class ApplicationsTable
                     ->searchable(),
                 TextColumn::make('trainee.institution.name')
                     ->label('المؤسسة')
+                    ->searchable(!Auth::user()->isCollegeSupervisor())
+                    ->sortable(!Auth::user()->isCollegeSupervisor())
                     ->toggleable(isToggledHiddenByDefault: false)
                     ->visible(fn() => Auth::check() && (
                         Auth::user()->isAdmin() ||
@@ -47,6 +49,8 @@ class ApplicationsTable
                     )),
                 TextColumn::make('trainee.major.name')
                     ->label('التخصص')
+                    ->searchable()
+                    ->sortable()
                     ->toggleable(isToggledHiddenByDefault: false)
                     ->visible(fn() => Auth::check() && (
                         Auth::user()->isAdmin() ||
