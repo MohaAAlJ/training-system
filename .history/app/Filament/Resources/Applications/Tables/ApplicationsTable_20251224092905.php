@@ -43,7 +43,8 @@ class ApplicationsTable
                         Auth::user()->isDepartment() ||
                         Auth::user()->isHOA() ||
                         Auth::user()->isGeneralTrainingManager() ||
-                        Auth::user()->isSectionHead()
+                        Auth::user()->isSectionHead() ||
+                        Auth::user()->isMinistry()
                     )),
                 TextColumn::make('trainee.major.name')
                     ->label('التخصص')
@@ -69,7 +70,8 @@ class ApplicationsTable
                         Auth::user()->isDepartment() ||
                         Auth::user()->isHOA() ||
                         Auth::user()->isGeneralTrainingManager() ||
-                        Auth::user()->isSectionHead()
+                        Auth::user()->isSectionHead() ||
+                        Auth::user()->isMinistry()
                     )),
                 TextColumn::make('administrative.title')
                     ->label('الإدارة')

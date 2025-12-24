@@ -43,7 +43,8 @@ class ApplicationsTable
                         Auth::user()->isDepartment() ||
                         Auth::user()->isHOA() ||
                         Auth::user()->isGeneralTrainingManager() ||
-                        Auth::user()->isSectionHead()
+                        Auth::user()->isSectionHead() ||
+                        Auth::user()->isMinistry()
                     )),
                 TextColumn::make('trainee.major.name')
                     ->label('التخصص')
@@ -69,7 +70,8 @@ class ApplicationsTable
                         Auth::user()->isDepartment() ||
                         Auth::user()->isHOA() ||
                         Auth::user()->isGeneralTrainingManager() ||
-                        Auth::user()->isSectionHead()
+                        Auth::user()->isSectionHead() ||
+                        Auth::user()->isMinistry()
                     )),
                 TextColumn::make('administrative.title')
                     ->label('الإدارة')
@@ -141,7 +143,7 @@ class ApplicationsTable
                 SelectFilter::make('training_type')
                     ->label('نوع التدريب')
                     ->options(Constans::TRAINING_TYPES)
-                    ->visible(fn() => Auth::check() && (
+                    ->visible(fn() => Auth::check() && !Auth::user()->isMinistry() && (
                         Auth::user()->isAdmin() ||
                         Auth::user()->isDepartment() ||
                         Auth::user()->isHOA() ||
