@@ -180,6 +180,17 @@ class ApplicationFormController extends Controller
         return response()->json($data);
     }
 
+    public function checkNationalId(Request $request)
+    {
+        $nationalId = $request->query('national_id');
+        $exists = Trainees::where('national_id', $nationalId)->exists();
+
+        return response()->json([
+            'exists' => $exists,
+            'message' => $exists ? 'رقم الهوية هذا مسجل مسبقاً في النظام.' : ''
+        ]);
+    }
+
     /**
      * Store a trainee application into the trainees and applications tables.
      * Uses a database transaction to ensure both save together or neither saves.

@@ -28,4 +28,5 @@ Route::prefix('WelcomeForm/Form/api')->group(function () {
     Route::get('departments', [ApplicationFormController::class, 'departments']);
     Route::get('sections', [ApplicationFormController::class, 'sections']);
     Route::get('training-types', [ApplicationFormController::class, 'trainingTypes']);
+    Route::get('check-national-id', [ApplicationFormController::class, 'checkNationalId']);
 });

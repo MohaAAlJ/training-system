@@ -162,7 +162,7 @@ class DashboardStatsOverview extends BaseWidget
                 $adminUnit = \App\Models\Administrative::where('user_id', $user->id)->first();
                 if ($adminUnit) {
                     $sectionsQuery->where('administrative_id', $adminUnit->id);
-                    $stats[] = Stat::make('الوحدة الإدارية', $adminUnit->title)->color('primary');
+                    // $stats[] = Stat::make('الوحدة الإدارية', $adminUnit->title)->color('primary');
                 }
             } elseif ($role === Constans::ROLE_HOM) {
                 // Find Administrative where this user is Medical Head
@@ -174,7 +174,7 @@ class DashboardStatsOverview extends BaseWidget
                     $sectionsQuery->where('administrative_id', $adminUnit->id)
                                   ->whereHas('department', fn($q) => $q->where('is_medical', true));
 
-                    $stats[] = Stat::make('الإدارة الطبية', $adminUnit->title)->color('danger');
+                    // $stats[] = Stat::make('الإدارة الطبية', $adminUnit->title)->color('danger');
                 }
             }
 
