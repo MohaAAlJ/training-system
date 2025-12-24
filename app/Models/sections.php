@@ -70,4 +70,31 @@ class Sections extends Model
     {
         return $this->hasMany(Applications::class, 'section_id');
     }
+
+    /**
+     * Get capacity statistics for this section.
+     */
+    public function getCapacityStats(): array
+    {
+        $used = $this->applications()
+            ->where('status', \App\Helpers\Constans::STATUS_STRATED_TRAINING)
+            ->count();
+
+        $total = (int) ($this->total_capacity ?? 0);
+        $available = max(0, $total - $used);
+
+        return [
+            'total' => $total,
+            'used' => $used,
+            'available' => $available,
+        ];
+    }
+
+    /**
+     * Check if the section is full.
+     */
+    public function isFull(): bool
+    {
+        return $this->getCapacityStats()['available'] <= 0;
+    }
 }

@@ -159,8 +159,9 @@ class ApplicationFormController extends Controller
             $query->where('administrative_id', $administrativeId);
         }
 
-        // Return all sections for this pair, regardless of status for now
-        $data = $query->get(['id', 'name_location'])
+        // Return only sections that are active AND have available capacity
+        $data = $query->active()->get()
+            ->reject(fn($sec) => $sec->isFull())
             ->map(fn($sec) => [
                 'id' => $sec->id,
                 'name' => $sec->name_location,

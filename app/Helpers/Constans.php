@@ -83,39 +83,35 @@ class Constans
      */
     public static function getCapacityStats(?int $administrativeId = null, ?int $departmentId = null, ?int $sectionId = null, bool $isMedical = false): array
     {
-        // 1. Total Capacity from Sections
-        $sectionsQuery = \App\Models\Sections::query();
-
-        if ($isMedical) {
-            $sectionsQuery->whereHas('department', fn($q) => $q->where('is_medical', true));
+        if ($sectionId) {
+            $section = \App\Models\Sections::find($sectionId);
+            return $section ? $section->getCapacityStats() : ['total' => 0, 'used' => 0, 'available' => 0];
         }
 
-        if ($administrativeId) $sectionsQuery->where('administrative_id', $administrativeId);
-        if ($departmentId) $sectionsQuery->where('department_id', $departmentId);
-        if ($sectionId) $sectionsQuery->where('id', $sectionId);
-
-        $totalCapacity = (int) $sectionsQuery->sum('total_capacity');
-
-        // 2. Used Capacity (Active Applications)
-        // Active means currently in training (Status 5)
-        $appsQuery = \App\Models\Applications::query()
-            ->where('status', self::STATUS_STRATED_TRAINING);
-
-        if ($isMedical) {
-            $appsQuery->whereHas('department', fn($q) => $q->where('is_medical', true));
+        if ($departmentId) {
+            $dept = \App\Models\Departments::find($departmentId);
+            return $dept ? $dept->getCapacityStats() : ['total' => 0, 'used' => 0, 'available' => 0];
         }
 
-        if ($administrativeId) $appsQuery->where('administrative_id', $administrativeId);
-        if ($departmentId) $appsQuery->where('department_id', $departmentId);
-        if ($sectionId) $appsQuery->where('section_id', $sectionId);
+        if ($administrativeId) {
+            $admin = \App\Models\Administrative::find($administrativeId);
+            return $admin ? $admin->getCapacityStats() : ['total' => 0, 'used' => 0, 'available' => 0];
+        }
 
-        $used = $appsQuery->count();
-        $available = max(0, $totalCapacity - $used);
+        // Global stats (if no specific ID)
+        $sections = \App\Models\Sections::query();
+        if ($isMedical) {
+            $sections->whereHas('department', fn($q) => $q->where('is_medical', true));
+        }
 
-        return [
-            'total' => $totalCapacity,
-            'used' => $used,
-            'available' => $available,
-        ];
+        $stats = ['total' => 0, 'used' => 0, 'available' => 0];
+        foreach ($sections->get() as $section) {
+            $sStats = $section->getCapacityStats();
+            $stats['total'] += $sStats['total'];
+            $stats['used'] += $sStats['used'];
+            $stats['available'] += $sStats['available'];
+        }
+
+        return $stats;
     }
 }

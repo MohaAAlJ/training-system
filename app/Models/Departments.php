@@ -73,6 +73,35 @@ class Departments extends Model
     {
         return $query->where('is_medical', true);
     }
+
+    /**
+     * Get capacity statistics for this department by summing its sections.
+     */
+    public function getCapacityStats(): array
+    {
+        $stats = [
+            'total' => 0,
+            'used' => 0,
+            'available' => 0,
+        ];
+
+        foreach ($this->sections as $section) {
+            $sStats = $section->getCapacityStats();
+            $stats['total'] += $sStats['total'];
+            $stats['used'] += $sStats['used'];
+            $stats['available'] += $sStats['available'];
+        }
+
+        return $stats;
+    }
+
+    /**
+     * Check if the department is full.
+     */
+    public function isFull(): bool
+    {
+        return $this->getCapacityStats()['available'] <= 0;
+    }
 }
 
 
