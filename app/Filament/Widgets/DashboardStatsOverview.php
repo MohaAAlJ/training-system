@@ -62,9 +62,15 @@ class DashboardStatsOverview extends BaseWidget
         if ($role === Constans::ROLE_COLLEGE) {
             $college = $user->college;
             if ($college) {
-                $totalTrainees = \App\Models\Trainees::where('college_id', $college->id)->count();
+                $totalTrainees = \App\Models\Trainees::where('college_id', $college->id)
+                    ->whereHas('applications', fn($q) =>
+                        $q->where('training_type', Constans::TRAINING_TYPE_UNIVERSITY)
+                          ->whereIn('status', [Constans::STATUS_INITIAL_APPROVE, Constans::STATUS_STRATED_TRAINING])
+                    )
+                    ->count();
                 $activeTrainees = Applications::whereHas('trainee', fn($q) => $q->where('college_id', $college->id))
                     ->where('status', Constans::STATUS_STRATED_TRAINING)
+                    ->where('training_type', Constans::TRAINING_TYPE_UNIVERSITY)
                     ->count();
 
                 $stats[] = Stat::make('إجمالي المتدربين (الكلية)', $totalTrainees)

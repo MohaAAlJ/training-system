@@ -39,9 +39,10 @@ class ExternalPartnerActiveTraineesWidget extends BaseWidget
 
                         if ($user->isCollegeSupervisor()) {
                             $collegeId = $user->college?->id;
-                            $query->whereHas('trainee', function ($q) use ($collegeId) {
-                                $q->where('college_id', $collegeId);
-                            });
+                            $query->where('training_type', Constans::TRAINING_TYPE_UNIVERSITY)
+                                ->whereHas('trainee', function ($q) use ($collegeId) {
+                                    $q->where('college_id', $collegeId);
+                                });
                         }
 
                         if ($user->isMinistry()) {
