@@ -52,14 +52,6 @@ class User extends Authenticatable implements FilamentUser
         return $this->college()?->trainees();
     }
 
-    /**
-     * Relationship for Administrative Medical Head.
-     */
-    public function administrativeMedicalHead(): HasOne
-    {
-        return $this->hasOne(Administrative::class, 'medical_head_user_id');
-    }
-
 
     public function isAdmin(): bool
     {
@@ -141,5 +133,13 @@ class User extends Authenticatable implements FilamentUser
                 $q->orWhere('id', $currentUserId);
             }
         });
+    }
+
+    /**
+     * Relationship for Administrative Medical Head.
+     */
+    public function administrativeMedicalHead(): HasOne
+    {
+        return $this->hasOne(Administrative::class, 'medical_head_user_id');
     }
 }

@@ -26,10 +26,9 @@ class CollegesForm
                             ->required(),
                         \Filament\Forms\Components\Select::make('user_id')
                             ->label('مشرف الكلية')
-                            ->relationship('user', 'name', function ($query, $get) {
-                                // Filter users to only show College Supervisors (Role 5) and free users
-                                return $query->where('role', \App\Helpers\Constans::ROLE_COLLEGE)
-                                    ->free($get('user_id'));
+                            ->relationship('user', 'name', function ($query) {
+                                // Filter users to only show College Supervisors (Role 5)
+                                return $query->where('role', \App\Helpers\Constans::ROLE_COLLEGE);
                             })
                             ->searchable()
                             ->preload()
