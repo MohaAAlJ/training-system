@@ -90,6 +90,10 @@ class SectionsResource extends Resource
                 ->whereHas('department', fn($q) => $q->where('is_medical', true));
         }
 
+        if ($user->isSectionHead()) {
+            return $query->where('user_id', $user->id);
+        }
+
         return $query->whereRaw('1 = 0');
     }
 }

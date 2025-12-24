@@ -34,6 +34,7 @@ class SectionsResource extends Resource
     protected static ?string $pluralModelLabel = 'الأقسام';
     protected static ?string $navigationLabel = 'الأقسام';
     protected static ?int $navigationSort = 3;
+    protected static string | UnitEnum | null $navigationGroup = 'إدارة المتدربين';
 
 
     public static function form(Schema $schema): Schema
@@ -72,22 +73,18 @@ class SectionsResource extends Resource
         $query = parent::getEloquentQuery();
         $user = Auth::user();
 
-        if ($user->isAdmin() || $user->isGeneralTrainingManager()) {
+        if ($user->isAdmin()) {
             return $query;
         }
 
         if ($user->isDepartment()) {
-            return $query->where('department_id', $user->department?->id);
+            $query->where('department_id', $user->department?->id);
+            return $query;
         }
 
         if ($user->isAdministrative()) {
-            return $query->where('administrative_id', $user->administrative?->id);
-        }
-
-        if ($user->isMedicalManager()) {
-            $adminId = \App\Models\Administrative::where('medical_head_user_id', $user->id)->value('id');
-            return $query->where('administrative_id', $adminId)
-                ->whereHas('department', fn($q) => $q->where('is_medical', true));
+            $query->where('administrative_id', $user->administrative?->id);
+            return $query;
         }
 
         return $query->whereRaw('1 = 0');

@@ -110,16 +110,6 @@ class ApplicationsResource extends Resource
                 ]);
         }
 
-        if ($user->isMedicalManager()) {
-            $adminId = \App\Models\Administrative::where('medical_head_user_id', $user->id)->value('id');
-            return $query->where('administrative_id', $adminId)
-                ->whereHas('department', fn($q) => $q->where('is_medical', true))
-                ->whereIn('status', [
-                    Constans::STATUS_STRATED_TRAINING,
-                    Constans::STATUS_ENDED_TRAINING
-                ]);
-        }
-
         if ($user->isDepartment()) {
             $query->where('department_id', $user->department?->id)
                 ->whereIn('status', [
