@@ -65,7 +65,7 @@ class DashboardStatsOverview extends BaseWidget
                 $totalTrainees = \App\Models\Trainees::where('college_id', $college->id)
                     ->whereHas('applications', fn($q) =>
                         $q->where('training_type', Constans::TRAINING_TYPE_UNIVERSITY)
-                          ->whereIn('status', [Constans::STATUS_INITIAL_APPROVE, Constans::STATUS_STRATED_TRAINING])
+                          ->whereIn('status', [Constans::STATUS_INITIAL_APPROVE, Constans::STATUS_STRATED_TRAINING, Constans::STATUS_ENDED_TRAINING])
                     )
                     ->count();
                 $activeTrainees = Applications::whereHas('trainee', fn($q) => $q->where('college_id', $college->id))
@@ -86,7 +86,7 @@ class DashboardStatsOverview extends BaseWidget
         // 0.5 MINISTRY OF HEALTH (ROLE_MOH = 4)
         elseif ($role === Constans::ROLE_MOH) {
             $totalApps = Applications::where('training_type', Constans::TRAINING_TYPE_PRACTICE)
-                ->whereIn('status', [Constans::STATUS_INITIAL_APPROVE, Constans::STATUS_STRATED_TRAINING])
+                ->whereIn('status', [Constans::STATUS_INITIAL_APPROVE, Constans::STATUS_STRATED_TRAINING, Constans::STATUS_ENDED_TRAINING])
                 ->count();
             $activeTrainees = Applications::where('training_type', Constans::TRAINING_TYPE_PRACTICE)
                 ->where('status', Constans::STATUS_STRATED_TRAINING)
