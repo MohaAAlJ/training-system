@@ -144,6 +144,21 @@ class Applications extends Model
                 elseif ($newStatus === Constans::STATUS_ENDED_TRAINING) {
                     $notificationToSend = new \App\Notifications\TraineeFinishedNotification($application);
                 }
+                // Status 3 : Confirmed (Notify GTM and Admin)
+                elseif ($newStatus === Constans::STATUS_CONFIRMATION) {
+                    $notification = new \App\Notifications\ApplicationConfirmedNotification($application);
+                    $recipients = User::whereIn('role', [Constans::ROLE_GTM, Constans::ROLE_ADMIN])
+                        ->where('status', 'active')
+                        ->get();
+
+                    foreach ($recipients as $user) {
+                        try {
+                            $user->notify($notification);
+                        } catch (\Throwable $e) {
+                            logger()->error('Failed to notify GTM/Admin for confirmation: ' . $e->getMessage());
+                        }
+                    }
+                }
 
                 if ($notificationToSend) {
                      // Gather recipients: HOA, HOM, Dept Head, Section Head

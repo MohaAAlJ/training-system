@@ -31,6 +31,8 @@ class DashboardStatsOverview extends BaseWidget
             Constans::ROLE_HOM,
             Constans::ROLE_DEPARTMENT,
             Constans::ROLE_SECTION,
+            Constans::ROLE_MOH,
+            Constans::ROLE_COLLEGE,
         ]);
     }
 
@@ -44,9 +46,51 @@ class DashboardStatsOverview extends BaseWidget
         $stats = [];
         $role = $user->role;
 
+        // 0. COLLEGE SUPERVISOR (ROLE_COLLEGE = 5)
+        if ($role === Constans::ROLE_COLLEGE) {
+            $college = $user->college;
+            if ($college) {
+                $totalTrainees = \App\Models\Trainees::where('college_id', $college->id)->count();
+                $pendingApps = Applications::whereHas('trainee', fn($q) => $q->where('college_id', $college->id))
+                    ->whereIn('status', [Constans::STATUS_NEW, Constans::STATUS_INITIAL_APPROVE, Constans::STATUS_CONFIRMATION])
+                    ->count();
+                $activeTrainees = Applications::whereHas('trainee', fn($q) => $q->where('college_id', $college->id))
+                    ->where('status', Constans::STATUS_STRATED_TRAINING)
+                    ->count();
+
+                $stats[] = Stat::make('إجمالي المتدربين (الكلية)', $totalTrainees)
+                    ->icon('heroicon-o-academic-cap');
+
+                $stats[] = Stat::make('طلبات بانتظار الإجراء', $pendingApps)
+                    ->description('قيد المراجعة/المعالجة')
+                    ->color('warning')
+                    ->icon('heroicon-o-clock');
+
+                $stats[] = Stat::make('متدربين حاليين', $activeTrainees)
+                    ->description('بدأوا التدريب فعلياً')
+                    ->color('success')
+                    ->icon('heroicon-o-user-group');
+            }
+        }
+
+        // 0.5 MINISTRY OF HEALTH (ROLE_MOH = 4)
+        elseif ($role === Constans::ROLE_MOH) {
+            $totalApps = Applications::where('training_type', Constans::TRAINING_TYPE_PRACTICE)->count();
+            $activeTrainees = Applications::where('training_type', Constans::TRAINING_TYPE_PRACTICE)
+                ->where('status', Constans::STATUS_STRATED_TRAINING)
+                ->count();
+
+            $stats[] = Stat::make('إجمالي طلبات المزاولة', $totalApps)
+                ->icon('heroicon-o-document-text');
+
+            $stats[] = Stat::make('قيد التدريب', $activeTrainees)
+                ->color('success')
+                ->icon('heroicon-o-check-badge');
+        }
+
         // 1. SECTION HEAD (ROLE_SECTION = 3)
         // Show Capacity for their section
-        if ($role === Constans::ROLE_SECTION) {
+        elseif ($role === Constans::ROLE_SECTION) {
             $section = Sections::where('user_id', $user->id)->first();
             if ($section) {
                 // Determine current usage (count active applications in this section)
@@ -97,7 +141,7 @@ class DashboardStatsOverview extends BaseWidget
         // HOM (7): Capacity for Health related stuff.
         elseif ($role === Constans::ROLE_HOA || $role === Constans::ROLE_HOM) {
 
-            
+
 
             $sectionsQuery = Sections::query();
 
