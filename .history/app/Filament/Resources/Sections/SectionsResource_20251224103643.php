@@ -85,9 +85,11 @@ class SectionsResource extends Resource
         }
 
         if ($user->isMedicalManager()) {
-            $adminId = \App\Models\Administrative::where('medical_head_user_id', $user->id)->value('id');
-            return $query->where('administrative_id', $adminId)
-                ->whereHas('department', fn($q) => $q->where('is_medical', true));
+            return $query->whereHas('department', fn($q) => $q->where('is_medical', true));
+        }
+
+        if ($user->isSectionHead()) {
+            return $query->where('user_id', $user->id);
         }
 
         return $query->whereRaw('1 = 0');

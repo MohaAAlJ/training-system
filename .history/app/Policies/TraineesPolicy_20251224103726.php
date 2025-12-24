@@ -54,9 +54,7 @@ class TraineesPolicy
         }
 
         if ($user->isMedicalManager()) {
-            $adminId = \App\Models\Administrative::where('medical_head_user_id', $user->id)->value('id');
             return $trainee->applications()
-                ->where('administrative_id', $adminId)
                 ->whereHas('department', fn($q) => $q->where('is_medical', true))
                 ->whereIn('status', [
                     \App\Helpers\Constans::STATUS_STRATED_TRAINING,
