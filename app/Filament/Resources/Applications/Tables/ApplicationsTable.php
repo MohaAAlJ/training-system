@@ -189,6 +189,7 @@ class ApplicationsTable
                     ->icon('heroicon-o-check')
                     ->visible(fn($record) => (Auth::user()->isMinistry() || Auth::user()->isCollegeSupervisor()) && (int)$record->status === Constans::STATUS_INITIAL_APPROVE)
                     ->requiresConfirmation()
+                    ->successNotificationTitle('تم تأكيد الطلب بنجاح')
                     ->action(fn($record) => $record->update(['status' => Constans::STATUS_CONFIRMATION])),
 
                 Action::make('initial_approve')
@@ -197,6 +198,7 @@ class ApplicationsTable
                     ->icon('heroicon-o-check-circle')
                     ->visible(fn($record) => Auth::user()->isGeneralTrainingManager() && $record->status == Constans::STATUS_NEW)
                     ->requiresConfirmation()
+                    ->successNotificationTitle('تمت الموافقة المبدئية بنجاح')
                     ->action(fn($record) => $record->update(['status' => Constans::STATUS_INITIAL_APPROVE])),
 
                 Action::make('start_training')
@@ -226,6 +228,7 @@ class ApplicationsTable
                             ->default(45)
                             ->visible(fn($get) => (int)$get('new_status') === Constans::STATUS_STRATED_TRAINING),
                     ])
+                    ->successNotificationTitle('تمت معالجة التأكيد بنجاح')
                     ->action(function ($record, array $data) {
                         $newStatus = (int)$data['new_status'];
 
