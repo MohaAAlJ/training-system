@@ -15,7 +15,19 @@ use Illuminate\Support\Facades\Auth;
 class DashboardStatsOverview extends BaseWidget
 {
     protected static ?int $sort = 1;
-    protected int | string | array $columnSpan = 1;
+    protected int | string | array $columnSpan = [
+        'md' => 1, // default or smaller
+        'lg' => 1,
+    ];
+
+    public function getColumnSpan(): int | string | array
+    {
+        $user = Auth::user();
+        if ($user && in_array($user->role, [Constans::ROLE_MOH, Constans::ROLE_COLLEGE])) {
+            return 1; // It will take 1 column in a multi-column grid
+        }
+        return 'full';
+    }
 
     public static function canView(): bool
     {
@@ -51,9 +63,6 @@ class DashboardStatsOverview extends BaseWidget
             $college = $user->college;
             if ($college) {
                 $totalTrainees = \App\Models\Trainees::where('college_id', $college->id)->count();
-                $pendingApps = Applications::whereHas('trainee', fn($q) => $q->where('college_id', $college->id))
-                    ->whereIn('status', [Constans::STATUS_NEW, Constans::STATUS_INITIAL_APPROVE, Constans::STATUS_CONFIRMATION])
-                    ->count();
                 $activeTrainees = Applications::whereHas('trainee', fn($q) => $q->where('college_id', $college->id))
                     ->where('status', Constans::STATUS_STRATED_TRAINING)
                     ->count();
@@ -61,12 +70,7 @@ class DashboardStatsOverview extends BaseWidget
                 $stats[] = Stat::make('إجمالي المتدربين (الكلية)', $totalTrainees)
                     ->icon('heroicon-o-academic-cap');
 
-                $stats[] = Stat::make('طلبات بانتظار الإجراء', $pendingApps)
-                    ->description('قيد المراجعة/المعالجة')
-                    ->color('warning')
-                    ->icon('heroicon-o-clock');
-
-                $stats[] = Stat::make('متدربين حاليين', $activeTrainees)
+                $stats[] = Stat::make('قيد التدريب', $activeTrainees)
                     ->description('بدأوا التدريب فعلياً')
                     ->color('success')
                     ->icon('heroicon-o-user-group');
