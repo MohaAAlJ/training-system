@@ -59,6 +59,7 @@ class GTMRecentApplications extends BaseWidget
                 if ($user->isCollegeSupervisor()) {
                     $collegeId = $user->college?->id;
                     return $query->where('status', Constans::STATUS_INITIAL_APPROVE)
+                        ->where('training_type', Constans::TRAINING_TYPE_UNIVERSITY)
                         ->whereHas('trainee', function ($q) use ($collegeId) {
                             $q->where('college_id', $collegeId);
                         });
