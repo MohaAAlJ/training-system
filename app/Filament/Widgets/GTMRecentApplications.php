@@ -114,6 +114,7 @@ class GTMRecentApplications extends BaseWidget
                     ->icon('heroicon-o-check-circle')
                     ->visible(fn($record) => (Auth::user()->isGeneralTrainingManager() || Auth::user()->isAdmin()) && (int)$record->status === Constans::STATUS_NEW)
                     ->requiresConfirmation()
+                    ->successNotificationTitle('تمت الموافقة المبدئية بنجاح')
                     ->action(fn($record) => $record->update(['status' => Constans::STATUS_INITIAL_APPROVE])),
 
                 Action::make('confirm')
@@ -125,6 +126,7 @@ class GTMRecentApplications extends BaseWidget
                         (Auth::user()->isAdmin() || Auth::user()->isCollegeSupervisor() || Auth::user()->isMinistry())
                     )
                     ->requiresConfirmation()
+                    ->successNotificationTitle('تم تأكيد الطلب بنجاح')
                     ->action(fn($record) => $record->update([
                         'status' => Constans::STATUS_CONFIRMATION,
                         'accepted_at' => now(),
@@ -139,6 +141,7 @@ class GTMRecentApplications extends BaseWidget
                         (int)$record->status === Constans::STATUS_CONFIRMATION
                     )
                     ->requiresConfirmation()
+                    ->successNotificationTitle('تم الاعتماد النهائي بنجاح')
                     ->action(fn($record) => $record->update(['status' => Constans::STATUS_WAITING_LIST])),
 
                 Action::make('start_training')
@@ -157,6 +160,7 @@ class GTMRecentApplications extends BaseWidget
                             ->required()
                             ->default(30),
                     ])
+                    ->successNotificationTitle('تم بدء التدريب بنجاح')
                     ->action(function ($record, array $data) {
                         $startDate = \Carbon\Carbon::parse($data['start_date']);
                         $duration = (int)$data['duration'];
