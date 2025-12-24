@@ -111,10 +111,10 @@ class ApplicationFormController extends Controller
 
     public function administratives()
     {
-        $data = Administrative::select('id', 'title')->get()
+        $data = Administrative::all()
             ->map(fn($adm) => [
                 'id' => $adm->id,
-                'name' => $adm->title,
+                'name' => $adm->name_with_governorate,
             ])
             ->values();
 

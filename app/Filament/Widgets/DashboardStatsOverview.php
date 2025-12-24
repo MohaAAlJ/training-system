@@ -88,19 +88,6 @@ class DashboardStatsOverview extends BaseWidget
                      ->description("الشاغر كلياً: " . ($totalCapacity - $currentTrainees))
                      ->color('success');
 
-                // Breakdown per section (limit to first 3 to avoid overcrowding, or just show main stats)
-                // The widget area is grid. We can add more.
-                // Let's add stats for up to 4 sections
-                foreach($department->sections->take(4) as $sec) {
-                    $secUsage = Applications::where('section_id', $sec->id)
-                        ->where('status', Constans::STATUS_STRATED_TRAINING)
-                        ->count();
-
-                    $stats[] = Stat::make("سعة: {$sec->name_location}", $sec->total_capacity)
-                        ->description("المشغول: {$secUsage}")
-                        ->icon('heroicon-o-queue-list')
-                        ->color('gray');
-                }
             }
         }
 
@@ -110,14 +97,7 @@ class DashboardStatsOverview extends BaseWidget
         // HOM (7): Capacity for Health related stuff.
         elseif ($role === Constans::ROLE_HOA || $role === Constans::ROLE_HOM) {
 
-            // For HOM, we filter by 'is_medical' = true in Departments or Administrative?
-            // Usually HOM oversees Medical Departments across the board?
-            // Or is it specific to an Administrative unit?
-            // "administrative health show capacity ... administrative shows him capacity for everything"
-
-            // Let's assume HOA sees ALL sections in their Administrative Unit.
-            // Let's assume HOM sees ALL sections in Medical Departments (regardless of Admin? Or linked to their user?)
-            // User model doesn't link HOM to a specific Admin directly in `users` table, but `administratives` table has `medical_head_user_id`.
+            
 
             $sectionsQuery = Sections::query();
 
