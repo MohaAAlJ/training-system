@@ -84,10 +84,6 @@ class ApplicationsResource extends Resource
         if ($user->isCollegeSupervisor()) {
             $collegeId = \App\Models\College::where('user_id', $user->id)->value('id');
             return $query->where('training_type', Constans::TRAINING_TYPE_UNIVERSITY)
-                ->whereIn('status', [
-                    Constans::STATUS_STRATED_TRAINING,
-                    Constans::STATUS_ENDED_TRAINING
-                ])
                 ->whereHas('trainee', function ($q) use ($collegeId) {
                     $q->where('college_id', $collegeId);
                 });
