@@ -13,7 +13,8 @@ class SectionPolicy
             $user->isGeneralTrainingManager() ||
             $user->isDepartment() ||
             $user->isAdministrative() ||
-            $user->isMedicalManager();
+            $user->isMedicalManager() ||
+            $user->isSectionHead();
     }
 
     public function view(User $user, Sections $model): bool
@@ -33,6 +34,10 @@ class SectionPolicy
         if ($user->isMedicalManager()) {
             $adminId = \App\Models\Administrative::where('medical_head_user_id', $user->id)->value('id');
             return $model->administrative_id === $adminId && $model->department?->is_medical === true;
+        }
+
+        if ($user->isSectionHead()) {
+            return $model->user_id === $user->id;
         }
 
         return false;
