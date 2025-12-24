@@ -58,13 +58,15 @@ class GTMRecentApplications extends BaseWidget
 
                 if ($user->isCollegeSupervisor()) {
                     $collegeId = $user->college?->id;
-                    return $query->whereHas('trainee', function ($q) use ($collegeId) {
-                        $q->where('college_id', $collegeId);
-                    });
+                    return $query->where('status', Constans::STATUS_INITIAL_APPROVE)
+                        ->whereHas('trainee', function ($q) use ($collegeId) {
+                            $q->where('college_id', $collegeId);
+                        });
                 }
 
                 if ($user->isMinistry()) {
-                    return $query->where('training_type', Constans::TRAINING_TYPE_PRACTICE);
+                    return $query->where('status', Constans::STATUS_INITIAL_APPROVE)
+                        ->where('training_type', Constans::TRAINING_TYPE_PRACTICE);
                 }
 
                 return $query;

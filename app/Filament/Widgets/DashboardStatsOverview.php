@@ -75,7 +75,9 @@ class DashboardStatsOverview extends BaseWidget
 
         // 0.5 MINISTRY OF HEALTH (ROLE_MOH = 4)
         elseif ($role === Constans::ROLE_MOH) {
-            $totalApps = Applications::where('training_type', Constans::TRAINING_TYPE_PRACTICE)->count();
+            $totalApps = Applications::where('training_type', Constans::TRAINING_TYPE_PRACTICE)
+                ->whereIn('status', [Constans::STATUS_INITIAL_APPROVE, Constans::STATUS_STRATED_TRAINING])
+                ->count();
             $activeTrainees = Applications::where('training_type', Constans::TRAINING_TYPE_PRACTICE)
                 ->where('status', Constans::STATUS_STRATED_TRAINING)
                 ->count();
