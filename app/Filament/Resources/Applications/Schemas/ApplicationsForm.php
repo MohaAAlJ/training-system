@@ -362,12 +362,12 @@ class ApplicationsForm
                                 Constans::STATUSES,
                                 array_map(fn($s) => \Illuminate\Support\Facades\Lang::get("translation.status.$s", [], 'ar'), Constans::STATUSES)
                             ))
-                            ->default(fn() => Auth::user()->isCollegeSupervisor() ? Constans::STATUS_WAITING_LIST : Constans::STATUS_NEW)
+                            ->default(fn() => Auth::user()->isCollegeSupervisor() ? Constans::STATUS_CONFIRMATION : Constans::STATUS_NEW)
                             ->disabled(fn() => ! Auth::user()->isAdmin())
+                            ->afterStateUpdated(fn($state, $set) => (int)$state === Constans::STATUS_CONFIRMATION ? $set('accepted_at', now()) : null)
                             ->dehydrated()
                             ->required()
-                            ->live()
-                            ->afterStateUpdated(fn($state, $set) => (int)$state === Constans::STATUS_WAITING_LIST ? $set('accepted_at', now()) : null),
+                            ->live(),
                     ])->columns(2),
 
                 Fieldset::make('المستندات والملاحظات')
