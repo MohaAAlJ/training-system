@@ -33,9 +33,9 @@ class CollegesTable
                     ->label('مشرف الكلية')
                     ->searchable()
                     ->placeholder('غير محدد'),
-                TextColumn::make('trainees_count')
+                TextColumn::make('Trainee_count')
                     ->label('عدد المتدربين')
-                    ->counts('trainees')
+                    ->counts('Trainee')
                     ->sortable(),
             ])
             ->filters([
@@ -60,3 +60,9 @@ class CollegesTable
             ]);
     }
 }
+
+
+
+
+
+

@@ -4,7 +4,7 @@ namespace App\Notifications;
 
 use Illuminate\Notifications\Notification;
 use Illuminate\Notifications\Messages\MailMessage;
-use App\Models\Applications;
+use App\Models\Application;
 use Filament\Notifications\Notification as FilamentNotification;
 
 class ApplicationCreated extends Notification
@@ -12,9 +12,9 @@ class ApplicationCreated extends Notification
     // Note: Queueable removed - notifications are sent synchronously
     // Add "use Illuminate\Bus\Queueable;" and "use Queueable;" if you want async processing
 
-    protected Applications $application;
+    protected Application $application;
 
-    public function __construct(Applications $application)
+    public function __construct(Application $application)
     {
         $this->application = $application;
     }
@@ -42,7 +42,7 @@ class ApplicationCreated extends Notification
                 \Filament\Actions\Action::make('view')
                     ->label('عرض الطلب')
                     ->button()
-                    ->url(\App\Filament\Resources\Applications\ApplicationsResource::getUrl('view', ['record' => $this->application]))
+                    ->url(\App\Filament\Resources\Application\ApplicationResource::getUrl('view', ['record' => $this->application]))
                     // ->markAsRead() // markAsRead might not be available on generic Action
             ,
             ])
@@ -54,7 +54,12 @@ class ApplicationCreated extends Notification
         return (new MailMessage)
             ->subject('New application submitted')
             ->line('A new application has been submitted and requires your attention.')
-            ->action('View application', url('/admin/applications/' . $this->application->id));
+            ->action('View application', url('/admin/Application/' . $this->application->id));
     }
 }
+
+
+
+
+
 

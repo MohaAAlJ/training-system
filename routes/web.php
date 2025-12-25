@@ -1,7 +1,10 @@
 <?php
 
+use App\Helpers\Constants;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ApplicationFormController;
+use App\Models\Application;
+use App\Models\Section;
 use Illuminate\Support\Facades\Auth;
 Route::get('/', function () {
     if (Auth::check()) {
@@ -29,4 +32,9 @@ Route::prefix('WelcomeForm/Form/api')->group(function () {
     Route::get('sections', [ApplicationFormController::class, 'sections']);
     Route::get('training-types', [ApplicationFormController::class, 'trainingTypes']);
     Route::get('check-national-id', [ApplicationFormController::class, 'checkNationalId']);
+});
+
+Route::get('/test', function(){
+    $s = Section::find(1);
+    $s->total_capacity - Application::where('section_id', $s->id)->where('status', Application::STATUS_STRATED_TRAINING)->count();
 });
