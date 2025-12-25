@@ -226,8 +226,6 @@ class ApplicationTable
                             ->label('تاريخ البدء')
                             ->required()
                             ->default(now())
-                            ->native(false)
-                            ->format('Y/m/d')
                             ->displayFormat('Y/m/d')
                             ->reactive()
                             ->visible(fn($get) => (int)$get('new_status') === Application::STATUS_STARTED_TRAINING),
@@ -289,8 +287,6 @@ class ApplicationTable
                             ->label('تاريخ البدء')
                             ->required()
                             ->default(now())
-                            ->native(false)
-                            ->format('Y/m/d')
                             ->displayFormat('Y/m/d')
                             ->reactive(),
                         TextInput::make('duration')

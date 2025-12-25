@@ -226,10 +226,22 @@ class ApplicationTable
                             ->label('تاريخ البدء')
                             ->required()
                             ->default(now())
-                            ->native(false)
-                            ->format('Y/m/d')
-                            ->displayFormat('Y/m/d')
                             ->reactive()
+                            ->visible(fn($get) => (int)$get('new_status') === Application::STATUS_STARTED_TRAINING),
+                        \Filament\Forms\Components\Placeholder::make('formatted_start_date')
+                            ->label('التاريخ بالتفصيل')
+                            ->content(function ($get) {
+                                $startDate = $get('start_date');
+                                if ($startDate) {
+                                    try {
+                                        $date = \Carbon\Carbon::parse($startDate);
+                                        return $date->format('Y-m-d') . ' (' . $date->translatedFormat('l، d F Y') . ')';
+                                    } catch (\Exception $e) {
+                                        return 'غير محدد';
+                                    }
+                                }
+                                return 'غير محدد';
+                            })
                             ->visible(fn($get) => (int)$get('new_status') === Application::STATUS_STARTED_TRAINING),
                         TextInput::make('duration')
                             ->label('المدة (يوم)')
@@ -289,10 +301,21 @@ class ApplicationTable
                             ->label('تاريخ البدء')
                             ->required()
                             ->default(now())
-                            ->native(false)
-                            ->format('Y/m/d')
-                            ->displayFormat('Y/m/d')
                             ->reactive(),
+                        \Filament\Forms\Components\Placeholder::make('formatted_start_date')
+                            ->label('التاريخ بالتفصيل')
+                            ->content(function ($get) {
+                                $startDate = $get('start_date');
+                                if ($startDate) {
+                                    try {
+                                        $date = \Carbon\Carbon::parse($startDate);
+                                        return $date->format('Y-m-d') . ' (' . $date->translatedFormat('l، d F Y') . ')';
+                                    } catch (\Exception $e) {
+                                        return 'غير محدد';
+                                    }
+                                }
+                                return 'غير محدد';
+                            }),
                         TextInput::make('duration')
                             ->label('المدة (يوم)')
                             ->numeric()
