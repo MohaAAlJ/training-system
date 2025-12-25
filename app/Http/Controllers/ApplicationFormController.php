@@ -129,7 +129,7 @@ class ApplicationFormController extends Controller
 
         if ($administrativeId) {
             // Filter departments that have sections in this administrative unit
-            $query->whereHas('sections', function ($q) use ($administrativeId) {
+            $query->whereHas('Section', function ($q) use ($administrativeId) {
                 $q->where('administrative_id', $administrativeId);
             });
         }
@@ -161,7 +161,7 @@ class ApplicationFormController extends Controller
 
         // Return only sections that are active AND have available capacity
         $data = $query->active()->get()
-            ->reject(fn($sec) => $sec->isFull())
+            ->reject(fn($sec) => $sec->getCapacityStats()['is_full'])
             ->map(fn($sec) => [
                 'id' => $sec->id,
                 'name' => $sec->name_location,

@@ -18,10 +18,12 @@ class AdministrativeFactory extends Factory
      */
     public function definition(): array
     {
+        $arabicFaker = fake('ar_SA');
+
         return [
-            'title' => $this->faker->company,
-            'is_medical' => $this->faker->boolean,
+            'title' => 'مديرية ' . $arabicFaker->realText(15),
             'user_id' => User::factory(),
+            'is_medical' => $this->faker->boolean,
             'medical_head_user_id' => $this->faker->boolean ? User::factory() : null,
         ];
     }

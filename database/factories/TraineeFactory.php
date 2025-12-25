@@ -21,18 +21,18 @@ class TraineeFactory extends Factory
      */
     public function definition(): array
     {
+        $arabicFaker = fake('ar_SA');
         return [
-            'national_id' => $this->faker->unique()->numerify('##########'),
-            'full_name' => $this->faker->name,
-            'phone_number' => $this->faker->phoneNumber,
-            'dob' => $this->faker->date(),
-            'governorate_id' => Governorate::inRandomOrder()->first()?->id ?? Governorate::factory(),
-            'address' => $this->faker->address,
-            'street' => $this->faker->streetName,
-            'institution_id' => Institution::inRandomOrder()->first()?->id ?? 1, // Fallback to 1 if empty
-            'college_id' => College::inRandomOrder()->first()?->id ?? 1,
-            'major_id' => Major::inRandomOrder()->first()?->id ?? 1,
-            'training_hours' => $this->faker->numberBetween(100, 500),
+            'national_id' => $this->faker->unique()->numerify('#########'),
+            'full_name' => $arabicFaker->name,
+            'phone_number' => $this->faker->numerify('97059#######'),
+            'dob' => $this->faker->date('Y-m-d', '-20 years'),
+            'governorate_id' => Governorate::factory(),
+            'street' => $arabicFaker->streetAddress,
+            'institution_id' => Institution::factory(),
+            'college_id' => College::factory(),
+            'major_id' => Major::factory(),
+            'training_hours' => $this->faker->numberBetween(10, 200),
         ];
     }
 }
