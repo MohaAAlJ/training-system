@@ -236,12 +236,13 @@ class ApplicationTable
                             ->label('المدة (يوم)')
                             ->numeric()
                             ->required()
-                            ->default(30)
+                            ->default(45)
                             ->reactive()
                             ->visible(fn($get) => (int)$get('new_status') === Application::STATUS_STARTED_TRAINING),
-                        \Filament\Forms\Components\Placeholder::make('calculated_end_date')
+                        ViewField::make('calculated_end_date')
                             ->label('تاريخ الانتهاء المتوقع')
-                            ->content(function ($get) {
+                            // ->view('filament.forms.components.calculated-date')
+                            ->viewData(function ($get) {
                                 $startDate = $get('start_date');
                                 $duration = $get('duration');
 
@@ -249,12 +250,12 @@ class ApplicationTable
                                     try {
                                         $start = \Carbon\Carbon::parse($startDate);
                                         $end = $start->copy()->addDays((int)$duration);
-                                        return $end->format('Y-m-d') . ' (' . $end->translatedFormat('l، d F Y') . ')';
+                                        return ['date' => $end->format('Y-m-d') . ' (' . $end->translatedFormat('l، d F Y') . ')'];
                                     } catch (\Exception $e) {
-                                        return 'غير محدد';
+                                        return ['date' => 'غير محدد'];
                                     }
                                 }
-                                return 'غير محدد';
+                                return ['date' => 'غير محدد'];
                             })
                             ->visible(fn($get) => (int)$get('new_status') === Application::STATUS_STARTED_TRAINING),
                     ])
@@ -298,11 +299,12 @@ class ApplicationTable
                             ->label('المدة (يوم)')
                             ->numeric()
                             ->required()
-                            ->default(30)
+                            ->default(45)
                             ->reactive(),
-                        \Filament\Forms\Components\Placeholder::make('calculated_end_date')
+                        ViewField::make('calculated_end_date')
                             ->label('تاريخ الانتهاء المتوقع')
-                            ->content(function ($get) {
+                            ->view('filament.forms.components.calculated-date')
+                            ->viewData(function ($get) {
                                 $startDate = $get('start_date');
                                 $duration = $get('duration');
 
@@ -310,12 +312,12 @@ class ApplicationTable
                                     try {
                                         $start = \Carbon\Carbon::parse($startDate);
                                         $end = $start->copy()->addDays((int)$duration);
-                                        return $end->format('Y-m-d') . ' (' . $end->translatedFormat('l، d F Y') . ')';
+                                        return ['date' => $end->format('Y-m-d') . ' (' . $end->translatedFormat('l، d F Y') . ')'];
                                     } catch (\Exception $e) {
-                                        return 'غير محدد';
+                                        return ['date' => 'غير محدد'];
                                     }
                                 }
-                                return 'غير محدد';
+                                return ['date' => 'غير محدد'];
                             }),
                     ])
                     ->successNotificationTitle('تم بدء التدريب بنجاح')

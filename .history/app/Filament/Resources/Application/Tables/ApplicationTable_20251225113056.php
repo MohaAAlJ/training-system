@@ -298,7 +298,7 @@ class ApplicationTable
                             ->label('المدة (يوم)')
                             ->numeric()
                             ->required()
-                            ->default(30)
+                            ->default(45)
                             ->reactive(),
                         \Filament\Forms\Components\Placeholder::make('calculated_end_date')
                             ->label('تاريخ الانتهاء المتوقع')
