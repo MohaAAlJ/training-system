@@ -59,7 +59,7 @@ class User extends Authenticatable implements FilamentUser
     public const STATUS_DROPPED = 8;
     public const STATUS_UNKNOWN = 9;
 */
-    public function department(): HasOne
+    public function Department(): HasOne
     {
         return $this->hasOne(Department::class, 'user_id');
     }
@@ -69,19 +69,19 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasOne(Section::class, 'user_id');
     }
 
-    public function college(): HasOne
+    public function College(): HasOne
     {
         return $this->hasOne(College::class, 'user_id');
     }
 
-    public function administrative(): HasOne
+    public function Administrative(): HasOne
     {
         return $this->hasOne(Administrative::class, 'user_id');
     }
 
     public function Trainee()
     {
-        return $this->college()?->Trainee();
+        return $this->College?->Trainee();
     }
 
     /**
@@ -163,10 +163,10 @@ class User extends Authenticatable implements FilamentUser
     public function scopeFree($query, $currentUserId = null)
     {
         return $query->where(function ($q) use ($currentUserId) {
-            $q->whereDoesntHave('department')
+            $q->whereDoesntHave('Department')
                 ->whereDoesntHave('Section')
-                ->whereDoesntHave('college')
-                ->whereDoesntHave('administrative')
+                ->whereDoesntHave('College')
+                ->whereDoesntHave('Administrative')
                 ->whereDoesntHave('administrativeMedicalHead');
 
             if ($currentUserId) {
@@ -205,10 +205,10 @@ class User extends Authenticatable implements FilamentUser
         $busyUsers = self::where('role', $role)
             ->where(function ($q) use ($currentUserId) {
                 $q->where(function ($sq) {
-                    $sq->has('department')
+                    $sq->has('Department')
                         ->orHas('Section')
-                        ->orHas('college')
-                        ->orHas('administrative')
+                        ->orHas('College')
+                        ->orHas('Administrative')
                         ->orHas('administrativeMedicalHead');
                 })
                     ->where('id', '!=', $currentUserId ?? 0);

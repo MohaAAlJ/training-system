@@ -335,8 +335,10 @@ class ApplicationForm
                                             $query->where('department_id', $deptId);
                                         }
 
+                                        $hideFull = \App\Models\GeneralSetting::instance()->hide_full_sections;
+
                                         return $query->get()
-                                            ->reject(fn($sec) => $sec->isFull())
+                                            ->when($hideFull, fn($collection) => $collection->reject(fn($sec) => $sec->getCapacityStats()['is_full']))
                                             ->pluck('name_location', 'id');
                                     })
                                     ->searchable()

@@ -159,9 +159,11 @@ class ApplicationFormController extends Controller
             $query->where('administrative_id', $administrativeId);
         }
 
-        // Return only sections that are active AND have available capacity
+        $hideFull = \App\Models\GeneralSetting::instance()->hide_full_sections;
+
+        // Return sections based on capacity settings
         $data = $query->active()->get()
-            ->reject(fn($sec) => $sec->getCapacityStats()['is_full'])
+            ->when($hideFull, fn($collection) => $collection->reject(fn($sec) => $sec->getCapacityStats()['is_full']))
             ->map(fn($sec) => [
                 'id' => $sec->id,
                 'name' => $sec->name_location,

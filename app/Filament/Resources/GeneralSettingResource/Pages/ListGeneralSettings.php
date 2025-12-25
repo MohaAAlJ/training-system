@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Resources\GeneralSettings\Pages;
+namespace App\Filament\Resources\GeneralSettingResource\Pages;
 
-use App\Filament\Resources\GeneralSettings\GeneralSettingResource;
+use App\Filament\Resources\GeneralSettingResource;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
@@ -19,9 +19,10 @@ class ListGeneralSettings extends ListRecords
 
     public function mount(): void
     {
-        // Ensure the singleton record exists
-        if (\App\Models\GeneralSetting::count() === 0) {
-            \App\Models\GeneralSetting::create([
+        $setting = \App\Models\GeneralSetting::first();
+
+        if (!$setting) {
+            $setting = \App\Models\GeneralSetting::create([
                 'hoa_can_edit_section' => false,
                 'hoa_can_enable_section' => false,
                 'dept_head_can_edit_section' => false,
@@ -29,6 +30,6 @@ class ListGeneralSettings extends ListRecords
             ]);
         }
 
-        parent::mount();
+        redirect(GeneralSettingResource::getUrl('edit', ['record' => $setting]));
     }
 }

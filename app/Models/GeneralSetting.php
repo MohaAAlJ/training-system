@@ -13,6 +13,7 @@ class GeneralSetting extends Model
         'hoa_can_enable_section',
         'dept_head_can_edit_section',
         'dept_head_can_enable_section',
+        'hide_full_sections',
     ];
 
     protected $casts = [
@@ -20,6 +21,7 @@ class GeneralSetting extends Model
         'hoa_can_enable_section' => 'boolean',
         'dept_head_can_edit_section' => 'boolean',
         'dept_head_can_enable_section' => 'boolean',
+        'hide_full_sections' => 'boolean',
     ];
 
     /**

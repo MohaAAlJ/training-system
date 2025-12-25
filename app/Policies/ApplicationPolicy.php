@@ -22,7 +22,7 @@ class ApplicationPolicy
         }
 
         if ($user->isCollegeSupervisor()) {
-            return $Application->trainee->college_id === $user->college?->id;
+            return $Application->trainee->college_id === $user->College?->id;
         }
 
         if ($user->isSectionHead()) {
@@ -34,7 +34,7 @@ class ApplicationPolicy
         }
 
         if ($user->isAdministrative()) {
-            return $Application->administrative_id === $user->administrative?->id &&
+            return $Application->administrative_id === $user->Administrative?->id &&
                 in_array((int)$Application->status, [
                     Application::STATUS_STARTED_TRAINING,
                     Application::STATUS_ENDED_TRAINING
@@ -42,7 +42,7 @@ class ApplicationPolicy
         }
 
         if ($user->isDepartment()) {
-            return $Application->department_id === $user->department?->id &&
+            return $Application->department_id === $user->Department?->id &&
                 in_array((int)$Application->status, [
                     Application::STATUS_STARTED_TRAINING,
                     Application::STATUS_ENDED_TRAINING
