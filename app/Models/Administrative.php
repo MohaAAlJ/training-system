@@ -78,36 +78,26 @@ class Administrative extends Model
     }
 
     /**
-     * Get capacity statistics for this administrative unit by summing its Section.
+     * Get capacity statistics for this administrative unit by summing its sections.
+     * Returns: total, used, available, is_full
      */
     public function getCapacityStats(): array
     {
-        $stats = [
-            'total' => 0,
-            'used' => 0,
-            'available' => 0,
+        // Sum total capacity from all sections
+        $total = (int) $this->Section()->sum('total_capacity');
+
+        // Count all active applications in this administrative unit
+        $used = Application::where('administrative_id', $this->id)
+            ->where('status', Application::STATUS_STARTED_TRAINING)
+            ->count();
+
+        $available = max(0, $total - $used);
+
+        return [
+            'total' => $total,
+            'used' => $used,
+            'available' => $available,
+            'is_full' => $available <= 0
         ];
-
-        foreach ($this->Section as $section) {
-            $sStats = $section->getCapacityStats();
-            $stats['total'] += $sStats['total'];
-            $stats['used'] += $sStats['used'];
-            $stats['available'] += $sStats['available'];
-        }
-
-        return $stats;
-    }
-
-    /**
-     * Check if the administrative unit is full.
-     */
-    public function isFull(): bool
-    {
-        return $this->getCapacityStats()['available'] <= 0;
     }
 }
-
-
-
-
-

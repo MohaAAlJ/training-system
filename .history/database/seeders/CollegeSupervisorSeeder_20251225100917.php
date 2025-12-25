@@ -6,7 +6,6 @@ use Illuminate\Database\Seeder;
 use App\Models\User;
 use App\Models\College;
 use App\Models\Institution;
-use App\Helpers\Constans;
 use Illuminate\Support\Facades\Hash;
 
 class CollegeSupervisorsSeeder extends Seeder

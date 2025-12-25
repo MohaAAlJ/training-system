@@ -18,11 +18,16 @@ class DepartmentFactory extends Factory
      */
     public function definition(): array
     {
+        $arabicFaker = fake('ar_SA');
         return [
-            'title' => $this->faker->jobTitle . ' Department',
-            'status' => $this->faker->boolean, // Migration defines boolean
+            'title' => 'قسم ' . $arabicFaker->realText(15),
             'user_id' => User::factory(),
+            'head_of_department' => User::factory(),
+            'medical_head_user_id' => $this->faker->boolean ? User::factory() : null,
             'is_medical' => $this->faker->boolean,
+            'status' => 'active',
+            'total_capacity' => $this->faker->numberBetween(5, 20),
+            'location' => $this->faker->address,
         ];
     }
 }

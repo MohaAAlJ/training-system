@@ -2,7 +2,6 @@
 
 namespace App\Filament\Widgets;
 
-use App\Helpers\Constants;
 use App\Models\Action;
 use App\Models\Application;
 use App\Models\Department;
@@ -189,7 +188,15 @@ class DashboardStatsOverview extends BaseWidget
         // 4. GENERAL TRAINING MANAGER (GTM - 8)
         elseif ($role === User::ROLE_GTM) {
 
-            $capStats = Constants::getCapacityStats(); // Get global stats
+            // Aggregate capacity from all sections
+            $capStats = ['total' => 0, 'used' => 0, 'available' => 0];
+            foreach (Section::all() as $section) {
+                $sStats = $section->getCapacityStats();
+                $capStats['total'] += $sStats['total'];
+                $capStats['used'] += $sStats['used'];
+                $capStats['available'] += $sStats['available'];
+            }
+
             $newApps = Application::where('status', Application::STATUS_NEW)->count();
 
             // Combined Capacity Card

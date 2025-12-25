@@ -155,7 +155,7 @@ class User extends Authenticatable implements FilamentUser
 
     /**
      * Scope a query to only include users who are not assigned as heads.
-     * 
+     *
      * @param \Illuminate\Database\Eloquent\Builder $query
      * @param int|null $currentUserId The ID of the user currently assigned to the record being edited.
      * @return \Illuminate\Database\Eloquent\Builder

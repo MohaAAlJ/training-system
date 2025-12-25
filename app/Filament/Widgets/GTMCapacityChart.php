@@ -4,7 +4,7 @@ namespace App\Filament\Widgets;
 
 use App\Models\User;
 
-use App\Helpers\Constants;
+
 use Filament\Widgets\ChartWidget;
 use Illuminate\Support\Facades\Auth;
 
@@ -35,25 +35,41 @@ class GTMCapacityChart extends ChartWidget
     protected function getData(): array
     {
         $user = Auth::user();
-        $total = 0;
-        $used = 0;
 
         if ($user->isGeneralTrainingManager() || $user->isAdmin()) {
-            $stats = Constants::getCapacityStats();
+            // Aggregate from all sections
+            $stats = ['total' => 0, 'used' => 0, 'available' => 0];
+            foreach (\App\Models\Section::all() as $section) {
+                $sStats = $section->getCapacityStats();
+                $stats['total'] += $sStats['total'];
+                $stats['used'] += $sStats['used'];
+                $stats['available'] += $sStats['available'];
+            }
         } elseif ($user->isMedicalManager()) { // HOM
-            $stats = Constants::getCapacityStats(null, null, null, true);
+            // Aggregate from medical sections only
+            $stats = ['total' => 0, 'used' => 0, 'available' => 0];
+            foreach (\App\Models\Section::whereHas('department', fn($q) => $q->where('is_medical', true))->get() as $section) {
+                $sStats = $section->getCapacityStats();
+                $stats['total'] += $sStats['total'];
+                $stats['used'] += $sStats['used'];
+                $stats['available'] += $sStats['available'];
+            }
         } elseif ($user->isHOA()) { // HOA
-            $stats = Constants::getCapacityStats($user->administrative?->id);
+            $adminUnit = \App\Models\Administrative::where('user_id', $user->id)->first();
+            $stats = $adminUnit ? $adminUnit->getCapacityStats() : ['total' => 0, 'used' => 0, 'available' => 0];
         } elseif ($user->isDepartmentHead()) {
-            $stats = Constants::getCapacityStats(null, $user->department?->id);
+            $dept = \App\Models\Department::where('user_id', $user->id)->first();
+            $stats = $dept ? $dept->getCapacityStats() : ['total' => 0, 'used' => 0, 'available' => 0];
         } elseif ($user->isSectionHead()) {
-            $stats = Constants::getCapacityStats(null, null, $user->Section?->id);
+            $section = \App\Models\Section::where('user_id', $user->id)->first();
+            $stats = $section ? $section->getCapacityStats() : ['total' => 0, 'used' => 0, 'available' => 0];
         } else {
             $stats = ['total' => 0, 'used' => 0, 'available' => 0];
         }
 
         $total = $stats['total'];
         $used = $stats['used'];
+        $available = max(0, $total - $used);
 
         $available = max(0, $total - $used);
 
