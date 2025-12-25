@@ -36,19 +36,19 @@ class Administrative extends Model
     }
 
     /**
-     * Get all sections under this administrative.
+     * Get all Section under this administrative.
      */
-    public function sections()
+    public function Section()
     {
-        return $this->hasMany(Sections::class, 'administrative_id');
+        return $this->hasMany(Section::class, 'administrative_id');
     }
 
     /**
-     * Get all applications for this administrative unit.
+     * Get all Application for this administrative unit.
      */
-    public function applications()
+    public function Application()
     {
-        return $this->hasMany(Applications::class, 'administrative_id');
+        return $this->hasMany(Application::class, 'administrative_id');
     }
 
 
@@ -63,11 +63,11 @@ class Administrative extends Model
     }
 
     /**
-     * Get title with governorate name (from sections)
+     * Get title with governorate name (from Section)
      */
     public function getNameWithGovernorateAttribute(): string
     {
-        $section = $this->sections()->with('governorate')->first();
+        $section = $this->Section()->with('governorate')->first();
         $govName = $section?->governorate?->name;
 
         if (is_array($govName)) {
@@ -78,7 +78,7 @@ class Administrative extends Model
     }
 
     /**
-     * Get capacity statistics for this administrative unit by summing its sections.
+     * Get capacity statistics for this administrative unit by summing its Section.
      */
     public function getCapacityStats(): array
     {
@@ -88,7 +88,7 @@ class Administrative extends Model
             'available' => 0,
         ];
 
-        foreach ($this->sections as $section) {
+        foreach ($this->Section as $section) {
             $sStats = $section->getCapacityStats();
             $stats['total'] += $sStats['total'];
             $stats['used'] += $sStats['used'];
@@ -106,3 +106,8 @@ class Administrative extends Model
         return $this->getCapacityStats()['available'] <= 0;
     }
 }
+
+
+
+
+

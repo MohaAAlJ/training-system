@@ -27,10 +27,15 @@ class Major extends Model
         return $this->belongsToMany(College::class, 'college_major');
     }
 
-    public function trainees(): HasMany
+    public function Trainee(): HasMany
     {
-        return $this->hasMany(Trainees::class, 'major_id');
+        return $this->hasMany(Trainee::class, 'major_id');
     }
 
 
 }
+
+
+
+
+

@@ -18,3 +18,8 @@ class CollegeMajor extends Pivot
         'major_id'
     ];
 }
+
+
+
+
+
