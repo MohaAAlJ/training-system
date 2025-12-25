@@ -42,8 +42,10 @@ class DepartmentForm
                         Select::make('user_id')
                             ->label('رئيس الدائرة')
                             ->helperText('اختر رئيس الدائرة (اختياري)')
-                            ->options(fn($record) => \App\Models\User::getHeadOptions(\App\Models\User::ROLE_DEPARTMENT, $record?->user_id))
-                            ->disableOptionWhen(fn($value, $record) => !\App\Models\User::where('id', $value)->free($record?->user_id)->exists())
+                            ->relationship('user', 'name', function ($query, $get) {
+                                return $query->where('role', \App\Helpers\Constants::ROLE_DEPARTMENT)
+                                    ->free($get('user_id'));
+                            })
                             ->searchable()
                             ->preload()
                             ->nullable(),
@@ -51,3 +53,9 @@ class DepartmentForm
             ]);
     }
 }
+
+
+
+
+
+
