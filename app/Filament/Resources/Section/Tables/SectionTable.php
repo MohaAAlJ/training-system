@@ -46,9 +46,8 @@ class SectionTable
                 TextColumn::make('registered_count')
                     ->label('المسجلين')
                     ->state(function ($record) {
-                        return DB::table('Application')
-                            ->where('section_id', $record->id)
-                            ->whereIn('status', ['active', 'completed'])
+                        return $record->Application()
+                            ->where('status', \App\Models\Application::STATUS_STARTED_TRAINING)
                             ->count();
                     })
                     ->badge()

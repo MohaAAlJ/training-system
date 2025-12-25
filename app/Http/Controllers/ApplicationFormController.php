@@ -129,7 +129,7 @@ class ApplicationFormController extends Controller
 
         if ($administrativeId) {
             // Filter departments that have sections in this administrative unit
-            $query->whereHas('sections', function ($q) use ($administrativeId) {
+            $query->whereHas('Section', function ($q) use ($administrativeId) {
                 $q->where('administrative_id', $administrativeId);
             });
         }

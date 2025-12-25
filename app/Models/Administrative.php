@@ -38,7 +38,7 @@ class Administrative extends Model
     /**
      * Get all Section under this administrative.
      */
-    public function sections()
+    public function Section()
     {
         return $this->hasMany(Section::class, 'administrative_id');
     }
@@ -46,7 +46,7 @@ class Administrative extends Model
     /**
      * Get all Application for this administrative unit.
      */
-    public function applications()
+    public function Application()
     {
         return $this->hasMany(Application::class, 'administrative_id');
     }
@@ -67,7 +67,7 @@ class Administrative extends Model
      */
     public function getNameWithGovernorateAttribute(): string
     {
-        $section = $this->sections()->with('governorate')->first();
+        $section = $this->Section()->with('governorate')->first();
         $govName = $section?->governorate?->name;
 
         if (is_array($govName)) {
@@ -84,7 +84,7 @@ class Administrative extends Model
     public function getCapacityStats(): array
     {
         // Sum total capacity from all sections
-        $total = (int) $this->sections()->sum('total_capacity');
+        $total = (int) $this->Section()->sum('total_capacity');
 
         // Count all active applications in this administrative unit
         $used = Application::where('administrative_id', $this->id)

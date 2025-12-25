@@ -38,12 +38,12 @@ class Department extends Model
         return $this->belongsTo(User::class, 'medical_head_user_id');
     }
 
-    public function applications()
+    public function Application()
     {
         return $this->hasMany(Application::class, 'department_id');
     }
 
-    public function sections()
+    public function Section()
     {
         return $this->hasMany(Section::class, 'department_id');
     }
@@ -79,7 +79,7 @@ class Department extends Model
     public function getCapacityStats(): array
     {
         // Sum total capacity from all sections
-        $total = (int) $this->sections()->sum('total_capacity');
+        $total = (int) $this->Section()->sum('total_capacity');
 
         // Count all active applications in this department
         $used = Application::where('department_id', $this->id)
