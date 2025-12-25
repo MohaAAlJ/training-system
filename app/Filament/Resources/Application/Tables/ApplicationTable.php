@@ -18,6 +18,7 @@ use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Actions\DeleteAction;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\ViewField;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use App\Helpers\Constants;
@@ -226,12 +227,35 @@ class ApplicationTable
                             ->label('تاريخ البدء')
                             ->required()
                             ->default(now())
+                            ->native(false)
+                            ->format('Y/m/d')
+                            ->displayFormat('Y/m/d')
+                            ->reactive()
                             ->visible(fn($get) => (int)$get('new_status') === Application::STATUS_STARTED_TRAINING),
                         TextInput::make('duration')
                             ->label('المدة (يوم)')
                             ->numeric()
                             ->required()
-                            ->default(45)
+                            ->default(30)
+                            ->reactive()
+                            ->visible(fn($get) => (int)$get('new_status') === Application::STATUS_STARTED_TRAINING),
+                        \Filament\Forms\Components\Placeholder::make('calculated_end_date')
+                            ->label('تاريخ الانتهاء المتوقع')
+                            ->content(function ($get) {
+                                $startDate = $get('start_date');
+                                $duration = $get('duration');
+
+                                if ($startDate && $duration) {
+                                    try {
+                                        $start = \Carbon\Carbon::parse($startDate);
+                                        $end = $start->copy()->addDays((int)$duration);
+                                        return $end->format('Y-m-d') . ' (' . $end->translatedFormat('l، d F Y') . ')';
+                                    } catch (\Exception $e) {
+                                        return 'غير محدد';
+                                    }
+                                }
+                                return 'غير محدد';
+                            })
                             ->visible(fn($get) => (int)$get('new_status') === Application::STATUS_STARTED_TRAINING),
                     ])
                     ->successNotificationTitle('تمت معالجة التأكيد بنجاح')
@@ -254,6 +278,58 @@ class ApplicationTable
                                 'status' => Application::STATUS_WAITING_LIST,
                             ]);
                         }
+                    }),
+
+                Action::make('begin_training_from_waiting')
+                    ->label('بدء التدريب')
+                    ->color('success')
+                    ->icon('heroicon-o-play-circle')
+                    ->visible(fn($record) => Auth::user()->isGeneralTrainingManager() && $record->status == Application::STATUS_WAITING_LIST)
+                    ->form([
+                        DatePicker::make('start_date')
+                            ->label('تاريخ البدء')
+                            ->required()
+                            ->default(now())
+                            ->native(false)
+                            ->format('Y/m/d')
+                            ->displayFormat('Y/m/d')
+                            ->reactive(),
+                        TextInput::make('duration')
+                            ->label('المدة (يوم)')
+                            ->numeric()
+                            ->required()
+                            ->default(30)
+                            ->reactive(),
+                        \Filament\Forms\Components\Placeholder::make('calculated_end_date')
+                            ->label('تاريخ الانتهاء المتوقع')
+                            ->content(function ($get) {
+                                $startDate = $get('start_date');
+                                $duration = $get('duration');
+
+                                if ($startDate && $duration) {
+                                    try {
+                                        $start = \Carbon\Carbon::parse($startDate);
+                                        $end = $start->copy()->addDays((int)$duration);
+                                        return $end->format('Y-m-d') . ' (' . $end->translatedFormat('l، d F Y') . ')';
+                                    } catch (\Exception $e) {
+                                        return 'غير محدد';
+                                    }
+                                }
+                                return 'غير محدد';
+                            }),
+                    ])
+                    ->successNotificationTitle('تم بدء التدريب بنجاح')
+                    ->action(function ($record, array $data) {
+                        $startDate = \Carbon\Carbon::parse($data['start_date']);
+                        $duration = (int)$data['duration'];
+                        $endDate = $startDate->copy()->addDays($duration);
+
+                        $record->update([
+                            'status' => Application::STATUS_STARTED_TRAINING,
+                            'start_date' => $startDate,
+                            'duration' => $duration,
+                            'end_date' => $endDate,
+                        ]);
                     }),
 
                 DeleteAction::make()

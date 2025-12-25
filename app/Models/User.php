@@ -174,9 +174,52 @@ class User extends Authenticatable implements FilamentUser
             }
         });
     }
+
+    /**
+     * Get ordered options for head selection.
+     */
+    public static function getHeadOptions($role, $currentUserId = null)
+    {
+        $options = [];
+
+        // 1. Current user if editing
+        if ($currentUserId) {
+            $currentUser = self::find($currentUserId);
+            if ($currentUser) {
+                $options[$currentUser->id] = $currentUser->name . ' (الحالي)';
+            }
+        }
+
+        // 2. Free users (excluding current)
+        $freeUsers = self::where('role', $role)
+            ->free()
+            ->where('id', '!=', $currentUserId ?? 0)
+            ->orderBy('name')
+            ->get();
+
+        foreach ($freeUsers as $user) {
+            $options[$user->id] = $user->name;
+        }
+
+        // 3. Busy users
+        $busyUsers = self::where('role', $role)
+            ->where(function ($q) use ($currentUserId) {
+                $q->where(function ($sq) {
+                    $sq->has('department')
+                        ->orHas('Section')
+                        ->orHas('college')
+                        ->orHas('administrative')
+                        ->orHas('administrativeMedicalHead');
+                })
+                    ->where('id', '!=', $currentUserId ?? 0);
+            })
+            ->orderBy('name')
+            ->get();
+
+        foreach ($busyUsers as $user) {
+            $options[$user->id] = $user->name . ' (مشغول)';
+        }
+
+        return $options;
+    }
 }
-
-
-
-
-

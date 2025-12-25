@@ -37,7 +37,7 @@ class ApplicationFormController extends Controller
     /**
      * Public JSON endpoints to feed the form selects from the database.
      */
-    public function addresses()
+    public function address()
     {
         $data = Governorate::select('id', 'name')->get()
             ->map(fn($gov) => [
@@ -49,7 +49,7 @@ class ApplicationFormController extends Controller
         return response()->json($data);
     }
 
-    public function institutions()
+    public function institution()
     {
         $data = Institution::select('id', 'name')->get()
             ->map(fn($inst) => [
@@ -61,7 +61,7 @@ class ApplicationFormController extends Controller
         return response()->json($data);
     }
 
-    public function majors(Request $request)
+    public function major(Request $request)
     {
         $institutionId = $request->query('institution_id');
 
@@ -86,7 +86,7 @@ class ApplicationFormController extends Controller
     /**
      * Return colleges linked to a given major (used to auto-fill institution)
      */
-    public function majorColleges(Request $request)
+    public function majorCollege(Request $request)
     {
         $majorId = $request->query('major_id');
 
@@ -109,7 +109,7 @@ class ApplicationFormController extends Controller
         return response()->json($colleges);
     }
 
-    public function administratives()
+    public function administrative()
     {
         $data = Administrative::all()
             ->map(fn($adm) => [
@@ -121,7 +121,7 @@ class ApplicationFormController extends Controller
         return response()->json($data);
     }
 
-    public function departments(Request $request)
+    public function department(Request $request)
     {
         $administrativeId = $request->query('administrative_id');
 
@@ -144,7 +144,7 @@ class ApplicationFormController extends Controller
         return response()->json($data);
     }
 
-    public function sections(Request $request)
+    public function section(Request $request)
     {
         $departmentId = $request->query('department_id');
         $administrativeId = $request->query('administrative_id');
@@ -171,7 +171,7 @@ class ApplicationFormController extends Controller
         return response()->json($data);
     }
 
-    public function trainingTypes()
+    public function trainingType()
     {
         $data = [
             ['id' => Application::TRAINING_TYPE_UNIVERSITY, 'name' => Application::TRAINING_TYPES[Application::TRAINING_TYPE_UNIVERSITY]],
