@@ -31,8 +31,10 @@ class SectionForm
                     ->required(),
                 Select::make('user_id')
                     ->label('المسؤول')
-                    ->options(fn($record) => \App\Models\User::getHeadOptions(\App\Models\User::ROLE_SECTION, $record?->user_id))
-                    ->disableOptionWhen(fn($value, $record) => !\App\Models\User::where('id', $value)->free($record?->user_id)->exists())
+                    ->relationship('user', 'name', function ($query, $get) {
+                        return $query->where('role', \App\Helpers\Constants::ROLE_SECTION)
+                            ->free($get('user_id'));
+                    })
                     ->searchable()
                     ->preload()
                     ->required(),
@@ -53,3 +55,9 @@ class SectionForm
             ]);
     }
 }
+
+
+
+
+
+

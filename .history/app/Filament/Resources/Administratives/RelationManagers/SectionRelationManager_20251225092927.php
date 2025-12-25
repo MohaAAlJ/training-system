@@ -1,34 +1,29 @@
 <?php
 
-namespace App\Filament\Resources\Department\RelationManagers;
+namespace App\Filament\Resources\Administratives\RelationManagers;
 
-use Filament\Actions\AssociateAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\DissociateAction;
-use Filament\Actions\DissociateBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreAction;
 use Filament\Actions\RestoreBulkAction;
-use Filament\Resources\RelationManagers\RelationManager;
-use Filament\Schemas\Schema;
-use App\Filament\Resources\Section\Schemas\SectionForm;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\ToggleColumn;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Tables\Filters\SelectFilter;
-use Filament\Tables\Filters\TrashedFilter;
+use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Filament\Actions\ViewAction;
+use Illuminate\Support\Facades\Auth;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TrashedFilter;
 
 class SectionsRelationManager extends RelationManager
 {
@@ -43,6 +38,12 @@ class SectionsRelationManager extends RelationManager
                     ->required()
                     ->maxLength(255)
                     ->columnSpanFull(),
+                Select::make('department_id')
+                    ->label('القسم')
+                    ->relationship('department', 'title')
+                    ->searchable()
+                    ->preload()
+                    ->required(),
                 Select::make('user_id')
                     ->label('المسؤول')
                     ->relationship('user', 'name')
@@ -84,11 +85,9 @@ class SectionsRelationManager extends RelationManager
                 TextColumn::make('registered_count')
                     ->label('المسجلين')
                     ->state(function ($record) {
-                        return \App\Models\Application::where('section_id', $record->id)
-                            ->whereIn('status', [
-                                \App\Models\Application::STATUS_STARTED_TRAINING,
-                                \App\Models\Application::STATUS_ENDED_TRAINING,
-                            ])
+                        return DB::table('Application')
+                            ->where('section_id', $record->id)
+                            ->whereIn('status', ['active', 'completed'])
                             ->count();
                     })
                     ->badge()
@@ -158,3 +157,9 @@ class SectionsRelationManager extends RelationManager
             );
     }
 }
+
+
+
+
+
+
