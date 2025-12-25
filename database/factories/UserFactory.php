@@ -6,7 +6,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
-use App\Helpers\Constans;
+
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\User>
@@ -21,7 +21,7 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password' => Hash::make('password'),
             'status' => 'active',
-            'role' => Constans::ROLE_MOH,
+            'role' => User::ROLE_MOH,
             'remember_token' => Str::random(10),
         ];
     }
@@ -29,7 +29,7 @@ class UserFactory extends Factory
     public function admin(): static
     {
         return $this->state(fn(array $attributes) => [
-            'role' => Constans::ROLE_ADMIN,
+            'role' => User::ROLE_ADMIN,
         ]);
     }
 
@@ -39,7 +39,7 @@ class UserFactory extends Factory
     public function department(): static
     {
         return $this->state(fn(array $attributes) => [
-            'role' => Constans::ROLE_DEPARTMENT,
+            'role' => User::ROLE_DEPARTMENT,
         ]);
     }
 
@@ -49,7 +49,7 @@ class UserFactory extends Factory
     public function section(): static
     {
         return $this->state(fn(array $attributes) => [
-            'role' => Constans::ROLE_SECTION,
+            'role' => User::ROLE_SECTION,
         ]);
     }
 
@@ -59,7 +59,7 @@ class UserFactory extends Factory
     public function moh(): static
     {
         return $this->state(fn(array $attributes) => [
-            'role' => Constans::ROLE_MOH,
+            'role' => User::ROLE_MOH,
         ]);
     }
 
@@ -69,7 +69,7 @@ class UserFactory extends Factory
     public function institutionSupervisor(): static
     {
         return $this->state(fn(array $attributes) => [
-            'role' => Constans::ROLE_COLLEGE,
+            'role' => User::ROLE_COLLEGE,
         ]);
     }
 
@@ -79,7 +79,7 @@ class UserFactory extends Factory
     public function collage(): static
     {
         return $this->state(fn(array $attributes) => [
-            'role' => Constans::ROLE_COLLEGE,
+            'role' => User::ROLE_COLLEGE,
         ]);
     }
     /**
@@ -88,7 +88,7 @@ class UserFactory extends Factory
     public function hoa(): static
     {
         return $this->state(fn(array $attributes) => [
-            'role' => Constans::ROLE_HOA,
+            'role' => User::ROLE_HOA,
         ]);
     }
 
@@ -98,7 +98,7 @@ class UserFactory extends Factory
     public function hom(): static
     {
         return $this->state(fn(array $attributes) => [
-            'role' => Constans::ROLE_HOM,
+            'role' => User::ROLE_HOM,
         ]);
     }
 
@@ -108,7 +108,7 @@ class UserFactory extends Factory
     public function gtm(): static
     {
         return $this->state(fn(array $attributes) => [
-            'role' => Constans::ROLE_GTM,
+            'role' => User::ROLE_GTM,
         ]);
     }
 }

@@ -38,12 +38,12 @@ class Department extends Model
         return $this->belongsTo(User::class, 'medical_head_user_id');
     }
 
-    public function Application()
+    public function applications()
     {
         return $this->hasMany(Application::class, 'department_id');
     }
 
-    public function Section()
+    public function sections()
     {
         return $this->hasMany(Section::class, 'department_id');
     }
@@ -73,31 +73,26 @@ class Department extends Model
     }
 
     /**
-     * Get capacity statistics for this department by summing its Section.
+     * Get capacity statistics for this department by summing its sections.
+     * Returns: total, used, available, is_full
      */
     public function getCapacityStats(): array
     {
-        $stats = [
-            'total' => 0,
-            'used' => 0,
-            'available' => 0,
+        // Sum total capacity from all sections
+        $total = (int) $this->sections()->sum('total_capacity');
+
+        // Count all active applications in this department
+        $used = Application::where('department_id', $this->id)
+            ->where('status', Application::STATUS_STARTED_TRAINING)
+            ->count();
+
+        $available = max(0, $total - $used);
+
+        return [
+            'total' => $total,
+            'used' => $used,
+            'available' => $available,
+            'is_full' => $available <= 0
         ];
-
-        foreach ($this->Section as $section) {
-            $sStats = $section->getCapacityStats();
-            $stats['total'] += $sStats['total'];
-            $stats['used'] += $sStats['used'];
-            $stats['available'] += $sStats['available'];
-        }
-
-        return $stats;
-    }
-
-    /**
-     * Check if the department is full.
-     */
-    public function isFull(): bool
-    {
-        return $this->getCapacityStats()['available'] <= 0;
     }
 }

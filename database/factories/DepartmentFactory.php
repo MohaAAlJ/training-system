@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Department>
  */
-class DepartmentsFactory extends Factory
+class DepartmentFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -18,11 +18,16 @@ class DepartmentsFactory extends Factory
      */
     public function definition(): array
     {
+        $arabicFaker = fake('ar_SA');
         return [
-            'title' => $this->faker->jobTitle . ' Department',
-            'status' => $this->faker->boolean, // Migration defines boolean
+            'title' => 'قسم ' . $arabicFaker->realText(15),
             'user_id' => User::factory(),
+            'head_of_department' => User::factory(),
+            'medical_head_user_id' => $this->faker->boolean ? User::factory() : null,
             'is_medical' => $this->faker->boolean,
+            'status' => 'active',
+            'total_capacity' => $this->faker->numberBetween(5, 20),
+            'location' => $this->faker->address,
         ];
     }
 }

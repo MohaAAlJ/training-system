@@ -161,7 +161,7 @@ class ApplicationFormController extends Controller
 
         // Return only sections that are active AND have available capacity
         $data = $query->active()->get()
-            ->reject(fn($sec) => $sec->isFull())
+            ->reject(fn($sec) => $sec->getCapacityStats()['is_full'])
             ->map(fn($sec) => [
                 'id' => $sec->id,
                 'name' => $sec->name_location,

@@ -45,8 +45,72 @@ class SectionPolicy
 
     public function update(User $user, Section $model): bool
     {
-        return $user->isAdmin();
+        if ($user->isAdmin() || $user->isGeneralTrainingManager()) {
+            return true;
+        }
+
+        $settings = \App\Models\GeneralSetting::instance();
+
+        // Check HOA permissions
+        if ($user->isHOA()) {
+            // Can update if: owned by their unit AND (can_edit OR can_enable)
+            // Note: We allow access to 'update' if they have either permission,
+            // verifying specific field access is done in Resource/Form.
+            if ($model->administrative_id === $user->administrative?->id) {
+                return $settings->hoa_can_edit_section || $settings->hoa_can_enable_section;
+            }
+        }
+
+        // Check Department permissions
+        if ($user->isDepartment()) {
+            if ($model->department_id === $user->department?->id) {
+                return $settings->dept_head_can_edit_section || $settings->dept_head_can_enable_section;
+            }
+        }
+
+        return false;
     }
+
+    /**
+     * Determine if the user can specifically edit section details (form).
+     */
+    public function editDetails(User $user, Section $model): bool
+    {
+        if ($user->isAdmin() || $user->isGeneralTrainingManager()) return true;
+
+        $settings = \App\Models\GeneralSetting::instance();
+
+        if ($user->isHOA() && $model->administrative_id === $user->administrative?->id) {
+            return $settings->hoa_can_edit_section;
+        }
+
+        if ($user->isDepartment() && $model->department_id === $user->department?->id) {
+            return $settings->dept_head_can_edit_section;
+        }
+
+        return false;
+    }
+
+    /**
+     * Determine if the user can specifically toggle status.
+     */
+    public function toggleStatus(User $user, Section $model): bool
+    {
+        if ($user->isAdmin() || $user->isGeneralTrainingManager()) return true;
+
+        $settings = \App\Models\GeneralSetting::instance();
+
+        if ($user->isHOA() && $model->administrative_id === $user->administrative?->id) {
+            return $settings->hoa_can_enable_section;
+        }
+
+        if ($user->isDepartment() && $model->department_id === $user->department?->id) {
+            return $settings->dept_head_can_enable_section;
+        }
+
+        return false;
+    }
+
 
     public function delete(User $user, Section $model): bool
     {

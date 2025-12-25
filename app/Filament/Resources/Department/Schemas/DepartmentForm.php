@@ -43,7 +43,7 @@ class DepartmentForm
                             ->label('رئيس الدائرة')
                             ->helperText('اختر رئيس الدائرة (اختياري)')
                             ->relationship('user', 'name', function ($query, $get) {
-                                return $query->where('role', \App\Helpers\Constants::ROLE_DEPARTMENT)
+                                return $query->where('role', \App\Models\User::ROLE_DEPARTMENT)
                                     ->free($get('user_id'));
                             })
                             ->searchable()

@@ -29,6 +29,23 @@ class Section extends Model
         'status' => 'string',
     ];
 
+    protected static function booted(): void
+    {
+        static::updating(function (Section $section) {
+            if ($section->isDirty('total_capacity')) {
+                $used = \App\Models\Application::where('section_id', $section->id)
+                    ->where('status', \App\Models\Application::STATUS_STARTED_TRAINING)
+                    ->count();
+
+                if ($section->total_capacity < $used) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        'total_capacity' => "لا يمكن تقليل السعة الكلية ({$section->total_capacity}) عن العدد المستخدم حالياً ({$used}).",
+                    ]);
+                }
+            }
+        });
+    }
+
     /**
      * Scope a query to only include active Section.
      */
@@ -76,28 +93,21 @@ class Section extends Model
 
     /**
      * Get capacity statistics for this section.
+     * Returns: total, used, available, is_full
      */
     public function getCapacityStats(): array
     {
-        $used = $this->Application()
+        $total = (int) ($this->total_capacity ?? 0);
+        $used = Application::where('section_id', $this->id)
             ->where('status', Application::STATUS_STARTED_TRAINING)
             ->count();
-
-        $total = (int) ($this->total_capacity ?? 0);
         $available = max(0, $total - $used);
 
         return [
             'total' => $total,
             'used' => $used,
             'available' => $available,
+            'is_full' => $available <= 0,
         ];
-    }
-
-    /**
-     * Check if the section is full.
-     */
-    public function isFull(): bool
-    {
-        return $this->getCapacityStats()['available'] <= 0;
     }
 }

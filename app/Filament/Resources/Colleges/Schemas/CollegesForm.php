@@ -28,7 +28,7 @@ class CollegesForm
                             ->label('مشرف الكلية')
                             ->relationship('user', 'name', function ($query, $get) {
                                 // Filter users to only show College Supervisors (Role 5) and free users
-                                return $query->where('role', \App\Helpers\Constants::ROLE_COLLEGE)
+                                return $query->where('role', \App\Models\User::ROLE_COLLEGE)
                                     ->free($get('user_id'));
                             })
                             ->searchable()

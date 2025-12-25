@@ -32,7 +32,7 @@ class SectionForm
                 Select::make('user_id')
                     ->label('المسؤول')
                     ->relationship('user', 'name', function ($query, $get) {
-                        return $query->where('role', \App\Helpers\Constants::ROLE_SECTION)
+                        return $query->where('role', \App\Models\User::ROLE_SECTION)
                             ->free($get('user_id'));
                     })
                     ->searchable()
@@ -43,6 +43,19 @@ class SectionForm
                     ->numeric()
                     ->minValue(1)
                     ->default(10)
+                    ->rules([
+                        fn ($record) => function (string $attribute, $value, \Closure $fail) use ($record) {
+                            if ($record && $record->exists) {
+                                $used = \App\Models\Application::where('section_id', $record->id)
+                                    ->where('status', \App\Models\Application::STATUS_STARTED_TRAINING)
+                                    ->count();
+
+                                if ($value < $used) {
+                                    $fail("لا يمكن تقليل السعة الكلية ({$value}) عن العدد المستخدم حالياً ({$used}).");
+                                }
+                            }
+                        },
+                    ])
                     ->required(),
                 Select::make('status')
                     ->label('الحالة')

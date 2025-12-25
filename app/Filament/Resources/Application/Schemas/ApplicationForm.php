@@ -327,7 +327,7 @@ class ApplicationForm
                         Select::make('section_id')
                             ->label('القسم')
                             ->options(function (callable $get) {
-                                $query = Section::query();
+                                $query = Section::active();
 
                                 if ($adminId = $get('administrative_id')) {
                                     $query->where('administrative_id', $adminId);
@@ -338,7 +338,7 @@ class ApplicationForm
                                 }
 
                                 return $query->get()
-                                    ->reject(fn($sec) => $sec->isFull())
+                                    ->reject(fn($sec) => $sec->getCapacityStats()['is_full'])
                                     ->pluck('name_location', 'id');
                             })
                             ->searchable()

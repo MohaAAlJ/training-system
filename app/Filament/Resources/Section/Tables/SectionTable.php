@@ -59,6 +59,7 @@ class SectionTable
                     ->offIcon('heroicon-m-x-circle')
                     ->onColor('success')
                     ->offColor('danger')
+                    ->disabled(fn($record) => ! Auth::user()->can('toggleStatus', $record))
                     ->beforeStateUpdated(function ($record, $state) {
                         $record->status = $state ? 'active' : 'inactive';
                         $record->save();
@@ -90,7 +91,7 @@ class SectionTable
             ])
             ->recordActions([
                 ViewAction::make(),
-                EditAction::make(),
+                EditAction::make()->visible(fn($record) => Auth::user()->can('editDetails', $record)),
                 DeleteAction::make()->visible(fn() => Auth::user()?->isAdmin() ?? false),
             ])
             ->toolbarActions([
