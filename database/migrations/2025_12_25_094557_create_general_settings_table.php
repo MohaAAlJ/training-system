@@ -17,6 +17,7 @@ return new class extends Migration
             $table->boolean('hoa_can_enable_section')->default(false); // Can toggle active status
             $table->boolean('dept_head_can_edit_section')->default(false);
             $table->boolean('dept_head_can_enable_section')->default(false);
+            $table->boolean('hide_full_sections')->default(true);
             $table->timestamps();
         });
 
@@ -26,6 +27,7 @@ return new class extends Migration
             'hoa_can_enable_section' => false,
             'dept_head_can_edit_section' => false,
             'dept_head_can_enable_section' => false,
+            'hide_full_sections' => true,
             'created_at' => now(),
             'updated_at' => now(),
         ]);

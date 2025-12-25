@@ -16,6 +16,8 @@ use App\Policies\ApplicationPolicy;
 use App\Policies\TraineePolicy;
 use App\Policies\DepartmentPolicy;
 use App\Policies\SectionPolicy;
+use App\Policies\GeneralSettingPolicy;
+use App\Models\GeneralSetting;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -33,6 +35,7 @@ class AuthServiceProvider extends ServiceProvider
         College::class => \App\Policies\CollegePolicy::class,
         Institution::class => UserPolicy::class,
         Major::class => UserPolicy::class,
+        GeneralSetting::class => GeneralSettingPolicy::class,
     ];
 
     /**

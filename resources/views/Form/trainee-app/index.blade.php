@@ -230,10 +230,12 @@
                                 id="section_id"
                                 name="section_id"
                                 required
+
                             >
                                 <option value="" disabled selected>اختر</option>
+
                             </select>
-                            <small class="note"> </small>
+                            <small class="note">إذا كان القسم غير ظاهر فهو غير متوفر حاليا</small>
                         </label>
                     </div>
                 </fieldset>

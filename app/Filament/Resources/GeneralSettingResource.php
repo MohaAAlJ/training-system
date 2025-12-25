@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Filament\Resources\GeneralSettings;
+namespace App\Filament\Resources;
 
-use App\Filament\Resources\GeneralSettings\Pages\CreateGeneralSetting;
-use App\Filament\Resources\GeneralSettings\Pages\EditGeneralSetting;
-use App\Filament\Resources\GeneralSettings\Pages\ListGeneralSettings;
-use App\Filament\Resources\GeneralSettings\Schemas\GeneralSettingForm;
-use App\Filament\Resources\GeneralSettings\Tables\GeneralSettingsTable;
+use App\Filament\Resources\GeneralSettingResource\Pages\CreateGeneralSetting;
+use App\Filament\Resources\GeneralSettingResource\Pages\EditGeneralSetting;
+use App\Filament\Resources\GeneralSettingResource\Pages\ListGeneralSettings;
+use App\Filament\Resources\GeneralSettingResource\Schemas\GeneralSettingForm;
+use App\Filament\Resources\GeneralSettingResource\Tables\GeneralSettingsTable;
 use App\Models\GeneralSetting;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -21,8 +21,12 @@ class GeneralSettingResource extends Resource
 {
     protected static ?string $model = GeneralSetting::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
-
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedWrench;
+    protected static string | BackedEnum | null $activeNavigationIcon = Heroicon::WrenchScrewdriver; //filled icon when active
+    protected static ?string $modelLabel = 'الإعدادات العامة';
+    protected static ?string $pluralModelLabel = 'الإعدادات العامة';
+    protected static ?string $navigationLabel = 'الإعدادات العامة';
+    protected static ?int $navigationSort = 0;
     public static function form(Schema $schema): Schema
     {
         return GeneralSettingForm::configure($schema);

@@ -13,6 +13,9 @@ return new class extends Migration {
             $table->string('name');
             $table->timestamps();
             $table->softDeletes();
+            $table->boolean('is_active')->default(true);
+            $table->boolean('Can_add_Application')->default(true);
+
         });
 
         $institutions = [
