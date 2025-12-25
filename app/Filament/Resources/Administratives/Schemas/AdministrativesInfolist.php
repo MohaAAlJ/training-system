@@ -25,9 +25,9 @@ class AdministrativesInfolist
                         TextEntry::make('medicalHead.name')
                             ->label('رئيس الإدارة الطبية')
                             ->placeholder('-'),
-                        TextEntry::make('sections_count')
+                        TextEntry::make('Section_count')
                             ->label('عدد الأقسام')
-                            ->getStateUsing(fn ($record) => $record->sections()->count()),
+                            ->getStateUsing(fn ($record) => $record->Section()->count()),
                     ])->columns(2),
 
                 Section::make('معلومات النظام')
@@ -43,3 +43,9 @@ class AdministrativesInfolist
             ]);
     }
 }
+
+
+
+
+
+

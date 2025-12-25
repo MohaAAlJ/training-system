@@ -19,3 +19,7 @@ class Governorate extends Model
         'name' => 'array',
     ];
 }
+
+
+
+

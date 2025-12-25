@@ -13,10 +13,10 @@ class CustomPathGenerator implements PathGenerator
      */
     public function getPath(Media $media): string
     {
-        // Get model class name without namespace (e.g., "Applications")
+        // Get model class name without namespace (e.g., "Application")
         $modelType = class_basename($media->model_type);
 
-        // Create path like: applications/1/
+        // Create path like: Application/1/
         return strtolower($modelType) . '/' . $media->model_id . '/';
     }
 
@@ -36,3 +36,8 @@ class CustomPathGenerator implements PathGenerator
         return $this->getPath($media) . 'responsive-images/';
     }
 }
+
+
+
+
+

@@ -11,3 +11,8 @@ if (!function_exists('arabicFaker')) {
         return Factory::create('ar_SA');
     }
 }
+
+
+
+
+

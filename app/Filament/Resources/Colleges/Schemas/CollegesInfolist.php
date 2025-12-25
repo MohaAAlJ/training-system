@@ -26,9 +26,9 @@ class CollegesInfolist
                         \Filament\Infolists\Components\TextEntry::make('majors_count')
                             ->label('عدد التخصصات')
                             ->getStateUsing(fn ($record) => $record->majors()->count()),
-                        \Filament\Infolists\Components\TextEntry::make('trainees_count')
+                        \Filament\Infolists\Components\TextEntry::make('Trainee_count')
                             ->label('عدد المتدربين المسجلين')
-                            ->getStateUsing(fn ($record) => $record->trainees()->count()),
+                            ->getStateUsing(fn ($record) => $record->Trainee()->count()),
                     ])->columns(2),
 
                 \Filament\Schemas\Components\Section::make('سجل النظام')
@@ -44,3 +44,9 @@ class CollegesInfolist
             ]);
     }
 }
+
+
+
+
+
+

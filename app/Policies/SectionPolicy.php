@@ -2,7 +2,7 @@
 
 namespace App\Policies;
 
-use App\Models\Sections;
+use App\Models\Section;
 use App\Models\User;
 
 class SectionPolicy
@@ -16,7 +16,7 @@ class SectionPolicy
             $user->isMedicalManager();
     }
 
-    public function view(User $user, Sections $model): bool
+    public function view(User $user, Section $model): bool
     {
         if ($user->isAdmin() || $user->isGeneralTrainingManager()) {
             return true;
@@ -43,13 +43,18 @@ class SectionPolicy
         return $user->isAdmin();
     }
 
-    public function update(User $user, Sections $model): bool
+    public function update(User $user, Section $model): bool
     {
         return $user->isAdmin();
     }
 
-    public function delete(User $user, Sections $model): bool
+    public function delete(User $user, Section $model): bool
     {
         return $user->isAdmin();
     }
 }
+
+
+
+
+

@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 use App\Models\Administratives;
-use App\Models\sections;
-use App\Models\Departments;
+use App\Models\Section;
+use App\Models\Department;
 use App\Models\Institution;
 use App\Models\Major;
 use Illuminate\Http\Request;
@@ -49,9 +49,9 @@ class FormDataController extends Controller
         return response()->json($data);
     }
 
-    public function departments()
+    public function Department()
     {
-        $data = Departments::select('id', 'name_location')->get()
+        $data = Department::select('id', 'name_location')->get()
             ->map(fn ($dept) => [
                 'id' => $dept->id,
                 'name' => $dept->name_location,
@@ -61,11 +61,11 @@ class FormDataController extends Controller
         return response()->json($data);
     }
 
-    public function sections(Request $request)
+    public function Section(Request $request)
     {
         $administrativeId = $request->query('department_id');
 
-        $query = Sections::active()->select('id', 'name_location', 'department_id');
+        $query = Section::active()->select('id', 'name_location', 'department_id');
         if ($administrativeId) {
             $query->where('department_id', $administrativeId);
         }
@@ -91,3 +91,8 @@ class FormDataController extends Controller
         return response()->json($data);
     }
 }
+
+
+
+
+
