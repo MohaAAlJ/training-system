@@ -22,4 +22,8 @@ class EditCollege extends EditRecord
             RestoreAction::make(),
         ];
     }
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
+    }
 }

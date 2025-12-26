@@ -21,7 +21,7 @@ class TraineePolicy
         }
 
         if ($user->isCollegeSupervisor()) {
-            return $trainee->college_id === $user->college?->id;
+            return $trainee->college_id === $user->College?->id;
         }
 
         if ($user->isSectionHead()) {
@@ -36,7 +36,7 @@ class TraineePolicy
 
         if ($user->isAdministrative()) {
             return $trainee->Application()
-                ->where('administrative_id', $user->administrative?->id)
+                ->where('administrative_id', $user->Administrative?->id)
                 ->whereIn('status', [
                     Application::STATUS_STARTED_TRAINING,
                     Application::STATUS_ENDED_TRAINING
@@ -46,7 +46,7 @@ class TraineePolicy
 
         if ($user->isDepartment()) {
             return $trainee->Application()
-                ->where('department_id', $user->department?->id)
+                ->where('department_id', $user->Department?->id)
                 ->whereIn('status', [
                     Application::STATUS_STARTED_TRAINING,
                     Application::STATUS_ENDED_TRAINING

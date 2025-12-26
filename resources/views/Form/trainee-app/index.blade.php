@@ -214,7 +214,7 @@
                             <small class="note"></small>
                         </label>
                         <label class="field">
-                            <span>تخصص *</span>
+                            <span>القسم *</span>
                             <select
                                 id="department_id"
                                 name="department_id"
@@ -225,15 +225,17 @@
                             <small class="note"></small>
                         </label>
                         <label class="field">
-                            <span>القسم *</span>
+                            <span>التخصص *</span>
                             <select
                                 id="section_id"
                                 name="section_id"
                                 required
+
                             >
                                 <option value="" disabled selected>اختر</option>
+
                             </select>
-                            <small class="note"> </small>
+                            <small class="note">إذا كان القسم غير ظاهر فهو غير متوفر حاليا</small>
                         </label>
                     </div>
                 </fieldset>

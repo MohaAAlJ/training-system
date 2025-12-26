@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Resources\GeneralSettings\Pages;
+namespace App\Filament\Resources\GeneralSettingResource\Pages;
 
-use App\Filament\Resources\GeneralSettings\GeneralSettingResource;
+use App\Filament\Resources\GeneralSettingResource;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\RestoreAction;
@@ -17,5 +17,9 @@ class EditGeneralSetting extends EditRecord
         return [
             // No delete action
         ];
+    }
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
     }
 }
