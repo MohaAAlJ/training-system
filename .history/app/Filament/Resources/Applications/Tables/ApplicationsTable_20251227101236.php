@@ -213,16 +213,16 @@ class ApplicationsTable
                     ->color('success')
                     ->icon('heroicon-o-play')
                     ->visible(fn($record) => Auth::user()->isGeneralTrainingManager() && $record->status == Application::STATUS_CONFIRMATION)
-                    ->form([
+                    ->form(fn(Application $record) => [
                         \Filament\Forms\Components\Select::make('new_status')
                             ->label('الحالة الجديدة')
                             ->options([
                                 Application::STATUS_WAITING_LIST => 'قائمة الانتظار',
-                                Application::STATUS_STARTED_TRAINING => 'بدء التدريب',
+                                Application::STATUS_STARTED_TRAINING => $record->training_type === Application::TRAINING_TYPE_PRACTICE ? 'مزاولة المهنة' : 'بدء التدريب',
                             ])
                             ->required()
                             ->reactive()
-                            ->default(Application::STATUS_WAITING_LIST),
+                            ->default(Application::STATUS_STARTED_TRAINING),
                         DatePicker::make('start_date')
                             ->label('تاريخ البدء')
                             ->required()

@@ -1,45 +1,42 @@
 <?php
 
-namespace App\Filament\Resources\Colleges\Tables;
+namespace App\Filament\Resources\Institutions\Tables;
 
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreBulkAction;
-use Filament\Actions\ViewAction;
-use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 
-class CollegesTable
+class InstitutionsTable
 {
     public static function configure(Table $table): Table
     {
         return $table
             ->columns([
-                TextColumn::make('id')
-                    ->label('رقم')
-                    ->sortable(),
-                TextColumn::make('name')
-                    ->label('اسم الكلية')
+                \Filament\Tables\Columns\TextColumn::make('name')
+                    ->label('الاسم')
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('institution.name')
-                    ->label('الجامعة')
-                    ->searchable()
-                    ->sortable(),
-                TextColumn::make('user.name')
-                    ->label('مشرف الكلية')
-                    ->searchable()
-                    ->placeholder('غير محدد'),
                 \Filament\Tables\Columns\ToggleColumn::make('is_active')
                     ->label('الحالة')
                     ->sortable(),
-                TextColumn::make('trainees_count')
-                    ->label('عدد المتدربين')
+                \Filament\Tables\Columns\TextColumn::make('trainees_count')
                     ->counts('trainees')
+                    ->label('عدد المتدربين')
                     ->sortable(),
+                \Filament\Tables\Columns\TextColumn::make('created_at')
+                    ->label('تاريخ الإنشاء')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                \Filament\Tables\Columns\TextColumn::make('updated_at')
+                    ->label('تاريخ التحديث')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 TrashedFilter::make(),
@@ -49,16 +46,9 @@ class CollegesTable
                     ->trueLabel('نشط')
                     ->falseLabel('غير نشط')
                     ->placeholder('الكل'),
-                \Filament\Tables\Filters\SelectFilter::make('institution_id')
-                    ->label('الجامعة')
-                    ->relationship('institution', 'name')
-                    ->searchable()
-                    ->preload(),
             ])
             ->recordActions([
-                ViewAction::make(),
                 EditAction::make(),
-                \Filament\Actions\DeleteAction::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

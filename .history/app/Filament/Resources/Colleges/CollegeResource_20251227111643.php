@@ -26,10 +26,8 @@ class CollegeResource extends Resource
 
     public static function shouldRegisterNavigation(): bool
     {
-        $user = \Illuminate\Support\Facades\Auth::user();
-        return ! ($user->isMinistry() || $user->isCollegeSupervisor());
+        return true;
     }
-
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBookOpen;
     protected static string | BackedEnum | null $activeNavigationIcon = Heroicon::BookOpen; //filled icon when active

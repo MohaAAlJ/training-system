@@ -222,7 +222,7 @@ class ApplicationsTable
                             ])
                             ->required()
                             ->reactive()
-                            ->default(Application::STATUS_WAITING_LIST),
+                            ->default(Application::STATUS_STARTED_TRAINING),
                         DatePicker::make('start_date')
                             ->label('تاريخ البدء')
                             ->required()

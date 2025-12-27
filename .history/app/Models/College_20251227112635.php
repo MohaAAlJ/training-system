@@ -28,7 +28,7 @@ class College extends Model
         return $this->belongsToMany(Major::class, 'college_major');
     }
 
-    public function trainees()
+    public function Trainee()
     {
         return $this->hasMany(Trainee::class, 'college_id');
     }

@@ -13,7 +13,7 @@ class Institution extends Model
     /** @use HasFactory<\Database\Factories\InstitutionFactory> */
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['id', 'name', 'is_active'];
+    protected $fillable = ['id', 'name'];
 
     protected $casts = [
         'created_at' => 'datetime',
@@ -38,7 +38,7 @@ class Institution extends Model
         );
     }
 
-    public function trainees(): HasMany
+    public function Trainee(): HasMany
     {
         return $this->hasMany(Trainee::class, 'institution_id');
     }
