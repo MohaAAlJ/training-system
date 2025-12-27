@@ -139,7 +139,7 @@ class ApplicationFormController extends Controller
     {
         $administrativeId = $request->query('administrative_id');
 
-        $query = Department::query();
+        $query = Department::query()->active();
 
         if ($administrativeId) {
             // Filter departments that have sections in this administrative unit

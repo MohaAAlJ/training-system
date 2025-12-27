@@ -47,7 +47,8 @@ class DepartmentsTable
                     ->onIcon('heroicon-m-check-circle')
                     ->offIcon('heroicon-m-x-circle')
                     ->onColor('success')
-                    ->offColor('danger'),
+                    ->offColor('danger')
+                    ->sortable(),
 
 
                 TextColumn::make('created_at')
