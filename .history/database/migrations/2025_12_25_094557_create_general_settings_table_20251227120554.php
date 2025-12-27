@@ -23,13 +23,15 @@ return new class extends Migration
         });
 
         // Seed default record
-        \App\Models\GeneralSetting::create([
+        DB::table('general_settings')->insert([
             'hoa_can_edit_section' => false,
             'hoa_can_enable_section' => false,
             'dept_head_can_edit_section' => false,
             'dept_head_can_enable_section' => false,
             'hide_full_sections' => true,
             'is_public_form_enabled' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
     }
 
