@@ -70,13 +70,23 @@ class DashboardStatsOverview extends BaseWidget
                     ->where('training_type', Application::TRAINING_TYPE_UNIVERSITY)
                     ->count();
 
-                $stats[] = Stat::make('إجمالي المتدربين (الكلية)', $totalTrainees)
-                    ->icon('heroicon-o-academic-cap');
+                // $stats[] = Stat::make('إجمالي المتدربين (الكلية)', $totalTrainees)
+                //     ->icon('heroicon-o-academic-cap');
 
                 $stats[] = Stat::make('قيد التدريب', $activeTrainees)
                     ->description('بدأوا التدريب فعلياً')
                     ->color('success')
                     ->icon('heroicon-o-user-group');
+
+                $pendingConfirmation = Application::whereHas('trainee', fn($q) => $q->where('college_id', $college->id))
+                    ->where('status', Application::STATUS_INITIAL_APPROVE)
+                    ->where('training_type', Application::TRAINING_TYPE_UNIVERSITY)
+                    ->count();
+
+                $stats[] = Stat::make('طلبات بانتظار التأكيد', $pendingConfirmation)
+                    ->description('بانتظار إجراء الكلية')
+                    ->color('warning')
+                    ->icon('heroicon-o-clock');
             }
         }
 
@@ -89,12 +99,21 @@ class DashboardStatsOverview extends BaseWidget
                 ->where('status', Application::STATUS_STARTED_TRAINING)
                 ->count();
 
-            $stats[] = Stat::make('إجمالي طلبات المزاولة', $totalApps)
-                ->icon('heroicon-o-document-text');
+            // $stats[] = Stat::make('إجمالي طلبات المزاولة', $totalApps)
+            //     ->icon('heroicon-o-document-text');
 
             $stats[] = Stat::make('قيد التدريب', $activeTrainees)
                 ->color('success')
                 ->icon('heroicon-o-check-badge');
+
+            $pendingConfirmation = Application::where('training_type', Application::TRAINING_TYPE_PRACTICE)
+                ->where('status', Application::STATUS_INITIAL_APPROVE)
+                ->count();
+
+            $stats[] = Stat::make('طلبات بانتظار التأكيد', $pendingConfirmation)
+                ->description('بانتظار إجراء الوزارة')
+                ->color('warning')
+                ->icon('heroicon-o-clock');
         }
 
         // 1. SECTION HEAD (ROLE_SECTION = 3)
@@ -207,25 +226,37 @@ class DashboardStatsOverview extends BaseWidget
 
             $stats[] = Stat::make('طلبات جديدة', $newApps)
                 ->description('بانتظار الإجراء')
-                ->color('warning');
+                ->color('warning')
+                ->icon('heroicon-o-clock');
+
+
+            // $stats[] = Stat::make('إجمالي الطلبات', Application::count())
+            //     ->icon('heroicon-o-document-text')
+            //     ->color('warning');
         }
 
         // 5. ADMIN (ROLE_ADMIN - 1)
         elseif ($role === User::ROLE_ADMIN) {
-            // "Last added users and stuff"
-            // Stats: Total Users, Total Trainee, System Health?
+            $capStats = ['total' => 0, 'used' => 0, 'available' => 0];
+            foreach (Section::all() as $section) {
+                $sStats = $section->getCapacityStats();
+                $capStats['total'] += $sStats['total'];
+                $capStats['used'] += $sStats['used'];
+                $capStats['available'] += $sStats['available'];
+            }
 
-            $stats[] = Stat::make('إجمالي المستخدمين', User::count())
-                ->icon('heroicon-o-users')
-                ->color('primary');
+            $stats[] = Stat::make('إجمالي السعة الاستيعابية', $capStats['total'])
+                ->description("المستخدم: {$capStats['used']} | المتاح: {$capStats['available']}")
+                ->icon('heroicon-o-chart-pie')
+                ->color($capStats['available'] > 0 ? 'success' : 'danger');
 
             $stats[] = Stat::make('إجمالي الطلبات', Application::count())
                 ->icon('heroicon-o-document-text')
                 ->color('warning');
 
-            $stats[] = Stat::make('الكليات المسجلة', \App\Models\College::count())
-                ->icon('heroicon-o-academic-cap')
-                ->color('success');
+            $stats[] = Stat::make('إجمالي المستخدمين', User::count())
+                ->icon('heroicon-o-users')
+                ->color('primary');
         }
 
         return $stats;

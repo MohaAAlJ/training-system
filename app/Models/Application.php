@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Models\Trainee;
 use App\Models\Section;
 use App\Notifications\ApplicationCreated as ApplicationCreatedNotification;
+use App\Notifications\InitialApprovalNotification;
 
 class Application extends Model
 {
@@ -193,6 +194,35 @@ class Application extends Model
                             $user->notify($notification);
                         } catch (\Throwable $e) {
                             logger()->error('Failed to notify GTM/Admin for confirmation: ' . $e->getMessage());
+                        }
+                    }
+                }
+                // Status 2 : Initial Approval (Notify MOH or College Supervisor)
+                elseif ($newStatus === self::STATUS_INITIAL_APPROVE) {
+                    $notification = new InitialApprovalNotification($application);
+                    $recipients = collect();
+
+                    if ($application->training_type === self::TRAINING_TYPE_PRACTICE) {
+                        // Notify MOH users
+                        $recipients = User::where('role', User::ROLE_MOH)
+                            ->where('status', 'active')
+                            ->get();
+                    } elseif ($application->training_type === self::TRAINING_TYPE_UNIVERSITY) {
+                        // Notify College Supervisor associated with the trainee's college
+                        $trainee = $application->trainee;
+                        if ($trainee && $trainee->college_id) {
+                            $recipients = User::where('role', User::ROLE_COLLEGE)
+                                ->where('status', 'active')
+                                ->whereHas('College', fn($q) => $q->where('id', $trainee->college_id))
+                                ->get();
+                        }
+                    }
+
+                    foreach ($recipients as $user) {
+                        try {
+                            $user->notify($notification);
+                        } catch (\Throwable $e) {
+                            logger()->error('Failed to notify MOH/College for initial approval: ' . $e->getMessage());
                         }
                     }
                 }
