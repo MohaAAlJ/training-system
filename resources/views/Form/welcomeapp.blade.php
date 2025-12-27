@@ -34,10 +34,17 @@
             <div class="card welcome-card">
                 <div class="welcome-content">
                     <h2>ابدأ رحلتك التدريبية</h2>
-                    <p>للتقديم على برنامج التدريب التعاوني، يرجى الضغط على الزر أدناه لتعبئة نموذج الطلب.</p>
-                    <a href="{{ route('training.form') }}" class="glow-button welcome-button">
-                        اضغط هنا لتعبئة طلبك
-                    </a>
+                    @if($isFormEnabled)
+                        <p>للتقديم على برنامج التدريب التعاوني، يرجى الضغط على الزر أدناه لتعبئة نموذج الطلب.</p>
+                        <a href="{{ route('training.form') }}" class="glow-button welcome-button">
+                            اضغط هنا لتعبئة طلبك
+                        </a>
+                    @else
+                        <div class="disabled-message">
+                            <p class="error-text">عذراً، تقديم الطلبات عبر البوابة مغلق حالياً.</p>
+                            <p>نعتذر عن عدم إمكانية استقبال طلبات جديدة في الوت الحالي. يرجى المحاولة لاحقاً أو التواصل مع الإدارة.</p>
+                        </div>
+                    @endif
                 </div>
             </div>
         </main>
