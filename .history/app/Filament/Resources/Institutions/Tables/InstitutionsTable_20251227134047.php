@@ -27,18 +27,10 @@ class InstitutionsTable
                     ->sortable(),
                 \Filament\Tables\Columns\ToggleColumn::make('is_active')
                     ->label('الحالة')
-                    ->onIcon('heroicon-m-check-circle')
-                    ->offIcon('heroicon-m-x-circle')
-                    ->onColor('success')
-                    ->offColor('danger')
-                    ->sortable(),
+                    ->sortable()
                 \Filament\Tables\Columns\ToggleColumn::make('Can_add_Application')
                     ->label('إضافة طلبات')
-                    ->onIcon('heroicon-m-check-circle')
-                    ->offIcon('heroicon-m-x-circle')
-                    ->onColor('success')
-                    ->offColor('danger')
-                    ->sortable(),
+                    ->sortable()
                 \Filament\Tables\Columns\TextColumn::make('trainees_count')
                     ->counts('trainees')
                     ->label('عدد المتدربين')

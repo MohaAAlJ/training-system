@@ -28,6 +28,8 @@ class EditApplication extends EditRecord
             DeleteAction::make()
                 ->label('رفض')
                 ->visible(fn() => !$this->getRecord()->trashed() && (Auth::user()?->isAdmin() || Auth::user()?->isGeneralTrainingManager())),
+            ForceDeleteAction::make()
+                ->visible(fn() => $this->getRecord()->trashed() && (Auth::user()?->isAdmin() || Auth::user()?->isGeneralTrainingManager())),
             RestoreAction::make()
                 ->visible(fn() => $this->getRecord()->trashed() && (Auth::user()?->isAdmin() || Auth::user()?->isGeneralTrainingManager())),
         ];

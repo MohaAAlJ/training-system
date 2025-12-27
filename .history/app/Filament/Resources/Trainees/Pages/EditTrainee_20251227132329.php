@@ -25,6 +25,7 @@ class EditTrainee extends EditRecord
                 ->label('إلغاء'),
             ViewAction::make(),
             DeleteAction::make()->visible(fn() => !$this->getRecord()->trashed() && (\Illuminate\Support\Facades\Auth::user()?->isAdmin() || \Illuminate\Support\Facades\Auth::user()?->isGeneralTrainingManager())),
+            ForceDeleteAction::make()->visible(fn() => $this->getRecord()->trashed() && (\Illuminate\Support\Facades\Auth::user()?->isAdmin() || \Illuminate\Support\Facades\Auth::user()?->isGeneralTrainingManager())),
             RestoreAction::make()->visible(fn() => $this->getRecord()->trashed() && (\Illuminate\Support\Facades\Auth::user()?->isAdmin() || \Illuminate\Support\Facades\Auth::user()?->isGeneralTrainingManager())),
         ];
     }

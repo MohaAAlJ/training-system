@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\Departments\Tables;
+namespace App\Filament\Resources\Administratives\Tables;
 
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
@@ -8,48 +8,38 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\ForceDeleteBulkAction;
-use Filament\Actions\RestoreAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Actions\ViewAction;
-use Filament\Forms\Components\ToggleButtons;
-use Filament\Tables\Columns\ToggleColumn;
 use Illuminate\Support\Facades\Auth;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
-use Illuminate\Support\Facades\DB;
-use Filament\Tables\Columns\IconColumn;
 
-class DepartmentsTable
+class AdministrativesTable
 {
     public static function configure(Table $table): Table
     {
         return $table
             ->columns([
                 TextColumn::make('title')
-                    ->label('اسم الدائرة')
+                    ->label('اسم الإدارة')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('user.name')
-                    ->label('رئيس الدائرة')
+                    ->label('رئيس الإدارة')
                     ->searchable()
                     ->sortable(),
                 IconColumn::make('is_medical')
                     ->label('إدارة طبية')
                     ->boolean()
                     ->sortable(),
-                TextColumn::make('section_count')
-                    ->label('عدد الأقسام')
-                    ->counts('Section')
-                    ->sortable(),
-                ToggleColumn::make('status')
-                    ->label('الحالة')
-                    ->onIcon('heroicon-m-check-circle')
-                    ->offIcon('heroicon-m-x-circle')
-                    ->onColor('success')
-                    ->offColor('danger'),
-
+                TextColumn::make('medicalHead.name')
+                    ->label('رئيس الإدارة الطبية')
+                    ->searchable()
+                    ->sortable()
+                    ->placeholder('-'),
 
                 TextColumn::make('created_at')
                     ->label('تاريخ الإنشاء')
@@ -59,7 +49,7 @@ class DepartmentsTable
             ])
             ->filters([
                 SelectFilter::make('user_id')
-                    ->label('رئيس المديرية')
+                    ->label('رئيس الإدارة')
                     ->relationship('user', 'name')
                     ->searchable()
                     ->preload(),
@@ -79,12 +69,14 @@ class DepartmentsTable
             ->recordActions([
                 ViewAction::make(),
                 EditAction::make(),
-                DeleteAction::make()->visible(fn($record) => !$record->trashed() && Auth::user()?->isAdmin()),
-                RestoreAction::make()->visible(fn($record) => $record->trashed() && Auth::user()?->isAdmin()),
+                DeleteAction::make()->visible(fn() => Auth::user()?->isAdmin() ?? false),
+                RestoreAction::make()->visible(fn() => Auth::user()?->isAdmin() ?? false),
+                ForceDeleteAction::make()->visible(fn() => Auth::user()?->isAdmin() ?? false),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()->visible(fn() => Auth::user()?->isAdmin() ?? false),
+                    ForceDeleteBulkAction::make()->visible(fn() => Auth::user()?->isAdmin() ?? false),
                     RestoreBulkAction::make()->visible(fn() => Auth::user()?->isAdmin() ?? false),
                 ]),
             ]);

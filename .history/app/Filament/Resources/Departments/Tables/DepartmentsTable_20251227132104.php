@@ -8,7 +8,6 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\ForceDeleteBulkAction;
-use Filament\Actions\RestoreAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\ToggleButtons;
@@ -39,7 +38,7 @@ class DepartmentsTable
                     ->label('إدارة طبية')
                     ->boolean()
                     ->sortable(),
-                TextColumn::make('section_count')
+                TextColumn::make('Section_count')
                     ->label('عدد الأقسام')
                     ->counts('Section')
                     ->sortable(),
@@ -48,9 +47,16 @@ class DepartmentsTable
                     ->onIcon('heroicon-m-check-circle')
                     ->offIcon('heroicon-m-x-circle')
                     ->onColor('success')
-                    ->offColor('danger'),
-
-
+                    ->offColor('danger')
+                    ->requiresConfirmation()
+                    ->modalHeading('تغيير حالة الدائرة')
+                    ->modalDescription('هل أنت متأكد من أنك تريد تغيير حالة هذه الدائرة؟')
+                    ->modalSubmitActionLabel('نعم، قم بالتغيير')
+                    ->modalCancelActionLabel('إلغاء')
+                    ->beforeStateUpdated(function ($record, $state) {
+                        $record->status = $state;
+                        $record->save();
+                    }),
                 TextColumn::make('created_at')
                     ->label('تاريخ الإنشاء')
                     ->dateTime('Y-m-d')
@@ -79,12 +85,14 @@ class DepartmentsTable
             ->recordActions([
                 ViewAction::make(),
                 EditAction::make(),
-                DeleteAction::make()->visible(fn($record) => !$record->trashed() && Auth::user()?->isAdmin()),
-                RestoreAction::make()->visible(fn($record) => $record->trashed() && Auth::user()?->isAdmin()),
+                DeleteAction::make()->visible(fn() => Auth::user()?->isAdmin() ?? false),
+                RestoreAction::make()->visible(fn() => Auth::user()?->isAdmin() ?? false),
+                ForceDeleteAction::make()->visible(fn() => Auth::user()?->isAdmin() ?? false),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()->visible(fn() => Auth::user()?->isAdmin() ?? false),
+                    ForceDeleteBulkAction::make()->visible(fn() => Auth::user()?->isAdmin() ?? false),
                     RestoreBulkAction::make()->visible(fn() => Auth::user()?->isAdmin() ?? false),
                 ]),
             ]);
