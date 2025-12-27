@@ -13,11 +13,6 @@ class College extends Model
     protected $table = 'colleges';
     protected $fillable = ['id', 'name', 'institution_id', 'user_id', 'is_active', 'Can_add_Application'];
 
-    protected $casts = [
-        'is_active' => 'boolean',
-        'Can_add_Application' => 'boolean',
-    ];
-
     public function institution()
     {
         return $this->belongsTo(Institution::class);
