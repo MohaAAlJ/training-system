@@ -60,16 +60,9 @@ class SectionsTable
                     ->onIcon('heroicon-m-check-circle')
                     ->offIcon('heroicon-m-x-circle')
                     ->onColor('success')
-                    ->offColor('danger')
-                    ->requiresConfirmation()
-                    ->modalHeading('تغيير حالة القسم')
-                    ->modalDescription('هل أنت متأكد من أنك تريد تغيير حالة هذا القسم؟')
-                    ->modalSubmitActionLabel('نعم، قم بالتغيير')
-                    ->modalCancelActionLabel('إلغاء')
-                    ->beforeStateUpdated(function ($record, $state) {
-                        $record->status = $state ? 'active' : 'inactive';
-                        $record->save();
-                    }),
+                    ->offColor('danger'),
+
+
                 TextColumn::make('created_at')
                     ->label('تاريخ الإنشاء')
                     ->dateTime('Y-m-d')

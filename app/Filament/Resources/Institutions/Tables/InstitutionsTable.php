@@ -22,20 +22,18 @@ class InstitutionsTable
                     ->sortable(),
                 \Filament\Tables\Columns\ToggleColumn::make('is_active')
                     ->label('الحالة')
-                    ->sortable()
-                    ->requiresConfirmation()
-                    ->modalHeading('تغيير حالة المؤسسة/الجامعة')
-                    ->modalDescription('هل أنت متأكد من أنك تريد تغيير حالة هذه المؤسسة؟')
-                    ->modalSubmitActionLabel('نعم، قم بالتغيير')
-                    ->modalCancelActionLabel('إلغاء'),
+                    ->onIcon('heroicon-m-check-circle')
+                    ->offIcon('heroicon-m-x-circle')
+                    ->onColor('success')
+                    ->offColor('danger')
+                    ->sortable(),
                 \Filament\Tables\Columns\ToggleColumn::make('Can_add_Application')
                     ->label('إضافة طلبات')
-                    ->sortable()
-                    ->requiresConfirmation()
-                    ->modalHeading('تغيير صلاحية إضافة الطلبات')
-                    ->modalDescription('هل أنت متأكد من أنك تريد تغيير صلاحية إضافة الطلبات لهذه المؤسسة؟')
-                    ->modalSubmitActionLabel('نعم، قم بالتغيير')
-                    ->modalCancelActionLabel('إلغاء'),
+                    ->onIcon('heroicon-m-check-circle')
+                    ->offIcon('heroicon-m-x-circle')
+                    ->onColor('success')
+                    ->offColor('danger')
+                    ->sortable(),
                 \Filament\Tables\Columns\TextColumn::make('trainees_count')
                     ->counts('trainees')
                     ->label('عدد المتدربين')
