@@ -131,7 +131,7 @@ class SectionSeeder extends Seeder
                     'department_id' => $deptAdmin->id,
                     'user_id' => null,
                     'governorate_id' => $govId,
-                    'total_capacity' => 5,
+                    'total_capacity' => 1,
                     'status' => 'active',
                 ]
             );
