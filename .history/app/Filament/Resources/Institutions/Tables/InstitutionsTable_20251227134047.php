@@ -27,10 +27,10 @@ class InstitutionsTable
                     ->sortable(),
                 \Filament\Tables\Columns\ToggleColumn::make('is_active')
                     ->label('الحالة')
-                    ->sortable(),
+                    ->sortable()
                 \Filament\Tables\Columns\ToggleColumn::make('Can_add_Application')
                     ->label('إضافة طلبات')
-                    ->sortable(),
+                    ->sortable()
                 \Filament\Tables\Columns\TextColumn::make('trainees_count')
                     ->counts('trainees')
                     ->label('عدد المتدربين')
