@@ -24,7 +24,10 @@ class ApplicationFormController extends Controller
      */
     public function showWelcome()
     {
-        return view('Form.welcomeapp');
+        $settings = \App\Models\GeneralSetting::instance();
+        return view('Form.welcomeapp', [
+            'isFormEnabled' => $settings->is_public_form_enabled
+        ]);
     }
 
     /**
@@ -32,6 +35,10 @@ class ApplicationFormController extends Controller
      */
     public function showForm()
     {
+        if (!\App\Models\GeneralSetting::instance()->is_public_form_enabled) {
+            return redirect()->route('training.welcome')->with('error', 'نعتذر، نموذج الالتحاق مغلق حالياً.');
+        }
+
         return view('Form.trainee-app.index');
     }
     /**

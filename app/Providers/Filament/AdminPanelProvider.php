@@ -27,6 +27,7 @@ class AdminPanelProvider extends PanelProvider
         return $panel
             ->default()
             ->favicon(asset('favicon.ico'))
+            ->unsavedChangesAlerts()
             ->brandLogo(null)
                 ->brandName(new HtmlString(sprintf('<img src="%s" alt="%s" style="height:1.8rem;width:auto;display:inline-block;vertical-align:middle;margin-inline-end:.6rem;"/><span style="font-size:1.8rem;line-height:1;display:inline-block;vertical-align:middle;font-weight:600">%s</span>', asset('favicon.ico'), config('app.name'), config('app.name'))))
             ->id('Home')
@@ -50,7 +51,7 @@ class AdminPanelProvider extends PanelProvider
                         }
                         @media (max-width: 1024px) {
                              .fi-ta-content table {
-                                min-width: 800px !important;
+                                 min-width: 800px !important;
                              }
                         }
                     </style>

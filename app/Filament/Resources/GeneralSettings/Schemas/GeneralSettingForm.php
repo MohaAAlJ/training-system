@@ -20,7 +20,14 @@ class GeneralSettingForm
                         Toggle::make('hide_full_sections')
                             ->label('إخفاء الأقسام المكتملة')
                             ->helperText('عند التفعيل، لن تظهر الأقسام التي وصلت لسعتها القصوى في طلب الالتحاق. عند التعطيل، ستظهر كافة الأقسام وسيسمح بالتقديم فيها.')
-                            ->default(true),
+                            ->default(true)
+                            ->live(),
+
+                        Toggle::make('is_public_form_enabled')
+                            ->label('تفعيل نموذج الالتحاق العام')
+                            ->helperText('عند تفعيل هذا الخيار، سيتمكن المتدربون من تقديم الطلبات عبر البوابة العامة. عند التعطيل، سيتم إغلاق البوابة أمام الطلبات الجديدة.')
+                            ->default(true)
+                            ->live(),
                     ]),
 
                 Section::make('صلاحيات رؤساء الوحدات الإدارية (HOA)')
@@ -32,12 +39,14 @@ class GeneralSettingForm
                                 Toggle::make('hoa_can_edit_section')
                                     ->label('تعديل بيانات القسم')
                                     ->helperText('السماح بتعديل الاسم، السعة، وغيرها')
-                                    ->default(false),
+                                    ->default(false)
+                                    ->live(),
 
                                 Toggle::make('hoa_can_enable_section')
                                     ->label('تفعيل/تعطيل القسم')
                                     ->helperText('السماح بتغيير حالة القسم (نشط/غير نشط)')
-                                    ->default(false),
+                                    ->default(false)
+                                    ->live(),
                             ]),
                     ]),
 
@@ -50,12 +59,14 @@ class GeneralSettingForm
                                 Toggle::make('dept_head_can_edit_section')
                                     ->label('تعديل بيانات القسم')
                                     ->helperText('السماح بتعديل الاسم، السعة، وغيرها')
-                                    ->default(false),
+                                    ->default(false)
+                                    ->live(),
 
                                 Toggle::make('dept_head_can_enable_section')
                                     ->label('تفعيل/تعطيل القسم')
                                     ->helperText('السماح بتغيير حالة القسم (نشط/غير نشط)')
-                                    ->default(false),
+                                    ->default(false)
+                                    ->live(),
                             ]),
                     ]),
             ]);
