@@ -35,9 +35,17 @@ class CollegesTable
                     ->placeholder('غير محدد'),
                 \Filament\Tables\Columns\ToggleColumn::make('is_active')
                     ->label('الحالة')
+                    ->onIcon('heroicon-m-check-circle')
+                    ->offIcon('heroicon-m-x-circle')
+                    ->onColor('success')
+                    ->offColor('danger')
                     ->sortable(),
                 \Filament\Tables\Columns\ToggleColumn::make('Can_add_Application')
                     ->label('إضافة طلبات')
+                    ->onIcon('heroicon-m-check-circle')
+                    ->offIcon('heroicon-m-x-circle')
+                    ->onColor('success')
+                    ->offColor('danger')
                     ->sortable(),
                 TextColumn::make('trainees_count')
                     ->label('عدد المتدربين')
@@ -59,10 +67,10 @@ class CollegesTable
                     ->preload(),
             ])
             ->recordActions([
-                ViewAction::make(),
-                EditAction::make(),
                 \Filament\Actions\DeleteAction::make()->visible(fn($record) => !$record->trashed() && \Illuminate\Support\Facades\Auth::user()?->isAdmin()),
                 \Filament\Actions\RestoreAction::make()->visible(fn($record) => $record->trashed() && \Illuminate\Support\Facades\Auth::user()?->isAdmin()),
+                ViewAction::make(),
+                EditAction::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
