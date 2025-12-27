@@ -108,7 +108,7 @@ class CapacityOverviewWidget extends BaseWidget
                     ->label('السعة الكلية')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('active_Trainee_count')
-                    ->label('مشغول (متدرب نشط)')
+                    ->label('مشغول')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('available_capacity')
                     ->label('متاح')

@@ -55,11 +55,18 @@ class GTMRecentApplications extends BaseWidget
                 $user = Auth::user();
 
                 if ($user->isAdmin() || $user->isGeneralTrainingManager()) {
-                    return $query;
+                    // GTM and Admin see New (1), Confirmation (3), and Waiting (4)
+                    // They don't typically act on Initial Approve (2) as that's for MOH/College
+                    return $query->whereIn('status', [
+                        Application::STATUS_NEW,
+                        Application::STATUS_CONFIRMATION,
+                        Application::STATUS_WAITING_LIST
+                    ]);
                 }
 
                 if ($user->isCollegeSupervisor()) {
-                    $collegeId = $user->college?->id;
+                    $collegeId = $user->College?->id;
+                    // College Supervisors MUST see Initial Approve (2) to confirm
                     return $query->where('status', Application::STATUS_INITIAL_APPROVE)
                         ->where('training_type', Application::TRAINING_TYPE_UNIVERSITY)
                         ->whereHas('trainee', function ($q) use ($collegeId) {
@@ -68,6 +75,7 @@ class GTMRecentApplications extends BaseWidget
                 }
 
                 if ($user->isMinistry()) {
+                    // MOH MUST see Initial Approve (2) to confirm
                     return $query->where('status', Application::STATUS_INITIAL_APPROVE)
                         ->where('training_type', Application::TRAINING_TYPE_PRACTICE);
                 }
@@ -76,45 +84,79 @@ class GTMRecentApplications extends BaseWidget
             })
             ->columns([
                 Tables\Columns\TextColumn::make('trainee.full_name')
-                    ->label('اسم المتدرب')
-                    ->searchable(),
+                    ->label('المتدرب')
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('trainee.national_id')
                     ->label('رقم الهوية')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('administrative.title')
-                    ->label('مكان التدريب'),
-                Tables\Columns\TextColumn::make('department.title')
-                    ->label('الدائرة'),
-                Tables\Columns\TextColumn::make('section.name_location')
-                    ->label('القسم'),
-                Tables\Columns\TextColumn::make('training_type')
+                Tables\Columns\TextColumn::make('trainee.institution.name')
+                    ->label('المؤسسة')
+                    ->toggleable(isToggledHiddenByDefault: false)
+                    ->visible(fn() => Auth::check() && (
+                        Auth::user()->isAdmin() ||
+                        Auth::user()->isGeneralTrainingManager()
+                    )),
+                Tables\Columns\TextColumn::make('trainee.major.name')
+                    ->label('التخصص')
+                    ->toggleable(isToggledHiddenByDefault: false)
+                    ->visible(fn() => Auth::check() && (
+                        Auth::user()->isAdmin() ||
+                        Auth::user()->isGeneralTrainingManager() ||
+                        Auth::user()->isCollegeSupervisor()
+                    )),
+                Tables\Columns\TextColumn::make('training_type_label')
                     ->label('نوع التدريب')
-                    ->formatStateUsing(fn($state) => Application::TRAINING_TYPES[$state] ?? 'غير محدد'),
+                    ->badge()
+                    ->color(fn($state) => match ($state) {
+                        'تدريب جامعي' => 'info',
+                        'مزاولة مهنة' => 'success',
+                        default => 'gray',
+                    })
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('administrative.title')
+                    ->label('الإدارة')
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('department.title')
+                    ->label('الدائرة')
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('section.name_location')
+                    ->label('القسم')
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('status')
                     ->label('الحالة')
-                    ->formatStateUsing(fn($state) => Lang::get('translation.status.' . $state, [], 'ar'))
+                    ->sortable()
                     ->badge()
-                    ->color(fn(string $state): string => match ((int)$state) {
-                        Application::STATUS_NEW => 'warning',
-                        Application::STATUS_INITIAL_APPROVE => 'info',
-                        Application::STATUS_CONFIRMATION => 'primary',
-                        Application::STATUS_WAITING_LIST => 'success',
-                        Application::STATUS_STARTED_TRAINING => 'success',
-                        Application::STATUS_REJECTED => 'danger',
+                    ->color(fn($state): string => match ((int)$state) {
+                        1 => 'info',
+                        2 => 'primary',
+                        3 => 'primary',
+                        4 => 'warning',
+                        5 => 'success',
+                        6 => 'gray',
+                        7 => 'danger',
+                        8 => 'danger',
                         default => 'gray',
-                    }),
+                    })
+                    ->formatStateUsing(fn($state): string => (function ($state) {
+                        $key = 'translation.status.' . $state;
+                        $translated = \Illuminate\Support\Facades\Lang::get($key, [], 'ar');
+                        return $translated === $key ? $state : $translated;
+                    })($state)),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('تاريخ التقديم')
-                    ->dateTime()
-                    ->sortable(),
+                    ->dateTime('Y-m-d')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->actions([
                 ViewAction::make(),
+
                 Action::make('initial_approve')
                     ->label('موافقة مبدئية')
-                    ->color('info')
+                    ->color('success')
                     ->icon('heroicon-o-check-circle')
-                    ->visible(fn($record) => (Auth::user()->isGeneralTrainingManager() || Auth::user()->isAdmin()) && (int)$record->status === Application::STATUS_NEW)
+                    ->visible(fn($record) => Auth::user()->isGeneralTrainingManager() && $record->status == Application::STATUS_NEW)
                     ->requiresConfirmation()
                     ->successNotificationTitle('تمت الموافقة المبدئية بنجاح')
                     ->action(fn($record) => $record->update(['status' => Application::STATUS_INITIAL_APPROVE])),
@@ -135,33 +177,115 @@ class GTMRecentApplications extends BaseWidget
                         'accepted_at' => now(),
                     ])),
 
-                Action::make('final_approve')
-                    ->label('اعتماد نهائي')
-                    ->color('success')
-                    ->icon('heroicon-o-check-circle')
-                    ->visible(
-                        fn($record) => (Auth::user()->isGeneralTrainingManager() || Auth::user()->isAdmin()) &&
-                            (int)$record->status === Application::STATUS_CONFIRMATION
-                    )
-                    ->requiresConfirmation()
-                    ->successNotificationTitle('تم الاعتماد النهائي بنجاح')
-                    ->action(fn($record) => $record->update(['status' => Application::STATUS_WAITING_LIST])),
-
-                Action::make('start_training')
-                    ->label('بدء التدريب')
+                Action::make('process_confirmation')
+                    ->label('معالجة التأكيد')
                     ->color('success')
                     ->icon('heroicon-o-play')
-                    ->visible(fn($record) => (Auth::user()->isGeneralTrainingManager() || Auth::user()->isAdmin()) && (int)$record->status === Application::STATUS_WAITING_LIST)
+                    ->visible(fn($record) => Auth::user()->isGeneralTrainingManager() && $record->status == Application::STATUS_CONFIRMATION)
                     ->form([
+                        \Filament\Forms\Components\Select::make('new_status')
+                            ->label('الحالة الجديدة')
+                            ->options([
+                                Application::STATUS_WAITING_LIST => 'قائمة الانتظار',
+                                Application::STATUS_STARTED_TRAINING => 'بدء التدريب',
+                            ])
+                            ->required()
+                            ->reactive()
+                            ->default(Application::STATUS_STARTED_TRAINING),
                         DatePicker::make('start_date')
                             ->label('تاريخ البدء')
                             ->required()
-                            ->default(now()),
+                            ->default(now())
+                            ->native(false)
+                            ->format('Y/m/d')
+                            ->displayFormat('Y/m/d')
+                            ->reactive()
+                            ->visible(fn($get) => (int)$get('new_status') === Application::STATUS_STARTED_TRAINING),
                         TextInput::make('duration')
                             ->label('المدة (يوم)')
                             ->numeric()
                             ->required()
-                            ->default(30),
+                            ->default(30)
+                            ->reactive()
+                            ->visible(fn($get) => (int)$get('new_status') === Application::STATUS_STARTED_TRAINING),
+                        \Filament\Forms\Components\Placeholder::make('calculated_end_date')
+                            ->label('تاريخ الانتهاء المتوقع')
+                            ->content(function ($get) {
+                                $startDate = $get('start_date');
+                                $duration = $get('duration');
+
+                                if ($startDate && $duration) {
+                                    try {
+                                        $start = \Carbon\Carbon::parse($startDate);
+                                        $end = $start->copy()->addDays((int)$duration);
+                                        return $end->format('Y-m-d') . ' (' . $end->translatedFormat('l، d F Y') . ')';
+                                    } catch (\Exception $e) {
+                                        return 'غير محدد';
+                                    }
+                                }
+                                return 'غير محدد';
+                            })
+                            ->visible(fn($get) => (int)$get('new_status') === Application::STATUS_STARTED_TRAINING),
+                    ])
+                    ->successNotificationTitle('تمت معالجة التأكيد بنجاح')
+                    ->action(function ($record, array $data) {
+                        $newStatus = (int)$data['new_status'];
+
+                        if ($newStatus === Application::STATUS_STARTED_TRAINING) {
+                            $startDate = \Carbon\Carbon::parse($data['start_date']);
+                            $duration = (int)$data['duration'];
+                            $endDate = $startDate->copy()->addDays($duration);
+
+                            $record->update([
+                                'status' => Application::STATUS_STARTED_TRAINING,
+                                'start_date' => $startDate,
+                                'duration' => $duration,
+                                'end_date' => $endDate,
+                            ]);
+                        } else {
+                            $record->update([
+                                'status' => Application::STATUS_WAITING_LIST,
+                            ]);
+                        }
+                    }),
+
+                Action::make('begin_training_from_waiting')
+                    ->label('بدء التدريب')
+                    ->color('success')
+                    ->icon('heroicon-o-play-circle')
+                    ->visible(fn($record) => Auth::user()->isGeneralTrainingManager() && $record->status == Application::STATUS_WAITING_LIST)
+                    ->form([
+                        DatePicker::make('start_date')
+                            ->label('تاريخ البدء')
+                            ->required()
+                            ->default(now())
+                            ->native(false)
+                            ->format('Y/m/d')
+                            ->displayFormat('Y/m/d')
+                            ->reactive(),
+                        TextInput::make('duration')
+                            ->label('المدة (يوم)')
+                            ->numeric()
+                            ->required()
+                            ->default(30)
+                            ->reactive(),
+                        \Filament\Forms\Components\Placeholder::make('calculated_end_date')
+                            ->label('تاريخ الانتهاء المتوقع')
+                            ->content(function ($get) {
+                                $startDate = $get('start_date');
+                                $duration = $get('duration');
+
+                                if ($startDate && $duration) {
+                                    try {
+                                        $start = \Carbon\Carbon::parse($startDate);
+                                        $end = $start->copy()->addDays((int)$duration);
+                                        return $end->format('Y-m-d') . ' (' . $end->translatedFormat('l، d F Y') . ')';
+                                    } catch (\Exception $e) {
+                                        return 'غير محدد';
+                                    }
+                                }
+                                return 'غير محدد';
+                            }),
                     ])
                     ->successNotificationTitle('تم بدء التدريب بنجاح')
                     ->action(function ($record, array $data) {
