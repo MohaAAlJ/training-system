@@ -35,10 +35,10 @@ class CollegesTable
                     ->placeholder('غير محدد'),
                 \Filament\Tables\Columns\ToggleColumn::make('is_active')
                     ->label('الحالة')
-                    ->sortable(),
+                    ->sortable()
                 \Filament\Tables\Columns\ToggleColumn::make('Can_add_Application')
                     ->label('إضافة طلبات')
-                    ->sortable(),
+                    ->sortable()
                 TextColumn::make('trainees_count')
                     ->label('عدد المتدربين')
                     ->counts('trainees')
