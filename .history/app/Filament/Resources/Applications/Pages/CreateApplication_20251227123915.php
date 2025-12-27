@@ -43,7 +43,6 @@ class CreateApplication extends CreateRecord
                     }
                 }
 
-
                 $traineeData = [
                     'full_name' => $data['full_name'] ?? 'New Trainee',
                     'national_id' => $data['national_id'] ?? null,
