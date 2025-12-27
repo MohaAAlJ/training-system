@@ -11,7 +11,7 @@ class College extends Model
     use HasFactory, SoftDeletes;
 
     protected $table = 'colleges';
-    protected $fillable = ['id', 'name', 'institution_id', 'user_id', 'is_active'];
+    protected $fillable = ['id', 'name', 'institution_id', 'user_id'];
 
     public function institution()
     {
@@ -28,7 +28,7 @@ class College extends Model
         return $this->belongsToMany(Major::class, 'college_major');
     }
 
-    public function trainees()
+    public function Trainee()
     {
         return $this->hasMany(Trainee::class, 'college_id');
     }

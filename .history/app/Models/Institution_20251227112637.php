@@ -38,7 +38,7 @@ class Institution extends Model
         );
     }
 
-    public function trainees(): HasMany
+    public function Trainee(): HasMany
     {
         return $this->hasMany(Trainee::class, 'institution_id');
     }

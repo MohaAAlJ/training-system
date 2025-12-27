@@ -12,7 +12,7 @@ class CollegePolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->isAdmin();
+        return ! ($user->isMinistry() || $user->isCollegeSupervisor());
     }
 
     /**

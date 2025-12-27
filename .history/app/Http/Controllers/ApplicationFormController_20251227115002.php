@@ -240,21 +240,8 @@ class ApplicationFormController extends Controller
             'phone_number' => ['required', 'regex:/^97[02]5[69]\d{7}$/'],
             'governorate_id' => ['required', 'integer', 'exists:governorates,id'],
             'street' => ['required', 'string', 'max:255', 'regex:/^[\p{Arabic}A-Za-z0-9\s\-\.,#\/]+$/u'],
-            'institution_id' => [
-                'required_if:training_type,' . Application::TRAINING_TYPE_UNIVERSITY,
-                'nullable',
-                'integer',
-                \Illuminate\Validation\Rule::exists('institutions', 'id')->where(function ($query) {
-                    $query->where('is_active', true);
-                }),
-            ],
-            'college_id' => [
-                'nullable',
-                'integer',
-                \Illuminate\Validation\Rule::exists('colleges', 'id')->where(function ($query) {
-                    $query->where('is_active', true);
-                }),
-            ],
+            'institution_id' => ['required_if:training_type,' . Application::TRAINING_TYPE_UNIVERSITY, 'nullable', 'integer', 'exists:institutions,id'],
+            'college_id' => ['nullable', 'integer', 'exists:colleges,id'],
             'major_id' => ['required_if:training_type,' . Application::TRAINING_TYPE_UNIVERSITY, 'nullable', 'integer', 'exists:majors,id'],
             'training_hours' => ['required', 'integer', 'min:1', 'max:999'],
             'administrative_id' => ['required', 'integer', 'exists:administratives,id'],

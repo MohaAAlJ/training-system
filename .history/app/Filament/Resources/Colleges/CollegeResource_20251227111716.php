@@ -38,7 +38,7 @@ class CollegeResource extends Resource
     protected static ?string $modelLabel = 'الكليات';
     protected static ?string $pluralModelLabel = 'الكليات';
     protected static ?string $navigationLabel = 'الكليات';
-    protected static string | UnitEnum | null $navigationGroup = 'الكليات';
+    // protected static ?string $navigationGroup = 'الكليات';
     protected static ?int $navigationSort = 6;
     public static function form(Schema $schema): Schema
     {

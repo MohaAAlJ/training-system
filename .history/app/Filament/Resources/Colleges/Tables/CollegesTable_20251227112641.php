@@ -38,17 +38,11 @@ class CollegesTable
                     ->sortable(),
                 TextColumn::make('trainees_count')
                     ->label('عدد المتدربين')
-                    ->counts('trainees')
+                    ->counts('Trainee')
                     ->sortable(),
             ])
             ->filters([
                 TrashedFilter::make(),
-                \Filament\Tables\Filters\TernaryFilter::make('is_active')
-                    ->label('الحالة')
-                    ->boolean()
-                    ->trueLabel('نشط')
-                    ->falseLabel('غير نشط')
-                    ->placeholder('الكل'),
                 \Filament\Tables\Filters\SelectFilter::make('institution_id')
                     ->label('الجامعة')
                     ->relationship('institution', 'name')
