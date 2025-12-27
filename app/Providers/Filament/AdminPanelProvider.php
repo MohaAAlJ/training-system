@@ -40,7 +40,22 @@ class AdminPanelProvider extends PanelProvider
                 'warning' => Color::Orange,
                 'danger' => Color::Red,
             ])
-
+            ->renderHook(
+                'panels::head.end',
+                fn (): HtmlString => new HtmlString('
+                    <style>
+                        .fi-ta-content {
+                            overflow-x: auto !important;
+                            -webkit-overflow-scrolling: touch;
+                        }
+                        @media (max-width: 1024px) {
+                             .fi-ta-content table {
+                                min-width: 800px !important;
+                             }
+                        }
+                    </style>
+                ')
+            )
             ->databaseNotifications()
             ->collapsibleNavigationGroups(false)
             ->sidebarCollapsibleOnDesktop(true)
@@ -70,3 +85,8 @@ class AdminPanelProvider extends PanelProvider
             ]);
     }
 }
+
+
+
+
+

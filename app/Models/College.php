@@ -10,7 +10,8 @@ class College extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['id','name', 'institution_id', 'user_id'];
+    protected $table = 'colleges';
+    protected $fillable = ['id', 'name', 'institution_id', 'user_id'];
 
     public function institution()
     {
@@ -22,13 +23,13 @@ class College extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function majors()
+    public function Major()
     {
         return $this->belongsToMany(Major::class, 'college_major');
     }
 
-    public function trainees()
+    public function Trainee()
     {
-        return $this->hasMany(Trainees::class, 'college_id');
+        return $this->hasMany(Trainee::class, 'college_id');
     }
 }

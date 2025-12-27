@@ -36,19 +36,19 @@ class Administrative extends Model
     }
 
     /**
-     * Get all sections under this administrative.
+     * Get all Section under this administrative.
      */
-    public function sections()
+    public function Section()
     {
-        return $this->hasMany(Sections::class, 'administrative_id');
+        return $this->hasMany(Section::class, 'administrative_id');
     }
 
     /**
-     * Get all applications for this administrative unit.
+     * Get all Application for this administrative unit.
      */
-    public function applications()
+    public function Application()
     {
-        return $this->hasMany(Applications::class, 'administrative_id');
+        return $this->hasMany(Application::class, 'administrative_id');
     }
 
 
@@ -63,11 +63,11 @@ class Administrative extends Model
     }
 
     /**
-     * Get title with governorate name (from sections)
+     * Get title with governorate name (from Section)
      */
     public function getNameWithGovernorateAttribute(): string
     {
-        $section = $this->sections()->with('governorate')->first();
+        $section = $this->Section()->with('governorate')->first();
         $govName = $section?->governorate?->name;
 
         if (is_array($govName)) {
@@ -75,5 +75,29 @@ class Administrative extends Model
         }
 
         return $this->title . ($govName ? " - {$govName}" : '');
+    }
+
+    /**
+     * Get capacity statistics for this administrative unit by summing its sections.
+     * Returns: total, used, available, is_full
+     */
+    public function getCapacityStats(): array
+    {
+        // Sum total capacity from all sections
+        $total = (int) $this->Section()->sum('total_capacity');
+
+        // Count all active applications in this administrative unit
+        $used = Application::where('administrative_id', $this->id)
+            ->where('status', Application::STATUS_STARTED_TRAINING)
+            ->count();
+
+        $available = max(0, $total - $used);
+
+        return [
+            'total' => $total,
+            'used' => $used,
+            'available' => $available,
+            'is_full' => $available <= 0
+        ];
     }
 }

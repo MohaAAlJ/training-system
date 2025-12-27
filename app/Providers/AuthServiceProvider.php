@@ -4,14 +4,20 @@ namespace App\Providers;
 
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use App\Models\User;
-use App\Models\Applications;
-use App\Models\Trainees;
-use App\Models\Departments;
+use App\Models\Application;
+use App\Models\Trainee;
+use App\Models\Department;
 use App\Models\College;
 use App\Models\Institution;
 use App\Models\Major;
-use App\Models\Sections;
+use App\Models\Section;
 use App\Policies\UserPolicy;
+use App\Policies\ApplicationPolicy;
+use App\Policies\TraineePolicy;
+use App\Policies\DepartmentPolicy;
+use App\Policies\SectionPolicy;
+use App\Policies\GeneralSettingPolicy;
+use App\Models\GeneralSetting;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -22,13 +28,14 @@ class AuthServiceProvider extends ServiceProvider
      */
     protected $policies = [
         User::class => UserPolicy::class,
-        Applications::class => UserPolicy::class,
-        Trainees::class => UserPolicy::class,
-        Departments::class => \App\Policies\DepartmentsPolicy::class,
-        Sections::class => UserPolicy::class,
+        Application::class => ApplicationPolicy::class,
+        Trainee::class => TraineePolicy::class,
+        Department::class => DepartmentPolicy::class,
+        Section::class => SectionPolicy::class,
         College::class => \App\Policies\CollegePolicy::class,
         Institution::class => UserPolicy::class,
         Major::class => UserPolicy::class,
+        GeneralSetting::class => GeneralSettingPolicy::class,
     ];
 
     /**
