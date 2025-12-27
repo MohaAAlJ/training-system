@@ -135,10 +135,12 @@ class ApplicationFormController extends Controller
         }
 
         $data = $query->select('id', 'title')->get()
-            ->map(fn($dept) => [
-                'id' => $dept->id,
-                'name' => $dept->title,
-            ])
+            ->map(function ($dept) {
+                return [
+                    'id' => $dept->id,
+                    'name' => $dept->title,
+                ];
+            })
             ->values();
 
         return response()->json($data);
@@ -161,14 +163,20 @@ class ApplicationFormController extends Controller
 
         $hideFull = \App\Models\GeneralSetting::instance()->hide_full_sections;
 
-        // Return sections based on capacity settings
-        $data = $query->active()->get()
-            ->when($hideFull, fn($collection) => $collection->reject(fn($sec) => $sec->getCapacityStats()['is_full']))
-            ->map(fn($sec) => [
+        $sections = $query->active()->get();
+
+        if ($hideFull) {
+            $sections = $sections->reject(function ($sec) {
+                return $sec->getCapacityStats()['is_full'] ?? false;
+            });
+        }
+
+        $data = $sections->map(function ($sec) {
+            return [
                 'id' => $sec->id,
                 'name' => $sec->name_location,
-            ])
-            ->values();
+            ];
+        })->values();
 
         return response()->json($data);
     }
