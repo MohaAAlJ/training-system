@@ -43,6 +43,11 @@ class CreateApplication extends CreateRecord
                     }
                 }
 
+                if (isset($data['national_id']) && Trainee::where('national_id', $data['national_id'])->exists()) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        'national_id' => 'رقم الهوية موجود بالفعل في النظام.',
+                    ]);
+                }
 
                 $traineeData = [
                     'full_name' => $data['full_name'] ?? 'New Trainee',
