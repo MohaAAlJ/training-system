@@ -58,7 +58,7 @@ class ApplicationFormController extends Controller
 
     public function institution()
     {
-        $data = Institution::select('id', 'name')->get()
+        $data = Institution::where('is_active', true)->select('id', 'name')->get()
             ->map(fn($inst) => [
                 'id' => $inst->id,
                 'name' => $inst->name,
@@ -76,10 +76,14 @@ class ApplicationFormController extends Controller
         // colleges belonging to that institution via the college_major pivot.
         if ($institutionId) {
             $majors = Major::whereHas('colleges', function ($q) use ($institutionId) {
-                $q->where('colleges.institution_id', $institutionId);
+                $q->where('colleges.institution_id', $institutionId)
+                    ->where('colleges.is_active', true);
             })->select('majors.id', 'majors.name')->get();
         } else {
-            $majors = Major::select('majors.id', 'majors.name')->get();
+            // Only show majors that have at least one active college
+            $majors = Major::whereHas('colleges', function ($q) {
+                $q->where('colleges.is_active', true);
+            })->select('majors.id', 'majors.name')->get();
         }
 
         $data = $majors->map(fn($major) => [
@@ -106,7 +110,10 @@ class ApplicationFormController extends Controller
             return response()->json([], 200);
         }
 
-        $colleges = $major->colleges()->select('colleges.id', 'colleges.name', 'colleges.institution_id')->get()
+        $colleges = $major->colleges()
+            ->where('colleges.is_active', true)
+            ->select('colleges.id', 'colleges.name', 'colleges.institution_id')
+            ->get()
             ->map(fn($c) => [
                 'id' => $c->id,
                 'name' => $c->name,
@@ -240,8 +247,21 @@ class ApplicationFormController extends Controller
             'phone_number' => ['required', 'regex:/^97[02]5[69]\d{7}$/'],
             'governorate_id' => ['required', 'integer', 'exists:governorates,id'],
             'street' => ['required', 'string', 'max:255', 'regex:/^[\p{Arabic}A-Za-z0-9\s\-\.,#\/]+$/u'],
-            'institution_id' => ['required_if:training_type,' . Application::TRAINING_TYPE_UNIVERSITY, 'nullable', 'integer', 'exists:institutions,id'],
-            'college_id' => ['nullable', 'integer', 'exists:colleges,id'],
+            'institution_id' => [
+                'required_if:training_type,' . Application::TRAINING_TYPE_UNIVERSITY,
+                'nullable',
+                'integer',
+                \Illuminate\Validation\Rule::exists('institutions', 'id')->where(function ($query) {
+                    $query->where('is_active', true);
+                }),
+            ],
+            'college_id' => [
+                'nullable',
+                'integer',
+                \Illuminate\Validation\Rule::exists('colleges', 'id')->where(function ($query) {
+                    $query->where('is_active', true);
+                }),
+            ],
             'major_id' => ['required_if:training_type,' . Application::TRAINING_TYPE_UNIVERSITY, 'nullable', 'integer', 'exists:majors,id'],
             'training_hours' => ['required', 'integer', 'min:1', 'max:999'],
             'administrative_id' => ['required', 'integer', 'exists:administratives,id'],
