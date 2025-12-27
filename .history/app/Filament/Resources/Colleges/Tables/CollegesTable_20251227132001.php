@@ -71,12 +71,14 @@ class CollegesTable
             ->recordActions([
                 ViewAction::make(),
                 EditAction::make(),
-                \Filament\Actions\DeleteAction::make()->visible(fn($record) => !$record->trashed() && \Illuminate\Support\Facades\Auth::user()?->isAdmin()),
-                \Filament\Actions\RestoreAction::make()->visible(fn($record) => $record->trashed() && \Illuminate\Support\Facades\Auth::user()?->isAdmin()),
+                \Filament\Actions\DeleteAction::make()->visible(fn() => \Illuminate\Support\Facades\Auth::user()?->isAdmin() ?? false),
+                \Filament\Actions\RestoreAction::make()->visible(fn() => \Illuminate\Support\Facades\Auth::user()?->isAdmin() ?? false),
+                \Filament\Actions\ForceDeleteAction::make()->visible(fn() => \Illuminate\Support\Facades\Auth::user()?->isAdmin() ?? false),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()->visible(fn() => \Illuminate\Support\Facades\Auth::user()?->isAdmin() ?? false),
+                    ForceDeleteBulkAction::make()->visible(fn() => \Illuminate\Support\Facades\Auth::user()?->isAdmin() ?? false),
                     RestoreBulkAction::make()->visible(fn() => \Illuminate\Support\Facades\Auth::user()?->isAdmin() ?? false),
                 ]),
             ]);

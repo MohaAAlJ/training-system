@@ -45,7 +45,6 @@ class ApplicationsTable
                     ->searchable(!Auth::user()->isCollegeSupervisor())
                     ->sortable(!Auth::user()->isCollegeSupervisor())
                     ->toggleable(isToggledHiddenByDefault: false)
-                    ->formatStateUsing(fn($state, $record) => $record->training_type === Application::TRAINING_TYPE_PRACTICE ? '' : $state)
                     ->visible(fn() => Auth::check() && (
                         Auth::user()->isAdmin() ||
                         Auth::user()->isDepartment() ||
@@ -58,7 +57,6 @@ class ApplicationsTable
                     ->searchable()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: false)
-                    ->formatStateUsing(fn($state, $record) => $record->training_type === Application::TRAINING_TYPE_PRACTICE ? '' : $state)
                     ->visible(fn() => Auth::check() && (
                         Auth::user()->isAdmin() ||
                         Auth::user()->isDepartment() ||
@@ -340,14 +338,16 @@ class ApplicationsTable
                     ->label('رفض')
                     ->modalHeading('رفض الطلب')
                     ->modalDescription('هل أنت متأكد من رفض هذا الطلب؟ سيتم نقله إلى قائمة المرفوضات.')
-                    ->visible(fn($record) => !$record->trashed() && (Auth::user()?->isAdmin() || Auth::user()?->isGeneralTrainingManager()))
+                    ->visible(fn() => Auth::user()?->isAdmin() || Auth::user()?->isGeneralTrainingManager())
                     ->action(function ($record) {
                         $record->update(['status' => Application::STATUS_REJECTED]);
                         $record->delete();
                     }),
                 RestoreAction::make()
                     ->label('استعادة')
-                    ->visible(fn($record) => $record->trashed() && (Auth::user()?->isAdmin() || Auth::user()?->isGeneralTrainingManager())),
+                    ->visible(fn() => Auth::user()?->isAdmin() || Auth::user()?->isGeneralTrainingManager()),
+                \Filament\Actions\ForceDeleteAction::make()
+                    ->visible(fn() => Auth::user()?->isAdmin() || Auth::user()?->isGeneralTrainingManager()),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
@@ -360,6 +360,8 @@ class ApplicationsTable
                                 $record->delete();
                             });
                         }),
+                    ForceDeleteBulkAction::make()
+                        ->visible(fn() => Auth::user()?->isAdmin() || Auth::user()?->isGeneralTrainingManager()),
                     RestoreBulkAction::make()
                         ->label('استعادة المرفوضة')
                         ->visible(fn() => Auth::user()?->isAdmin() || Auth::user()?->isGeneralTrainingManager()),

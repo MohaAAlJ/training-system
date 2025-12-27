@@ -45,7 +45,6 @@ class ApplicationsTable
                     ->searchable(!Auth::user()->isCollegeSupervisor())
                     ->sortable(!Auth::user()->isCollegeSupervisor())
                     ->toggleable(isToggledHiddenByDefault: false)
-                    ->formatStateUsing(fn($state, $record) => $record->training_type === Application::TRAINING_TYPE_PRACTICE ? '' : $state)
                     ->visible(fn() => Auth::check() && (
                         Auth::user()->isAdmin() ||
                         Auth::user()->isDepartment() ||
@@ -58,7 +57,6 @@ class ApplicationsTable
                     ->searchable()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: false)
-                    ->formatStateUsing(fn($state, $record) => $record->training_type === Application::TRAINING_TYPE_PRACTICE ? '' : $state)
                     ->visible(fn() => Auth::check() && (
                         Auth::user()->isAdmin() ||
                         Auth::user()->isDepartment() ||
