@@ -18,6 +18,7 @@ return new class extends Migration
             $table->boolean('dept_head_can_edit_section')->default(false);
             $table->boolean('dept_head_can_enable_section')->default(false);
             $table->boolean('hide_full_sections')->default(true);
+            $table->boolean('is_public_form_enabled')->default(true);
             $table->timestamps();
         });
 
@@ -28,6 +29,7 @@ return new class extends Migration
             'dept_head_can_edit_section' => false,
             'dept_head_can_enable_section' => false,
             'hide_full_sections' => true,
+            'is_public_form_enabled' => true,
             'created_at' => now(),
             'updated_at' => now(),
         ]);

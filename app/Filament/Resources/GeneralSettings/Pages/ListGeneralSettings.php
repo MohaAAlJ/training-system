@@ -27,6 +27,8 @@ class ListGeneralSettings extends ListRecords
                 'hoa_can_enable_section' => false,
                 'dept_head_can_edit_section' => false,
                 'dept_head_can_enable_section' => false,
+                'hide_full_sections' => true,
+                'is_public_form_enabled' => true,
             ]);
         }
 

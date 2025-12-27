@@ -14,6 +14,7 @@ class GeneralSetting extends Model
         'dept_head_can_edit_section',
         'dept_head_can_enable_section',
         'hide_full_sections',
+        'is_public_form_enabled',
     ];
 
     protected $casts = [
@@ -22,6 +23,7 @@ class GeneralSetting extends Model
         'dept_head_can_edit_section' => 'boolean',
         'dept_head_can_enable_section' => 'boolean',
         'hide_full_sections' => 'boolean',
+        'is_public_form_enabled' => 'boolean',
     ];
 
     /**
