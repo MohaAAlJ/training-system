@@ -21,7 +21,6 @@ use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\Auth;
 use App\Helpers\Constants;
-use Carbon\Carbon;
 
 class ApplicationForm
 {
@@ -77,24 +76,8 @@ class ApplicationForm
                                             ->searchable()
                                             ->preload(),
                                     ])
-                                    ->action(function ($record, $data, \Livewire\Component $livewire) {
+                                    ->action(function ($record, $data) {
                                         $record->trainee->update($data);
-
-                                        // Manually update the Livewire component state to reflect changes without reload
-                                        $livewire->data['full_name'] = $data['full_name'];
-                                        $livewire->data['national_id'] = $data['national_id'];
-                                        $livewire->data['phone_number'] = $data['phone_number'];
-                                        $livewire->data['street'] = $data['street'];
-                                        $livewire->data['major_id'] = $data['major_id'];
-
-                                        // Update Date Fields from the single 'dob' field in modal
-                                        if (!empty($data['dob'])) {
-                                            $dobDate = Carbon::parse($data['dob']);
-                                            $livewire->data['dob_day'] = $dobDate->day;
-                                            $livewire->data['dob_month'] = $dobDate->format('m');
-                                            $livewire->data['dob_year'] = $dobDate->year;
-                                            $livewire->data['dob'] = $data['dob'];
-                                        }
 
                                         \Filament\Notifications\Notification::make()
                                             ->title('تم تحديث بيانات المتدرب بنجاح')
@@ -136,7 +119,15 @@ class ApplicationForm
                             ])
                             ->required(fn($context) => $context === 'create'),
 
-
+                        Select::make('governorate_id')
+                            ->label('المحافظة')
+                            ->formatStateUsing(fn($record) => $record?->trainee?->governorate_id)
+                            ->disabled(fn($context) => $context === 'edit')
+                            ->dehydrated(fn($context) => $context === 'create')
+                            ->options(fn() => \Illuminate\Support\Facades\Lang::get('translation.governorates', [], 'ar'))
+                            ->searchable()
+                            ->preload()
+                            ->required(fn($context) => $context === 'create'),
                         TextInput::make('street')
                             ->label('المنطقة / الشارع')
                             ->formatStateUsing(fn($record) => $record?->trainee?->street)
@@ -151,7 +142,6 @@ class ApplicationForm
                                 Select::make('dob_day')
                                     ->label('اليوم')
                                     ->options(array_combine(range(1, 31), range(1, 31)))
-                                    ->formatStateUsing(fn($record) => $record?->trainee?->dob ? Carbon::parse($record->trainee->dob)->day : null)
                                     ->disabled(fn($context) => $context === 'edit')
                                     ->dehydrated(false)
                                     ->reactive()
@@ -177,7 +167,6 @@ class ApplicationForm
                                         '11' => 'نوفمبر',
                                         '12' => 'ديسمبر'
                                     ])
-                                    ->formatStateUsing(fn($record) => $record?->trainee?->dob ? Carbon::parse($record->trainee->dob)->format('m') : null)
                                     ->disabled(fn($context) => $context === 'edit')
                                     ->dehydrated(false)
                                     ->reactive()
@@ -193,7 +182,6 @@ class ApplicationForm
                                         range(date('Y') - 20, date('Y') - 60),
                                         range(date('Y') - 20, date('Y') - 60)
                                     ))
-                                    ->formatStateUsing(fn($record) => $record?->trainee?->dob ? Carbon::parse($record->trainee->dob)->year : null)
                                     ->disabled(fn($context) => $context === 'edit')
                                     ->dehydrated(false)
                                     ->reactive()
@@ -282,115 +270,117 @@ class ApplicationForm
                             ])
                             ->required(fn($context) => $context === 'create')
                             ->preload(),
-                    ])->columns(2)->columnSpanFull(),
 
-                Fieldset::make('تفاصيل الطلب')
-                    ->schema([
-                        Select::make('training_type')
-                            ->label('نوع التدريب')
-                            ->options(Application::TRAINING_TYPES)
-                            ->default(function () {
-                                if (Auth::user()->isCollegeSupervisor()) return Application::TRAINING_TYPE_UNIVERSITY;
-                                if (Auth::user()->isMinistry()) return Application::TRAINING_TYPE_PRACTICE;
-                                return null;
-                            })
-                            ->disabled(fn() => ! Auth::user()->isAdmin())
-                            ->visible(fn() => ! Auth::user()->isCollegeSupervisor())
-                            ->dehydrated()
-                            ->required(),
+                        // Application Details - now nested inside Personal Information
+                        Fieldset::make('تفاصيل الطلب')
+                            ->schema([
+                                Select::make('training_type')
+                                    ->label('نوع التدريب')
+                                    ->options(Application::TRAINING_TYPES)
+                                    ->default(function () {
+                                        if (Auth::user()->isCollegeSupervisor()) return Application::TRAINING_TYPE_UNIVERSITY;
+                                        if (Auth::user()->isMinistry()) return Application::TRAINING_TYPE_PRACTICE;
+                                        return null;
+                                    })
+                                    ->disabled(fn() => ! Auth::user()->isAdmin())
+                                    ->visible(fn() => ! Auth::user()->isCollegeSupervisor())
+                                    ->dehydrated()
+                                    ->required(),
 
-                        TextInput::make('training_hours')
-                            ->label('ساعات التدريب المطلوبة')
-                            ->formatStateUsing(fn($record) => $record?->trainee?->training_hours)
-                            ->disabled(fn($context) => $context === 'edit')
-                            ->dehydrated(fn($context) => $context === 'create')
-                            ->numeric()
-                            ->helperText('الساعات الأكاديمية المطلوبة'),
+                                TextInput::make('training_hours')
+                                    ->label('ساعات التدريب المطلوبة')
+                                    ->formatStateUsing(fn($record) => $record?->trainee?->training_hours)
+                                    ->disabled(fn($context) => $context === 'edit')
+                                    ->dehydrated(fn($context) => $context === 'create')
+                                    ->numeric()
+                                    ->helperText('الساعات الأكاديمية المطلوبة'),
 
-                        Select::make('administrative_id')
-                            ->label('الإدارة')
-                            ->relationship('administrative', 'title')
-                            ->getOptionLabelFromRecordUsing(fn(Administrative $record) => $record->name_with_governorate)
-                            ->searchable()
-                            ->preload()
-                            ->reactive()
-                            ->disabled(fn() => ! Auth::user()->isAdmin() && ! Auth::user()->isCollegeSupervisor())
-                            ->required(),
+                                Select::make('administrative_id')
+                                    ->label('الإدارة')
+                                    ->relationship('administrative', 'title')
+                                    ->getOptionLabelFromRecordUsing(fn(Administrative $record) => $record->name_with_governorate)
+                                    ->searchable()
+                                    ->preload()
+                                    ->reactive()
+                                    ->disabled(fn() => ! Auth::user()->isAdmin() && ! Auth::user()->isCollegeSupervisor())
+                                    ->required(),
 
-                        Select::make('department_id')
-                            ->label('الدائرة')
-                            ->options(function (callable $get) {
-                                $adminId = $get('administrative_id');
-                                if (!$adminId) {
-                                    return \App\Models\Department::all()->pluck('title', 'id');
-                                }
-                                return \App\Models\Department::whereHas('Section', function ($q) use ($adminId) {
-                                    $q->where('administrative_id', $adminId);
-                                })->pluck('title', 'id');
-                            })
-                            ->searchable()
-                            ->preload()
-                            ->reactive()
-                            ->disabled(fn(callable $get) => (! Auth::user()->isAdmin() && ! Auth::user()->isCollegeSupervisor()) || ! $get('administrative_id'))
-                            ->required(),
+                                Select::make('department_id')
+                                    ->label('الدائرة')
+                                    ->options(function (callable $get) {
+                                        $adminId = $get('administrative_id');
+                                        if (!$adminId) {
+                                            return \App\Models\Department::all()->pluck('title', 'id');
+                                        }
+                                        return \App\Models\Department::whereHas('Section', function ($q) use ($adminId) {
+                                            $q->where('administrative_id', $adminId);
+                                        })->pluck('title', 'id');
+                                    })
+                                    ->searchable()
+                                    ->preload()
+                                    ->reactive()
+                                    ->disabled(fn(callable $get) => (! Auth::user()->isAdmin() && ! Auth::user()->isCollegeSupervisor()) || ! $get('administrative_id'))
+                                    ->required(),
 
-                        Select::make('section_id')
-                            ->label('القسم')
-                            ->options(function (callable $get) {
-                                $query = Section::query();
+                                Select::make('section_id')
+                                    ->label('القسم')
+                                    ->options(function (callable $get) {
+                                        $query = Section::query();
 
-                                if ($adminId = $get('administrative_id')) {
-                                    $query->where('administrative_id', $adminId);
-                                }
+                                        if ($adminId = $get('administrative_id')) {
+                                            $query->where('administrative_id', $adminId);
+                                        }
 
-                                if ($deptId = $get('department_id')) {
-                                    $query->where('department_id', $deptId);
-                                }
+                                        if ($deptId = $get('department_id')) {
+                                            $query->where('department_id', $deptId);
+                                        }
 
-                                $hideFull = \App\Models\GeneralSetting::instance()->hide_full_sections;
+                                        $hideFull = \App\Models\GeneralSetting::instance()->hide_full_sections;
 
-                                return $query->get()
-                                    ->when($hideFull, fn($collection) => $collection->reject(fn($sec) => $sec->getCapacityStats()['is_full']))
-                                    ->pluck('name_location', 'id');
-                            })
-                            ->searchable()
-                            ->preload()
-                            ->disabled(function (callable $get) {
-                                return (! Auth::user()->isAdmin() && ! Auth::user()->isCollegeSupervisor()) || ! $get('department_id');
-                            })
-                            ->required(),
+                                        return $query->get()
+                                            ->when($hideFull, fn($collection) => $collection->reject(fn($sec) => $sec->getCapacityStats()['is_full']))
+                                            ->pluck('name_location', 'id');
+                                    })
+                                    ->searchable()
+                                    ->preload()
+                                    ->disabled(function (callable $get) {
+                                        return (! Auth::user()->isAdmin() && ! Auth::user()->isCollegeSupervisor()) || ! $get('department_id');
+                                    })
+                                    ->required(),
 
-                        DatePicker::make('start_date')
-                            ->label('تاريخ البدء')
-                            ->native(false)
-                            ->disabled(fn() => ! Auth::user()->isAdmin())
-                            ->visible(fn() => ! Auth::user()->isCollegeSupervisor())
-                            ->required(fn() => Auth::user()->isAdmin())
-                            ->dehydrated(),
+                                DatePicker::make('start_date')
+                                    ->label('تاريخ البدء')
+                                    ->native(false)
+                                    ->disabled(fn() => ! Auth::user()->isAdmin())
+                                    ->visible(fn() => ! Auth::user()->isCollegeSupervisor())
+                                    ->required(fn() => Auth::user()->isAdmin())
+                                    ->dehydrated(),
 
-                        DatePicker::make('end_date')
-                            ->label('تاريخ الانتهاء')
-                            ->native(false)
-                            ->disabled(fn() => ! Auth::user()->isAdmin())
-                            ->visible(fn() => ! Auth::user()->isCollegeSupervisor())
-                            ->required(fn() => Auth::user()->isAdmin())
-                            ->afterOrEqual('start_date')
-                            ->dehydrated(),
+                                DatePicker::make('end_date')
+                                    ->label('تاريخ الانتهاء')
+                                    ->native(false)
+                                    ->disabled(fn() => ! Auth::user()->isAdmin())
+                                    ->visible(fn() => ! Auth::user()->isCollegeSupervisor())
+                                    ->required(fn() => Auth::user()->isAdmin())
+                                    ->afterOrEqual('start_date')
+                                    ->dehydrated(),
 
-                        Select::make('status')
-                            ->label('الحالة')
-                            ->options(fn() => array_combine(
-                                Application::STATUSES,
-                                array_map(fn($s) => \Illuminate\Support\Facades\Lang::get("translation.status.$s", [], 'ar'), Application::STATUSES)
-                            ))
-                            ->default(fn() => Auth::user()->isCollegeSupervisor() ? Application::STATUS_CONFIRMATION : Application::STATUS_NEW)
-                            ->disabled(fn() => ! Auth::user()->isAdmin())
-                            ->visible(fn() => ! Auth::user()->isCollegeSupervisor())
-                            ->afterStateUpdated(fn($state, $set) => (int)$state === Application::STATUS_CONFIRMATION ? $set('accepted_at', now()) : null)
-                            ->dehydrated()
-                            ->required()
-                            ->live(),
-                    ])->columns(2)->columnSpanFull(),
+                                Select::make('status')
+                                    ->label('الحالة')
+                                    ->options(fn() => array_combine(
+                                        Application::STATUSES,
+                                        array_map(fn($s) => \Illuminate\Support\Facades\Lang::get("translation.status.$s", [], 'ar'), Application::STATUSES)
+                                    ))
+                                    ->default(fn() => Auth::user()->isCollegeSupervisor() ? Application::STATUS_CONFIRMATION : Application::STATUS_NEW)
+                                    ->disabled(fn() => ! Auth::user()->isAdmin())
+                                    ->visible(fn() => ! Auth::user()->isCollegeSupervisor())
+                                    ->afterStateUpdated(fn($state, $set) => (int)$state === Application::STATUS_CONFIRMATION ? $set('accepted_at', now()) : null)
+                                    ->dehydrated()
+                                    ->required()
+                                    ->live(),
+                            ])->columns(2)->columnSpanFull(),
+
+                    ])->columns(2),
 
                 Fieldset::make('المستندات والملاحظات')
                     ->schema([

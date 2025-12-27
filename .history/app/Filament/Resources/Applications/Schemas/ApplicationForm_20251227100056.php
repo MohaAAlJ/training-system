@@ -282,7 +282,10 @@ class ApplicationForm
                             ])
                             ->required(fn($context) => $context === 'create')
                             ->preload(),
-                    ])->columns(2)->columnSpanFull(),
+
+
+
+                    ])->columns(2),
 
                 Fieldset::make('تفاصيل الطلب')
                     ->schema([
