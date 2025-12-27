@@ -15,9 +15,32 @@ class EditInstitution extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            \Filament\Actions\Action::make('save')
+                ->label('حفظ التغييرات')
+                ->action('save')
+                ->icon('heroicon-m-check')
+                ->color('primary')
+                ->keyBindings(['mod+s']),
+            $this->getCancelFormAction()
+                ->label('إلغاء'),
             DeleteAction::make(),
             ForceDeleteAction::make(),
             RestoreAction::make(),
         ];
+    }
+
+    protected function getFormActions(): array
+    {
+        return [];
+    }
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
+    }
+
+    protected function getSavedNotificationTitle(): ?string
+    {
+        return 'تم تحديث بيانات المؤسسة/الجامعة بنجاح';
     }
 }
