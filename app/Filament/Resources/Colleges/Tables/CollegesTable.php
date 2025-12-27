@@ -35,10 +35,20 @@ class CollegesTable
                     ->placeholder('غير محدد'),
                 \Filament\Tables\Columns\ToggleColumn::make('is_active')
                     ->label('الحالة')
-                    ->sortable(),
+                    ->sortable()
+                    ->requiresConfirmation()
+                    ->modalHeading('تغيير حالة الكلية')
+                    ->modalDescription('هل أنت متأكد من أنك تريد تغيير حالة هذه الكلية؟')
+                    ->modalSubmitActionLabel('نعم، قم بالتغيير')
+                    ->modalCancelActionLabel('إلغاء'),
                 \Filament\Tables\Columns\ToggleColumn::make('Can_add_Application')
                     ->label('إضافة طلبات')
-                    ->sortable(),
+                    ->sortable()
+                    ->requiresConfirmation()
+                    ->modalHeading('تغيير صلاحية إضافة الطلبات')
+                    ->modalDescription('هل أنت متأكد من أنك تريد تغيير صلاحية إضافة الطلبات لهذه الكلية؟')
+                    ->modalSubmitActionLabel('نعم، قم بالتغيير')
+                    ->modalCancelActionLabel('إلغاء'),
                 TextColumn::make('trainees_count')
                     ->label('عدد المتدربين')
                     ->counts('trainees')
