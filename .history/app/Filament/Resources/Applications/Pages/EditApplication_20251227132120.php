@@ -1,17 +1,19 @@
 <?php
 
-namespace App\Filament\Resources\Trainees\Pages;
+namespace App\Filament\Resources\Applications\Pages;
 
-use App\Filament\Resources\Trainees\TraineeResource;
+use App\Filament\Resources\Applications\ApplicationResource;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\RestoreAction;
-use Filament\Actions\ViewAction;
+use Filament\Actions\Action;
 use Filament\Resources\Pages\EditRecord;
+use Illuminate\Support\Facades\Auth;
 
-class EditTrainee extends EditRecord
+class EditApplication extends EditRecord
 {
-    protected static string $resource = TraineeResource::class;
+    protected static string $resource = ApplicationResource::class;
+
     protected function getHeaderActions(): array
     {
         return [
@@ -23,9 +25,13 @@ class EditTrainee extends EditRecord
                 ->keyBindings(['mod+s']),
             $this->getCancelFormAction()
                 ->label('إلغاء'),
-            ViewAction::make(),
-            DeleteAction::make()->visible(fn() => !$this->getRecord()->trashed() && (\Illuminate\Support\Facades\Auth::user()?->isAdmin() || \Illuminate\Support\Facades\Auth::user()?->isGeneralTrainingManager())),
-            RestoreAction::make()->visible(fn() => $this->getRecord()->trashed() && (\Illuminate\Support\Facades\Auth::user()?->isAdmin() || \Illuminate\Support\Facades\Auth::user()?->isGeneralTrainingManager())),
+            DeleteAction::make()
+                ->label('رفض')
+                ->visible(fn() => Auth::user()?->isAdmin() || Auth::user()?->isGeneralTrainingManager()),
+            ForceDeleteAction::make()
+                ->visible(fn() => Auth::user()?->isAdmin() || Auth::user()?->isGeneralTrainingManager()),
+            RestoreAction::make()
+                ->visible(fn() => Auth::user()?->isAdmin() || Auth::user()?->isGeneralTrainingManager()),
         ];
     }
 
@@ -41,6 +47,6 @@ class EditTrainee extends EditRecord
 
     protected function getSavedNotificationTitle(): ?string
     {
-        return 'تم تحديث بيانات المتدرب بنجاح';
+        return 'تم تحديث بيانات طلب المتدرب بنجاح';
     }
 }
