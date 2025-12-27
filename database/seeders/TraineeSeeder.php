@@ -28,7 +28,7 @@ class TraineeSeeder extends Seeder
                 ->first();
             if (!$col) return [$uni->id, null, null];
 
-            $major = $col->majors()->where('name', 'like', "%$majorName%")->first();
+            $major = $col->Major()->where('name', 'like', "%$majorName%")->first();
             if (!$major) {
                 // محاولة البحث عن التخصص بشكل عام إذا لم يكن مرتبطاً بالكلية في جدول الوسيط
                 $major = Major::where('name', 'like', "%$majorName%")->first();
@@ -41,8 +41,8 @@ class TraineeSeeder extends Seeder
         $traineesData = [
             [
                 'national_id' => '400100100',
-                'full_name' => 'أحمد محمد (طالب حاسوب)',
-                'phone_number' => '0599100100',
+                'full_name' => 'أحمد محمد خليل',
+                'phone_number' => '970599100100',
                 'dob' => '2002-05-15',
                 'address' => 'الرمال، غزة',
                 'gov_id' => $govGaza?->id,
@@ -50,8 +50,8 @@ class TraineeSeeder extends Seeder
             ],
             [
                 'national_id' => '400200200',
-                'full_name' => 'سارة علي (خريجة صيدلة)',
-                'phone_number' => '0599200200',
+                'full_name' => 'سارة علي حسن',
+                'phone_number' => '970599200200',
                 'dob' => '2000-03-20',
                 'address' => 'البلد، خانيونس',
                 'gov_id' => $govKhan?->id,
@@ -59,8 +59,8 @@ class TraineeSeeder extends Seeder
             ],
             [
                 'national_id' => '400300300',
-                'full_name' => 'محمود خالد (طالب إعلام)',
-                'phone_number' => '0599300300',
+                'full_name' => 'محمود خالد يوسف',
+                'phone_number' => '970599300300',
                 'dob' => '2003-01-01',
                 'address' => 'المعسكر، دير البلح',
                 'gov_id' => $govDeir?->id,
@@ -68,8 +68,8 @@ class TraineeSeeder extends Seeder
             ],
             [
                 'national_id' => '400400400',
-                'full_name' => 'يوسف حسن (فني مختبر)',
-                'phone_number' => '0599400400',
+                'full_name' => 'يوسف حسن علي',
+                'phone_number' => '970599400400',
                 'dob' => '1999-12-12',
                 'address' => 'الشيخ رضوان',
                 'gov_id' => $govGaza?->id,
@@ -77,8 +77,8 @@ class TraineeSeeder extends Seeder
             ],
             [
                 'national_id' => '400500500',
-                'full_name' => 'منى سمير (سكرتارية)',
-                'phone_number' => '0599500500',
+                'full_name' => 'منى سمير محمود',
+                'phone_number' => '970599500500',
                 'dob' => '2004-07-07',
                 'address' => 'تل الهوا',
                 'gov_id' => $govGaza?->id,
