@@ -61,9 +61,11 @@ class SectionsTable
                     ->onIcon('heroicon-m-check-circle')
                     ->offIcon('heroicon-m-x-circle')
                     ->onColor('success')
-                    ->offColor('danger'),
-
-
+                    ->offColor('danger')
+                    ->beforeStateUpdated(function ($record, $state) {
+                        $record->status = $state ? 'active' : 'inactive';
+                        $record->save();
+                    }),
                 TextColumn::make('created_at')
                     ->label('تاريخ الإنشاء')
                     ->dateTime('Y-m-d')

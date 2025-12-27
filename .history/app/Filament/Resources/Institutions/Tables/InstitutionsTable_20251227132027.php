@@ -27,18 +27,20 @@ class InstitutionsTable
                     ->sortable(),
                 \Filament\Tables\Columns\ToggleColumn::make('is_active')
                     ->label('الحالة')
-                    ->onIcon('heroicon-m-check-circle')
-                    ->offIcon('heroicon-m-x-circle')
-                    ->onColor('success')
-                    ->offColor('danger')
-                    ->sortable(),
+                    ->sortable()
+                    ->requiresConfirmation()
+                    ->modalHeading('تغيير حالة المؤسسة/الجامعة')
+                    ->modalDescription('هل أنت متأكد من أنك تريد تغيير حالة هذه المؤسسة؟')
+                    ->modalSubmitActionLabel('نعم، قم بالتغيير')
+                    ->modalCancelActionLabel('إلغاء'),
                 \Filament\Tables\Columns\ToggleColumn::make('Can_add_Application')
                     ->label('إضافة طلبات')
-                    ->onIcon('heroicon-m-check-circle')
-                    ->offIcon('heroicon-m-x-circle')
-                    ->onColor('success')
-                    ->offColor('danger')
-                    ->sortable(),
+                    ->sortable()
+                    ->requiresConfirmation()
+                    ->modalHeading('تغيير صلاحية إضافة الطلبات')
+                    ->modalDescription('هل أنت متأكد من أنك تريد تغيير صلاحية إضافة الطلبات لهذه المؤسسة؟')
+                    ->modalSubmitActionLabel('نعم، قم بالتغيير')
+                    ->modalCancelActionLabel('إلغاء'),
                 \Filament\Tables\Columns\TextColumn::make('trainees_count')
                     ->counts('trainees')
                     ->label('عدد المتدربين')
@@ -66,12 +68,14 @@ class InstitutionsTable
             ->recordActions([
                 ViewAction::make(),
                 EditAction::make(),
-                DeleteAction::make()->visible(fn($record) => !$record->trashed() && Auth::user()?->isAdmin()),
-                RestoreAction::make()->visible(fn($record) => $record->trashed() && Auth::user()?->isAdmin()),
+                DeleteAction::make()->visible(fn() => Auth::user()?->isAdmin() ?? false),
+                RestoreAction::make()->visible(fn() => Auth::user()?->isAdmin() ?? false),
+                ForceDeleteAction::make()->visible(fn() => Auth::user()?->isAdmin() ?? false),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()->visible(fn() => Auth::user()?->isAdmin() ?? false),
+                    ForceDeleteBulkAction::make()->visible(fn() => Auth::user()?->isAdmin() ?? false),
                     RestoreBulkAction::make()->visible(fn() => Auth::user()?->isAdmin() ?? false),
                 ]),
             ]);

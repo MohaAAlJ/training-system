@@ -61,7 +61,11 @@ class ApplicationInfolist
                             ->label('عدد ساعات التدريب'),
                         TextEntry::make('training_type')
                             ->label('نوع التدريب')
-                            ->formatStateUsing(fn($state): string => \App\Models\Application::TRAINING_TYPES[$state] ?? $state ?? '-'),
+                            ->formatStateUsing(fn(?string $state): string => match ($state) {
+                                'cooperative' => 'تدريب جامعي',
+                                'professional' => 'مزاولة مهنة',
+                                default => $state ?? '-',
+                            }),
                         TextEntry::make('status')
                             ->label('الحالة')
                             ->badge()

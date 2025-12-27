@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\Administratives\Tables;
+namespace App\Filament\Resources\Departments\Tables;
 
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
@@ -11,37 +11,53 @@ use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Actions\ViewAction;
+use Filament\Forms\Components\ToggleButtons;
+use Filament\Tables\Columns\ToggleColumn;
 use Illuminate\Support\Facades\Auth;
-use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\DB;
+use Filament\Tables\Columns\IconColumn;
 
-class AdministrativesTable
+class DepartmentsTable
 {
     public static function configure(Table $table): Table
     {
         return $table
             ->columns([
                 TextColumn::make('title')
-                    ->label('اسم الإدارة')
+                    ->label('اسم الدائرة')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('user.name')
-                    ->label('رئيس الإدارة')
+                    ->label('رئيس الدائرة')
                     ->searchable()
                     ->sortable(),
                 IconColumn::make('is_medical')
                     ->label('إدارة طبية')
                     ->boolean()
                     ->sortable(),
-                TextColumn::make('medicalHead.name')
-                    ->label('رئيس الإدارة الطبية')
-                    ->searchable()
-                    ->sortable()
-                    ->placeholder('-'),
-
+                TextColumn::make('Section_count')
+                    ->label('عدد الأقسام')
+                    ->counts('Section')
+                    ->sortable(),
+                ToggleColumn::make('status')
+                    ->label('الحالة')
+                    ->onIcon('heroicon-m-check-circle')
+                    ->offIcon('heroicon-m-x-circle')
+                    ->onColor('success')
+                    ->offColor('danger')
+                    ->requiresConfirmation()
+                    ->modalHeading('تغيير حالة الدائرة')
+                    ->modalDescription('هل أنت متأكد من أنك تريد تغيير حالة هذه الدائرة؟')
+                    ->modalSubmitActionLabel('نعم، قم بالتغيير')
+                    ->modalCancelActionLabel('إلغاء')
+                    ->beforeStateUpdated(function ($record, $state) {
+                        $record->status = $state;
+                        $record->save();
+                    }),
                 TextColumn::make('created_at')
                     ->label('تاريخ الإنشاء')
                     ->dateTime('Y-m-d')
@@ -50,7 +66,7 @@ class AdministrativesTable
             ])
             ->filters([
                 SelectFilter::make('user_id')
-                    ->label('رئيس الإدارة')
+                    ->label('رئيس المديرية')
                     ->relationship('user', 'name')
                     ->searchable()
                     ->preload(),
@@ -70,12 +86,14 @@ class AdministrativesTable
             ->recordActions([
                 ViewAction::make(),
                 EditAction::make(),
-                DeleteAction::make()->visible(fn($record) => !$record->trashed() && Auth::user()?->isAdmin()),
-                RestoreAction::make()->visible(fn($record) => $record->trashed() && Auth::user()?->isAdmin()),
+                DeleteAction::make()->visible(fn() => Auth::user()?->isAdmin() ?? false),
+                RestoreAction::make()->visible(fn() => Auth::user()?->isAdmin() ?? false),
+                ForceDeleteAction::make()->visible(fn() => Auth::user()?->isAdmin() ?? false),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()->visible(fn() => Auth::user()?->isAdmin() ?? false),
+                    ForceDeleteBulkAction::make()->visible(fn() => Auth::user()?->isAdmin() ?? false),
                     RestoreBulkAction::make()->visible(fn() => Auth::user()?->isAdmin() ?? false),
                 ]),
             ]);

@@ -61,9 +61,16 @@ class SectionsTable
                     ->onIcon('heroicon-m-check-circle')
                     ->offIcon('heroicon-m-x-circle')
                     ->onColor('success')
-                    ->offColor('danger'),
-
-
+                    ->offColor('danger')
+                    ->requiresConfirmation()
+                    ->modalHeading('تغيير حالة القسم')
+                    ->modalDescription('هل أنت متأكد من أنك تريد تغيير حالة هذا القسم؟')
+                    ->modalSubmitActionLabel('نعم، قم بالتغيير')
+                    ->modalCancelActionLabel('إلغاء')
+                    ->beforeStateUpdated(function ($record, $state) {
+                        $record->status = $state ? 'active' : 'inactive';
+                        $record->save();
+                    }),
                 TextColumn::make('created_at')
                     ->label('تاريخ الإنشاء')
                     ->dateTime('Y-m-d')
@@ -92,12 +99,14 @@ class SectionsTable
             ->recordActions([
                 ViewAction::make(),
                 EditAction::make(),
-                DeleteAction::make()->visible(fn($record) => !$record->trashed() && Auth::user()?->isAdmin()),
-                RestoreAction::make()->visible(fn($record) => $record->trashed() && Auth::user()?->isAdmin()),
+                DeleteAction::make()->visible(fn() => Auth::user()?->isAdmin() ?? false),
+                RestoreAction::make()->visible(fn() => Auth::user()?->isAdmin() ?? false),
+                ForceDeleteAction::make()->visible(fn() => Auth::user()?->isAdmin() ?? false),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()->visible(fn() => Auth::user()?->isAdmin() ?? false),
+                    ForceDeleteBulkAction::make()->visible(fn() => Auth::user()?->isAdmin() ?? false),
                     RestoreBulkAction::make()->visible(fn() => Auth::user()?->isAdmin() ?? false),
                 ]),
             ]);

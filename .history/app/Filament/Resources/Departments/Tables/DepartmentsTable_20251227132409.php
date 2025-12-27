@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\Sections\Tables;
+namespace App\Filament\Resources\Departments\Tables;
 
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
@@ -11,59 +11,53 @@ use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Actions\ViewAction;
+use Filament\Forms\Components\ToggleButtons;
+use Filament\Tables\Columns\ToggleColumn;
 use Illuminate\Support\Facades\Auth;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\BadgeColumn;
-use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\DB;
+use Filament\Tables\Columns\IconColumn;
 
-class SectionsTable
+class DepartmentsTable
 {
     public static function configure(Table $table): Table
     {
         return $table
             ->columns([
-                TextColumn::make('name_location')
-                    ->label('اسم القسم والموقع')
-                    ->searchable()
-                    ->sortable(),
-                TextColumn::make('administrative.title')
-                    ->label('الإدارة')
-                    ->searchable()
-                    ->sortable(),
-                TextColumn::make('department.title')
-                    ->label('الدائرة')
+                TextColumn::make('title')
+                    ->label('اسم الدائرة')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('user.name')
-                    ->label('المسؤول')
-                    ->searchable(),
-                TextColumn::make('total_capacity')
-                    ->label('السعة')
+                    ->label('رئيس الدائرة')
+                    ->searchable()
                     ->sortable(),
-                TextColumn::make('registered_count')
-                    ->label('المسجلين')
-                    ->state(function ($record) {
-                        return \App\Models\Application::where('section_id', $record->id)
-                            ->whereIn('status', [
-                                \App\Models\Application::STATUS_STARTED_TRAINING,
-                                \App\Models\Application::STATUS_ENDED_TRAINING,
-                            ])
-                            ->count();
-                    })
-                    ->badge()
-                    ->color('primary'),
+                IconColumn::make('is_medical')
+                    ->label('إدارة طبية')
+                    ->boolean()
+                    ->sortable(),
+                TextColumn::make('Section_count')
+                    ->label('عدد الأقسام')
+                    ->counts('Section')
+                    ->sortable(),
                 ToggleColumn::make('status')
                     ->label('الحالة')
                     ->onIcon('heroicon-m-check-circle')
                     ->offIcon('heroicon-m-x-circle')
                     ->onColor('success')
-                    ->offColor('danger'),
-
-
+                    ->offColor('danger')
+                    ->requiresConfirmation()
+                    ->modalHeading('تغيير حالة الدائرة')
+                    ->modalDescription('هل أنت متأكد من أنك تريد تغيير حالة هذه الدائرة؟')
+                    ->modalSubmitActionLabel('نعم، قم بالتغيير')
+                    ->modalCancelActionLabel('إلغاء')
+                    ->beforeStateUpdated(function ($record, $state) {
+                        $record->status = $state;
+                        $record->save();
+                    }),
                 TextColumn::make('created_at')
                     ->label('تاريخ الإنشاء')
                     ->dateTime('Y-m-d')
@@ -71,22 +65,22 @@ class SectionsTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                SelectFilter::make('status')
-                    ->label('الحالة')
-                    ->options([
-                        'active' => 'نشط',
-                        'inactive' => 'غير نشط',
-                    ]),
-                SelectFilter::make('administrative_id')
-                    ->label('الدائرة')
-                    ->relationship('administrative', 'title')
-                    ->searchable()
-                    ->preload(),
                 SelectFilter::make('user_id')
-                    ->label('المسؤول')
+                    ->label('رئيس المديرية')
                     ->relationship('user', 'name')
                     ->searchable()
                     ->preload(),
+                SelectFilter::make('medical_head_user_id')
+                    ->label('رئيس الإدارة الطبية')
+                    ->relationship('medicalHead', 'name')
+                    ->searchable()
+                    ->preload(),
+                SelectFilter::make('is_medical')
+                    ->label('نوع الإدارة')
+                    ->options([
+                        true => 'إدارة طبية',
+                        false => 'إدارة عامة',
+                    ]),
                 TrashedFilter::make(),
             ])
             ->recordActions([
@@ -94,10 +88,12 @@ class SectionsTable
                 EditAction::make(),
                 DeleteAction::make()->visible(fn($record) => !$record->trashed() && Auth::user()?->isAdmin()),
                 RestoreAction::make()->visible(fn($record) => $record->trashed() && Auth::user()?->isAdmin()),
+                ForceDeleteAction::make()->visible(fn($record) => $record->trashed() && Auth::user()?->isAdmin()),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()->visible(fn() => Auth::user()?->isAdmin() ?? false),
+                    ForceDeleteBulkAction::make()->visible(fn() => Auth::user()?->isAdmin() ?? false),
                     RestoreBulkAction::make()->visible(fn() => Auth::user()?->isAdmin() ?? false),
                 ]),
             ]);

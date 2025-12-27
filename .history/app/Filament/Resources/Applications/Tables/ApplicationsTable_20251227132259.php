@@ -1,113 +1,70 @@
 <?php
 
-namespace App\Filament\Widgets;
+namespace App\Filament\Resources\Applications\Tables;
 
-use App\Models\User;
-
-use App\Helpers\Constants;
 use App\Models\Application;
-use Filament\Tables;
-use Filament\Tables\Table;
-use Filament\Widgets\TableWidget as BaseWidget;
-use Illuminate\Support\Facades\Auth;
-use Filament\Actions\ViewAction;
+
 use Filament\Actions\Action;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ForceDeleteAction;
+use Filament\Actions\ForceDeleteBulkAction;
+use Filament\Actions\RestoreAction;
+use Filament\Actions\RestoreBulkAction;
+use Filament\Actions\ViewAction;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\TrashedFilter;
 use Filament\Actions\DeleteAction;
-use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\TextInput;
-use Illuminate\Support\Facades\Lang;
+use Filament\Forms\Components\ViewField;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use App\Helpers\Constants;
+use Filament\Forms\Components\DatePicker;
+use Illuminate\Support\Facades\Auth;
 
-class GTMRecentApplications extends BaseWidget
+class ApplicationsTable
 {
-    protected static ?int $sort = 4;
-    protected int | string | array $columnSpan = 'full';
-
-    protected static ?string $heading = 'تحتاج إجراءات';
-
-    public static function canView(): bool
-    {
-        $user = Auth::user();
-        if (!$user) return false;
-
-        // Visible for: GTM, Admin, College Supervisor, and MOH
-        return in_array($user->role, [
-            User::ROLE_GTM,
-            User::ROLE_ADMIN,
-            User::ROLE_COLLEGE,
-            User::ROLE_MOH,
-        ]);
-    }
-
-    public function table(Table $table): Table
+    public static function configure(Table $table): Table
     {
         return $table
-            ->query(
-                Application::query()
-                    ->whereIn('status', [
-                        Application::STATUS_NEW,
-                        Application::STATUS_INITIAL_APPROVE,
-                        Application::STATUS_CONFIRMATION,
-                        Application::STATUS_WAITING_LIST
-                    ])
-                    ->latest('created_at')
-            )
-            ->modifyQueryUsing(function ($query) {
-                $user = Auth::user();
-
-                if ($user->isAdmin() || $user->isGeneralTrainingManager()) {
-                    // GTM and Admin see New (1), Confirmation (3), and Waiting (4)
-                    // They don't typically act on Initial Approve (2) as that's for MOH/College
-                    return $query->whereIn('status', [
-                        Application::STATUS_NEW,
-                        Application::STATUS_CONFIRMATION,
-                        Application::STATUS_WAITING_LIST
-                    ]);
-                }
-
-                if ($user->isCollegeSupervisor()) {
-                    $collegeId = $user->College?->id;
-                    // College Supervisors MUST see Initial Approve (2) to confirm
-                    return $query->where('status', Application::STATUS_INITIAL_APPROVE)
-                        ->where('training_type', Application::TRAINING_TYPE_UNIVERSITY)
-                        ->whereHas('trainee', function ($q) use ($collegeId) {
-                            $q->where('college_id', $collegeId);
-                        });
-                }
-
-                if ($user->isMinistry()) {
-                    // MOH MUST see Initial Approve (2) to confirm
-                    return $query->where('status', Application::STATUS_INITIAL_APPROVE)
-                        ->where('training_type', Application::TRAINING_TYPE_PRACTICE);
-                }
-
-                return $query;
-            })
             ->columns([
-                Tables\Columns\TextColumn::make('trainee.full_name')
+                TextColumn::make('trainee.full_name')
                     ->label('المتدرب')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('trainee.national_id')
+                TextColumn::make('trainee.national_id')
                     ->label('رقم الهوية')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('trainee.institution.name')
+                TextColumn::make('trainee.institution.name')
                     ->label('المؤسسة')
+                    ->searchable(!Auth::user()->isCollegeSupervisor())
+                    ->sortable(!Auth::user()->isCollegeSupervisor())
                     ->toggleable(isToggledHiddenByDefault: false)
-                    ->formatStateUsing(fn($state, $record) => $record->training_type === Application::TRAINING_TYPE_PRACTICE ? '' : $state)
                     ->visible(fn() => Auth::check() && (
                         Auth::user()->isAdmin() ||
-                        Auth::user()->isGeneralTrainingManager()
+                        Auth::user()->isDepartment() ||
+                        Auth::user()->isHOA() ||
+                        Auth::user()->isGeneralTrainingManager() ||
+                        Auth::user()->isSectionHead()
                     )),
-                Tables\Columns\TextColumn::make('trainee.major.name')
+                TextColumn::make('trainee.major.name')
                     ->label('التخصص')
+                    ->searchable()
+                    ->sortable()
                     ->toggleable(isToggledHiddenByDefault: false)
-                    ->formatStateUsing(fn($state, $record) => $record->training_type === Application::TRAINING_TYPE_PRACTICE ? '' : $state)
                     ->visible(fn() => Auth::check() && (
                         Auth::user()->isAdmin() ||
+                        Auth::user()->isDepartment() ||
+                        Auth::user()->isHOA() ||
                         Auth::user()->isGeneralTrainingManager() ||
                         Auth::user()->isCollegeSupervisor()
                     )),
-                Tables\Columns\TextColumn::make('training_type_label')
+                TextColumn::make('training_type_label')
                     ->label('نوع التدريب')
                     ->badge()
                     ->color(fn($state) => match ($state) {
@@ -115,17 +72,38 @@ class GTMRecentApplications extends BaseWidget
                         'مزاولة مهنة' => 'success',
                         default => 'gray',
                     })
-                    ->toggleable(),
-                Tables\Columns\TextColumn::make('administrative.title')
+                    ->toggleable()
+                    ->visible(fn() => Auth::check() && (
+                        Auth::user()->isAdmin() ||
+                        Auth::user()->isDepartment() ||
+                        Auth::user()->isHOA() ||
+                        Auth::user()->isGeneralTrainingManager() ||
+                        Auth::user()->isSectionHead()
+                    )),
+                TextColumn::make('administrative.title')
                     ->label('الإدارة')
+                    ->searchable()
+                    ->sortable()
                     ->toggleable(),
-                Tables\Columns\TextColumn::make('department.title')
+                TextColumn::make('department.title')
                     ->label('الدائرة')
+                    ->searchable()
+                    ->sortable()
                     ->toggleable(),
-                Tables\Columns\TextColumn::make('section.name_location')
+                TextColumn::make('section.name_location')
                     ->label('القسم')
+                    ->searchable()
+                    ->sortable()
                     ->toggleable(),
-                Tables\Columns\TextColumn::make('status')
+                TextColumn::make('start_date')
+                    ->label('تاريخ البدء')
+                    ->date('Y-m-d')
+                    ->sortable(),
+                TextColumn::make('end_date')
+                    ->label('تاريخ الانتهاء')
+                    ->date('Y-m-d')
+                    ->sortable(),
+                TextColumn::make('status')
                     ->label('الحالة')
                     ->sortable()
                     ->badge()
@@ -145,14 +123,83 @@ class GTMRecentApplications extends BaseWidget
                         $translated = \Illuminate\Support\Facades\Lang::get($key, [], 'ar');
                         return $translated === $key ? $state : $translated;
                     })($state)),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label('تاريخ التقديم')
+                TextColumn::make('trainee.training_hours')
+                    ->label('ساعات التدريب')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: false),
+                TextColumn::make('accepted_at')
+                    ->label('تاريخ القبول')
                     ->dateTime('Y-m-d')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('tags')
+                    ->label('الوسوم')
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('created_at')
+                    ->label('تاريخ الإنشاء')
+                    ->dateTime('Y-m-d')
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->actions([
-                ViewAction::make(),
+            ->filters([
+                SelectFilter::make('status')
+                    ->label('الحالة')
+                    ->options(fn() => array_combine(
+                        Application::STATUSES,
+                        array_map(fn($s) => \Illuminate\Support\Facades\Lang::get("translation.status.$s", [], 'ar'), Application::STATUSES)
+                    )),
+                SelectFilter::make('training_type')
+                    ->label('نوع التدريب')
+                    ->options(Application::TRAINING_TYPES)
+                    ->visible(fn() => Auth::check() && (
+                        Auth::user()->isAdmin() ||
+                        Auth::user()->isDepartment() ||
+                        Auth::user()->isHOA() ||
+                        Auth::user()->isGeneralTrainingManager()
+                    )),
+                SelectFilter::make('department_id')
+                    ->label('القسم')
+                    ->relationship('department', 'title')
+                    ->searchable()
+                    ->preload(),
+                SelectFilter::make('trainee_id')
+                    ->label('المتدرب')
+                    ->relationship('trainee', 'full_name')
+                    ->searchable()
+                    ->preload(),
+                Filter::make('start_date')
+                    ->label('نطاق تاريخ البدء')
+                    ->form([
+                        DatePicker::make('start_date_from')
+                            ->label('من'),
+                        DatePicker::make('start_date_to')
+                            ->label('إلى'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when($data['start_date_from'], fn(Builder $q) => $q->whereDate('start_date', '>=', $data['start_date_from']))
+                            ->when($data['start_date_to'], fn(Builder $q) => $q->whereDate('start_date', '<=', $data['start_date_to']));
+                    }),
+                TrashedFilter::make()
+                    ->label('الطلبات المرفوضة'),
+            ])
+
+            ->recordActions([
+                ViewAction::make()
+                    ->color('info')
+                    ->outlined(),
+
+                EditAction::make()
+                    ->color('danger')
+                    ->outlined(),
+
+                Action::make('confirm_application')
+                    ->label('تأكيد')
+                    ->color('success')
+                    ->icon('heroicon-o-check')
+                    ->visible(fn($record) => (Auth::user()->isMinistry() || Auth::user()->isCollegeSupervisor()) && (int)$record->status === Application::STATUS_INITIAL_APPROVE)
+                    ->requiresConfirmation()
+                    ->successNotificationTitle('تم تأكيد الطلب بنجاح')
+                    ->action(fn($record) => $record->update(['status' => Application::STATUS_CONFIRMATION])),
 
                 Action::make('initial_approve')
                     ->label('موافقة مبدئية')
@@ -163,23 +210,7 @@ class GTMRecentApplications extends BaseWidget
                     ->successNotificationTitle('تمت الموافقة المبدئية بنجاح')
                     ->action(fn($record) => $record->update(['status' => Application::STATUS_INITIAL_APPROVE])),
 
-                Action::make('confirm')
-                    ->label('تأكيد')
-                    ->color('success')
-                    ->icon('heroicon-o-check-badge')
-                    ->visible(
-                        fn($record) =>
-                        (int)$record->status === Application::STATUS_INITIAL_APPROVE &&
-                            (Auth::user()->isAdmin() || Auth::user()->isCollegeSupervisor() || Auth::user()->isMinistry())
-                    )
-                    ->requiresConfirmation()
-                    ->successNotificationTitle('تم تأكيد الطلب بنجاح')
-                    ->action(fn($record) => $record->update([
-                        'status' => Application::STATUS_CONFIRMATION,
-                        'accepted_at' => now(),
-                    ])),
-
-                Action::make('process_confirmation')
+                Action::make('start_training')
                     ->label('معالجة التأكيد')
                     ->color('success')
                     ->icon('heroicon-o-play')
@@ -193,7 +224,7 @@ class GTMRecentApplications extends BaseWidget
                             ])
                             ->required()
                             ->reactive()
-                            ->default(Application::STATUS_STARTED_TRAINING),
+                            ->default(Application::STATUS_WAITING_LIST),
                         DatePicker::make('start_date')
                             ->label('تاريخ البدء')
                             ->required()
@@ -307,11 +338,34 @@ class GTMRecentApplications extends BaseWidget
                     ->label('رفض')
                     ->modalHeading('رفض الطلب')
                     ->modalDescription('هل أنت متأكد من رفض هذا الطلب؟ سيتم نقله إلى قائمة المرفوضات.')
-                    ->visible(fn($record) => !$record->trashed() && (Auth::user()->isAdmin() || Auth::user()->isGeneralTrainingManager()))
+                    ->visible(fn($record) => !$record->trashed() && (Auth::user()?->isAdmin() || Auth::user()?->isGeneralTrainingManager()))
                     ->action(function ($record) {
                         $record->update(['status' => Application::STATUS_REJECTED]);
                         $record->delete();
                     }),
+                RestoreAction::make()
+                    ->label('استعادة')
+                    ->visible(fn($record) => $record->trashed() && (Auth::user()?->isAdmin() || Auth::user()?->isGeneralTrainingManager())),
+                ForceDeleteAction::make()
+                    ->visible(fn($record) => $record->trashed() && (Auth::user()?->isAdmin() || Auth::user()?->isGeneralTrainingManager())),
+            ])
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make()
+                        ->label('رفض المختارة')
+                        ->visible(fn() => Auth::user()?->isAdmin() || Auth::user()?->isGeneralTrainingManager())
+                        ->action(function ($records) {
+                            $records->each(function ($record) {
+                                $record->update(['status' => Application::STATUS_REJECTED]);
+                                $record->delete();
+                            });
+                        }),
+                    ForceDeleteBulkAction::make()
+                        ->visible(fn() => Auth::user()?->isAdmin() || Auth::user()?->isGeneralTrainingManager()),
+                    RestoreBulkAction::make()
+                        ->label('استعادة المرفوضة')
+                        ->visible(fn() => Auth::user()?->isAdmin() || Auth::user()?->isGeneralTrainingManager()),
+                ]),
             ]);
     }
 }

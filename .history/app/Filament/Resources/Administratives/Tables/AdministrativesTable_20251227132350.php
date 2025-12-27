@@ -72,10 +72,12 @@ class AdministrativesTable
                 EditAction::make(),
                 DeleteAction::make()->visible(fn($record) => !$record->trashed() && Auth::user()?->isAdmin()),
                 RestoreAction::make()->visible(fn($record) => $record->trashed() && Auth::user()?->isAdmin()),
+                ForceDeleteAction::make()->visible(fn($record) => $record->trashed() && Auth::user()?->isAdmin()),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()->visible(fn() => Auth::user()?->isAdmin() ?? false),
+                    ForceDeleteBulkAction::make()->visible(fn() => Auth::user()?->isAdmin() ?? false),
                     RestoreBulkAction::make()->visible(fn() => Auth::user()?->isAdmin() ?? false),
                 ]),
             ]);
