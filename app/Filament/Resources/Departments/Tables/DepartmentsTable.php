@@ -48,6 +48,11 @@ class DepartmentsTable
                     ->offIcon('heroicon-m-x-circle')
                     ->onColor('success')
                     ->offColor('danger')
+                    ->requiresConfirmation()
+                    ->modalHeading('تغيير حالة الدائرة')
+                    ->modalDescription('هل أنت متأكد من أنك تريد تغيير حالة هذه الدائرة؟')
+                    ->modalSubmitActionLabel('نعم، قم بالتغيير')
+                    ->modalCancelActionLabel('إلغاء')
                     ->beforeStateUpdated(function ($record, $state) {
                         $record->status = $state;
                         $record->save();

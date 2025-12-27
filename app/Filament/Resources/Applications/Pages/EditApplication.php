@@ -17,25 +17,32 @@ class EditApplication extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('save')
-                ->label('حفظ التعديلات')
-                ->action(fn() => $this->save())
-                ->color('primary'),
-
-            Action::make('cancel')
-                ->label('إلغاء')
-                ->url(ApplicationResource::getUrl('index'))
-                ->color('gray')
-                ->outlined(),
-
+            \Filament\Actions\Action::make('save')
+                ->label('حفظ التغييرات')
+                ->action('save')
+                ->icon('heroicon-m-check')
+                ->color('primary')
+                ->keyBindings(['mod+s']),
+            $this->getCancelFormAction()
+                ->label('إلغاء'),
             DeleteAction::make()->visible(fn() => Auth::user()?->isAdmin()),
             ForceDeleteAction::make()->visible(fn() => Auth::user()?->isAdmin()),
             RestoreAction::make()->visible(fn() => Auth::user()?->isAdmin()),
         ];
     }
 
-    protected function getRedirectUrl(): ?string
+    protected function getFormActions(): array
     {
-        return ApplicationResource::getUrl('index');
+        return [];
+    }
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
+    }
+
+    protected function getSavedNotificationTitle(): ?string
+    {
+        return 'تم تحديث بيانات طلب المتدرب بنجاح';
     }
 }
