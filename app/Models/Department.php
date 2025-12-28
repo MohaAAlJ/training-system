@@ -71,6 +71,11 @@ class Department extends Model
         return $query->where('is_medical', true);
     }
 
+    public function scopeActive($query)
+    {
+        return $query->where('status', true);
+    }
+
     /**
      * Get capacity statistics for this department by summing its sections.
      * Returns: total, used, available, is_full

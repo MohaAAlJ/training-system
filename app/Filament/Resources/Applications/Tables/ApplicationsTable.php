@@ -3,6 +3,11 @@
 namespace App\Filament\Resources\Applications\Tables;
 
 use App\Models\Application;
+use App\Models\Section;
+use App\Models\Department;
+use App\Models\Administrative;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
@@ -212,13 +217,55 @@ class ApplicationsTable
                     ->successNotificationTitle('تمت الموافقة المبدئية بنجاح')
                     ->action(fn($record) => $record->update(['status' => Application::STATUS_INITIAL_APPROVE])),
 
+                /*
+                // New logic for inactive sections (disabled temporarily)
                 Action::make('start_training')
                     ->label('معالجة التأكيد')
                     ->color('success')
                     ->icon('heroicon-o-play')
                     ->visible(fn($record) => Auth::user()->isGeneralTrainingManager() && $record->status == Application::STATUS_CONFIRMATION)
-                    ->form([
-                        \Filament\Forms\Components\Select::make('new_status')
+                    ->form(function (Application $record) {
+                        $isSectionInactive = ! ($record->section?->status ?? false);
+
+                        $schema = [];
+
+                        if ($isSectionInactive) {
+                            $schema[] = \Filament\Schemas\Components\Fieldset::make('تنبيه: القسم المسجل غير نشط')
+                                ->columns(3)
+                                ->schema([
+                                    \Filament\Forms\Components\Select::make('administrative_id')
+                                        ->label('الإدارة')
+                                        ->options(Administrative::all()->pluck('name_with_governorate', 'id'))
+                                        ->required()
+                                        ->live()
+                                        ->afterStateUpdated(fn (Set $set) => $set('department_id', null)),
+                                    \Filament\Forms\Components\Select::make('department_id')
+                                        ->label('الدائرة')
+                                        ->options(fn (Get $get) => Department::whereHas('Section', fn ($q) => $q->where('administrative_id', $get('administrative_id')))->active()->pluck('title', 'id'))
+                                        ->required()
+                                        ->live()
+                                        ->disabled(fn (Get $get) => ! $get('administrative_id'))
+                                        ->afterStateUpdated(fn (Set $set) => $set('section_id', null)),
+                                    \Filament\Forms\Components\Select::make('section_id')
+                                        ->label('القسم')
+                                        ->options(function (Get $get) {
+                                            $adminId = $get('administrative_id');
+                                            $deptId = $get('department_id');
+                                            if (! $adminId || ! $deptId) return [];
+
+                                            return Section::where('administrative_id', $adminId)
+                                                ->where('department_id', $deptId)
+                                                ->active()
+                                                ->get()
+                                                ->filter(fn ($sec) => ! ($sec->getCapacityStats()['is_full'] ?? false))
+                                                ->pluck('name_location', 'id');
+                                        })
+                                        ->required()
+                                        ->disabled(fn (Get $get) => ! $get('department_id')),
+                                ]);
+                        }
+
+                        $schema[] = \Filament\Forms\Components\Select::make('new_status')
                             ->label('الحالة الجديدة')
                             ->options([
                                 Application::STATUS_WAITING_LIST => 'قائمة الانتظار',
@@ -226,8 +273,9 @@ class ApplicationsTable
                             ])
                             ->required()
                             ->reactive()
-                            ->default(Application::STATUS_WAITING_LIST),
-                        DatePicker::make('start_date')
+                            ->default(Application::STATUS_STARTED_TRAINING);
+
+                        $schema[] = DatePicker::make('start_date')
                             ->label('تاريخ البدء')
                             ->required()
                             ->default(now())
@@ -235,17 +283,19 @@ class ApplicationsTable
                             ->format('Y/m/d')
                             ->displayFormat('Y/m/d')
                             ->reactive()
-                            ->visible(fn($get) => (int)$get('new_status') === Application::STATUS_STARTED_TRAINING),
-                        TextInput::make('duration')
+                            ->visible(fn(Get $get) => (int)$get('new_status') === Application::STATUS_STARTED_TRAINING);
+
+                        $schema[] = TextInput::make('duration')
                             ->label('المدة (يوم)')
                             ->numeric()
                             ->required()
                             ->default(30)
                             ->reactive()
-                            ->visible(fn($get) => (int)$get('new_status') === Application::STATUS_STARTED_TRAINING),
-                        \Filament\Forms\Components\Placeholder::make('calculated_end_date')
+                            ->visible(fn(Get $get) => (int)$get('new_status') === Application::STATUS_STARTED_TRAINING);
+
+                        $schema[] = \Filament\Forms\Components\Placeholder::make('calculated_end_date')
                             ->label('تاريخ الانتهاء المتوقع')
-                            ->content(function ($get) {
+                            ->content(function (Get $get) {
                                 $startDate = $get('start_date');
                                 $duration = $get('duration');
 
@@ -260,10 +310,111 @@ class ApplicationsTable
                                 }
                                 return 'غير محدد';
                             })
-                            ->visible(fn($get) => (int)$get('new_status') === Application::STATUS_STARTED_TRAINING),
-                    ])
+                            ->visible(fn(Get $get) => (int)$get('new_status') === Application::STATUS_STARTED_TRAINING);
+
+                        return $schema;
+                    })
                     ->successNotificationTitle('تمت معالجة التأكيد بنجاح')
                     ->action(function ($record, array $data) {
+                        // Check if section was updated
+                        if (isset($data['section_id'])) {
+                             $record->update([
+                                 'administrative_id' => $data['administrative_id'],
+                                 'department_id' => $data['department_id'],
+                                 'section_id' => $data['section_id'],
+                             ]);
+                             // Ensure relationship is fresh for subsequent logic if needed
+                             $record->refresh();
+                        }
+
+                        $newStatus = (int)$data['new_status'];
+
+                        if ($newStatus === Application::STATUS_STARTED_TRAINING) {
+                            $startDate = \Carbon\Carbon::parse($data['start_date']);
+                            $duration = (int)$data['duration'];
+                            $endDate = $startDate->copy()->addDays($duration);
+
+                            $record->update([
+                                'status' => Application::STATUS_STARTED_TRAINING,
+                                'start_date' => $startDate,
+                                'duration' => $duration,
+                                'end_date' => $endDate,
+                            ]);
+                        } else {
+                            $record->update([
+                                'status' => Application::STATUS_WAITING_LIST,
+                            ]);
+                        }
+                    }),
+                */
+
+
+                // Single clean start_training action with warning banner
+                Action::make('start_training')
+                    ->label('معالجة التأكيد')
+                    ->color(fn(Application $record) => $record->section?->status ? 'success' : 'danger')
+                    ->icon('heroicon-o-play')
+                    ->visible(fn($record) => Auth::user()->isGeneralTrainingManager() && $record->status == Application::STATUS_CONFIRMATION)
+                    ->modalHeading('معالجة التأكيد')
+                    ->modalSubmitActionLabel(fn(Application $record) => $record->section?->status ? 'تأكيد' : 'نعم، متابعة')
+                    ->form(fn(Application $record) => array_filter([
+                        // Warning alert - only shown when section is inactive
+                        !$record->section?->status ? \Filament\Schemas\Components\Section::make('⚠️ تنبيه: القسم غير نشط')
+                            ->description('القسم الحالي لهذا الطلب غير نشط. هل أنت متأكد من رغبتك في المتابعة؟')
+                            ->icon('heroicon-o-exclamation-triangle')
+                            ->iconColor('danger')
+                            ->collapsed(false)
+                            ->collapsible(false)
+                            ->extraAttributes(['class' => 'bg-danger-50 dark:bg-danger-950 border-danger-300 dark:border-danger-700'])
+                            ->schema([]) : null,
+
+                        // Form fields
+                        \Filament\Forms\Components\Select::make('new_status')
+                            ->label('الحالة الجديدة')
+                            ->options([
+                                Application::STATUS_WAITING_LIST => 'قائمة الانتظار',
+                                Application::STATUS_STARTED_TRAINING => 'بدء التدريب',
+                            ])
+                            ->required()
+                            ->reactive()
+                            ->default(Application::STATUS_STARTED_TRAINING),
+                        DatePicker::make('start_date')
+                            ->label('تاريخ البدء')
+                            ->required()
+                            ->default(now())
+                            ->native(false)
+                            ->format('Y/m/d')
+                            ->displayFormat('Y/m/d')
+                            ->reactive()
+                            ->visible(fn(Get $get) => (int)$get('new_status') === Application::STATUS_STARTED_TRAINING),
+                        TextInput::make('duration')
+                            ->label('المدة (يوم)')
+                            ->numeric()
+                            ->required()
+                            ->default(30)
+                            ->reactive()
+                            ->visible(fn(Get $get) => (int)$get('new_status') === Application::STATUS_STARTED_TRAINING),
+                        \Filament\Forms\Components\Placeholder::make('calculated_end_date')
+                            ->label('تاريخ الانتهاء المتوقع')
+                            ->content(function (Get $get) {
+                                $startDate = $get('start_date');
+                                $duration = $get('duration');
+
+                                if ($startDate && $duration) {
+                                    try {
+                                        $start = \Carbon\Carbon::parse($startDate);
+                                        $end = $start->copy()->addDays((int)$duration);
+                                        return $end->format('Y-m-d') . ' (' . $end->translatedFormat('l، d F Y') . ')';
+                                    } catch (\Exception $e) {
+                                        return 'غير محدد';
+                                    }
+                                }
+                                return 'غير محدد';
+                            })
+                            ->visible(fn(Get $get) => (int)$get('new_status') === Application::STATUS_STARTED_TRAINING),
+                    ]))
+                    ->successNotificationTitle('تمت معالجة التأكيد بنجاح')
+                    ->action(function (Application $record, array $data) {
                         $newStatus = (int)$data['new_status'];
 
                         if ($newStatus === Application::STATUS_STARTED_TRAINING) {

@@ -39,7 +39,7 @@ class DepartmentsTable
                     ->label('إدارة طبية')
                     ->boolean()
                     ->sortable(),
-                TextColumn::make('Section_count')
+                TextColumn::make('section_count')
                     ->label('عدد الأقسام')
                     ->counts('Section')
                     ->sortable(),
@@ -49,10 +49,9 @@ class DepartmentsTable
                     ->offIcon('heroicon-m-x-circle')
                     ->onColor('success')
                     ->offColor('danger')
-                    ->beforeStateUpdated(function ($record, $state) {
-                        $record->status = $state;
-                        $record->save();
-                    }),
+                    ->sortable(),
+
+
                 TextColumn::make('created_at')
                     ->label('تاريخ الإنشاء')
                     ->dateTime('Y-m-d')
