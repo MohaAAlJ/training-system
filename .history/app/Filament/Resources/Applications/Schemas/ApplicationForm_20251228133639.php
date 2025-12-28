@@ -214,22 +214,6 @@ class ApplicationForm
                         Hidden::make('dob')
                             ->dehydrated(fn($context) => $context === 'create')
                             ->formatStateUsing(fn($record) => $record?->trainee?->dob),
-                    ])->columns(2)->columnSpanFull(),
-
-                Fieldset::make('تفاصيل الطلب')
-                    ->schema([
-                        Select::make('training_type')
-                            ->label('نوع التدريب')
-                            ->options(Application::TRAINING_TYPES)
-                            ->default(function () {
-                                if (Auth::user()->isCollegeSupervisor()) return Application::TRAINING_TYPE_UNIVERSITY;
-                                return Application::TRAINING_TYPE_PRACTICE;
-                            })
-                            ->disabled(fn() => ! Auth::user()->isAdmin())
-                            ->visible(fn() => ! Auth::user()->isCollegeSupervisor())
-                            ->dehydrated()
-                            ->live()
-                            ->required(),
 
                         Select::make('institution_id')
                             ->label('المؤسسة التعليمية')
@@ -305,6 +289,23 @@ class ApplicationForm
                             ])
                             ->required(fn($context) => $context === 'create')
                             ->preload(),
+                    ])->columns(2)->columnSpanFull(),
+
+                Fieldset::make('تفاصيل الطلب')
+                    ->schema([
+                        Select::make('training_type')
+                            ->label('نوع التدريب')
+                            ->options(Application::TRAINING_TYPES)
+                            ->default(function () {
+                                if (Auth::user()->isCollegeSupervisor()) return Application::TRAINING_TYPE_UNIVERSITY;
+                                if (Auth::user()->isMinistry()) return Application::TRAINING_TYPE_PRACTICE;
+                                return null;
+                            })
+                            ->disabled(fn() => ! Auth::user()->isAdmin())
+                            ->visible(fn() => ! Auth::user()->isCollegeSupervisor())
+                            ->dehydrated()
+                            ->live()
+                            ->required(),
 
                         TextInput::make('training_hours')
                             ->label('ساعات التدريب المطلوبة')
