@@ -359,7 +359,7 @@ class ApplicationsTable
                     ->modalSubmitActionLabel(fn(Application $record) => $record->section?->status ? 'تأكيد' : 'نعم، متابعة')
                     ->form(fn(Application $record) => array_filter([
                         // Warning alert - only shown when section is inactive
-                        ! $record->section?->status ? \Filament\Schemas\Components\Section::make('⚠️ تنبيه: القسم غير نشط')
+                        !$record->section?->status ? \Filament\Schemas\Components\Section::make('⚠️ تنبيه: القسم غير نشط')
                             ->description('القسم الحالي لهذا الطلب غير نشط. هل أنت متأكد من رغبتك في المتابعة؟')
                             ->icon('heroicon-o-exclamation-triangle')
                             ->iconColor('danger')
