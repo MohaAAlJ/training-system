@@ -50,36 +50,16 @@ class EditApplication extends EditRecord
 
     protected function mutateFormDataBeforeSave(array $data): array
     {
-        $trainee = $this->getRecord()->trainee;
-
-        if ($trainee && isset($data['training_type'])) {
-            $trainingType = (int)$data['training_type'];
-
-            // If training type is TRAINING_TYPE_PRACTICE, clear educational fields
-            if ($trainingType === \App\Models\Application::TRAINING_TYPE_PRACTICE) {
+        // If training type is changed to TRAINING_TYPE_PRACTICE,
+        // clear the trainee's educational institution fields
+        if (isset($data['training_type']) && (int)$data['training_type'] === \App\Models\Application::TRAINING_TYPE_PRACTICE) {
+            $trainee = $this->getRecord()->trainee;
+            if ($trainee) {
                 $trainee->update([
                     'institution_id' => null,
                     'college_id' => null,
                     'major_id' => null,
                 ]);
-            }
-            // If training type is TRAINING_TYPE_UNIVERSITY, update educational fields from form
-            elseif ($trainingType === \App\Models\Application::TRAINING_TYPE_UNIVERSITY) {
-                $updateData = [];
-
-                if (isset($data['institution_id'])) {
-                    $updateData['institution_id'] = $data['institution_id'];
-                }
-                if (isset($data['college_id'])) {
-                    $updateData['college_id'] = $data['college_id'];
-                }
-                if (isset($data['major_id'])) {
-                    $updateData['major_id'] = $data['major_id'];
-                }
-
-                if (!empty($updateData)) {
-                    $trainee->update($updateData);
-                }
             }
         }
 

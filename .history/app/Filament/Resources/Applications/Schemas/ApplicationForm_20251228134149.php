@@ -223,7 +223,8 @@ class ApplicationForm
                             ->options(Application::TRAINING_TYPES)
                             ->default(function () {
                                 if (Auth::user()->isCollegeSupervisor()) return Application::TRAINING_TYPE_UNIVERSITY;
-                                return Application::TRAINING_TYPE_PRACTICE;
+                                if (Auth::user()->isMinistry()) return Application::TRAINING_TYPE_PRACTICE;
+                                return null;
                             })
                             ->disabled(fn() => ! Auth::user()->isAdmin())
                             ->visible(fn() => ! Auth::user()->isCollegeSupervisor())

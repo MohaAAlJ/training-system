@@ -214,30 +214,14 @@ class ApplicationForm
                         Hidden::make('dob')
                             ->dehydrated(fn($context) => $context === 'create')
                             ->formatStateUsing(fn($record) => $record?->trainee?->dob),
-                    ])->columns(2)->columnSpanFull(),
-
-                Fieldset::make('تفاصيل الطلب')
-                    ->schema([
-                        Select::make('training_type')
-                            ->label('نوع التدريب')
-                            ->options(Application::TRAINING_TYPES)
-                            ->default(function () {
-                                if (Auth::user()->isCollegeSupervisor()) return Application::TRAINING_TYPE_UNIVERSITY;
-                                return Application::TRAINING_TYPE_PRACTICE;
-                            })
-                            ->disabled(fn() => ! Auth::user()->isAdmin())
-                            ->visible(fn() => ! Auth::user()->isCollegeSupervisor())
-                            ->dehydrated()
-                            ->live()
-                            ->required(),
 
                         Select::make('institution_id')
                             ->label('المؤسسة التعليمية')
                             ->options(fn() => Institution::query()->get()->pluck('name', 'id')->toArray())
                             ->default(fn() => Auth::user()->isCollegeSupervisor() ? Auth::user()->college?->institution_id : null)
                             ->formatStateUsing(fn($record) => $record?->trainee?->institution_id)
-                            ->disabled(fn(callable $get) => request()->routeIs('*.edit') && $get('training_type') != Application::TRAINING_TYPE_UNIVERSITY)
-                            ->visible(fn($record, $context, callable $get) => ! Auth::user()->isCollegeSupervisor() && $get('training_type') != Application::TRAINING_TYPE_PRACTICE)
+                            ->disabled(fn() => request()->routeIs('*.edit'))
+                            ->visible(fn($record, $context) => ! Auth::user()->isCollegeSupervisor() && ! ($context === 'edit' && $record?->training_type == Application::TRAINING_TYPE_PRACTICE))
                             ->dehydrated()
                             ->validationMessages([
                                 'required' => __('validation.custom.institution_id.required'),
@@ -266,8 +250,8 @@ class ApplicationForm
                             })
                             ->default(fn() => Auth::user()->isCollegeSupervisor() ? Auth::user()->college?->id : null)
                             ->formatStateUsing(fn($record) => $record?->trainee?->college_id)
-                            ->disabled(fn(callable $get) => request()->routeIs('*.edit') && $get('training_type') != Application::TRAINING_TYPE_UNIVERSITY)
-                            ->visible(fn($record, $context, callable $get) => ! Auth::user()->isCollegeSupervisor() && $get('training_type') != Application::TRAINING_TYPE_PRACTICE)
+                            ->disabled(fn() => request()->routeIs('*.edit'))
+                            ->visible(fn($record, $context) => ! Auth::user()->isCollegeSupervisor() && ! ($context === 'edit' && $record?->training_type == Application::TRAINING_TYPE_PRACTICE))
                             ->dehydrated()
                             ->validationMessages([
                                 'required' => __('validation.custom.college_id.required'),
@@ -296,15 +280,31 @@ class ApplicationForm
                                 return [];
                             })
                             ->formatStateUsing(fn($record) => $record?->trainee?->major_id)
-                            ->disabled(fn($context, callable $get) => $context === 'edit' && $get('training_type') != Application::TRAINING_TYPE_UNIVERSITY)
-                            ->visible(fn($record, $context, callable $get) => $get('training_type') != Application::TRAINING_TYPE_PRACTICE)
-                            ->dehydrated()
+                            ->disabled(fn($context) => $context === 'edit')
+                            ->visible(fn($record, $context) => ! ($context === 'edit' && $record?->training_type == Application::TRAINING_TYPE_PRACTICE))
+                            ->dehydrated(fn($context) => $context === 'create')
                             ->searchable()
                             ->validationMessages([
                                 'required' => __('validation.custom.major_id.required'),
                             ])
                             ->required(fn($context) => $context === 'create')
                             ->preload(),
+                    ])->columns(2)->columnSpanFull(),
+
+                Fieldset::make('تفاصيل الطلب')
+                    ->schema([
+                        Select::make('training_type')
+                            ->label('نوع التدريب')
+                            ->options(Application::TRAINING_TYPES)
+                            ->default(function () {
+                                if (Auth::user()->isCollegeSupervisor()) return Application::TRAINING_TYPE_UNIVERSITY;
+                                if (Auth::user()->isMinistry()) return Application::TRAINING_TYPE_PRACTICE;
+                                return null;
+                            })
+                            ->disabled(fn() => ! Auth::user()->isAdmin())
+                            ->visible(fn() => ! Auth::user()->isCollegeSupervisor())
+                            ->dehydrated()
+                            ->required(),
 
                         TextInput::make('training_hours')
                             ->label('ساعات التدريب المطلوبة')
