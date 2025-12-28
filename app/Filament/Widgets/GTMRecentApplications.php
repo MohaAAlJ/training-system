@@ -49,7 +49,7 @@ class GTMRecentApplications extends BaseWidget
                         Application::STATUS_CONFIRMATION,
                         Application::STATUS_WAITING_LIST
                     ])
-                    ->latest('created_at')
+                    ->orderBy('updated_at', 'asc')
             )
             ->modifyQueryUsing(function ($query) {
                 $user = Auth::user();

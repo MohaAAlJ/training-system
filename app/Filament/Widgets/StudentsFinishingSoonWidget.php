@@ -47,7 +47,7 @@ class StudentsFinishingSoonWidget extends BaseWidget
                 Application::query()
                     ->where('status', Application::STATUS_STARTED_TRAINING)
                     ->where('end_date', '>=', Carbon::today())
-                    ->where('end_date', '<=', Carbon::today()->addDays(3)) // Within next 3 days
+                    ->where('end_date', '>=', Carbon::today())
                     ->with(['trainee', 'section', 'department'])
             )
             ->modifyQueryUsing(function (Builder $query) {
@@ -106,6 +106,21 @@ class StudentsFinishingSoonWidget extends BaseWidget
                     })
                     ->badge()
                     ->color(fn($state) => $state === 'ينتهي اليوم' ? 'danger' : 'warning'),
+            ])
+            ->filters([
+                Tables\Filters\SelectFilter::make('days_range')
+                    ->label('الفترة الزمنية')
+                    ->options([
+                        '3' => '3 أيام',
+                        '7' => 'أسبوع',
+                        '14' => 'أسبوعين',
+                    ])
+                    ->default('3')
+                    ->query(function (Builder $query, array $data) {
+                        $days = (int) ($data['value'] ?? 3);
+                        return $query->where('end_date', '>=', Carbon::today())
+                            ->where('end_date', '<=', Carbon::today()->addDays($days));
+                    }),
             ])
             ->actions([
                 Action::make('view')

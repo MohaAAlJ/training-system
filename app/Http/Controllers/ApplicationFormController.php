@@ -123,9 +123,17 @@ class ApplicationFormController extends Controller
         return response()->json($colleges);
     }
 
-    public function administrative()
+    public function administrative(Request $request)
     {
-        $data = Administrative::all()
+        $trainingType = $request->query('training_type');
+
+        $query = Administrative::query();
+
+        if ($trainingType == Application::TRAINING_TYPE_PRACTICE) {
+            $query->where('is_medical', true);
+        }
+
+        $data = $query->get()
             ->map(fn($adm) => [
                 'id' => $adm->id,
                 'name' => $adm->name_with_governorate,
@@ -138,8 +146,13 @@ class ApplicationFormController extends Controller
     public function department(Request $request)
     {
         $administrativeId = $request->query('administrative_id');
+        $trainingType = $request->query('training_type');
 
         $query = Department::query()->active();
+
+        if ($trainingType == Application::TRAINING_TYPE_PRACTICE) {
+            $query->where('is_medical', true);
+        }
 
         if ($administrativeId) {
             // Filter departments that have sections in this administrative unit
@@ -164,8 +177,17 @@ class ApplicationFormController extends Controller
     {
         $departmentId = $request->query('department_id');
         $administrativeId = $request->query('administrative_id');
+        $trainingType = $request->query('training_type');
 
         $query = Section::query();
+
+        if ($trainingType == Application::TRAINING_TYPE_PRACTICE) {
+            // Ensure we only get sections that belong to medical departments
+            // This is redundant if department_id is filtered, but good for safety
+             $query->whereHas('department', function ($q) {
+                $q->where('is_medical', true);
+            });
+        }
 
         if ($departmentId) {
             $query->where('department_id', $departmentId);
@@ -175,20 +197,24 @@ class ApplicationFormController extends Controller
             $query->where('administrative_id', $administrativeId);
         }
 
-        $hideFull = \App\Models\GeneralSetting::instance()->hide_full_sections;
+        // $hideFull = \App\Models\GeneralSetting::instance()->hide_full_sections;
 
         $sections = $query->active()->get();
 
-        if ($hideFull) {
-            $sections = $sections->reject(function ($sec) {
-                return $sec->getCapacityStats()['is_full'] ?? false;
-            });
-        }
+        // if ($hideFull) {
+        //     $sections = $sections->reject(function ($sec) {
+        //         return $sec->getCapacityStats()['is_full'] ?? false;
+        //     });
+        // }
 
         $data = $sections->map(function ($sec) {
+            $stats = $sec->getCapacityStats();
+            $isFull = $stats['is_full'] ?? false;
+
             return [
                 'id' => $sec->id,
-                'name' => $sec->name_location,
+                'name' => $sec->name_location . ($isFull ? ' (ممتلئ)' : ''),
+                'is_full' => $isFull,
             ];
         })->values();
 
@@ -269,6 +295,7 @@ class ApplicationFormController extends Controller
             'section_id' => ['required', 'integer', 'exists:sections,id'],
             'training_type' => ['required', 'integer', 'in:' . implode(',', array_keys(Application::TRAINING_TYPES))],
             'letter_file' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
+            'terms_approval' => ['required', 'accepted'],
         ], [
             'national_id.unique' => 'رقم الهوية هذا مسجل مسبقاً في النظام.',
         ]);

@@ -1,4 +1,3 @@
-// الإعدادات: حالياً تشير لملفات JSON محلية داخل مجلد النموذج
 const endpoints = {
     address: "/WelcomeForm/Form/api/address",
     institution: "/WelcomeForm/Form/api/institution",
@@ -7,15 +6,24 @@ const endpoints = {
     majorCollege: (majorId) =>
         `/WelcomeForm/Form/api/major-college?major_id=${majorId ?? ""}`,
     trainingFocus: "/WelcomeForm/Form/api/training-type",
-    administrative: "/WelcomeForm/Form/api/administrative",
-    department: (adminId) =>
-        `/WelcomeForm/Form/api/department?administrative_id=${adminId ?? ""}`,
-    section: (deptId, adminId) =>
-        `/WelcomeForm/Form/api/section?department_id=${deptId ?? ""
-        }&administrative_id=${adminId ?? ""}`,
+    administrative: (trainingType) =>
+        `/WelcomeForm/Form/api/administrative?training_type=${
+            trainingType ?? ""
+        }`,
+    department: (adminId, trainingType) =>
+        `/WelcomeForm/Form/api/department?administrative_id=${
+            adminId ?? ""
+        }&training_type=${trainingType ?? ""}`,
+    section: (deptId, adminId, trainingType) =>
+        `/WelcomeForm/Form/api/section?department_id=${
+            deptId ?? ""
+        }&administrative_id=${adminId ?? ""}&training_type=${
+            trainingType ?? ""
+        }`,
     submit: "/WelcomeForm/Form",
     checkNationalId: (nationalId) =>
-        `/WelcomeForm/Form/api/check-national-id?national_id=${nationalId ?? ""
+        `/WelcomeForm/Form/api/check-national-id?national_id=${
+            nationalId ?? ""
         }`,
 };
 
@@ -108,6 +116,12 @@ const populateOptions = (select, items, labelKey = "name") => {
         const opt = document.createElement("option");
         opt.value = item.id;
         opt.textContent = item[labelKey] ?? "";
+        if (item.is_full) {
+            opt.disabled = true;
+            opt.style.color = "#999";
+            opt.style.fontStyle = "italic";
+            // Some browsers don't support style on options well, but disabled is standard
+        }
         select.appendChild(opt);
     });
 };
@@ -125,7 +139,12 @@ async function loadOptions(select, url, fallbackData, labelKey = "name") {
 }
 
 async function loadAdministrative() {
-    await loadOptions(administrativeSelect, endpoints.administrative, []);
+    const trainingType = trainingTypeSelect ? trainingTypeSelect.value : "";
+    await loadOptions(
+        administrativeSelect,
+        endpoints.administrative(trainingType),
+        []
+    );
     populateOptions(departmentSelect, []);
     populateOptions(sectionSelect, []);
 }
@@ -138,7 +157,13 @@ if (governorateSelect) {
 
 administrativeSelect.addEventListener("change", (e) => {
     const adminId = e.target.value;
-    loadOptions(departmentSelect, endpoints.department(adminId), [], "name");
+    const trainingType = trainingTypeSelect ? trainingTypeSelect.value : "";
+    loadOptions(
+        departmentSelect,
+        endpoints.department(adminId, trainingType),
+        [],
+        "name"
+    );
     populateOptions(sectionSelect, []);
 });
 
@@ -150,7 +175,13 @@ institutionSelect.addEventListener("change", (e) => {
 departmentSelect.addEventListener("change", (e) => {
     const deptId = e.target.value;
     const adminId = administrativeSelect.value;
-    loadOptions(sectionSelect, endpoints.section(deptId, adminId), [], "name");
+    const trainingType = trainingTypeSelect ? trainingTypeSelect.value : "";
+    loadOptions(
+        sectionSelect,
+        endpoints.section(deptId, adminId, trainingType),
+        [],
+        "name"
+    );
 });
 majorSelect.addEventListener("change", async (e) => {
     try {
@@ -198,6 +229,9 @@ if (trainingTypeSelect) {
             const collegeInput = document.getElementById("college_id");
             if (collegeInput) collegeInput.value = "";
         }
+
+        // Reload administratives based on selected training type
+        loadAdministrative();
     });
 }
 
@@ -257,6 +291,21 @@ const filePreview = document.getElementById("file_preview");
 const previewImage = document.getElementById("preview_image");
 const previewPdf = document.getElementById("preview_pdf");
 const previewPdfName = document.getElementById("preview_pdf_name");
+const submitBtn = document.getElementById("submitBtn");
+const termsCheckbox = document.getElementById("terms_approval");
+
+if (termsCheckbox && submitBtn) {
+    termsCheckbox.addEventListener("change", (e) => {
+        submitBtn.disabled = !e.target.checked;
+        if (e.target.checked) {
+            submitBtn.style.opacity = "1";
+            submitBtn.style.cursor = "pointer";
+        } else {
+            submitBtn.style.opacity = "0.5";
+            submitBtn.style.cursor = "not-allowed";
+        }
+    });
+}
 
 if (letterFileInput) {
     letterFileInput.addEventListener("change", (e) => {
@@ -331,7 +380,7 @@ form.addEventListener("submit", async (e) => {
             college_id: formData.get("college_id"),
             institution_id: formData.get("institution_id"),
         });
-    } catch (err) { }
+    } catch (err) {}
 
     try {
         const res = await fetch(endpoints.submit, {

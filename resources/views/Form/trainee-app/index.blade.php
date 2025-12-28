@@ -240,8 +240,36 @@
                     </div>
                 </fieldset>
 
+                <div class="terms-section" style="margin: 1.5rem 0;">
+                    <label class="checkbox-field" style="display: flex; gap: 10px; align-items: flex-start; cursor: pointer;">
+                        <input
+                            type="checkbox"
+                            id="terms_approval"
+                            name="terms_approval"
+                            value="1"
+                            style="
+                                width: 18px;
+                                height: 18px;
+                                accent-color: var(--primary);
+                                margin-top: 3px;
+                            "
+                        />
+                        <div style="flex: 1;">
+                            <p style="margin: 0; font-weight: 600; font-size: 1rem; color: var(--text-main);">
+                                إقرار صحة البيانات والالتزام
+                            </p>
+                            <p style="margin: 4px 0 0; font-size: 0.9rem; color: var(--text-secondary);">
+                                أقر بأن جميع البيانات المدخلة أعلاه صحيحة، وأتحمل كامل المسؤولية عن أي خطأ فيها.
+                            </p>
+                            <p style="margin: 4px 0 0; font-size: 0.85rem; color: #d9534f; font-weight: 500;">
+                                ⚠️ ملاحظة هامة: أقر بعلمي أنه في حال قبول طلبي وتخلفي عن الحضور لمباشرة التدريب لمدة تزيد عن 7 أيام من تاريخ البدء المحدد، يحق للإدارة إلغاء التدريب وطي قيدي تلقائياً.
+                            </p>
+                        </div>
+                    </label>
+                </div>
+
                 <div class="form-footer" style="justify-content: center;">
-                    <button type="submit" class="glow-button">إرسال الطلب</button>
+                    <button type="submit" id="submitBtn" class="glow-button" disabled style="opacity: 0.5; cursor: not-allowed;">إرسال الطلب</button>
                 </div>
                 <div
                     id="formMessage"

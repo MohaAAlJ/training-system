@@ -37,6 +37,7 @@ class ApplicationsTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->defaultSort('updated_at', 'asc')
             ->columns([
                 TextColumn::make('trainee.full_name')
                     ->label('المتدرب')
