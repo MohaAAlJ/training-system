@@ -216,7 +216,11 @@ class DashboardStatsOverview extends BaseWidget
                 $capStats['available'] += $sStats['available'];
             }
 
-            $newApps = Application::where('status', Application::STATUS_NEW)->count();
+            $newApps = Application::whereIn('status', [
+                Application::STATUS_NEW,
+                Application::STATUS_CONFIRMATION,
+                Application::STATUS_WAITING_LIST
+            ])->count();
 
             // Combined Capacity Card
             $stats[] = Stat::make('إجمالي السعة الاستيعابية', $capStats['total'])
