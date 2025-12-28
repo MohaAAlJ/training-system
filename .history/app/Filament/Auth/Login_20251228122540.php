@@ -9,8 +9,7 @@ use Filament\Schemas\Components\Component;
 use Illuminate\Validation\ValidationException;
 use Filament\Facades\Filament;
 use Filament\Models\Contracts\FilamentUser;
-use Filament\Auth\Http\Responses\Contracts\LoginResponse;
-use Illuminate\Support\Facades\Auth;
+use Filament\Http\Responses\Auth\Contracts\LoginResponse;
 
 class Login extends BaseLogin
 {
@@ -40,7 +39,7 @@ class Login extends BaseLogin
 
         session()->regenerate();
 
-        Auth::logoutOtherDevices($data['password']);
+        Filament::auth()->logoutOtherDevices($data['password']);
 
         return app(LoginResponse::class);
     }
