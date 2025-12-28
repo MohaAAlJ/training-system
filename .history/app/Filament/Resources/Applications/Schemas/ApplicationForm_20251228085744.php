@@ -339,7 +339,7 @@ class ApplicationForm
                         Select::make('section_id')
                             ->label('القسم')
                             ->options(function (callable $get) {
-                                $query = Section::query()->active();
+                                $query = Section::query();
 
                                 if ($adminId = $get('administrative_id')) {
                                     $query->where('administrative_id', $adminId);
