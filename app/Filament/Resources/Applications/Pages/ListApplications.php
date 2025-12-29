@@ -20,4 +20,5 @@ class ListApplications extends ListRecords
                 ->visible(static fn() => Auth::user()?->isAdmin() || Auth::user()?->isCollegeSupervisor() ?? false),
         ];
     }
+
 }

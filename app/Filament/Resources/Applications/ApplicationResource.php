@@ -19,7 +19,6 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Auth;
-use App\Helpers\Constants;
 
 
 class ApplicationResource extends Resource
@@ -41,6 +40,7 @@ class ApplicationResource extends Resource
     {
         return static::getEloquentQuery()->count();
     }
+
     public static function form(Schema $schema): Schema
     {
         return ApplicationForm::configure($schema);
