@@ -26,9 +26,9 @@ class EndedTrainingResource extends Resource
 
     protected static ?string $navigationParentItem = 'الطلبات';
 
-    protected static ?string $modelLabel = 'إنهاء التدريب';
+    protected static ?string $modelLabel = 'إنتهى تدريبه';
     protected static ?string $pluralModelLabel = 'المنتهين من التدريب';
-    protected static ?string $navigationLabel = 'إنهاء التدريب';
+    protected static ?string $navigationLabel = 'إنتهى تدريبه';
     protected static ?int $navigationSort = 6;
     protected static string | UnitEnum | null $navigationGroup = 'إدارة المتدربين';
 

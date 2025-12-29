@@ -26,9 +26,9 @@ class StartedTrainingResource extends Resource
 
     protected static ?string $navigationParentItem = 'الطلبات';
 
-    protected static ?string $modelLabel = 'بدء التدريب';
+    protected static ?string $modelLabel = 'قيد التدريب';
     protected static ?string $pluralModelLabel = 'المتدربين النشطين';
-    protected static ?string $navigationLabel = 'بدء التدريب';
+    protected static ?string $navigationLabel = 'قيد التدريب';
     protected static ?int $navigationSort = 5;
     protected static string | UnitEnum | null $navigationGroup = 'إدارة المتدربين';
 
