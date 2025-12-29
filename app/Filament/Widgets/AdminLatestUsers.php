@@ -14,11 +14,11 @@ class AdminLatestUsers extends BaseWidget
     protected static ?int $sort = 3;
     protected int | string | array $columnSpan = 'full';
 
-    protected static ?string $heading = 'أحدث المستخدمين المسجلين';
+    protected static ?string $heading = 'سجل أحدث المستخدمين المسجلين';
 
     public static function canView(): bool
     {
-        return Auth::user()->role === User::ROLE_ADMIN;
+        return !request()->routeIs('filament.Home.pages.dashboard') && Auth::user()->role === User::ROLE_ADMIN;
     }
 
     public function table(Table $table): Table

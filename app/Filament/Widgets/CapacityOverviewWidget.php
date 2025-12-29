@@ -20,7 +20,7 @@ class CapacityOverviewWidget extends BaseWidget
     protected static ?int $sort = 2;
     protected int | string | array $columnSpan = 1;
 
-    protected static ?string $heading = 'السعة الاستيعابية للأقسام';
+    protected static ?string $heading = 'إحصائيات السعة الاستيعابية للأقسام';
 
     public static function canView(): bool
     {
@@ -28,7 +28,7 @@ class CapacityOverviewWidget extends BaseWidget
         if (!$user) return false;
 
         // Allowed for: GTM, Admin, HOA, HOM, Department Head, Section Head
-        return in_array($user->role, [
+        return !request()->routeIs('filament.Home.pages.dashboard') && in_array($user->role, [
             User::ROLE_GTM,
             User::ROLE_ADMIN,
             User::ROLE_HOA,

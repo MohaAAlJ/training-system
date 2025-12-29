@@ -30,7 +30,7 @@ class GTMRecentApplications extends BaseWidget
         if (!$user) return false;
 
         // Visible for: GTM, Admin, College Supervisor, and MOH
-        return in_array($user->role, [
+        return !request()->routeIs('filament.Home.pages.dashboard') && in_array($user->role, [
             User::ROLE_GTM,
             User::ROLE_ADMIN,
             User::ROLE_COLLEGE,

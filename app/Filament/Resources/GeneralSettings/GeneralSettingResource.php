@@ -9,6 +9,7 @@ use App\Filament\Resources\GeneralSettings\Schemas\GeneralSettingForm;
 use App\Filament\Resources\GeneralSettings\Tables\GeneralSettingsTable;
 use App\Models\GeneralSetting;
 use BackedEnum;
+use UnitEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -26,7 +27,7 @@ class GeneralSettingResource extends Resource
     protected static ?string $modelLabel = 'الإعدادات العامة';
     protected static ?string $pluralModelLabel = 'الإعدادات العامة';
     protected static ?string $navigationLabel = 'الإعدادات العامة';
-    protected static ?int $navigationSort = 0;
+    protected static ?int $navigationSort = 11;
     public static function form(Schema $schema): Schema
     {
         return GeneralSettingForm::configure($schema);

@@ -21,7 +21,7 @@ class StudentsFinishingSoonWidget extends BaseWidget
     protected static ?int $sort = 2;
     protected int | string | array $columnSpan = 1;
 
-    protected static ?string $heading = 'طلاب يقترب موعد انتهاء تدريبهم';
+    protected static ?string $heading = 'متابعة المتدربين المنتهين قريباً';
 
     public static function canView(): bool
     {
@@ -30,7 +30,7 @@ class StudentsFinishingSoonWidget extends BaseWidget
 
         // Allowed for: GTM, Admin, HOA, HOM, Department Head, Section Head
         // Hidden from: MOH (4), College Supervisor (5)
-        return in_array($user->role, [
+        return !request()->routeIs('filament.Home.pages.dashboard') && in_array($user->role, [
             User::ROLE_GTM,
             User::ROLE_ADMIN,
             User::ROLE_HOA,
