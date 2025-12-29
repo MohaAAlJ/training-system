@@ -20,7 +20,9 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeleingScope;
 use Illuminate\Support\Facades\Auth;
+use App\Helpers\Constants;
 
 class TraineeResource extends Resource
 {

@@ -9,6 +9,7 @@ use App\Filament\Resources\Applications\Schemas\ApplicationForm;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Models\User as AppUser;
 use App\Filament\Resources\Applications\Tables\ApplicationsTable;
 
 class ApplicationsRelationManager extends RelationManager
