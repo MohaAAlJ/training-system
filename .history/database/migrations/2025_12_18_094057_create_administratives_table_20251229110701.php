@@ -19,7 +19,7 @@ return new class extends Migration
             $table->boolean('is_medical')->default(false);
             $table->foreignIdFor(User::class)->constrained()->cascadeOnDelete(); // مدير المنشأة
             $table->foreignIdFor(User::class, 'medical_head_user_id')->nullable()->constrained('users')->cascadeOnDelete(); // رئيس الإدارة الطبية
-            $table->foreignIdFor(Governorate::class)->nullable()->constrained()->nullOnDelete();
+            $table->foreignIdFor(Governorate::class,'')->nullable()->constrained('')->cascadeOnDelete();
             $table->timestamps();
             $table->softDeletes();
         });

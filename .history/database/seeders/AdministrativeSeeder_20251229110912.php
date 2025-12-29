@@ -39,7 +39,6 @@ class AdministrativeSeeder extends Seeder
                 'hoa_name' => 'مدير مدينة الأمل',
                 'hom_email' => null,
                 'hom_name' => null,
-                'governorate_id' => 3,
             ],
         ];
 
@@ -72,13 +71,12 @@ class AdministrativeSeeder extends Seeder
                 $medicalHoaId = $medicalHoa->id;
             }
 
-            Administrative::updateOrCreate(
+            Administrative::firstOrCreate(
                 ['title' => $adminData['title']],
                 [
                     'is_medical' => $adminData['is_medical'],
                     'user_id' => $hoa->id,
                     'medical_head_user_id' => $medicalHoaId,
-                    'governorate_id' => $adminData['governorate_id'],
                 ]
             );
         }

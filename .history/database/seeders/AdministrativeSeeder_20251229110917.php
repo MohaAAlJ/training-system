@@ -72,13 +72,12 @@ class AdministrativeSeeder extends Seeder
                 $medicalHoaId = $medicalHoa->id;
             }
 
-            Administrative::updateOrCreate(
+            Administrative::firstOrCreate(
                 ['title' => $adminData['title']],
                 [
                     'is_medical' => $adminData['is_medical'],
                     'user_id' => $hoa->id,
                     'medical_head_user_id' => $medicalHoaId,
-                    'governorate_id' => $adminData['governorate_id'],
                 ]
             );
         }
