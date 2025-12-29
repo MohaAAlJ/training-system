@@ -15,5 +15,7 @@ class Governorate extends Model
         'name',
     ];
 
-    protected $casts = [];
+    protected $casts = [
+        'name' => 'array',
+    ];
 }
