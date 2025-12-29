@@ -104,7 +104,7 @@ class SectionSeeder extends Seeder
                     'user_name' => \Illuminate\Support\Str::slug($sec['email'], '_'),
                     'password' => $password,
                     'role' => User::ROLE_SECTION,
-                    'status' => true,
+                    'status' => 1,
                 ]
             );
 
@@ -115,7 +115,7 @@ class SectionSeeder extends Seeder
                     'user_id' => $hos->id,
                     'governorate_id' => $sec['gov_id'],
                     'total_capacity' => 10,
-                    'status' => true,
+                    'status' => 'active',
                 ]
             );
         }
@@ -133,7 +133,7 @@ class SectionSeeder extends Seeder
                     'user_id' => null,
                     'governorate_id' => $govId,
                     'total_capacity' => 1,
-                    'status' => true,
+                    'status' => 'active',
                 ]
             );
         }

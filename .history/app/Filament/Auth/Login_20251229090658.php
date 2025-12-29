@@ -29,15 +29,21 @@ class Login extends BaseLogin
 
         $user = Filament::auth()->user();
 
+        // Check if user status is inactive
+        if ($user && !$user->status) {
+            Filament::auth()->logout();
+            throw ValidationException::withMessages([
+                'data.login' => 'عذراً، حسابك غير مفعل. يرجى التواصل مع المسؤول لتفعيل حسابك.',
+            ]);
+        }
+
         if (
             ($user instanceof FilamentUser) &&
             (! $user->canAccessPanel(Filament::getCurrentPanel()))
         ) {
             Filament::auth()->logout();
 
-            throw ValidationException::withMessages([
-                'data.login' => 'لا يمكنك الدخول إلى النظام لأن حسابك غير نشط',
-            ]);
+            $this->throwFailureValidationException();
         }
 
         session()->regenerate();

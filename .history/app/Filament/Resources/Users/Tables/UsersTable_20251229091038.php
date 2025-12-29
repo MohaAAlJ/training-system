@@ -31,19 +31,20 @@ class UsersTable
                 TextColumn::make('user_name')->label('اسم المستخدم')->searchable()->sortable(),
                 TextColumn::make('name')->label('الاسم')->searchable()->sortable(),
                 TextColumn::make('email')->label('البريد الإلكتروني')->searchable()->sortable(),
-                \Filament\Tables\Columns\ToggleColumn::make('status')
-                    ->label('الحالة')
-                    ->onIcon('heroicon-m-check-circle')
-                    ->offIcon('heroicon-m-x-circle')
-                    ->onColor('success')
-                    ->offColor('danger')
-                    ->sortable(),
+                TextColumn::make('role_label')->label('الدور')->sortable(),
                 TextColumn::make('created_at')->label('تاريخ الإنشاء')->dateTime('Y-m-d H:i')->sortable(),
             ])
             ->filters([
                 SelectFilter::make('role')
                     ->label('الدور')
                     ->options(User::ROLE_LABELS),
+                SelectFilter::make('status')
+                    ->label('الحالة')
+                    ->options([
+                        'active' => 'نشط',
+                        'inactive' => 'غير نشط',
+                        'banned' => 'محظور',
+                    ]),
                 TrashedFilter::make(),
             ])
             ->recordActions([

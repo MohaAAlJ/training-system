@@ -49,7 +49,7 @@ class AdministrativeSeeder extends Seeder
                     'user_name' => \Illuminate\Support\Str::slug($adminData['hoa_email'], '_'),
                     'password' => $password,
                     'role' => User::ROLE_HOA,
-                    'status' => true,
+                    'status' => 1,
                 ]
             );
 
@@ -63,7 +63,7 @@ class AdministrativeSeeder extends Seeder
                         'user_name' => \Illuminate\Support\Str::slug($adminData['hom_email'], '_'),
                         'password' => $password,
                         'role' => User::ROLE_HOM,
-                        'status' => true,
+                        'status' => 1,
                     ]
                 );
                 $medicalHoaId = $medicalHoa->id;
