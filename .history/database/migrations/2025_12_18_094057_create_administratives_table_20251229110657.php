@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\Governorate;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -19,7 +18,7 @@ return new class extends Migration
             $table->boolean('is_medical')->default(false);
             $table->foreignIdFor(User::class)->constrained()->cascadeOnDelete(); // مدير المنشأة
             $table->foreignIdFor(User::class, 'medical_head_user_id')->nullable()->constrained('users')->cascadeOnDelete(); // رئيس الإدارة الطبية
-            $table->foreignIdFor(Governorate::class)->nullable()->constrained()->nullOnDelete();
+            $table->foreignIdFor(Go
             $table->timestamps();
             $table->softDeletes();
         });
