@@ -30,7 +30,7 @@ class AdministrativeSeeder extends Seeder
                 'hoa_name' => 'مدير مركز الدير',
                 'hom_email' => 'hom_deir@system.com',
                 'hom_name' => 'المدير الطبي للدير',
-                'governorate_id' => 5,
+                'governorate_id' => 2,
             ],
             [
                 'title' => 'مدينة الأمل',

@@ -15,5 +15,20 @@ class Governorate extends Model
         'name',
     ];
 
-    protected $casts = [];
+    protected $casts = [
+        'name' => 'array',
+    ];
+
+    function GetGovName($gov)
+    {
+        $name = $gov->name;
+        if (is_array($name)) {
+            return json_encode($name, JSON_UNESCAPED_UNICODE);
+        }
+    return $name;
 }
+}
+
+
+
+

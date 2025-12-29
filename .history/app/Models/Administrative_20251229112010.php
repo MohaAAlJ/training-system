@@ -75,6 +75,11 @@ class Administrative extends Model
     {
         $govName = $this->governorate?->name;
 
+        GetGovName
+        if (is_array($govName)) {
+            $govName = $govName['ar'] ?? reset($govName);
+        }
+
         return $this->title . ($govName ? " - {$govName}" : '');
     }
 

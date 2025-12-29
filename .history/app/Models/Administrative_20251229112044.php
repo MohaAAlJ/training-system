@@ -73,7 +73,11 @@ class Administrative extends Model
      */
     public function getNameWithGovernorateAttribute(): string
     {
-        $govName = $this->governorate?->name;
+        $govName = Governorate::getGovName($this->governorate_id);
+
+        if (is_array($govName)) {
+            $govName = $govName['ar'] ?? reset($govName);
+        }
 
         return $this->title . ($govName ? " - {$govName}" : '');
     }

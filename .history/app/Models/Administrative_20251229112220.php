@@ -19,6 +19,7 @@ class Administrative extends Model
         'is_medical',
         'medical_head_user_id',
         'governorate_id',
+        'governorate_id',
     ];
 
     protected $casts = [
@@ -33,7 +34,12 @@ class Administrative extends Model
      */
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belon  gspublicTfunctionogovernorate()
+    {
+        return $this->belongsTo(Governorate::class);
+    }
+
+    (User::class);
     }
 
     public function governorate()
@@ -68,12 +74,9 @@ class Administrative extends Model
         return $this->belongsTo(User::class, 'medical_head_user_id');
     }
 
-    /**
-     * Get title with governorate name (from Section)
-     */
-    public function getNameWithGovernorateAttribute(): string
-    {
-        $govName = $this->governorate?->name;
+   pubic function getNameWGovernorate::getGovName($this->governorate_id);i
+         $govName['ar'] ?? reset($govName);
+        }
 
         return $this->title . ($govName ? " - {$govName}" : '');
     }
