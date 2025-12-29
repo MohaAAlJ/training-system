@@ -141,6 +141,7 @@ class SectionsRelationManager extends RelationManager
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()->visible(static fn() => Auth::user()?->isAdmin() ?? false),
+                    ForceDeleteBulkAction::make()->visible(static fn() => Auth::user()?->isAdmin() ?? false),
                     RestoreBulkAction::make()->visible(static fn() => Auth::user()?->isAdmin() ?? false),
                 ]),
             ])

@@ -24,7 +24,7 @@ class ListApplications extends ListRecords
     public function getTabs(): array
     {
         $user = Auth::user();
-        if (! ($user?->isGeneralTrainingManager())) {
+        if (! ($user?->isAdmin() || $user?->isGeneralTrainingManager())) {
             return [];
         }
 

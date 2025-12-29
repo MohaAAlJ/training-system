@@ -23,11 +23,6 @@ class ListApplications extends ListRecords
 
     public function getTabs(): array
     {
-        $user = Auth::user();
-        if (! ($user?->isGeneralTrainingManager())) {
-            return [];
-        }
-
         return [
             'all' => Tab::make('الكل')
                 ->modifyQueryUsing(fn($query) => $query->where('status', '!=', \App\Models\Application::STATUS_REJECTED))
