@@ -35,9 +35,7 @@ class Login extends BaseLogin
         ) {
             Filament::auth()->logout();
 
-            throw ValidationException::withMessages([
-                'data.login' => 'لا يمكنك الدخول إلى النظام لأن حسابك غير نشط',
-            ]);
+            $this->throwFailureValidationException();
         }
 
         session()->regenerate();

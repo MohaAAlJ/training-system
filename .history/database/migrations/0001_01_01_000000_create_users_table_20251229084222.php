@@ -21,7 +21,7 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->tinyInteger('role')->default(null)->nullable(); // 1:Admin,, 2:Dept Manager, 3:Section Head, 4:ministry of health, 5:College Supervisor, 6: head of adminstrative, 7:head of medical 8: training manager
-            $table->boolean('status')->default(true);
+            $table->tinyInteger('status', ['active', 'inactive', 'banned'])->default('active');
             $table->rememberToken();
             $table->timestamps();
             $table->softDeletes();
@@ -47,7 +47,7 @@ return new class extends Migration
             'email' => 'Moha@admins.com',
             'password' => Hash::make('123'),
             'role' => User::ROLE_ADMIN,
-            'status' => 1,
+            'status' => 'active',
         ]);
     }
 

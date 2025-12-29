@@ -69,7 +69,6 @@ class DepartmentSeeder extends Seeder
                 [
                     'is_medical' => $deptData['is_medical'],
                     'user_id' => $hodId,
-                    'status' => true,
                 ]
             );
         }

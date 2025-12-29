@@ -22,15 +22,15 @@ class User extends Authenticatable implements FilamentUser
     protected $hidden = ['password', 'remember_token'];
     protected $casts = [
         'role' => 'integer',
-        'status' => 'boolean',
+        'status' => 'integer',
         'password' => 'hashed',
     ];
 
     /**
      * Status constants
      */
-    public const STATUS_ACTIVE = true;
-    public const STATUS_INACTIVE = false;
+    public const STATUS_ACTIVE = 1;
+    public const STATUS_INACTIVE = 0;
 
     /**
      * Role constants
@@ -152,7 +152,7 @@ class User extends Authenticatable implements FilamentUser
 
     public function canAccessPanel(Panel $panel): bool
     {
-        return $this->status === true;
+        return $this->status === 'active';
     }
 
     public function getRoleLabelAttribute(): string

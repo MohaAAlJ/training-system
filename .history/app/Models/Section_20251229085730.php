@@ -50,7 +50,13 @@ class Section extends Model
      */
     public function scopeActive(Builder $query): void
     {
-        $query->where('status', true);
+        $query->where('status', 'active');
+    }
+
+    // Accessor to convert status string to boolean for ToggleColumn
+    protected function getStatusAttribute($value)
+    {
+        return $value === 'active';
     }
 
     public function user()

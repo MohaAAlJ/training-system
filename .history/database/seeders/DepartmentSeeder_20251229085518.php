@@ -58,7 +58,7 @@ class DepartmentSeeder extends Seeder
                         'user_name' => \Illuminate\Support\Str::slug($deptData['hod_email'], '_'),
                         'password' => $password,
                         'role' => UserConstants::ROLE_DEPARTMENT,
-                        'status' => true,
+                        'status' => 1,
                     ]
                 );
                 $hodId = $hod->id;
@@ -69,7 +69,6 @@ class DepartmentSeeder extends Seeder
                 [
                     'is_medical' => $deptData['is_medical'],
                     'user_id' => $hodId,
-                    'status' => true,
                 ]
             );
         }
