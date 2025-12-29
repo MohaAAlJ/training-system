@@ -6,7 +6,7 @@ use Filament\Actions\CreateAction;
 use App\Filament\Resources\Applications\ApplicationResource;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Support\Facades\Auth;
-use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Resources\Components\Tab;
 
 class ListApplications extends ListRecords
 {
@@ -23,12 +23,6 @@ class ListApplications extends ListRecords
 
     public function getTabs(): array
     {
-        $user = Auth::user();
-        if (! ($user?->isGeneralTrainingManager())) {
-            return [];
-        }
-
-        return [
             'all' => Tab::make('الكل')
                 ->modifyQueryUsing(fn($query) => $query->where('status', '!=', \App\Models\Application::STATUS_REJECTED))
                 ->badge(\App\Models\Application::where('status', '!=', \App\Models\Application::STATUS_REJECTED)->count()),

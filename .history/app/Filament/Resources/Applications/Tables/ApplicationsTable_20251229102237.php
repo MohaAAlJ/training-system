@@ -23,6 +23,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\DatePicker;
 use Illuminate\Support\Facades\Auth;
+use Filament\Forms\Components\Fieldset;
 use Filament\Schemas\Components\Fieldset;
 
 class ApplicationsTable
@@ -146,8 +147,7 @@ class ApplicationsTable
                     ->options(fn() => array_combine(
                         Application::STATUSES,
                         array_map(fn($s) => \Illuminate\Support\Facades\Lang::get("translation.status.$s", [], 'ar'), Application::STATUSES)
-                    ))
-                    ->visible(! Auth::user()->isGeneralTrainingManager()),
+                    )),
                 SelectFilter::make('training_type')
                     ->label('نوع التدريب')
                     ->options(Application::TRAINING_TYPES)
@@ -218,11 +218,7 @@ class ApplicationsTable
                         ->label('قائمة الانتظار')
                         ->icon('heroicon-o-clock')
                         ->requiresConfirmation()
-                        ->action(fn(Application $record) => $record->update([
-                            'status' => Application::STATUS_WAITING_LIST,
-                            'start_date' => null,
-                            'end_date' => null,
-                        ]))
+                        ->action(fn(Application $record) => $record->update(['status' => Application::STATUS_WAITING_LIST]))
                         ->visible(fn(Application $record) => $record->status !== Application::STATUS_WAITING_LIST),
 
                     Action::make('to_start_training')
@@ -497,73 +493,31 @@ class ApplicationsTable
                         } else {
                             $record->update([
                                 'status' => Application::STATUS_WAITING_LIST,
-                                'start_date' => null,
-                                'end_date' => null,
                             ]);
                         }
                     }),
 
                 Action::make('begin_training_from_waiting')
                     ->label('بدء التدريب')
-                    ->color(fn(Application $record) => $record->section?->status ? 'success' : 'danger')
+                    ->color('success')
                     ->icon('heroicon-o-play-circle')
                     ->visible(fn($record, $livewire) => $livewire->activeTab === 'confirmed' && $record->status == Application::STATUS_WAITING_LIST && Auth::user()->isGeneralTrainingManager())
-                    ->form(function (Application $record) {
-                        $isSectionInactive = ! ($record->section?->status ?? false);
-                        $schema = [];
-
-                        if ($isSectionInactive) {
-                            $schema[] = Fieldset::make('تنبيه: القسم المسجل غير نشط')
-                                ->schema([
-                                    \Filament\Forms\Components\Select::make('administrative_id')
-                                        ->label('الإدارة')
-                                        ->options(Administrative::all()->pluck('name_with_governorate', 'id'))
-                                        ->required()
-                                        ->live()
-                                        ->afterStateUpdated(fn(Set $set) => $set('department_id', null)),
-                                    \Filament\Forms\Components\Select::make('department_id')
-                                        ->label('الدائرة')
-                                        ->options(fn(Get $get) => Department::whereHas('Section', fn($q) => $q->where('administrative_id', $get('administrative_id')))->active()->pluck('title', 'id'))
-                                        ->required()
-                                        ->live()
-                                        ->disabled(fn(Get $get) => ! $get('administrative_id'))
-                                        ->afterStateUpdated(fn(Set $set) => $set('section_id', null)),
-                                    \Filament\Forms\Components\Select::make('section_id')
-                                        ->label('القسم')
-                                        ->options(function (Get $get) {
-                                            $adminId = $get('administrative_id');
-                                            $deptId = $get('department_id');
-                                            if (! $adminId || ! $deptId) return [];
-
-                                            return Section::where('administrative_id', $adminId)
-                                                ->where('department_id', $deptId)
-                                                ->active()
-                                                ->get()
-                                                ->filter(fn($sec) => ! ($sec->getCapacityStats()['is_full'] ?? false))
-                                                ->pluck('name_location', 'id');
-                                        })
-                                        ->required()
-                                        ->disabled(fn(Get $get) => ! $get('department_id')),
-                                ]);
-                        }
-
-                        $schema[] = DatePicker::make('start_date')
+                    ->form([
+                        DatePicker::make('start_date')
                             ->label('تاريخ البدء')
                             ->required()
                             ->default(now())
                             ->native(false)
                             ->format('Y/m/d')
                             ->displayFormat('Y/m/d')
-                            ->reactive();
-
-                        $schema[] = TextInput::make('duration')
+                            ->reactive(),
+                        TextInput::make('duration')
                             ->label('المدة (يوم)')
                             ->numeric()
                             ->required()
                             ->default(30)
-                            ->reactive();
-
-                        $schema[] = \Filament\Forms\Components\Placeholder::make('calculated_end_date')
+                            ->reactive(),
+                        \Filament\Forms\Components\Placeholder::make('calculated_end_date')
                             ->label('تاريخ الانتهاء المتوقع')
                             ->content(function ($get) {
                                 $startDate = $get('start_date');
@@ -579,21 +533,10 @@ class ApplicationsTable
                                     }
                                 }
                                 return 'غير محدد';
-                            });
-
-                        return $schema;
-                    })
+                            }),
+                    ])
                     ->successNotificationTitle('تم بدء التدريب بنجاح')
-                    ->action(function (Application $record, array $data) {
-                        if (isset($data['section_id'])) {
-                            $record->update([
-                                'administrative_id' => $data['administrative_id'],
-                                'department_id' => $data['department_id'],
-                                'section_id' => $data['section_id'],
-                            ]);
-                            $record->refresh();
-                        }
-
+                    ->action(function ($record, array $data) {
                         $startDate = \Carbon\Carbon::parse($data['start_date']);
                         $duration = (int)$data['duration'];
                         $endDate = $startDate->copy()->addDays($duration);
