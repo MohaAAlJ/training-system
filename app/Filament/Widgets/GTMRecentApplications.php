@@ -115,7 +115,8 @@ class GTMRecentApplications extends BaseWidget
                         'مزاولة مهنة' => 'success',
                         default => 'gray',
                     })
-                    ->toggleable(),
+                    ->toggleable()
+                    ->visible(fn() => !Auth::user()->isMinistry()),
                 Tables\Columns\TextColumn::make('administrative.title')
                     ->label('الإدارة')
                     ->toggleable(),

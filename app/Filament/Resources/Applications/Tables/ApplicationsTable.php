@@ -87,7 +87,7 @@ class ApplicationsTable
                         Auth::user()->isHOA() ||
                         Auth::user()->isGeneralTrainingManager() ||
                         Auth::user()->isSectionHead()
-                    )),
+                    ) && !Auth::user()->isMinistry()),
                 TextColumn::make('administrative.title')
                     ->label('الإدارة')
                     ->searchable()
