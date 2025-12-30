@@ -26,7 +26,6 @@ class DepartmentFactory extends Factory
             'medical_head_user_id' => $this->faker->boolean ? User::factory() : null,
             'is_medical' => $this->faker->boolean,
             'status' => true,
-            'total_capacity' => $this->faker->numberBetween(5, 20),
             'location' => $this->faker->address,
         ];
     }

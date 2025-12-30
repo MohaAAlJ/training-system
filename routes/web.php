@@ -37,5 +37,5 @@ Route::prefix('WelcomeForm/Form/api')->group(function () {
 
 Route::get('/test', function () {
     $s = Section::find(1);
-    $s->total_capacity - Application::where('section_id', $s->id)->where('status', Application::STATUS_STARTED_TRAINING)->count();
+    $s->capacity - Application::where('section_id', $s->id)->where('status', Application::STATUS_STARTED_TRAINING)->count();
 });

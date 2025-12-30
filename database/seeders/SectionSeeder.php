@@ -114,7 +114,7 @@ class SectionSeeder extends Seeder
                     'department_id' => $sec['dept_id'],
                     'user_id' => $hos->id,
                     'governorate_id' => $sec['gov_id'],
-                    'total_capacity' => 10,
+                    'capacity' => 10,
                     'status' => true,
                 ]
             );
@@ -124,7 +124,7 @@ class SectionSeeder extends Seeder
         $allAdmins = Administrative::all();
         foreach ($allAdmins as $admin) {
             // تحديد المحافظة بناءً على اسم الإدارة (منطق بسيط)
-            $govId = (str_contains($admin->title, 'الدير')) ? $deirId : $khanYunisId;
+            $govId = (str_contains($admin->name, 'الدير')) ? $deirId : $khanYunisId;
 
             Section::firstOrCreate(
                 ['name_location' => 'إدارة', 'administrative_id' => $admin->id],
@@ -132,7 +132,7 @@ class SectionSeeder extends Seeder
                     'department_id' => $deptAdmin->id,
                     'user_id' => null,
                     'governorate_id' => $govId,
-                    'total_capacity' => 1,
+                    'capacity' => 1,
                     'status' => true,
                 ]
             );

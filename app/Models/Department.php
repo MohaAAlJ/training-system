@@ -19,7 +19,6 @@ class Department extends Model
         'medical_head_user_id',
         'is_medical',
         'status',
-        'total_capacity',
         'location',
     ];
     protected $casts = [
@@ -84,7 +83,7 @@ class Department extends Model
     public function getCapacityStats(): array
     {
         // Sum total capacity from all sections
-        $total = (int) $this->Section()->sum('total_capacity');
+        $total = (int) $this->Section()->sum('capacity');
 
         // Count all active applications in this department
         $used = Application::where('department_id', $this->id)

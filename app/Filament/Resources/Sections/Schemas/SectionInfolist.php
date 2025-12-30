@@ -22,7 +22,7 @@ class SectionInfolist
                             ->label('الدائرة'),
                         TextEntry::make('user.name')
                             ->label('المسؤول'),
-                        TextEntry::make('total_capacity')
+                        TextEntry::make('capacity')
                             ->label('السعة الكلية'),
                         TextEntry::make('status')
                             ->label('الحالة')

@@ -46,7 +46,7 @@ class AdministrativeResource extends Resource
     protected static ?string $modelLabel = 'الإدارة';
     protected static ?string $pluralModelLabel = 'الإدارة';
     protected static ?string $navigationLabel = 'الإدارة';
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 2;
 
     public static function getRelations(): array
     {

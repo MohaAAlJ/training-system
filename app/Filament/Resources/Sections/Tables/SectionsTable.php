@@ -39,7 +39,7 @@ class SectionsTable
                 TextColumn::make('user.name')
                     ->label('المسؤول')
                     ->searchable(),
-                TextColumn::make('total_capacity')
+                TextColumn::make('capacity')
                     ->label('السعة')
                     ->sortable(),
                 TextColumn::make('registered_count')

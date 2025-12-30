@@ -50,7 +50,7 @@ class SectionsRelationManager extends RelationManager
                     ->searchable()
                     ->preload()
                     ->required(),
-                TextInput::make('total_capacity')
+                TextInput::make('Capacity')
                     ->label('السعة الكلية')
                     ->numeric()
                     ->minValue(1)
@@ -79,7 +79,7 @@ class SectionsRelationManager extends RelationManager
                 TextColumn::make('user.name')
                     ->label('المسؤول')
                     ->searchable(),
-                TextColumn::make('total_capacity')
+                TextColumn::make('Capacity')
                     ->label('السعة')
                     ->sortable(),
                 TextColumn::make('registered_count')

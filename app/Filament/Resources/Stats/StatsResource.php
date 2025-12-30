@@ -32,7 +32,7 @@ class StatsResource extends Resource
     protected static ?string $modelLabel = 'إحصائيات';
     protected static ?string $pluralModelLabel = 'الإحصائيات';
     protected static ?string $navigationLabel = 'الإحصائيات';
-    protected static ?int $navigationSort = 10;
+    protected static ?int $navigationSort = 1;
 
     public static function form(Schema $schema): Schema
     {
