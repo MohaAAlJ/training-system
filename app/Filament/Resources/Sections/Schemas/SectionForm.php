@@ -36,7 +36,7 @@ class SectionForm
                     ->searchable()
                     ->preload()
                     ->required(),
-                TextInput::make('total_capacity')
+                TextInput::make('capacity')
                     ->label('السعة الكلية')
                     ->numeric()
                     ->minValue(1)

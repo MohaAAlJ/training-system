@@ -18,7 +18,7 @@ class Section extends Model
         'id',
         'name_location',
         'status',
-        'total_capacity',
+        'capacity',
         'department_id',
         'user_id',
         'administrative_id',
@@ -31,14 +31,14 @@ class Section extends Model
     protected static function booted(): void
     {
         static::updating(function (Section $section) {
-            if ($section->isDirty('total_capacity')) {
-                $used = \App\Models\Application::where('section_id', $section->id)
-                    ->where('status', \App\Models\Application::STATUS_STARTED_TRAINING)
+            if ($section->isDirty('capacity')) {
+                $used = Application::where('section_id', $section->id)
+                    ->where('status', Application::STATUS_STARTED_TRAINING)
                     ->count();
 
-                if ($section->total_capacity < $used) {
+                if ($section->capacity < $used) {
                     throw \Illuminate\Validation\ValidationException::withMessages([
-                        'total_capacity' => "لا يمكن تقليل السعة الكلية ({$section->total_capacity}) عن العدد المستخدم حالياً ({$used}).",
+                        'capacity' => "لا يمكن تقليل السعة الكلية ({$section->capacity}) عن العدد المستخدم حالياً ({$used}).",
                     ]);
                 }
             }
@@ -84,7 +84,7 @@ class Section extends Model
      */
     public function getCapacityStats(): array
     {
-        $total = (int) ($this->total_capacity ?? 0);
+        $total = (int) ($this->capacity ?? 0);
         $used = Application::where('section_id', $this->id)
             ->where('status', Application::STATUS_STARTED_TRAINING)
             ->count();

@@ -21,6 +21,7 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use App\Filament\Auth\Login;
+use Filament\View\PanelsRenderHook;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -47,26 +48,128 @@ class AdminPanelProvider extends PanelProvider
                 'panels::head.end',
                 fn(): HtmlString => new HtmlString('
                     <style>
-                        .fi-ta-content {
-                            overflow-x: auto !important;
-                            -webkit-overflow-scrolling: touch;
+                        /* --- BASE LAYOUT --- */
+                        body {
+                            background-color: #f3f4f6 !important;
+                            padding-inline-start: 21rem !important; /* Sidebar 18rem + Gap 3rem */
                         }
-                        @media (max-width: 1024px) {
-                             .fi-ta-content table {
-                                 min-width: 800px !important;
-                             }
+                        .dark body {
+                            background-color: #030712 !important;
                         }
+
+                        /* --- SIDEBAR: CLEAN & ALIGNED --- */
+                        .fi-sidebar-header {
+                            display: none !important; /* Removes the top thing as requested */
+                        }
+
+                        .fi-sidebar {
+                            position: fixed !important;
+                            top: 1.5rem !important; /* Aligned with Main Content Top */
+                            inset-inline-start: 1.5rem !important;
+                            z-index: 10 !important;
+
+                            background-color: rgba(255, 255, 255, 0.6) !important;
+                            backdrop-filter: blur(16px) !important;
+
+                            width: 18rem !important;
+                            height: calc(100vh - 3rem) !important;
+                            border-radius: 2rem !important;
+
+                            border: 1px solid rgba(255, 255, 255, 0.4) !important;
+                            box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.1), 0 0 20px rgba(239, 68, 68, 0.1) !important;
+                        }
+
+                        .dark .fi-sidebar {
+                            background-color: rgba(31, 41, 55, 0.6) !important;
+                            border: 1px solid rgba(255, 255, 255, 0.05) !important;
+                        }
+
+                        /* Sidebar Items as Pills */
+                        .fi-sidebar-item {
+                            display: flex !important;
+                            justify-content: center !important;
+                            padding-inline: 0.5rem !important;
+                        }
+                        .fi-sidebar-item > a,
+                        .fi-sidebar-item > button {
+                            border-radius: 9999px !important;
+                            width: fit-content !important;
+                            min-width: 15rem !important;
+                            max-width: calc(100% - 1rem) !important;
+                            padding-inline: 1.25rem !important;
+                        }
+
+                        .fi-sidebar-item.fi-active > a,
+                        .fi-sidebar-item.fi-active > button {
+                            background-color: rgba(255, 255, 255, 0.1) !important;
+                            box-shadow: 0 0 12px 2px rgba(239, 68, 68, 0.4) !important;
+                            color: #ef4444 !important;
+                        }
+
+                        /* --- MAIN CONTENT & TOPBAR --- */
+                        .fi-main, main {
+                            background-color: white !important;
+                            margin: 1.5rem !important; /* Aligned with Sidebar Top */
+                            border-radius: 2rem !important;
+                            box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.05) !important;
+                            padding: 2.5rem !important;
+                            min-height: calc(100vh - 3rem) !important;
+                        }
+
+                        .dark .fi-main, .dark main {
+                            background-color: #111827 !important;
+                            border: 1px solid rgba(255, 255, 255, 0.03) !important;
+                        }
+
+                        .fi-topbar {
+                            position: sticky !important;
+                            top: 1.5rem !important;
+                            z-index: 20 !important;
+                            background-color: rgba(255, 255, 255, 0.8) !important;
+                            backdrop-filter: blur(12px) !important;
+                            margin: 1.5rem !important;
+                            border: 1px solid rgba(255, 255, 255, 0.4) !important;
+                            border-radius: 1.5rem !important;
+                            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.1) !important;
+                        }
+
+                        .dark .fi-topbar {
+                            background-color: rgba(17, 24, 39, 0.8) !important;
+                        }
+
+                        /* --- NEON & GLOW --- */
+                        .fi-header-heading, h1 {
+                            text-shadow: 0 0 15px rgba(239, 68, 68, 0.4) !important;
+                        }
+                        .fi-ta-ctn {
+                            box-shadow: 0 0 20px rgba(239, 68, 68, 0.1) !important;
+                        }
+
+                        /* Group Labels */
+                        .fi-sidebar-group-label {
+                            color: #ef4444 !important;
+                            text-shadow: 0 0 8px rgba(239, 68, 68, 0.2) !important;
+                            font-weight: 700 !important;
+                            font-size: 0.75rem !important;
+                            margin-top: 1rem !important;
+                        }
+
+                        /* Scrollbars */
+                        ::-webkit-scrollbar { width: 5px; height: 5px; }
+                        ::-webkit-scrollbar-thumb { background: #ef4444; border-radius: 10px; }
                     </style>
                 ')
             )
+            ->sidebarWidth('17rem') // Narrower sidebar
             ->databaseNotifications()
+            ->globalSearch(false) // Disable global search
             ->navigationGroups([
                 // \Filament\Navigation\NavigationGroup::make()
                 //     ->label('إدارة الطلبات')
                 //     ->collapsed(true),
                 \Filament\Navigation\NavigationGroup::make()
                     ->label('إدارة المتدربين')
-                    ->Collapsible(false),
+                    ->collapsible(false),
             ])
             ->collapsibleNavigationGroups(true)
             ->sidebarCollapsibleOnDesktop(false)

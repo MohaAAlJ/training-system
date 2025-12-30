@@ -32,7 +32,7 @@ return new class extends Migration
             $table->text('tags')->nullable();
             $table->text('application_letter')->nullable();
             $table->timestamp('accepted_at')->nullable();
-            $table->timestamps()->nullable();
+            $table->timestamps();
             $table->softDeletes();
         });
     }

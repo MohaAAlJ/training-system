@@ -104,7 +104,7 @@ class CapacityOverviewWidget extends BaseWidget
                     ->searchable()
                     ->sortable()
                     ->visible(fn() => Auth::user()->isGeneralTrainingManager() || Auth::user()->isAdmin() || Auth::user()->isMedicalManager()),
-                Tables\Columns\TextColumn::make('total_capacity')
+                Tables\Columns\TextColumn::make('capacity')
                     ->label('السعة الكلية')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('active_Trainee_count')
@@ -113,7 +113,7 @@ class CapacityOverviewWidget extends BaseWidget
                 Tables\Columns\TextColumn::make('available_capacity')
                     ->label('متاح')
                     ->state(function (Section $record) {
-                        return max(0, $record->total_capacity - $record->active_Trainee_count);
+                        return max(0, $record->capacity - $record->active_Trainee_count);
                     }),
             ])
             ->defaultSort('name_location');

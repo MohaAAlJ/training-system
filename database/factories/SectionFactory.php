@@ -24,7 +24,7 @@ class SectionFactory extends Factory
         return [
             'name_location' => $this->faker->word . ' Section',
             'status' => $this->faker->boolean,
-            'total_capacity' => $this->faker->numberBetween(5, 20),
+            'capacity' => $this->faker->numberBetween(5, 20),
             'department_id' => Department::factory(),
             'user_id' => User::factory(),
             'administrative_id' => Administrative::factory(),
