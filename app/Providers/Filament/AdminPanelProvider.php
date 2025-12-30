@@ -138,9 +138,45 @@ class AdminPanelProvider extends PanelProvider
                         }
 
                         /* --- NEON & GLOW --- */
-                        .fi-header-heading, h1 {
+                        .fi-header-heading, h1, [style*="font-size:1.8rem"] {
                             text-shadow: 0 0 15px rgba(239, 68, 68, 0.4) !important;
                         }
+
+                        /* Topbar Glow */
+                        .fi-topbar {
+                            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.1), 0 0 15px rgba(239, 68, 68, 0.1) !important;
+                            border: 1px solid rgba(239, 68, 68, 0.2) !important;
+                        }
+                        .dark .fi-topbar {
+                            border: 1px solid rgba(239, 68, 68, 0.1) !important;
+                            box-shadow: 0 10px 40px -15px rgba(0, 0, 0, 0.5), 0 0 20px rgba(239, 68, 68, 0.15) !important;
+                        }
+
+                        /* Notification & Profile Glow */
+                        .fi-topbar-database-notifications-button button,
+                        .fi-topbar-user-menu-button button {
+                            box-shadow: 0 0 10px rgba(239, 68, 68, 0.3) !important;
+                            transition: all 0.3s ease !important;
+                        }
+                        .fi-topbar-database-notifications-button button:hover,
+                        .fi-topbar-user-menu-button button:hover {
+                            box-shadow: 0 0 15px rgba(239, 68, 68, 0.5) !important;
+                            transform: scale(1.05) !important;
+                        }
+
+                        /* Sidebar Icons & Labels Glow */
+                        .fi-sidebar-item-icon {
+                            filter: drop-shadow(0 0 5px rgba(239, 68, 68, 0.3)) !important;
+                        }
+                        .fi-sidebar-item-label {
+                            text-shadow: 0 0 8px rgba(239, 68, 68, 0.2) !important;
+                        }
+
+                        /* Badges Glow */
+                        .fi-badge {
+                            box-shadow: 0 0 8px rgba(0, 0, 0, 0.05), 0 0 12px var(--badge-color, rgba(239, 68, 68, 0.2)) !important;
+                        }
+
                         .fi-ta-ctn {
                             box-shadow: 0 0 20px rgba(239, 68, 68, 0.1) !important;
                         }
@@ -148,10 +184,12 @@ class AdminPanelProvider extends PanelProvider
                         /* Group Labels */
                         .fi-sidebar-group-label {
                             color: #ef4444 !important;
-                            text-shadow: 0 0 8px rgba(239, 68, 68, 0.2) !important;
-                            font-weight: 700 !important;
-                            font-size: 0.75rem !important;
-                            margin-top: 1rem !important;
+                            text-shadow: 0 0 10px rgba(239, 68, 68, 0.4) !important;
+                            font-weight: 800 !important;
+                            font-size: 0.8rem !important;
+                            margin-top: 1.2rem !important;
+                            text-transform: uppercase;
+                            letter-spacing: 0.05em;
                         }
 
                         /* Scrollbars */
