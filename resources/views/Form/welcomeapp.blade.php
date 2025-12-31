@@ -28,14 +28,22 @@
                     </p>
                 </div>
                 <div class="hero__brand">
-                    <div class="hero__logo">
-                        <img
-                            src="{{ asset('form-assets/trainee-app/logo.png') }}"
-                            alt="شعار PRCS"
-                        />
+                    <div class="hero__logos">
+                        <div class="hero__logo">
+                            <img
+                                src="{{ asset('form-assets/trainee-app/logo.png') }}"
+                                alt="PRCS"
+                            />
+                        </div>
+                        <div class="hero__logo">
+                            <img
+                                src="{{ asset('favicon.ico') }}"
+                                alt="UCAD"
+                            />
+                        </div>
                     </div>
                     <div class="hero__brand-meta">
-                        <span class="hero__brand-name">PRCS</span>
+                        <span class="hero__brand-name">PRCS | UCAD</span>
                         <span class="hero__brand-sub">نظام التدريب التعاوني</span>
                     </div>
                 </div>
