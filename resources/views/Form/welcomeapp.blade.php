@@ -7,7 +7,17 @@
         <link rel="stylesheet" href="{{ asset('form-assets/trainee-app/styles.css') }}" />
         <link rel="stylesheet" href="{{ asset('form-assets/welcome/styles.css') }}" />
     </head>
+    <script>
+        // Initialize theme before page loads to prevent flickering
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+    </script>
     <body>
+        <div class="theme-switch">
+            <button id="themeToggle" type="button" title="تبديل الوضع">
+                <span class="mode-icon">🌓</span>
+            </button>
+        </div>
         <main class="page welcome-page">
             <header class="hero hero--banner welcome-hero">
                 <div class="hero__text">
@@ -31,20 +41,22 @@
                 </div>
             </header>
 
-            <div class="card welcome-card">
-                <div class="welcome-content">
-                    <h2>ابدأ رحلتك التدريبية</h2>
-                    @if($isFormEnabled)
-                        <p>للتقديم على برنامج التدريب التعاوني، يرجى الضغط على الزر أدناه لتعبئة نموذج الطلب.</p>
-                        <a href="{{ route('training.form') }}" class="glow-button welcome-button">
-                            اضغط هنا لتعبئة طلبك
-                        </a>
-                    @else
-                        <div class="disabled-message">
-                            <p class="error-text">عذراً، تقديم الطلبات عبر البوابة مغلق حالياً.</p>
-                            <p>نعتذر عن عدم إمكانية استقبال طلبات جديدة في الوقت الحالي. يرجى المحاولة لاحقاً أو التواصل مع الإدارة.</p>
-                        </div>
-                    @endif
+            <div class="card-wrapper">
+                <div class="card welcome-card">
+                    <div class="welcome-content">
+                        <h2>ابدأ رحلتك التدريبية</h2>
+                        @if($isFormEnabled)
+                            <p>للتقديم على برنامج التدريب التعاوني، يرجى الضغط على الزر أدناه لتعبئة نموذج الطلب.</p>
+                            <a href="{{ route('training.form') }}" class="glow-button welcome-button">
+                                اضغط هنا لتعبئة طلبك
+                            </a>
+                        @else
+                            <div class="disabled-message">
+                                <p class="error-text">عذراً، تقديم الطلبات عبر البوابة مغلق حالياً.</p>
+                                <p>نعتذر عن عدم إمكانية استقبال طلبات جديدة في الوقت الحالي. يرجى المحاولة لاحقاً أو التواصل مع الإدارة.</p>
+                            </div>
+                        @endif
+                    </div>
                 </div>
             </div>
         </main>
