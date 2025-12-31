@@ -20,7 +20,7 @@ return new class extends Migration
             ['name' => 'شمال غزة'],
             ['name' => 'خانيونس'],
             ['name' => 'رفح'],
-            ['name' => 'دير البلح'],
+            ['name' => 'محافظات الوسطى'],
         ];
 
         foreach ($governorates as $gov) {

@@ -22,23 +22,43 @@ return new class extends Migration
             $table->softDeletes();
         });
 
-        // Seed data
+        // Seed data: Centers from image (Medical) + HQ units (Non-Medical)
         $administratives = [
-            ['title' => 'مستشفى الأمل', 'governorate' => 'خانيونس'],
-            ['title' => 'مدينة الأمل', 'governorate' => 'خانيونس'],
-            ['title' => 'مستشفى المواصي', 'governorate' => 'خانيونس'],
-            ['title' => 'مدينة القدس', 'governorate' => 'غزة'],
-            ['title' => 'مستشفى القدس', 'governorate' => 'غزة'],
-            ['title' => 'مستشفى السرايا', 'governorate' => 'غزة'],
+            // Medical Centers (from image)
+            ['title' => 'مستشفى السرايا الميداني', 'governorate' => 'غزة', 'is_medical' => true],
+            ['title' => 'مستشفى القدس', 'governorate' => 'غزة', 'is_medical' => true],
+            ['title' => 'مستشفى المواصي الميداني', 'governorate' => 'خانيونس', 'is_medical' => true],
+            ['title' => 'مستشفى الأمل', 'governorate' => 'خانيونس', 'is_medical' => true],
+            ['title' => 'النقطة الطبية المينا', 'governorate' => 'خانيونس', 'is_medical' => true],
+            ['title' => 'النقطة الطبية مواصي القرارة', 'governorate' => 'خانيونس', 'is_medical' => true],
+            ['title' => 'عيادة المواصي', 'governorate' => 'خانيونس', 'is_medical' => true],
+            ['title' => 'عيادة م.الأمل', 'governorate' => 'خانيونس', 'is_medical' => true],
+            ['title' => 'النقطة الطبية الزوايدة', 'governorate' => 'محافظات الوسطى', 'is_medical' => true],
+            ['title' => 'النقطة الطبية النصيرات', 'governorate' => 'محافظات الوسطى', 'is_medical' => true],
+            ['title' => 'النقطة الطبية السوارحة', 'governorate' => 'محافظات الوسطى', 'is_medical' => true],
+            ['title' => 'عيادة مركز فتحي عرفات الطبي', 'governorate' => 'محافظات الوسطى', 'is_medical' => true],
+            ['title' => 'النقطة الطبية المغازي', 'governorate' => 'محافظات الوسطى', 'is_medical' => true],
+            ['title' => 'النقطة الطبية البريج', 'governorate' => 'محافظات الوسطى', 'is_medical' => true],
+            ['title' => 'النقطة الطبية الصحابة', 'governorate' => 'غزة', 'is_medical' => true],
+            ['title' => 'النقطة الطبية الصبرة', 'governorate' => 'غزة', 'is_medical' => true],
+            ['title' => 'النقطة الطبية السرايا', 'governorate' => 'غزة', 'is_medical' => true],
+            ['title' => 'النقطة الطبية القدس', 'governorate' => 'غزة', 'is_medical' => true],
+            ['title' => 'النقطة الطبية الشمال', 'governorate' => 'غزة', 'is_medical' => true],
+            ['title' => 'النقطة الطبية الزيتون', 'governorate' => 'غزة', 'is_medical' => true],
+
+            // Non-Medical Administratives
+            ['title' => 'مدينة النور', 'governorate' => 'غزة', 'is_medical' => false],
+            ['title' => 'مدينة القدس', 'governorate' => 'غزة', 'is_medical' => false],
+            ['title' => 'مدينة الأمل', 'governorate' => 'خانيونس', 'is_medical' => false],
         ];
 
-        foreach ($administratives as $administrative) {
-            $governorate = Governorate::where('name', $administrative['governorate'])->first();
+        foreach ($administratives as $adm) {
+            $governorate = Governorate::where('name', $adm['governorate'])->first();
 
             Administrative::create([
-                'title' => $administrative['title'],
+                'title' => $adm['title'],
                 'governorate_id' => $governorate?->id,
-                'is_medical' => str_contains($administrative['title'], 'مستشفى'),
+                'is_medical' => $adm['is_medical'],
             ]);
         }
     }
