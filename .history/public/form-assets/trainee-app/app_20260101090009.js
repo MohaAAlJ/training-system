@@ -155,12 +155,6 @@ async function loadOptions(select, url, fallbackData, labelKey = "name") {
         if (!res.ok) throw new Error("Request failed");
         const data = await res.json();
         populateOptions(select, data, labelKey);
-
-        // Auto-select if only 1 option for training_type
-        if (data.length === 1 && select.id === "training_type") {
-            select.value = data[0].id;
-            select.dispatchEvent(new Event("change"));
-        }
     } catch (err) {
         populateOptions(select, fallbackData, labelKey);
     }

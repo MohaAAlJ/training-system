@@ -15,8 +15,6 @@ class GeneralSetting extends Model
         'dept_head_can_enable_section',
         'hide_full_sections',
         'is_public_form_enabled',
-        'enable_training_type_practice',
-        'enable_training_type_university',
     ];
 
     protected $casts = [
@@ -26,8 +24,6 @@ class GeneralSetting extends Model
         'dept_head_can_enable_section' => 'boolean',
         'hide_full_sections' => 'boolean',
         'is_public_form_enabled' => 'boolean',
-        'enable_training_type_practice' => 'boolean',
-        'enable_training_type_university' => 'boolean',
     ];
 
     /**
