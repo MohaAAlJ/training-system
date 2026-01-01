@@ -1,11 +1,41 @@
-w/* --- BASE LAYOUT --- */
+/* --- BASE LAYOUT --- */
 body {
     background-color: #f3f4f6 !important;
 }
 
-body:has(.fi-sidebar) {
-    padding-inline-start: 21rem !important; /* Sidebar 18rem + Gap 3rem */
+/* Desktop-only Layout Adjustments */
+@media (min-width: 1024px) {
+    body:has(.fi-sidebar) {
+        padding-inline-start: 21rem !important; /* Sidebar 18rem + Gap 3rem */
+    }
+
+    .fi-sidebar {
+        position: fixed !important;
+        top: 1.5rem !important; /* Aligned with Main Content Top */
+        inset-inline-start: 1.5rem !important;
+        z-index: 10 !important;
+        width: 18rem !important;
+        height: calc(100vh - 3rem) !important;
+        border-radius: 2rem !important;
+    }
+
+    .fi-main,
+    .fi-layout main {
+        margin: 1.5rem !important; /* Aligned with Sidebar Top */
+        border-radius: 2rem !important;
+        padding: 2.5rem !important;
+        min-height: calc(100vh - 3rem) !important;
+    }
+
+    .fi-topbar {
+        position: sticky !important;
+        top: 1.5rem !important;
+        z-index: 20 !important;
+        margin: 1.5rem !important;
+        border-radius: 1.5rem !important;
+    }
 }
+
 .dark body {
     background-color: #030712 !important;
 }
@@ -16,18 +46,8 @@ body:has(.fi-sidebar) {
 }
 
 .fi-sidebar {
-    position: fixed !important;
-    top: 1.5rem !important; /* Aligned with Main Content Top */
-    inset-inline-start: 1.5rem !important;
-    z-index: 10 !important;
-
     background-color: rgba(255, 255, 255, 0.6) !important;
     backdrop-filter: blur(16px) !important;
-
-    width: 18rem !important;
-    height: calc(100vh - 3rem) !important;
-    border-radius: 2rem !important;
-
     border: 1px solid rgba(255, 255, 255, 0.4) !important;
     box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.1),
         0 0 20px rgba(239, 68, 68, 0.1) !important;
@@ -64,11 +84,7 @@ body:has(.fi-sidebar) {
 .fi-main,
 .fi-layout main {
     background-color: white !important;
-    margin: 1.5rem !important; /* Aligned with Sidebar Top */
-    border-radius: 2rem !important;
     box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.05) !important;
-    padding: 2.5rem !important;
-    min-height: calc(100vh - 3rem) !important;
 }
 
 .dark .fi-main,
@@ -78,14 +94,9 @@ body:has(.fi-sidebar) {
 }
 
 .fi-topbar {
-    position: sticky !important;
-    top: 1.5rem !important;
-    z-index: 20 !important;
     background-color: rgba(255, 255, 255, 0.8) !important;
     backdrop-filter: blur(12px) !important;
-    margin: 1.5rem !important;
     border: 1px solid rgba(255, 255, 255, 0.4) !important;
-    border-radius: 1.5rem !important;
     box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.1) !important;
 }
 

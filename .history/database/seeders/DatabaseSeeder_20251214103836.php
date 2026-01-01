@@ -1,0 +1,26 @@
+<?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+
+class DatabaseSeeder extends Seeder
+{
+    public function run(): void
+{
+    // 1. أولاً: إدخال الهيكل الأكاديمي الحقيقي (جامعات - كليات - تخصصات)
+    // هذا السيدر هو الذي يحتوي المصفوفة الضخمة التي كتبناها سابقاً
+    $this->call(RealDataSeeder::class); 
+
+    $this->call([
+        UserSeeder::class,         
+        AdministrativesSeeder::class, 
+        DepartmentsSeeder::class,     
+    ]);
+
+
+    $this->call(TraineesSeeder::class);
+    
+    $this->call(ApplicationsSeeder::class);
+}
+}
