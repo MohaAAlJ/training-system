@@ -28,35 +28,6 @@ class GeneralSettingForm
                             ->helperText('عند تفعيل هذا الخيار، سيتمكن المتدربون من تقديم الطلبات عبر البوابة العامة. عند التعطيل، سيتم إغلاق البوابة أمام الطلبات الجديدة.')
                             ->default(true)
                             ->live(),
-
-                        Grid::make(2)
-                            ->schema([
-                                Toggle::make('enable_training_type_practice')
-                                    ->label('تفعيل تدريب المزاولة')
-                                    ->helperText('إتاحة خيار تدريب المزاولة في نموذج الالتحاق.')
-                                    ->default(true)
-                                    ->rules([
-                                        fn(callable $get) => function (string $attribute, $value, \Closure $fail) use ($get) {
-                                            if (!$value && !$get('enable_training_type_university')) {
-                                                $fail('يجب تفعيل نوع واحد على الأقل من التدريب.');
-                                            }
-                                        },
-                                    ])
-                                    ->live(),
-
-                                Toggle::make('enable_training_type_university')
-                                    ->label('تفعيل تدريب الجامعات')
-                                    ->helperText('إتاحة خيار تدريب الجامعات في نموذج الالتحاق.')
-                                    ->default(true)
-                                    ->rules([
-                                        fn(callable $get) => function (string $attribute, $value, \Closure $fail) use ($get) {
-                                            if (!$value && !$get('enable_training_type_practice')) {
-                                                $fail('يجب تفعيل نوع واحد على الأقل من التدريب.');
-                                            }
-                                        },
-                                    ])
-                                    ->live(),
-                            ]),
                     ]),
 
                 Section::make('صلاحيات رؤساء الوحدات الإدارية (HOA)')

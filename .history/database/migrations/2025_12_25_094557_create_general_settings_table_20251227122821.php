@@ -19,8 +19,6 @@ return new class extends Migration
             $table->boolean('dept_head_can_enable_section')->default(false);
             $table->boolean('hide_full_sections')->default(true);
             $table->boolean('is_public_form_enabled')->default(true);
-            $table->boolean('enable_training_type_practice')->default(true);
-            $table->boolean('enable_training_type_university')->default(true);
             $table->timestamps();
         });
 

@@ -35,14 +35,8 @@ class ApplicationFormController extends Controller
      */
     public function showForm()
     {
-        $settings = \App\Models\GeneralSetting::instance();
-
-        if (!$settings->is_public_form_enabled) {
+        if (!\App\Models\GeneralSetting::instance()->is_public_form_enabled) {
             return redirect()->route('training.welcome')->with('error', 'نعتذر، نموذج الالتحاق مغلق حالياً.');
-        }
-
-        if (!$settings->enable_training_type_university && !$settings->enable_training_type_practice) {
-            return redirect()->route('training.welcome')->with('error', 'نعتذر، لا توجد أنواع تدريب متاحة حالياً.');
         }
 
         return view('Form.trainee-app.index');
@@ -190,7 +184,7 @@ class ApplicationFormController extends Controller
         if ($trainingType == Application::TRAINING_TYPE_PRACTICE) {
             // Ensure we only get sections that belong to medical departments
             // This is redundant if department_id is filtered, but good for safety
-            $query->whereHas('department', function ($q) {
+             $query->whereHas('department', function ($q) {
                 $q->where('is_medical', true);
             });
         }
@@ -229,16 +223,10 @@ class ApplicationFormController extends Controller
 
     public function trainingType()
     {
-        $settings = \App\Models\GeneralSetting::instance();
-        $data = [];
-
-        if ($settings->enable_training_type_university) {
-            $data[] = ['id' => Application::TRAINING_TYPE_UNIVERSITY, 'name' => Application::TRAINING_TYPES[Application::TRAINING_TYPE_UNIVERSITY]];
-        }
-
-        if ($settings->enable_training_type_practice) {
-            $data[] = ['id' => Application::TRAINING_TYPE_PRACTICE, 'name' => Application::TRAINING_TYPES[Application::TRAINING_TYPE_PRACTICE]];
-        }
+        $data = [
+            ['id' => Application::TRAINING_TYPE_UNIVERSITY, 'name' => Application::TRAINING_TYPES[Application::TRAINING_TYPE_UNIVERSITY]],
+            ['id' => Application::TRAINING_TYPE_PRACTICE, 'name' => Application::TRAINING_TYPES[Application::TRAINING_TYPE_PRACTICE]],
+        ];
 
         return response()->json($data);
     }

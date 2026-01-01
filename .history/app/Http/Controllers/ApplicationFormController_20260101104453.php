@@ -35,14 +35,8 @@ class ApplicationFormController extends Controller
      */
     public function showForm()
     {
-        $settings = \App\Models\GeneralSetting::instance();
-
-        if (!$settings->is_public_form_enabled) {
+        if (!\App\Models\GeneralSetting::instance()->is_public_form_enabled) {
             return redirect()->route('training.welcome')->with('error', 'نعتذر، نموذج الالتحاق مغلق حالياً.');
-        }
-
-        if (!$settings->enable_training_type_university && !$settings->enable_training_type_practice) {
-            return redirect()->route('training.welcome')->with('error', 'نعتذر، لا توجد أنواع تدريب متاحة حالياً.');
         }
 
         return view('Form.trainee-app.index');
