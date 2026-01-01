@@ -80,6 +80,12 @@ body {
     color: #ef4444 !important;
 }
 
+.dark .fi-sidebar-item.fi-active > a,
+.dark .fi-sidebar-item.fi-active > button {
+    box-shadow: 0 0 12px 2px rgba(239, 68, 68, 0.6) !important;
+    color: #ef4444 !important;
+}
+
 /* --- MAIN CONTENT & TOPBAR --- */
 .fi-main,
 .fi-layout main {
@@ -111,6 +117,12 @@ h1,
     text-shadow: 0 0 15px rgba(239, 68, 68, 0.4) !important;
 }
 
+.dark .fi-header-heading,
+.dark h1,
+.dark [style*="font-size:1.8rem"] {
+    text-shadow: 0 0 15px rgba(239, 68, 68, 0.6) !important;
+}
+
 /* Topbar Glow */
 .fi-topbar {
     box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.1),
@@ -135,6 +147,17 @@ h1,
     transform: scale(1.05) !important;
 }
 
+.dark .fi-topbar-database-notifications-button button,
+.dark .fi-topbar-user-menu-button button {
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.5) !important;
+    transition: all 0.3s ease !important;
+}
+.dark .fi-topbar-database-notifications-button button:hover,
+.dark .fi-topbar-user-menu-button button:hover {
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.7) !important;
+    transform: scale(1.05) !important;
+}
+
 /* Sidebar Icons & Labels Glow */
 .fi-sidebar-item-icon {
     filter: drop-shadow(0 0 5px rgba(239, 68, 68, 0.3)) !important;
@@ -143,14 +166,30 @@ h1,
     text-shadow: 0 0 8px rgba(239, 68, 68, 0.2) !important;
 }
 
+.dark .fi-sidebar-item-icon {
+    filter: drop-shadow(0 0 5px rgba(239, 68, 68, 0.5)) !important;
+}
+.dark .fi-sidebar-item-label {
+    text-shadow: 0 0 8px rgba(239, 68, 68, 0.4) !important;
+}
+
 /* Badges Glow */
 .fi-badge {
     box-shadow: 0 0 8px rgba(0, 0, 0, 0.05),
         0 0 12px var(--badge-color, rgba(239, 68, 68, 0.2)) !important;
 }
 
+.dark .fi-badge {
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.05),
+        0 0 12px var(--badge-color, rgba(239, 68, 68, 0.4)) !important;
+}
+
 .fi-ta-ctn {
     box-shadow: 0 0 20px rgba(239, 68, 68, 0.1) !important;
+}
+
+.dark .fi-ta-ctn {
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.3) !important;
 }
 
 /* Group Labels */
