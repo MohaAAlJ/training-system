@@ -26,85 +26,377 @@ return new class extends Migration
             $table->softDeletes();
         });
 
-        // Pharmacy capacities from the image (Mapped to new administrative titles)
-        $pharmacyCapacities = [
-            'مستشفى السرايا الميداني' => 3,
-            'مستشفى القدس' => 3,
-            'مستشفى المواصي الميداني' => 2,
-            'مستشفى الأمل' => 3,
-            'النقطة الطبية المينا' => 2,
-            'النقطة الطبية مواصي القرارة' => 2,
-            'عيادة المواصي' => 3,
-            'عيادة م.الأمل' => 5,
-            'النقطة الطبية الزوايدة' => 2,
-            'النقطة الطبية النصيرات' => 2,
-            'النقطة الطبية السوارحة' => 2,
-            'عيادة مركز فتحي عرفات الطبي' => 5,
-            'النقطة الطبية المغازي' => 2,
-            'النقطة الطبية البريج' => 2,
-            'النقطة الطبية الصحابة' => 2,
-            'النقطة الطبية الصبرة' => 2,
-            'النقطة الطبية السرايا' => 2,
-            'النقطة الطبية القدس' => 2,
-            'النقطة الطبية الشمال' => 2,
-            'النقطة الطبية الزيتون' => 2,
+        $sections = [
+            // ============================================
+            // مستشفى الأمل (Admin ID: 1) - HOSPITAL - خانيونس
+            // ALL SECTIONS (Medical + Administrative)
+            // ============================================
+            ['administrative_id' => 1, 'department_id' => 1, 'section_name' => 'طب عام', 'capacity' => 8],
+            ['administrative_id' => 1, 'department_id' => 2, 'section_name' => 'طوارئ', 'capacity' => 10],
+            ['administrative_id' => 1, 'department_id' => 3, 'section_name' => 'صيدلة', 'capacity' => 3],
+            ['administrative_id' => 1, 'department_id' => 4, 'section_name' => 'مختبرات', 'capacity' => 5],
+            ['administrative_id' => 1, 'department_id' => 5, 'section_name' => 'أشعة', 'capacity' => 6],
+            ['administrative_id' => 1, 'department_id' => 6, 'section_name' => 'تمريض', 'capacity' => 9],
+            ['administrative_id' => 1, 'department_id' => 7, 'section_name' => 'علاج طبيعي', 'capacity' => 4],
+            ['administrative_id' => 1, 'department_id' => 8, 'section_name' => 'علاج وظيفي', 'capacity' => 3],
+            ['administrative_id' => 1, 'department_id' => 9, 'section_name' => 'صحة نفسية', 'capacity' => 4],
+            ['administrative_id' => 1, 'department_id' => 10, 'section_name' => 'أسنان', 'capacity' => 3],
+            ['administrative_id' => 1, 'department_id' => 11, 'section_name' => 'رعاية', 'capacity' => 7],
+            ['administrative_id' => 1, 'department_id' => 12, 'section_name' => 'إدارة', 'capacity' => 3],
+            ['administrative_id' => 1, 'department_id' => 13, 'section_name' => 'مالية', 'capacity' => 2],
+            ['administrative_id' => 1, 'department_id' => 14, 'section_name' => 'موارد بشرية', 'capacity' => 3],
+            ['administrative_id' => 1, 'department_id' => 15, 'section_name' => 'تكنولوجيا المعلومات', 'capacity' => 4],
+            ['administrative_id' => 1, 'department_id' => 16, 'section_name' => 'الإعلام والعلاقات العامة', 'capacity' => 2],
+            ['administrative_id' => 1, 'department_id' => 17, 'section_name' => 'تدريب وتأهيل', 'capacity' => 5],
+            // Medical sub-sections under طب عام
+            ['administrative_id' => 1, 'department_id' => 1, 'section_name' => 'أنف وأذن وحنجرة', 'capacity' => 3],
+            ['administrative_id' => 1, 'department_id' => 1, 'section_name' => 'أورام', 'capacity' => 4],
+            ['administrative_id' => 1, 'department_id' => 1, 'section_name' => 'جراحة', 'capacity' => 8],
+            ['administrative_id' => 1, 'department_id' => 1, 'section_name' => 'أطفال', 'capacity' => 7],
+            ['administrative_id' => 1, 'department_id' => 1, 'section_name' => 'نساء وولادة', 'capacity' => 9],
+            ['administrative_id' => 1, 'department_id' => 1, 'section_name' => 'عظام', 'capacity' => 6],
+            ['administrative_id' => 1, 'department_id' => 1, 'section_name' => 'قلب وأوعية دموية', 'capacity' => 6],
+            ['administrative_id' => 1, 'department_id' => 1, 'section_name' => 'عناية مركزة', 'capacity' => 7],
+            // Administrative sub-sections under إدارة
+            ['administrative_id' => 1, 'department_id' => 12, 'section_name' => 'مشتريات', 'capacity' => 2],
+            ['administrative_id' => 1, 'department_id' => 12, 'section_name' => 'خدمات عامة', 'capacity' => 3],
+            ['administrative_id' => 1, 'department_id' => 12, 'section_name' => 'صيانة', 'capacity' => 4],
+            ['administrative_id' => 1, 'department_id' => 12, 'section_name' => 'مخازن', 'capacity' => 3],
+            ['administrative_id' => 1, 'department_id' => 12, 'section_name' => 'شؤون قانونية', 'capacity' => 2],
+            ['administrative_id' => 1, 'department_id' => 12, 'section_name' => 'الأمن والسلامة', 'capacity' => 3],
+            ['administrative_id' => 1, 'department_id' => 12, 'section_name' => 'نظافة وإشراف بيئي', 'capacity' => 4],
+            ['administrative_id' => 1, 'department_id' => 12, 'section_name' => 'تخطيط وتطوير', 'capacity' => 2],
+
+            // ============================================
+            // مدينة الأمل (Admin ID: 2) - CITY - خانيونس
+            // ONLY ADMINISTRATIVE SECTIONS
+            // ============================================
+            ['administrative_id' => 2, 'department_id' => 12, 'section_name' => 'إدارة', 'capacity' => 5],
+            ['administrative_id' => 2, 'department_id' => 13, 'section_name' => 'مالية', 'capacity' => 4],
+            ['administrative_id' => 2, 'department_id' => 14, 'section_name' => 'موارد بشرية', 'capacity' => 4],
+            ['administrative_id' => 2, 'department_id' => 15, 'section_name' => 'تكنولوجيا المعلومات', 'capacity' => 6],
+            ['administrative_id' => 2, 'department_id' => 16, 'section_name' => 'الإعلام والعلاقات العامة', 'capacity' => 4],
+            ['administrative_id' => 2, 'department_id' => 17, 'section_name' => 'تدريب وتأهيل', 'capacity' => 6],
+            // Administrative sub-sections under إدارة
+            ['administrative_id' => 2, 'department_id' => 12, 'section_name' => 'مشتريات', 'capacity' => 4],
+            ['administrative_id' => 2, 'department_id' => 12, 'section_name' => 'خدمات عامة', 'capacity' => 5],
+            ['administrative_id' => 2, 'department_id' => 12, 'section_name' => 'صيانة', 'capacity' => 5],
+            ['administrative_id' => 2, 'department_id' => 12, 'section_name' => 'مخازن', 'capacity' => 4],
+            ['administrative_id' => 2, 'department_id' => 12, 'section_name' => 'شؤون قانونية', 'capacity' => 3],
+            ['administrative_id' => 2, 'department_id' => 12, 'section_name' => 'الأمن والسلامة', 'capacity' => 5],
+            ['administrative_id' => 2, 'department_id' => 12, 'section_name' => 'نظافة وإشراف بيئي', 'capacity' => 5],
+            ['administrative_id' => 2, 'department_id' => 12, 'section_name' => 'تخطيط وتطوير', 'capacity' => 4],
+
+            // ============================================
+            // مستشفى المواصي (Admin ID: 3) - HOSPITAL - خانيونس
+            // ALL SECTIONS (Medical + Administrative)
+            // ============================================
+            ['administrative_id' => 3, 'department_id' => 1, 'section_name' => 'طب عام', 'capacity' => 7],
+            ['administrative_id' => 3, 'department_id' => 2, 'section_name' => 'طوارئ', 'capacity' => 9],
+            ['administrative_id' => 3, 'department_id' => 3, 'section_name' => 'صيدلة', 'capacity' => 2],
+            ['administrative_id' => 3, 'department_id' => 4, 'section_name' => 'مختبرات', 'capacity' => 6],
+            ['administrative_id' => 3, 'department_id' => 5, 'section_name' => 'أشعة', 'capacity' => 5],
+            ['administrative_id' => 3, 'department_id' => 6, 'section_name' => 'تمريض', 'capacity' => 10],
+            ['administrative_id' => 3, 'department_id' => 7, 'section_name' => 'علاج طبيعي', 'capacity' => 3],
+            ['administrative_id' => 3, 'department_id' => 8, 'section_name' => 'علاج وظيفي', 'capacity' => 2],
+            ['administrative_id' => 3, 'department_id' => 9, 'section_name' => 'صحة نفسية', 'capacity' => 3],
+            ['administrative_id' => 3, 'department_id' => 10, 'section_name' => 'أسنان', 'capacity' => 4],
+            ['administrative_id' => 3, 'department_id' => 11, 'section_name' => 'رعاية', 'capacity' => 6],
+            ['administrative_id' => 3, 'department_id' => 12, 'section_name' => 'إدارة', 'capacity' => 3],
+            ['administrative_id' => 3, 'department_id' => 13, 'section_name' => 'مالية', 'capacity' => 2],
+            ['administrative_id' => 3, 'department_id' => 14, 'section_name' => 'موارد بشرية', 'capacity' => 3],
+            ['administrative_id' => 3, 'department_id' => 15, 'section_name' => 'تكنولوجيا المعلومات', 'capacity' => 4],
+            ['administrative_id' => 3, 'department_id' => 16, 'section_name' => 'الإعلام والعلاقات العامة', 'capacity' => 2],
+            ['administrative_id' => 3, 'department_id' => 17, 'section_name' => 'تدريب وتأهيل', 'capacity' => 4],
+            // Medical sub-sections under طب عام
+            ['administrative_id' => 3, 'department_id' => 1, 'section_name' => 'أنف وأذن وحنجرة', 'capacity' => 3],
+            ['administrative_id' => 3, 'department_id' => 1, 'section_name' => 'أورام', 'capacity' => 3],
+            ['administrative_id' => 3, 'department_id' => 1, 'section_name' => 'جراحة', 'capacity' => 7],
+            ['administrative_id' => 3, 'department_id' => 1, 'section_name' => 'أطفال', 'capacity' => 6],
+            ['administrative_id' => 3, 'department_id' => 1, 'section_name' => 'نساء وولادة', 'capacity' => 8],
+            ['administrative_id' => 3, 'department_id' => 1, 'section_name' => 'عظام', 'capacity' => 5],
+            ['administrative_id' => 3, 'department_id' => 1, 'section_name' => 'قلب وأوعية دموية', 'capacity' => 6],
+            ['administrative_id' => 3, 'department_id' => 1, 'section_name' => 'عناية مركزة', 'capacity' => 6],
+            // Administrative sub-sections under إدارة
+            ['administrative_id' => 3, 'department_id' => 12, 'section_name' => 'مشتريات', 'capacity' => 2],
+            ['administrative_id' => 3, 'department_id' => 12, 'section_name' => 'خدمات عامة', 'capacity' => 3],
+            ['administrative_id' => 3, 'department_id' => 12, 'section_name' => 'صيانة', 'capacity' => 4],
+            ['administrative_id' => 3, 'department_id' => 12, 'section_name' => 'مخازن', 'capacity' => 3],
+            ['administrative_id' => 3, 'department_id' => 12, 'section_name' => 'شؤون قانونية', 'capacity' => 2],
+            ['administrative_id' => 3, 'department_id' => 12, 'section_name' => 'الأمن والسلامة', 'capacity' => 3],
+            ['administrative_id' => 3, 'department_id' => 12, 'section_name' => 'نظافة وإشراف بيئي', 'capacity' => 4],
+            ['administrative_id' => 3, 'department_id' => 12, 'section_name' => 'تخطيط وتطوير', 'capacity' => 2],
+
+            // ============================================
+            // مدينة القدس (Admin ID: 4) - CITY - غزة
+            // ONLY ADMINISTRATIVE SECTIONS
+            // ============================================
+            ['administrative_id' => 4, 'department_id' => 12, 'section_name' => 'إدارة', 'capacity' => 6],
+            ['administrative_id' => 4, 'department_id' => 13, 'section_name' => 'مالية', 'capacity' => 4],
+            ['administrative_id' => 4, 'department_id' => 14, 'section_name' => 'موارد بشرية', 'capacity' => 5],
+            ['administrative_id' => 4, 'department_id' => 15, 'section_name' => 'تكنولوجيا المعلومات', 'capacity' => 6],
+            ['administrative_id' => 4, 'department_id' => 16, 'section_name' => 'الإعلام والعلاقات العامة', 'capacity' => 5],
+            ['administrative_id' => 4, 'department_id' => 17, 'section_name' => 'تدريب وتأهيل', 'capacity' => 6],
+            // Administrative sub-sections under إدارة
+            ['administrative_id' => 4, 'department_id' => 12, 'section_name' => 'مشتريات', 'capacity' => 4],
+            ['administrative_id' => 4, 'department_id' => 12, 'section_name' => 'خدمات عامة', 'capacity' => 5],
+            ['administrative_id' => 4, 'department_id' => 12, 'section_name' => 'صيانة', 'capacity' => 5],
+            ['administrative_id' => 4, 'department_id' => 12, 'section_name' => 'مخازن', 'capacity' => 4],
+            ['administrative_id' => 4, 'department_id' => 12, 'section_name' => 'شؤون قانونية', 'capacity' => 4],
+            ['administrative_id' => 4, 'department_id' => 12, 'section_name' => 'الأمن والسلامة', 'capacity' => 5],
+            ['administrative_id' => 4, 'department_id' => 12, 'section_name' => 'نظافة وإشراف بيئي', 'capacity' => 5],
+            ['administrative_id' => 4, 'department_id' => 12, 'section_name' => 'تخطيط وتطوير', 'capacity' => 4],
+
+            // ============================================
+            // مستشفى القدس (Admin ID: 5) - HOSPITAL - غزة
+            // ALL SECTIONS (Medical + Administrative)
+            // ============================================
+            ['administrative_id' => 5, 'department_id' => 1, 'section_name' => 'طب عام', 'capacity' => 9],
+            ['administrative_id' => 5, 'department_id' => 2, 'section_name' => 'طوارئ', 'capacity' => 10],
+            ['administrative_id' => 5, 'department_id' => 3, 'section_name' => 'صيدلة', 'capacity' => 3],
+            ['administrative_id' => 5, 'department_id' => 4, 'section_name' => 'مختبرات', 'capacity' => 6],
+            ['administrative_id' => 5, 'department_id' => 5, 'section_name' => 'أشعة', 'capacity' => 7],
+            ['administrative_id' => 5, 'department_id' => 6, 'section_name' => 'تمريض', 'capacity' => 10],
+            ['administrative_id' => 5, 'department_id' => 7, 'section_name' => 'علاج طبيعي', 'capacity' => 4],
+            ['administrative_id' => 5, 'department_id' => 8, 'section_name' => 'علاج وظيفي', 'capacity' => 3],
+            ['administrative_id' => 5, 'department_id' => 9, 'section_name' => 'صحة نفسية', 'capacity' => 5],
+            ['administrative_id' => 5, 'department_id' => 10, 'section_name' => 'أسنان', 'capacity' => 4],
+            ['administrative_id' => 5, 'department_id' => 11, 'section_name' => 'رعاية', 'capacity' => 8],
+            ['administrative_id' => 5, 'department_id' => 12, 'section_name' => 'إدارة', 'capacity' => 4],
+            ['administrative_id' => 5, 'department_id' => 13, 'section_name' => 'مالية', 'capacity' => 3],
+            ['administrative_id' => 5, 'department_id' => 14, 'section_name' => 'موارد بشرية', 'capacity' => 3],
+            ['administrative_id' => 5, 'department_id' => 15, 'section_name' => 'تكنولوجيا المعلومات', 'capacity' => 4],
+            ['administrative_id' => 5, 'department_id' => 16, 'section_name' => 'الإعلام والعلاقات العامة', 'capacity' => 3],
+            ['administrative_id' => 5, 'department_id' => 17, 'section_name' => 'تدريب وتأهيل', 'capacity' => 5],
+            // Medical sub-sections under طب عام
+            ['administrative_id' => 5, 'department_id' => 1, 'section_name' => 'أنف وأذن وحنجرة', 'capacity' => 4],
+            ['administrative_id' => 5, 'department_id' => 1, 'section_name' => 'أورام', 'capacity' => 4],
+            ['administrative_id' => 5, 'department_id' => 1, 'section_name' => 'جراحة', 'capacity' => 9],
+            ['administrative_id' => 5, 'department_id' => 1, 'section_name' => 'أطفال', 'capacity' => 8],
+            ['administrative_id' => 5, 'department_id' => 1, 'section_name' => 'نساء وولادة', 'capacity' => 10],
+            ['administrative_id' => 5, 'department_id' => 1, 'section_name' => 'عظام', 'capacity' => 7],
+            ['administrative_id' => 5, 'department_id' => 1, 'section_name' => 'قلب وأوعية دموية', 'capacity' => 7],
+            ['administrative_id' => 5, 'department_id' => 1, 'section_name' => 'عناية مركزة', 'capacity' => 7],
+            // Administrative sub-sections under إدارة
+            ['administrative_id' => 5, 'department_id' => 12, 'section_name' => 'مشتريات', 'capacity' => 3],
+            ['administrative_id' => 5, 'department_id' => 12, 'section_name' => 'خدمات عامة', 'capacity' => 4],
+            ['administrative_id' => 5, 'department_id' => 12, 'section_name' => 'صيانة', 'capacity' => 4],
+            ['administrative_id' => 5, 'department_id' => 12, 'section_name' => 'مخازن', 'capacity' => 3],
+            ['administrative_id' => 5, 'department_id' => 12, 'section_name' => 'شؤون قانونية', 'capacity' => 2],
+            ['administrative_id' => 5, 'department_id' => 12, 'section_name' => 'الأمن والسلامة', 'capacity' => 3],
+            ['administrative_id' => 5, 'department_id' => 12, 'section_name' => 'نظافة وإشراف بيئي', 'capacity' => 4],
+            ['administrative_id' => 5, 'department_id' => 12, 'section_name' => 'تخطيط وتطوير', 'capacity' => 3],
+
+            // ============================================
+            // مستشفى السرايا (Admin ID: 6) - HOSPITAL - غزة
+            // ALL SECTIONS (Medical + Administrative)
+            // ============================================
+            ['administrative_id' => 6, 'department_id' => 1, 'section_name' => 'طب عام', 'capacity' => 7],
+            ['administrative_id' => 6, 'department_id' => 2, 'section_name' => 'طوارئ', 'capacity' => 8],
+            ['administrative_id' => 6, 'department_id' => 3, 'section_name' => 'صيدلة', 'capacity' => 3],
+            ['administrative_id' => 6, 'department_id' => 4, 'section_name' => 'مختبرات', 'capacity' => 5],
+            ['administrative_id' => 6, 'department_id' => 5, 'section_name' => 'أشعة', 'capacity' => 6],
+            ['administrative_id' => 6, 'department_id' => 6, 'section_name' => 'تمريض', 'capacity' => 9],
+            ['administrative_id' => 6, 'department_id' => 7, 'section_name' => 'علاج طبيعي', 'capacity' => 3],
+            ['administrative_id' => 6, 'department_id' => 8, 'section_name' => 'علاج وظيفي', 'capacity' => 3],
+            ['administrative_id' => 6, 'department_id' => 9, 'section_name' => 'صحة نفسية', 'capacity' => 4],
+            ['administrative_id' => 6, 'department_id' => 10, 'section_name' => 'أسنان', 'capacity' => 3],
+            ['administrative_id' => 6, 'department_id' => 11, 'section_name' => 'رعاية', 'capacity' => 6],
+            ['administrative_id' => 6, 'department_id' => 12, 'section_name' => 'إدارة', 'capacity' => 3],
+            ['administrative_id' => 6, 'department_id' => 13, 'section_name' => 'مالية', 'capacity' => 2],
+            ['administrative_id' => 6, 'department_id' => 14, 'section_name' => 'موارد بشرية', 'capacity' => 3],
+            ['administrative_id' => 6, 'department_id' => 15, 'section_name' => 'تكنولوجيا المعلومات', 'capacity' => 4],
+            ['administrative_id' => 6, 'department_id' => 16, 'section_name' => 'الإعلام والعلاقات العامة', 'capacity' => 2],
+            ['administrative_id' => 6, 'department_id' => 17, 'section_name' => 'تدريب وتأهيل', 'capacity' => 4],
+            // Medical sub-sections under طب عام
+            ['administrative_id' => 6, 'department_id' => 1, 'section_name' => 'أنف وأذن وحنجرة', 'capacity' => 3],
+            ['administrative_id' => 6, 'department_id' => 1, 'section_name' => 'أورام', 'capacity' => 3],
+            ['administrative_id' => 6, 'department_id' => 1, 'section_name' => 'جراحة', 'capacity' => 7],
+            ['administrative_id' => 6, 'department_id' => 1, 'section_name' => 'أطفال', 'capacity' => 7],
+            ['administrative_id' => 6, 'department_id' => 1, 'section_name' => 'نساء وولادة', 'capacity' => 8],
+            ['administrative_id' => 6, 'department_id' => 1, 'section_name' => 'عظام', 'capacity' => 5],
+            ['administrative_id' => 6, 'department_id' => 1, 'section_name' => 'قلب وأوعية دموية', 'capacity' => 6],
+            ['administrative_id' => 6, 'department_id' => 1, 'section_name' => 'عناية مركزة', 'capacity' => 6],
+            // Administrative sub-sections under إدارة
+            ['administrative_id' => 6, 'department_id' => 12, 'section_name' => 'مشتريات', 'capacity' => 2],
+            ['administrative_id' => 6, 'department_id' => 12, 'section_name' => 'خدمات عامة', 'capacity' => 3],
+            ['administrative_id' => 6, 'department_id' => 12, 'section_name' => 'صيانة', 'capacity' => 4],
+            ['administrative_id' => 6, 'department_id' => 12, 'section_name' => 'مخازن', 'capacity' => 3],
+            ['administrative_id' => 6, 'department_id' => 12, 'section_name' => 'شؤون قانونية', 'capacity' => 2],
+            ['administrative_id' => 6, 'department_id' => 12, 'section_name' => 'الأمن والسلامة', 'capacity' => 3],
+            ['administrative_id' => 6, 'department_id' => 12, 'section_name' => 'نظافة وإشراف بيئي', 'capacity' => 4],
+            ['administrative_id' => 6, 'department_id' => 12, 'section_name' => 'تخطيط وتطوير', 'capacity' => 2],
+
+            // ============================================
+            // النقاط الطبية والعيادات (Admin IDs 7-22)
+            // MEDICAL CENTERS - SIMPLIFIED SECTIONS
+            // ============================================
+            // Admin ID 7: النقطة الطبية المينا
+            ['administrative_id' => 7, 'department_id' => 1, 'section_name' => 'طب عام', 'capacity' => 5],
+            ['administrative_id' => 7, 'department_id' => 3, 'section_name' => 'صيدلة', 'capacity' => 2],
+            ['administrative_id' => 7, 'department_id' => 4, 'section_name' => 'مختبرات', 'capacity' => 3],
+            ['administrative_id' => 7, 'department_id' => 6, 'section_name' => 'تمريض', 'capacity' => 4],
+            ['administrative_id' => 7, 'department_id' => 11, 'section_name' => 'رعاية', 'capacity' => 3],
+            ['administrative_id' => 7, 'department_id' => 13, 'section_name' => 'مالية', 'capacity' => 1],
+            ['administrative_id' => 7, 'department_id' => 12, 'section_name' => 'إدارة', 'capacity' => 2],
+
+            // Admin ID 8: النقطة الطبية مواصي القرارة
+            ['administrative_id' => 8, 'department_id' => 1, 'section_name' => 'طب عام', 'capacity' => 5],
+            ['administrative_id' => 8, 'department_id' => 3, 'section_name' => 'صيدلة', 'capacity' => 2],
+            ['administrative_id' => 8, 'department_id' => 4, 'section_name' => 'مختبرات', 'capacity' => 3],
+            ['administrative_id' => 8, 'department_id' => 6, 'section_name' => 'تمريض', 'capacity' => 4],
+            ['administrative_id' => 8, 'department_id' => 11, 'section_name' => 'رعاية', 'capacity' => 3],
+            ['administrative_id' => 8, 'department_id' => 13, 'section_name' => 'مالية', 'capacity' => 1],
+            ['administrative_id' => 8, 'department_id' => 12, 'section_name' => 'إدارة', 'capacity' => 2],
+
+            // Admin ID 9: عيادة المواصي
+            ['administrative_id' => 9, 'department_id' => 1, 'section_name' => 'طب عام', 'capacity' => 4],
+            ['administrative_id' => 9, 'department_id' => 3, 'section_name' => 'صيدلة', 'capacity' => 3],
+            ['administrative_id' => 9, 'department_id' => 4, 'section_name' => 'مختبرات', 'capacity' => 2],
+            ['administrative_id' => 9, 'department_id' => 6, 'section_name' => 'تمريض', 'capacity' => 3],
+            ['administrative_id' => 9, 'department_id' => 11, 'section_name' => 'رعاية', 'capacity' => 2],
+            ['administrative_id' => 9, 'department_id' => 13, 'section_name' => 'مالية', 'capacity' => 1],
+            ['administrative_id' => 9, 'department_id' => 12, 'section_name' => 'إدارة', 'capacity' => 2],
+
+            // Admin ID 10: عيادة م.الأمل
+            ['administrative_id' => 10, 'department_id' => 1, 'section_name' => 'طب عام', 'capacity' => 4],
+            ['administrative_id' => 10, 'department_id' => 3, 'section_name' => 'صيدلة', 'capacity' => 5],
+            ['administrative_id' => 10, 'department_id' => 4, 'section_name' => 'مختبرات', 'capacity' => 2],
+            ['administrative_id' => 10, 'department_id' => 6, 'section_name' => 'تمريض', 'capacity' => 3],
+            ['administrative_id' => 10, 'department_id' => 11, 'section_name' => 'رعاية', 'capacity' => 2],
+            ['administrative_id' => 10, 'department_id' => 13, 'section_name' => 'مالية', 'capacity' => 1],
+            ['administrative_id' => 10, 'department_id' => 12, 'section_name' => 'إدارة', 'capacity' => 2],
+
+            // Admin ID 11: النقطة الطبية الزوايدة
+            ['administrative_id' => 11, 'department_id' => 1, 'section_name' => 'طب عام', 'capacity' => 5],
+            ['administrative_id' => 11, 'department_id' => 3, 'section_name' => 'صيدلة', 'capacity' => 2],
+            ['administrative_id' => 11, 'department_id' => 4, 'section_name' => 'مختبرات', 'capacity' => 3],
+            ['administrative_id' => 11, 'department_id' => 6, 'section_name' => 'تمريض', 'capacity' => 4],
+            ['administrative_id' => 11, 'department_id' => 11, 'section_name' => 'رعاية', 'capacity' => 3],
+            ['administrative_id' => 11, 'department_id' => 13, 'section_name' => 'مالية', 'capacity' => 1],
+            ['administrative_id' => 11, 'department_id' => 12, 'section_name' => 'إدارة', 'capacity' => 2],
+
+            // Admin ID 12: النقطة الطبية النصيرات
+            ['administrative_id' => 12, 'department_id' => 1, 'section_name' => 'طب عام', 'capacity' => 5],
+            ['administrative_id' => 12, 'department_id' => 3, 'section_name' => 'صيدلة', 'capacity' => 2],
+            ['administrative_id' => 12, 'department_id' => 4, 'section_name' => 'مختبرات', 'capacity' => 3],
+            ['administrative_id' => 12, 'department_id' => 6, 'section_name' => 'تمريض', 'capacity' => 4],
+            ['administrative_id' => 12, 'department_id' => 11, 'section_name' => 'رعاية', 'capacity' => 3],
+            ['administrative_id' => 12, 'department_id' => 13, 'section_name' => 'مالية', 'capacity' => 1],
+            ['administrative_id' => 12, 'department_id' => 12, 'section_name' => 'إدارة', 'capacity' => 2],
+
+            // Admin ID 13: النقطة الطبية السوارحة
+            ['administrative_id' => 13, 'department_id' => 1, 'section_name' => 'طب عام', 'capacity' => 4],
+            ['administrative_id' => 13, 'department_id' => 3, 'section_name' => 'صيدلة', 'capacity' => 2],
+            ['administrative_id' => 13, 'department_id' => 4, 'section_name' => 'مختبرات', 'capacity' => 2],
+            ['administrative_id' => 13, 'department_id' => 6, 'section_name' => 'تمريض', 'capacity' => 3],
+            ['administrative_id' => 13, 'department_id' => 11, 'section_name' => 'رعاية', 'capacity' => 2],
+            ['administrative_id' => 13, 'department_id' => 13, 'section_name' => 'مالية', 'capacity' => 1],
+            ['administrative_id' => 13, 'department_id' => 12, 'section_name' => 'إدارة', 'capacity' => 2],
+
+            // Admin ID 14: عيادة مركز فتحي عرفات الطبي
+            ['administrative_id' => 14, 'department_id' => 1, 'section_name' => 'طب عام', 'capacity' => 6],
+            ['administrative_id' => 14, 'department_id' => 3, 'section_name' => 'صيدلة', 'capacity' => 5],
+            ['administrative_id' => 14, 'department_id' => 4, 'section_name' => 'مختبرات', 'capacity' => 3],
+            ['administrative_id' => 14, 'department_id' => 6, 'section_name' => 'تمريض', 'capacity' => 4],
+            ['administrative_id' => 14, 'department_id' => 11, 'section_name' => 'رعاية', 'capacity' => 3],
+            ['administrative_id' => 14, 'department_id' => 13, 'section_name' => 'مالية', 'capacity' => 1],
+            ['administrative_id' => 14, 'department_id' => 12, 'section_name' => 'إدارة', 'capacity' => 2],
+
+            // Admin ID 15: النقطة الطبية المغازي
+            ['administrative_id' => 15, 'department_id' => 1, 'section_name' => 'طب عام', 'capacity' => 4],
+            ['administrative_id' => 15, 'department_id' => 3, 'section_name' => 'صيدلة', 'capacity' => 2],
+            ['administrative_id' => 15, 'department_id' => 4, 'section_name' => 'مختبرات', 'capacity' => 2],
+            ['administrative_id' => 15, 'department_id' => 6, 'section_name' => 'تمريض', 'capacity' => 3],
+            ['administrative_id' => 15, 'department_id' => 11, 'section_name' => 'رعاية', 'capacity' => 2],
+            ['administrative_id' => 15, 'department_id' => 13, 'section_name' => 'مالية', 'capacity' => 1],
+            ['administrative_id' => 15, 'department_id' => 12, 'section_name' => 'إدارة', 'capacity' => 2],
+
+            // Admin ID 16: النقطة الطبية البريج
+            ['administrative_id' => 16, 'department_id' => 1, 'section_name' => 'طب عام', 'capacity' => 5],
+            ['administrative_id' => 16, 'department_id' => 3, 'section_name' => 'صيدلة', 'capacity' => 2],
+            ['administrative_id' => 16, 'department_id' => 4, 'section_name' => 'مختبرات', 'capacity' => 3],
+            ['administrative_id' => 16, 'department_id' => 6, 'section_name' => 'تمريض', 'capacity' => 4],
+            ['administrative_id' => 16, 'department_id' => 11, 'section_name' => 'رعاية', 'capacity' => 3],
+            ['administrative_id' => 16, 'department_id' => 13, 'section_name' => 'مالية', 'capacity' => 1],
+            ['administrative_id' => 16, 'department_id' => 12, 'section_name' => 'إدارة', 'capacity' => 2],
+
+            // Admin ID 17: النقطة الطبية الصحابة
+            ['administrative_id' => 17, 'department_id' => 1, 'section_name' => 'طب عام', 'capacity' => 4],
+            ['administrative_id' => 17, 'department_id' => 3, 'section_name' => 'صيدلة', 'capacity' => 2],
+            ['administrative_id' => 17, 'department_id' => 4, 'section_name' => 'مختبرات', 'capacity' => 2],
+            ['administrative_id' => 17, 'department_id' => 6, 'section_name' => 'تمريض', 'capacity' => 3],
+            ['administrative_id' => 17, 'department_id' => 11, 'section_name' => 'رعاية', 'capacity' => 2],
+            ['administrative_id' => 17, 'department_id' => 13, 'section_name' => 'مالية', 'capacity' => 1],
+            ['administrative_id' => 17, 'department_id' => 12, 'section_name' => 'إدارة', 'capacity' => 2],
+
+            // Admin ID 18: النقطة الطبية الصبرة
+            ['administrative_id' => 18, 'department_id' => 1, 'section_name' => 'طب عام', 'capacity' => 4],
+            ['administrative_id' => 18, 'department_id' => 3, 'section_name' => 'صيدلة', 'capacity' => 2],
+            ['administrative_id' => 18, 'department_id' => 4, 'section_name' => 'مختبرات', 'capacity' => 2],
+            ['administrative_id' => 18, 'department_id' => 6, 'section_name' => 'تمريض', 'capacity' => 3],
+            ['administrative_id' => 18, 'department_id' => 11, 'section_name' => 'رعاية', 'capacity' => 2],
+            ['administrative_id' => 18, 'department_id' => 13, 'section_name' => 'مالية', 'capacity' => 1],
+            ['administrative_id' => 18, 'department_id' => 12, 'section_name' => 'إدارة', 'capacity' => 2],
+
+            // Admin ID 19: النقطة الطبية السرايا
+            ['administrative_id' => 19, 'department_id' => 1, 'section_name' => 'طب عام', 'capacity' => 4],
+            ['administrative_id' => 19, 'department_id' => 3, 'section_name' => 'صيدلة', 'capacity' => 2],
+            ['administrative_id' => 19, 'department_id' => 4, 'section_name' => 'مختبرات', 'capacity' => 2],
+            ['administrative_id' => 19, 'department_id' => 6, 'section_name' => 'تمريض', 'capacity' => 3],
+            ['administrative_id' => 19, 'department_id' => 11, 'section_name' => 'رعاية', 'capacity' => 2],
+            ['administrative_id' => 19, 'department_id' => 13, 'section_name' => 'مالية', 'capacity' => 1],
+            ['administrative_id' => 19, 'department_id' => 12, 'section_name' => 'إدارة', 'capacity' => 2],
+
+            // Admin ID 20: النقطة الطبية القدس
+            ['administrative_id' => 20, 'department_id' => 1, 'section_name' => 'طب عام', 'capacity' => 5],
+            ['administrative_id' => 20, 'department_id' => 3, 'section_name' => 'صيدلة', 'capacity' => 2],
+            ['administrative_id' => 20, 'department_id' => 4, 'section_name' => 'مختبرات', 'capacity' => 3],
+            ['administrative_id' => 20, 'department_id' => 6, 'section_name' => 'تمريض', 'capacity' => 4],
+            ['administrative_id' => 20, 'department_id' => 11, 'section_name' => 'رعاية', 'capacity' => 3],
+            ['administrative_id' => 20, 'department_id' => 13, 'section_name' => 'مالية', 'capacity' => 1],
+            ['administrative_id' => 20, 'department_id' => 12, 'section_name' => 'إدارة', 'capacity' => 2],
+
+            // Admin ID 21: النقطة الطبية الشمال
+            ['administrative_id' => 21, 'department_id' => 1, 'section_name' => 'طب عام', 'capacity' => 5],
+            ['administrative_id' => 21, 'department_id' => 3, 'section_name' => 'صيدلة', 'capacity' => 2],
+            ['administrative_id' => 21, 'department_id' => 4, 'section_name' => 'مختبرات', 'capacity' => 3],
+            ['administrative_id' => 21, 'department_id' => 6, 'section_name' => 'تمريض', 'capacity' => 4],
+            ['administrative_id' => 21, 'department_id' => 11, 'section_name' => 'رعاية', 'capacity' => 3],
+            ['administrative_id' => 21, 'department_id' => 13, 'section_name' => 'مالية', 'capacity' => 1],
+            ['administrative_id' => 21, 'department_id' => 12, 'section_name' => 'إدارة', 'capacity' => 2],
+
+            // Admin ID 22: النقطة الطبية الزيتون
+            ['administrative_id' => 22, 'department_id' => 1, 'section_name' => 'طب عام', 'capacity' => 4],
+            ['administrative_id' => 22, 'department_id' => 3, 'section_name' => 'صيدلة', 'capacity' => 2],
+            ['administrative_id' => 22, 'department_id' => 4, 'section_name' => 'مختبرات', 'capacity' => 2],
+            ['administrative_id' => 22, 'department_id' => 6, 'section_name' => 'تمريض', 'capacity' => 3],
+            ['administrative_id' => 22, 'department_id' => 11, 'section_name' => 'رعاية', 'capacity' => 2],
+            ['administrative_id' => 22, 'department_id' => 13, 'section_name' => 'مالية', 'capacity' => 1],
+            ['administrative_id' => 22, 'department_id' => 12, 'section_name' => 'إدارة', 'capacity' => 2],
+
+            // ============================================
+            // مدينة النور (Admin ID 23) - CITY - غزة
+            // ONLY ADMINISTRATIVE SECTIONS
+            // ============================================
+            ['administrative_id' => 23, 'department_id' => 12, 'section_name' => 'إدارة', 'capacity' => 5],
+            ['administrative_id' => 23, 'department_id' => 13, 'section_name' => 'مالية', 'capacity' => 3],
+            ['administrative_id' => 23, 'department_id' => 14, 'section_name' => 'موارد بشرية', 'capacity' => 4],
+            ['administrative_id' => 23, 'department_id' => 15, 'section_name' => 'تكنولوجيا المعلومات', 'capacity' => 5],
+            ['administrative_id' => 23, 'department_id' => 16, 'section_name' => 'الإعلام والعلاقات العامة', 'capacity' => 3],
+            ['administrative_id' => 23, 'department_id' => 17, 'section_name' => 'تدريب وتأهيل', 'capacity' => 5],
         ];
 
-        $administratives = Administrative::all();
-        $deptMap = Department::pluck('id', 'title')->toArray();
+        foreach ($sections as $sec) {
+            $admin = Administrative::find($sec['administrative_id']);
 
-        foreach ($administratives as $admin) {
-            $deptTitles = [];
-
-            // 1. Determine which departments to add based on type
-            if (str_contains($admin->title, 'مستشفى')) {
-                // Hospital: Comprehensive list
-                $deptTitles = [
-                    'طب عام', 'طوارئ', 'صيدلة', 'مختبرات', 'أشعة', 'تمريض',
-                    'علاج طبيعي', 'علاج وظيفي', 'صحة نفسية', 'أسنان', 'رعاية',
-                    'إدارة', 'مالية', 'موارد بشرية', 'تكنولوجيا المعلومات',
-                    'الإعلام والعلاقات العامة', 'تدريب وتأهيل'
-                ];
-            } elseif (str_contains($admin->title, 'نقطة')) {
-                // Medical Point: Emergency (Medicine), Nursing, Pharmacy, Finance
-                $deptTitles = ['طب عام', 'صيدلة', 'تمريض', 'مالية'];
-            } elseif (str_contains($admin->title, 'عيادة')) {
-                // Clinic: Simple medical fields
-                $deptTitles = ['طب عام', 'صيدلة', 'تمريض', 'أسنان', 'رعاية', 'مالية'];
-            } elseif (str_contains($admin->title, 'مدينة') || !$admin->is_medical) {
-                // Administrative building (City): HQ Departments
-                $deptTitles = [
-                    'إدارة', 'مالية', 'موارد بشرية', 'تكنولوجيا المعلومات',
-                    'الإعلام والعلاقات العامة', 'تدريب وتأهيل'
-                ];
-            }
-
-            // Ensure 'مالية' is in every administrative as requested
-            if (!in_array('مالية', $deptTitles)) {
-                $deptTitles[] = 'مالية';
-            }
-
-            // 2. Create the sections
-            foreach ($deptTitles as $title) {
-                if (!isset($deptMap[$title])) continue;
-
-                $deptId = $deptMap[$title];
-
-                // Set capacity: Accurate for pharmacy, default for others
-                $capacity = 5; // Default for non-pharmacy
-                if ($title === 'صيدلة' && isset($pharmacyCapacities[$admin->title])) {
-                    $capacity = $pharmacyCapacities[$admin->title];
-                }
-
-                Section::create([
-                    'name_location'     => $title . ' - ' . $admin->title,
-                    'administrative_id' => $admin->id,
-                    'department_id'     => $deptId,
-                    'governorate_id'    => $admin->governorate_id,
-                    'capacity'          => $capacity,
-                    'status'            => true
-                ]);
-            }
+            Section::create([
+                'name_location'     => $sec['section_name'] . ' - ' . $admin->title,
+                'administrative_id' => $sec['administrative_id'],
+                'department_id'     => $sec['department_id'],
+                'capacity'          => $sec['capacity'],
+                'status'            => true
+            ]);
         }
     }
 
