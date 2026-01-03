@@ -155,6 +155,24 @@ class User extends Authenticatable implements FilamentUser
         return $this->status === true;
     }
 
+    /**
+     * Determine if the user can impersonate other users.
+     * Only superadmin (ROLE_ADMIN) can impersonate.
+     */
+    public function canImpersonate(): bool
+    {
+        return $this->isAdmin();
+    }
+
+    /**
+     * Determine if the user can be impersonated.
+     * Allow impersonating any active user except the superadmin himself.
+     */
+    public function canBeImpersonated(): bool
+    {
+        return $this->status === true && !$this->isAdmin();
+    }
+
     public function getRoleLabelAttribute(): string
     {
         return self::ROLE_LABELS[$this->role] ?? 'غير محدد';

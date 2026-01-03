@@ -9,6 +9,8 @@ use Filament\Actions\RestoreAction;
 use Filament\Actions\ViewAction;
 use Filament\Resources\Pages\EditRecord;
 use App\Models\College;
+use STS\FilamentImpersonate\Actions\Impersonate;
+use Illuminate\Support\Facades\Auth;
 
 class EditUser extends EditRecord
 {
@@ -57,6 +59,9 @@ class EditUser extends EditRecord
             $this->getCancelFormAction()
                 ->label('إلغاء'),
             ViewAction::make(),
+            Impersonate::make()
+                ->record($this->getRecord())
+                ->visible(fn() => Auth::user()?->canImpersonate() && $this->getRecord()->canBeImpersonated()),
             DeleteAction::make(),
             ForceDeleteAction::make(),
             RestoreAction::make(),
@@ -78,3 +83,4 @@ class EditUser extends EditRecord
         return 'تم تحديث بيانات المستخدم بنجاح';
     }
 }
+
