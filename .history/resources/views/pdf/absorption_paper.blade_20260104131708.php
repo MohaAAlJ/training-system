@@ -82,7 +82,6 @@
             font-size: 13pt;
             margin: 0;
             padding: 12px 20px;
-            border-top: 2px solid #000;
             border-bottom: 2px solid #000;
             background: #f5f5f5;
         }
