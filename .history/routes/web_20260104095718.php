@@ -6,7 +6,7 @@ use App\Http\Controllers\ApplicationFormController;
 use App\Models\Application;
 use App\Models\Section;
 use Illuminate\Support\Facades\Auth;
-use App\Http\Controllers\DownloadAbsorptionPaperController;
+use Mccarlosen\LaravelMpdf\Facades\LaravelMpdf as PDF;
 
 Route::get('/', function () {
     if (Auth::check()) {
@@ -22,10 +22,6 @@ Route::get('/WelcomeForm', [ApplicationFormController::class, 'showWelcome'])->n
 Route::get('/WelcomeForm/Form', [ApplicationFormController::class, 'showForm'])->name('training.form');
 Route::post('/WelcomeForm/Form', [ApplicationFormController::class, 'store'])
     ->name('training.form.store');
-
-Route::get('/applications/{application}/absorption-paper', DownloadAbsorptionPaperController::class)
-    ->middleware('auth')
-    ->name('applications.download-absorption');
 
 // Public form data endpoints (no auth)
 Route::prefix('WelcomeForm/Form/api')->group(function () {

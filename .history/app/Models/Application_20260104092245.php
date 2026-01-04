@@ -72,12 +72,13 @@ class Application extends Model
         'tags',
         'accepted_at',
         'street',
+        'duration',
     ];
     protected $casts = [
         'start_date' => 'date',
         'end_date' => 'date',
         'accepted_at' => 'datetime',
-        'status' => 'integer',
+        'status' => 'string',
         'duration' => 'integer',
         'training_type' => 'integer',
     ];

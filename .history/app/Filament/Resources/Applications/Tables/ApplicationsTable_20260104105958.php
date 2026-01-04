@@ -372,7 +372,7 @@ class ApplicationsTable
                     ->label('تأكيد')
                     ->color('success')
                     ->icon('heroicon-o-check')
-                    ->visible(fn($record, $livewire) => ($livewire->activeTab === 'initial_approve' || $livewire->activeTab === 'all' || $livewire->activeTab === null) && $record->status === Application::STATUS_INITIAL_APPROVE && (Auth::user()->isMinistry() || Auth::user()->isCollegeSupervisor()))
+                    ->visible(fn($record, $livewire) => $livewire->activeTab === 'initial_approve' && (Auth::user()->isMinistry() || Auth::user()->isCollegeSupervisor()))
                     ->requiresConfirmation()
                     ->successNotificationTitle('تم تأكيد الطلب بنجاح')
                     ->action(fn($record) => $record->update(['status' => Application::STATUS_CONFIRMATION])),
@@ -650,14 +650,14 @@ class ApplicationsTable
                     ->label('تحميل الاستيعاب')
                     ->icon('heroicon-o-arrow-down-tray')
                     ->color('primary')
-                    ->url(fn(Application $record) => route('applications.download-absorption', $record))
+                    ->url(fn(Application $record) => route('applications.download_absorption_paper', $record))
                     ->visible(fn(Application $record) => Auth::user()->isMinistry() && $record->status === Application::STATUS_INITIAL_APPROVE && $record->training_type === Application::TRAINING_TYPE_PRACTICE),
 
                 Action::make('print_absorption_paper')
-                    ->label('طباعة الاستيعاب')
+                    ->label('طباعة كتاب المباشرة')
                     ->icon('heroicon-o-printer')
                     ->color('gray')
-                    ->url(fn(Application $record) => route('applications.download-absorption', $record))
+                    ->url(fn(Application $record) => route('applications.download_absorption_paper', $record))
                     ->openUrlInNewTab()
                     ->visible(fn(Application $record) => Auth::user()->isMinistry() && $record->status === Application::STATUS_INITIAL_APPROVE && $record->training_type === Application::TRAINING_TYPE_PRACTICE),
             ])

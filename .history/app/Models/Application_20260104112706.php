@@ -72,6 +72,7 @@ class Application extends Model
         'tags',
         'accepted_at',
         'street',
+        'training_hours',
     ];
     protected $casts = [
         'start_date' => 'date',
