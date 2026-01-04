@@ -45,11 +45,6 @@ class Trainee extends Model
         return $this->belongsTo(Major::class, 'major_id');
     }
 
-    public function college()
-    {
-        return $this->belongsTo(College::class, 'college_id');
-    }
-
     public function Application()
     {
         return $this->hasMany(Application::class, 'trainee_id');

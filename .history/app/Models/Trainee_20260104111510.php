@@ -19,7 +19,7 @@ class Trainee extends Model
         'phone_number',
         'dob',
         'governorate_id',
-        'street',
+        'address',
         'institution_id',
         'major_id',
         'training_hours',
@@ -43,11 +43,6 @@ class Trainee extends Model
     public function major()
     {
         return $this->belongsTo(Major::class, 'major_id');
-    }
-
-    public function college()
-    {
-        return $this->belongsTo(College::class, 'college_id');
     }
 
     public function Application()

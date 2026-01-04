@@ -372,7 +372,7 @@ class ApplicationsTable
                     ->label('تأكيد')
                     ->color('success')
                     ->icon('heroicon-o-check')
-                    ->visible(fn($record, $livewire) => ($livewire->activeTab === 'initial_approve' || $livewire->activeTab === 'all' || $livewire->activeTab === null) && $record->status === Application::STATUS_INITIAL_APPROVE && (Auth::user()->isMinistry() || Auth::user()->isCollegeSupervisor()))
+                    ->visible(fn($record, $livewire) => $livewire->activeTab === 'initial_approve' && (Auth::user()->isMinistry() || Auth::user()->isCollegeSupervisor()))
                     ->requiresConfirmation()
                     ->successNotificationTitle('تم تأكيد الطلب بنجاح')
                     ->action(fn($record) => $record->update(['status' => Application::STATUS_CONFIRMATION])),

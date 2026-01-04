@@ -6,7 +6,6 @@ use App\Http\Controllers\ApplicationFormController;
 use App\Models\Application;
 use App\Models\Section;
 use Illuminate\Support\Facades\Auth;
-use App\Http\Controllers\DownloadAbsorptionPaperController;
 
 Route::get('/', function () {
     if (Auth::check()) {
@@ -23,9 +22,8 @@ Route::get('/WelcomeForm/Form', [ApplicationFormController::class, 'showForm'])-
 Route::post('/WelcomeForm/Form', [ApplicationFormController::class, 'store'])
     ->name('training.form.store');
 
-Route::get('/applications/{application}/absorption-paper', DownloadAbsorptionPaperController::class)
-    ->middleware('auth')
-    ->name('applications.download-absorption');
+Route::get('/applications/{application}/absorption-paper', [DownloadAbsorptionPaperController::class, 'download'])
+    ->name('applications.download_absorption_paper');
 
 // Public form data endpoints (no auth)
 Route::prefix('WelcomeForm/Form/api')->group(function () {
