@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Support\Facades\Auth;
 use App\Helpers\Constants;
+use STS\FilamentImpersonate\Actions\Impersonate;
 
 class UsersTable
 {
@@ -47,6 +48,8 @@ class UsersTable
             ->recordActions([
                 ViewAction::make(),
                 EditAction::make(),
+                Impersonate::make()->visible(fn($record) => Auth::user()?->canImpersonate() && $record->canBeImpersonated())
+                ->redirectTo('/Home'),
                 DeleteAction::make()->visible(fn($record) => !$record->trashed() && Auth::user()?->isAdmin()),
                 RestoreAction::make()->visible(fn($record) => $record->trashed() && Auth::user()?->isAdmin()),
             ])
