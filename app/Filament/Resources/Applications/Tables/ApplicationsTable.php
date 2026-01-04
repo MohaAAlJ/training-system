@@ -380,7 +380,7 @@ class ApplicationsTable
                     ->label('تأكيد')
                     ->color('success')
                     ->icon('heroicon-o-check')
-                    ->visible(fn($record, $livewire) => $livewire->activeTab === 'initial_approve' && (Auth::user()->isMinistry() || Auth::user()->isCollegeSupervisor()))
+                    ->visible(fn($record, $livewire) => ($livewire->activeTab === 'initial_approve' || $livewire->activeTab === 'all' || $livewire->activeTab === null) && $record->status === Application::STATUS_INITIAL_APPROVE && (Auth::user()->isMinistry() || Auth::user()->isCollegeSupervisor()))
                     ->requiresConfirmation()
                     ->successNotificationTitle('تم تأكيد الطلب بنجاح')
                     ->action(fn($record) => $record->update(['status' => Application::STATUS_CONFIRMATION])),
@@ -653,6 +653,21 @@ class ApplicationsTable
                         $record->update(['status' => Application::STATUS_NEW]);
                     })
                     ->successNotificationTitle('تم استعادة الطلب لقائمة الطلبات الجديدة'),
+
+                Action::make('download_absorption_paper')
+                    ->label('تحميل الاستيعاب')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->color('primary')
+                    ->url(fn(Application $record) => route('applications.download-absorption', $record))
+                    ->visible(fn(Application $record) => Auth::user()->isMinistry() && in_array($record->status, [Application::STATUS_INITIAL_APPROVE, Application::STATUS_STARTED_TRAINING, Application::STATUS_ENDED_TRAINING]) && $record->training_type === Application::TRAINING_TYPE_PRACTICE),
+
+                Action::make('print_absorption_paper')
+                    ->label('طباعة الاستيعاب')
+                    ->icon('heroicon-o-printer')
+                    ->color('gray')
+                    ->url(fn(Application $record) => route('applications.download-absorption', $record))
+                    ->openUrlInNewTab()
+                    ->visible(fn(Application $record) => Auth::user()->isMinistry() && in_array($record->status, [Application::STATUS_INITIAL_APPROVE, Application::STATUS_STARTED_TRAINING, Application::STATUS_ENDED_TRAINING]) && $record->training_type === Application::TRAINING_TYPE_PRACTICE),
             ])
             ->bulkActions([
                 BulkActionGroup::make([
