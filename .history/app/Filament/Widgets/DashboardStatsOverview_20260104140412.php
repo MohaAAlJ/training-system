@@ -189,7 +189,7 @@ class DashboardStatsOverview extends BaseWidget
                         $cap['available'] += $available;
                     }
                     $adminUnitTitle = "الإدارة الطبية: {$adminUnit->title}";
-                    $sectionIds = $sections->pluck('id');
+                    $sectionIds = $Section->pluck('id');
                 }
             }
 
@@ -255,18 +255,11 @@ class DashboardStatsOverview extends BaseWidget
         // 5. ADMIN (ROLE_ADMIN - 1)
         elseif ($role === User::ROLE_ADMIN) {
             $capStats = ['total' => 0, 'used' => 0, 'available' => 0];
-            $sections = Section::withCount(['Application as active_apps_count' => function ($q) {
-                $q->where('status', Application::STATUS_STARTED_TRAINING);
-            }])->get();
-
-            foreach ($sections as $s) {
-                $total = (int) ($s->capacity ?? 0);
-                $used = (int) $s->active_apps_count;
-                $available = max(0, $total - $used);
-
-                $capStats['total'] += $total;
-                $capStats['used'] += $used;
-                $capStats['available'] += $available;
+            foreach (Section::all() as $section) {
+                $sStats = $section->getCapacityStats();
+                $capStats['total'] += $sStats['total'];
+                $capStats['used'] += $sStats['used'];
+                $capStats['available'] += $sStats['available'];
             }
 
             $stats[] = Stat::make('إجمالي السعة الاستيعابية', $capStats['total'])
