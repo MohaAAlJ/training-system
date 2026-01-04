@@ -22,6 +22,7 @@ use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use App\Filament\Auth\Login;
 use Filament\View\PanelsRenderHook;
+use Filament\Actions\Exports\Models\Export;
 
 class AdminPanelProvider extends PanelProvider
 {
