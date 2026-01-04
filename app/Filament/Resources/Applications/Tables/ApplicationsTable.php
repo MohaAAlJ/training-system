@@ -24,6 +24,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\DatePicker;
 use Illuminate\Support\Facades\Auth;
 use Filament\Schemas\Components\Fieldset;
+use Filament\Actions\ExportAction;
 
 class ApplicationsTable
 {
@@ -181,6 +182,13 @@ class ApplicationsTable
                             ->when($data['start_date_from'], fn(Builder $q) => $q->whereDate('start_date', '>=', $data['start_date_from']))
                             ->when($data['start_date_to'], fn(Builder $q) => $q->whereDate('start_date', '<=', $data['start_date_to']));
                     }),
+            ])
+
+            ->headerActions([
+                ExportAction::make('export_excel')
+                    ->label('تحميل اكسل')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->exporter(\App\Filament\Exporters\ApplicationExporter::class),
             ])
 
             ->recordActions([
