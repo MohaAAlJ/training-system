@@ -8,6 +8,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
 use Illuminate\Support\Facades\Auth;
+use STS\FilamentImpersonate\Actions\Impersonate;
 
 class AdminLatestUsers extends BaseWidget
 {
@@ -15,6 +16,7 @@ class AdminLatestUsers extends BaseWidget
     protected int | string | array $columnSpan = 'full';
 
     protected static ?string $heading = 'سجل أحدث المستخدمين المسجلين';
+    protected static bool $collapsible = false;
 
     public static function canView(): bool
     {
@@ -40,7 +42,9 @@ class AdminLatestUsers extends BaseWidget
                     ->badge(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('تاريخ الإضافة')
-                    ->dateTime(),
+                    ->dateTime()
+                    ->date('d/m/Y'),
+
             ]);
     }
 }
