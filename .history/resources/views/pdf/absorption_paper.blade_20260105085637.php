@@ -13,6 +13,7 @@
         }
 
         body {
+            font-family: 'notonaskh', 'sans-serif';
             direction: rtl;
             text-align: right;
             font-size: 11.5pt;
