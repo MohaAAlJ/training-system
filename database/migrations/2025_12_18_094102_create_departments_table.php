@@ -34,33 +34,12 @@ return new class extends Migration
             ['title' => 'علاج وظيفي', 'is_medical' => true],
             ['title' => 'صحة نفسية', 'is_medical' => true],
             ['title' => 'أسنان', 'is_medical' => true],
-            // ['title' => 'طوارئ', 'is_medical' => true],
-            // ['title' => 'رعاية', 'is_medical' => true],
-            // ['title' => 'أنف وأذن وحنجرة', 'is_medical' => true],
-            // ['title' => 'كلى وغسيل كلوي', 'is_medical' => true],
-            // ['title' => 'أورام', 'is_medical' => true],
-            // ['title' => 'جراحة', 'is_medical' => true],
-            // ['title' => 'أطفال', 'is_medical' => true],
-            // ['title' => 'نساء وولادة', 'is_medical' => true],
-            // ['title' => 'عظام', 'is_medical' => true],
-            // ['title' => 'قلب وأوعية دموية', 'is_medical' => true],
-            // ['title' => 'عناية مركزة', 'is_medical' => true],
 
             // Administrative/Support Departments
             ['title' => 'إدارة', 'is_medical' => false],
             ['title' => 'مالية', 'is_medical' => false],
             ['title' => 'تكنولوجيا المعلومات', 'is_medical' => false],
             ['title' => 'العلاقات العامة و الإعلام', 'is_medical' => false],
-            ['title' => 'تدريب وتأهيل', 'is_medical' => false],
-            // ['title' => 'موارد بشرية', 'is_medical' => false],
-            // ['title' => 'مشتريات', 'is_medical' => false],
-            // ['title' => 'خدمات عامة', 'is_medical' => false],
-            // ['title' => 'صيانة', 'is_medical' => false],
-            // ['title' => 'مخازن', 'is_medical' => false],
-            // ['title' => 'شؤون قانونية', 'is_medical' => false],
-            // ['title' => 'الأمن والسلامة', 'is_medical' => false],
-            // ['title' => 'نظافة وإشراف بيئي', 'is_medical' => false],
-            // ['title' => 'تخطيط وتطوير', 'is_medical' => false],
         ];
 
         foreach ($departments as $deptData) {

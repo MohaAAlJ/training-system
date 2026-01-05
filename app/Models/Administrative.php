@@ -84,8 +84,8 @@ class Administrative extends Model
      */
     public function getCapacityStats(): array
     {
-        // Sum total capacity from all sections
-        $total = (int) $this->Section()->sum('capacity');
+        // Sum total capacity from all sections (excluding soft-deleted)
+        $total = (int) $this->Section()->withoutTrashed()->sum('capacity');
 
         // Count all active applications in this administrative unit
         $used = Application::where('administrative_id', $this->id)
