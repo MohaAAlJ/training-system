@@ -37,6 +37,7 @@ class GTMCapacityChart extends ChartWidget
         $user = Auth::user();
 
         if ($user->isGeneralTrainingManager() || $user->isAdmin()) {
+            // Aggregate from all sections using a single query
             $total = (int) \App\Models\Section::sum('capacity');
             $used = \App\Models\Application::where('status', \App\Models\Application::STATUS_STARTED_TRAINING)->count();
             $available = max(0, $total - $used);
@@ -47,18 +48,14 @@ class GTMCapacityChart extends ChartWidget
                 'available' => $available
             ];
         } elseif ($user->isMedicalManager()) { // HOM
-            $total = (int) \App\Models\Section::whereHas('department', fn($q) => $q->where('is_medical', true))
-                ->sum('capacity');
-            $used = \App\Models\Application::whereHas('section.department', fn($q) => $q->where('is_medical', true))
-                ->where('status', \App\Models\Application::STATUS_STARTED_TRAINING)
-                ->count();
-            $available = max(0, $total - $used);
-
-            $stats = [
-                'total' => $total,
-                'used' => $used,
-                'available' => $available
-            ];
+            // Aggregate from medical sections only
+            $stats = ['total' => 0, 'used' => 0, 'available' => 0];
+            foreach (\App\Models\Section::whereHas('department', fn($q) => $q->where('is_medical', true))->get() as $section) {
+                $sStats = $section->getCapacityStats();
+                $stats['total'] += $sStats['total'];
+                $stats['used'] += $sStats['used'];
+                $stats['available'] += $sStats['available'];
+            }
         } elseif ($user->isHOA()) { // HOA
             $adminUnit = \App\Models\Administrative::where('user_id', $user->id)->first();
             $stats = $adminUnit ? $adminUnit->getCapacityStats() : ['total' => 0, 'used' => 0, 'available' => 0];

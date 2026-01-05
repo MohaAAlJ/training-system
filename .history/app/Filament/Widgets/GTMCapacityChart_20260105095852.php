@@ -37,6 +37,7 @@ class GTMCapacityChart extends ChartWidget
         $user = Auth::user();
 
         if ($user->isGeneralTrainingManager() || $user->isAdmin()) {
+            // Aggregate from all sections using a single query
             $total = (int) \App\Models\Section::sum('capacity');
             $used = \App\Models\Application::where('status', \App\Models\Application::STATUS_STARTED_TRAINING)->count();
             $available = max(0, $total - $used);
