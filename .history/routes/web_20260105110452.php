@@ -12,7 +12,7 @@ Route::get('/', function () {
     if (Auth::check()) {
         return redirect('/Home');
     }
-    return redirect('/Home/login');
+    return redirect('/admin/login');
 });
 
 // Welcome page (public landing)
