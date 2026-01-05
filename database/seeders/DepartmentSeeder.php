@@ -14,64 +14,42 @@ class DepartmentSeeder extends Seeder
     {
         $password = Hash::make('123');
 
-        $departments = [
-            [
-                'title' => 'الصيدلة',
-                'is_medical' => true,
+        // Map department titles to their heads (matching the migration departments)
+        $departmentHeads = [
+            'صيدلة' => [
                 'hod_email' => 'hod_pharma@system.com',
                 'hod_name' => 'د. مدير الصيدلة'
             ],
-            [
-                'title' => 'تكنولوجيا المعلومات',
-                'is_medical' => false,
+            'تكنولوجيا المعلومات' => [
                 'hod_email' => 'hod_it@system.com',
                 'hod_name' => 'م. مدير الـ IT'
             ],
-            [
-                'title' => 'الإعلام',
-                'is_medical' => false,
+            'العلاقات العامة و الإعلام' => [
                 'hod_email' => 'hod_media@system.com',
                 'hod_name' => 'أ. مدير الإعلام'
             ],
-            [
-                'title' => 'المختبرات',
-                'is_medical' => true,
-                'hod_email' => null,
-                'hod_name' => null
-            ],
-            [
-                'title' => 'الإدارة العامة',
-                'is_medical' => false,
+            'إدارة' => [
                 'hod_email' => 'hod_admin@system.com',
                 'hod_name' => 'أ. مدير الإدارة العامة'
             ],
         ];
 
-        foreach ($departments as $deptData) {
-            $hodId = null;
-
-            if ($deptData['hod_email']) {
+        // Assign heads to existing departments
+        foreach ($departmentHeads as $deptTitle => $headData) {
+            $dept = Department::where('title', $deptTitle)->first();
+            if ($dept && $headData['hod_email']) {
                 $hod = User::firstOrCreate(
-                    ['email' => $deptData['hod_email']],
+                    ['email' => $headData['hod_email']],
                     [
-                        'name' => $deptData['hod_name'],
-                        'user_name' => \Illuminate\Support\Str::slug($deptData['hod_email'], '_'),
+                        'name' => $headData['hod_name'],
+                        'user_name' => \Illuminate\Support\Str::slug($headData['hod_email'], '_'),
                         'password' => $password,
                         'role' => UserConstants::ROLE_DEPARTMENT,
                         'status' => true,
                     ]
                 );
-                $hodId = $hod->id;
+                $dept->update(['user_id' => $hod->id]);
             }
-
-            Department::firstOrCreate(
-                ['title' => $deptData['title']],
-                [
-                    'is_medical' => $deptData['is_medical'],
-                    'user_id' => $hodId,
-                    'status' => true,
-                ]
-            );
         }
     }
 }

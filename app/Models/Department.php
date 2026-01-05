@@ -82,10 +82,10 @@ class Department extends Model
      */
     public function getCapacityStats(): array
     {
-        // Sum total capacity from all sections
-        $total = (int) $this->Section()->sum('capacity');
+        // Sum total capacity from all sections (excluding soft-deleted)
+        $total = (int) $this->Section()->withoutTrashed()->sum('capacity');
 
-        // Count all active applications in this department
+        // Count only active (started training) applications
         $used = Application::where('department_id', $this->id)
             ->where('status', Application::STATUS_STARTED_TRAINING)
             ->count();
