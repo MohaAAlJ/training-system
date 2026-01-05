@@ -3,12 +3,21 @@
 namespace App\Filament\Resources\Stats\Pages;
 
 use App\Filament\Resources\Stats\StatsResource;
-use Filament\Actions\CreateAction;
-use Filament\Resources\Pages\ListRecords;
+use Filament\Resources\Pages\Page;
 
-class ListStats extends ListRecords
+class ListStats extends Page
 {
     protected static string $resource = StatsResource::class;
+
+    public function getTitle(): string | \Illuminate\Contracts\Support\Htmlable
+    {
+        return 'الإحصائيات';
+    }
+
+    public function getBreadcrumb(): ?string
+    {
+        return 'عرض';
+    }
 
     protected function getHeaderActions(): array
     {

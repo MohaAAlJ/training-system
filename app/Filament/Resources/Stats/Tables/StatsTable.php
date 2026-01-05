@@ -16,12 +16,13 @@ class StatsTable
     public static function configure(Table $table): Table
     {
         return $table
-            ->query(\App\Models\User::query()->whereRaw('0 = 1'))
-            ->columns([])
-            ->filters([])
-            ->actions([])
-            ->bulkActions([])
-            ->emptyStateHeading('')
-            ->paginated(false);
+        ->query(\App\Models\User::query()->whereRaw('0 = 1'))
+        ->columns([])
+        ->emptyStateHeading('')        // Empty heading
+        ->emptyStateDescription('')    // Empty description
+        ->emptyStateIcon(null)         // Remove the X icon
+        ->emptyStateActions([])        // Remove any buttons
+        ->paginated(false)
+        ->striped();                   // Add striped styling to hide empty state better
     }
 }
