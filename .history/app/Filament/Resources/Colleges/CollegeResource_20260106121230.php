@@ -28,15 +28,6 @@ class CollegeResource extends Resource
     protected static ?string $modelLabel = 'الكلية';
     protected static ?string $pluralModelLabel = 'الكليات';
 
-    public static function getUrl(string|null $name = null, array $parameters = [], bool $isAbsolute = true, string|null $panel = null, \Illuminate\Database\Eloquent\Model|null $tenant = null, bool $shouldGuessMissingParameters = false): string
-    {
-        if ($name === 'index' || $name === null) {
-            return \App\Filament\Resources\Institutions\InstitutionResource::getUrl('index', $parameters, $isAbsolute, $panel, $tenant, $shouldGuessMissingParameters);
-        }
-
-        return parent::getUrl($name, $parameters, $isAbsolute, $panel, $tenant, $shouldGuessMissingParameters);
-    }
-
     public static function form(Schema $schema): Schema
     {
         // Re-using the logic from the previously deleted CollegeForm if available,

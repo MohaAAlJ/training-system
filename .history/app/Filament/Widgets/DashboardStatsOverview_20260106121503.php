@@ -255,7 +255,7 @@ class DashboardStatsOverview extends BaseWidget
         // 5. ADMIN (ROLE_ADMIN - 1)
         elseif ($role === User::ROLE_ADMIN) {
             $capStats = ['total' => 0, 'used' => 0, 'available' => 0];
-            $sections = Section::withoutTrashed()->withCount(['applications as active_apps_count' => function ($q) {
+            $sections = Section::withoutTrashed()->withCount(['a as active_apps_count' => function ($q) {
                 $q->where('status', Application::STATUS_STARTED_TRAINING);
             }])->get();
 
