@@ -49,8 +49,9 @@ if (themeToggle) {
     });
 }
 
-// بيانات بديلة مؤقتة (أزلها عند توفر الـ API)
-const fallback = {};
+// NOTE: Fallback data object - DEPRECATED and no longer used
+// All form data is now loaded from API endpoints
+// const fallback = {};
 
 const form = document.getElementById("applicationForm");
 const message = document.getElementById("formMessage");
@@ -72,17 +73,33 @@ const fullNameInput = document.getElementById("full_name");
 const nationalIdInput = document.getElementById("national_id");
 
 const getCsrfToken = () => {
-    // First try meta tag (Laravel blade)
-    const metaToken = document.querySelector('meta[name="csrf-token"]');
-    if (metaToken) {
-        return metaToken.getAttribute("content");
+    // IMPROVED: Retrieve CSRF token with proper error handling
+    // Priority: 1) Meta tag (Laravel Blade), 2) Cookie (XSRF-TOKEN), 3) Empty string (fallback)
+    try {
+        const metaToken = document.querySelector('meta[name="csrf-token"]');
+        if (metaToken) {
+            const token = metaToken.getAttribute("content");
+            if (token) return token;
+        }
+    } catch (e) {
+        console.warn("Failed to retrieve CSRF token from meta tag", e);
     }
+
     // Fallback to XSRF-TOKEN cookie
-    const match = document.cookie
-        .split(";")
-        .map((c) => c.trim())
-        .find((c) => c.startsWith("XSRF-TOKEN="));
-    return match ? decodeURIComponent(match.split("=")[1]) : "";
+    try {
+        const match = document.cookie
+            .split(";")
+            .map((c) => c.trim())
+            .find((c) => c.startsWith("XSRF-TOKEN="));
+        if (match) {
+            return decodeURIComponent(match.split("=")[1]);
+        }
+    } catch (e) {
+        console.warn("Failed to retrieve CSRF token from cookie", e);
+    }
+
+    console.error("WARNING: CSRF token not found. Form submission may fail.");
+    return "";
 };
 
 // Handle name input - only allow letters (Arabic and English) and spaces
@@ -92,15 +109,18 @@ function handleNameInput(event) {
     input.value = input.value.replace(/[^A-Za-z\u0600-\u06FF\s]/g, "");
 }
 
-function handleDobInput(event) {
-    const input = event.target;
-    const digits = input.value.replace(/\D/g, "").slice(0, 8);
-    const parts = [];
-    if (digits.length > 0) parts.push(digits.slice(0, 2));
-    if (digits.length > 2) parts.push(digits.slice(2, 4));
-    if (digits.length > 4) parts.push(digits.slice(4, 8));
-    input.value = parts.join("/");
-}
+// DEPRECATED: handleDobInput - No longer used
+// DOB is now handled via separate dropdown selects that combine into a hidden field
+// This function is kept as reference but not called anywhere
+// function handleDobInput(event) {
+//     const input = event.target;
+//     const digits = input.value.replace(/\D/g, "").slice(0, 8);
+//     const parts = [];
+//     if (digits.length > 0) parts.push(digits.slice(0, 2));
+//     if (digits.length > 2) parts.push(digits.slice(2, 4));
+//     if (digits.length > 4) parts.push(digits.slice(4, 8));
+//     input.value = parts.join("/");
+// }
 
 const setMessage = (text, type = "note") => {
     message.textContent = text;
@@ -343,6 +363,27 @@ if (letterFileInput) {
             return;
         }
 
+        // IMPROVED: Validate file size (max 2MB as per backend validation)
+        const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
+        if (file.size > MAX_FILE_SIZE) {
+            showToast("حجم الملف كبير جداً. الحد الأقصى: 2MB", "error");
+            letterFileInput.value = "";
+            filePreview.style.display = "none";
+            return;
+        }
+
+        // IMPROVED: Validate file type against whitelist
+        const ALLOWED_TYPES = ["image/jpeg", "image/png", "application/pdf"];
+        if (!ALLOWED_TYPES.includes(file.type)) {
+            showToast(
+                "نوع الملف غير مدعوم. الأنواع المدعومة: JPG, PNG, PDF",
+                "error"
+            );
+            letterFileInput.value = "";
+            filePreview.style.display = "none";
+            return;
+        }
+
         filePreview.style.display = "block";
 
         if (file.type.startsWith("image/")) {
@@ -397,18 +438,10 @@ form.addEventListener("submit", async (e) => {
     }
 
     const formData = new FormData(form);
-    // status is set by server to STATUS_NEW (1)
+    // Note: status is set by server to STATUS_NEW (1)
 
-    // Debug: log key fields
-    try {
-        console.log("Submitting form", {
-            national_id: formData.get("national_id"),
-            full_name: formData.get("full_name"),
-            major_id: formData.get("major_id"),
-            college_id: formData.get("college_id"),
-            institution_id: formData.get("institution_id"),
-        });
-    } catch (err) {}
+    // REMOVED: Sensitive debug logging in production
+    // Detailed form data should only be logged on server-side for security
 
     try {
         const res = await fetch(endpoints.submit, {
@@ -461,12 +494,12 @@ form.addEventListener("submit", async (e) => {
     await loadOptions(
         institutionSelect,
         endpoints.institution,
-        fallback.institutions
+        [] // No fallback - API is required
     );
     await loadOptions(
         trainingTypeSelect,
         endpoints.trainingFocus,
-        fallback.trainingFocus
+        [] // No fallback - API is required
     );
     populateOptions(sectionSelect, []);
     loadAdministrative();
