@@ -43,7 +43,6 @@ return new class extends Migration
             ['administrative_id' => 1, 'department_id' => 10, 'section_name' => 'إدارة', 'capacity' => 3],
             ['administrative_id' => 1, 'department_id' => 11, 'section_name' => 'مالية', 'capacity' => 2],
             ['administrative_id' => 1, 'department_id' => 12, 'section_name' => 'تكنولوجيا المعلومات', 'capacity' => 4],
-            ['administrative_id' => 1, 'department_id' => 13, 'section_name' => 'الإعلام والعلاقات العامة', 'capacity' => 2],
             // Administrative sub-sections under إدارة
             ['administrative_id' => 1, 'department_id' => 10, 'section_name' => 'خدمات عامة', 'capacity' => 3],
             ['administrative_id' => 1, 'department_id' => 10, 'section_name' => 'صيانة', 'capacity' => 4],
@@ -57,7 +56,10 @@ return new class extends Migration
             ['administrative_id' => 2, 'department_id' => 10, 'section_name' => 'إدارة', 'capacity' => 5],
             ['administrative_id' => 2, 'department_id' => 11, 'section_name' => 'مالية', 'capacity' => 4],
             ['administrative_id' => 2, 'department_id' => 12, 'section_name' => 'تكنولوجيا المعلومات', 'capacity' => 6],
-            ['administrative_id' => 2, 'department_id' => 13, 'section_name' => 'الإعلام والعلاقات العامة', 'capacity' => 4],
+            ['administrative_id' => 2, 'department_id' => 13, 'section_name' => 'الإعلام', 'capacity' => 2],
+            ['administrative_id' => 2, 'department_id' => 13, 'section_name' => ' العلاقات العامة', 'capacity' => 2],
+            ['administrative_id' => 2, 'department_id' => 13, 'section_name' => 'وسائط متعددة', 'capacity' => 1],
+            ['administrative_id' => 2, 'department_id' => 13, 'section_name' => 'ترجمة', 'capacity' => 1],
             // Administrative sub-sections under إدارة
             ['administrative_id' => 2, 'department_id' => 10, 'section_name' => 'خدمات عامة', 'capacity' => 5],
             ['administrative_id' => 2, 'department_id' => 10, 'section_name' => 'صيانة', 'capacity' => 5],
@@ -80,26 +82,29 @@ return new class extends Migration
             ['administrative_id' => 3, 'department_id' => 10, 'section_name' => 'إدارة', 'capacity' => 3],
             ['administrative_id' => 3, 'department_id' => 11, 'section_name' => 'مالية', 'capacity' => 2],
             ['administrative_id' => 3, 'department_id' => 12, 'section_name' => 'تكنولوجيا المعلومات', 'capacity' => 4],
-            ['administrative_id' => 3, 'department_id' => 13, 'section_name' => 'الإعلام والعلاقات العامة', 'capacity' => 2],
+            ['administrative_id' => 3, 'department_id' => 13, 'section_name' => 'الإعلام', 'capacity' => 1],
             // Administrative sub-sections under إدارة
             ['administrative_id' => 3, 'department_id' => 10, 'section_name' => 'خدمات عامة', 'capacity' => 3],
             ['administrative_id' => 3, 'department_id' => 10, 'section_name' => 'صيانة', 'capacity' => 4],
             ['administrative_id' => 3, 'department_id' => 10, 'section_name' => 'مخازن', 'capacity' => 3],
             ['administrative_id' => 3, 'department_id' => 10, 'section_name' => 'شؤون قانونية', 'capacity' => 2],
 
-            // ============================================
-            // مدينة القدس (Admin ID: 4) - CITY - غزة
-            // ONLY ADMINISTRATIVE SECTIONS
-            // ============================================
-            ['administrative_id' => 4, 'department_id' => 10, 'section_name' => 'إدارة', 'capacity' => 6],
-            ['administrative_id' => 4, 'department_id' => 11, 'section_name' => 'مالية', 'capacity' => 4],
-            ['administrative_id' => 4, 'department_id' => 12, 'section_name' => 'تكنولوجيا المعلومات', 'capacity' => 6],
-            ['administrative_id' => 4, 'department_id' => 13, 'section_name' => 'الإعلام والعلاقات العامة', 'capacity' => 5],
-            // Administrative sub-sections under إدارة
-            ['administrative_id' => 4, 'department_id' => 10, 'section_name' => 'خدمات عامة', 'capacity' => 5],
-            ['administrative_id' => 4, 'department_id' => 10, 'section_name' => 'صيانة', 'capacity' => 5],
-            ['administrative_id' => 4, 'department_id' => 10, 'section_name' => 'مخازن', 'capacity' => 4],
-            ['administrative_id' => 4, 'department_id' => 10, 'section_name' => 'شؤون قانونية', 'capacity' => 4],
+            // // ============================================
+            // // مدينة القدس (Admin ID: 4) - CITY - غزة
+            // // ONLY ADMINISTRATIVE SECTIONS
+            // // ============================================
+            // ['administrative_id' => 4, 'department_id' => 10, 'section_name' => 'إدارة', 'capacity' => 6],
+            // ['administrative_id' => 4, 'department_id' => 11, 'section_name' => 'مالية', 'capacity' => 4],
+            // ['administrative_id' => 4, 'department_id' => 12, 'section_name' => 'تكنولوجيا المعلومات', 'capacity' => 6],
+            // ['administrative_id' => 2, 'department_id' => 13, 'section_name' => 'الإعلام', 'capacity' => 2],
+            // ['administrative_id' => 2, 'department_id' => 13, 'section_name' => ' العلاقات العامة', 'capacity' => 2],
+            // ['administrative_id' => 2, 'department_id' => 13, 'section_name' => 'وسائط متعددة', 'capacity' => 1],
+            // ['administrative_id' => 2, 'department_id' => 13, 'section_name' => 'ترجمة', 'capacity' => 1],
+            // // Administrative sub-sections under إدارة
+            // ['administrative_id' => 4, 'department_id' => 10, 'section_name' => 'خدمات عامة', 'capacity' => 5],
+            // ['administrative_id' => 4, 'department_id' => 10, 'section_name' => 'صيانة', 'capacity' => 5],
+            // ['administrative_id' => 4, 'department_id' => 10, 'section_name' => 'مخازن', 'capacity' => 4],
+            // ['administrative_id' => 4, 'department_id' => 10, 'section_name' => 'شؤون قانونية', 'capacity' => 4],
 
             // ============================================
             // مستشفى القدس (Admin ID: 5) - HOSPITAL - غزة
@@ -117,7 +122,6 @@ return new class extends Migration
             ['administrative_id' => 5, 'department_id' => 10, 'section_name' => 'إدارة', 'capacity' => 4],
             ['administrative_id' => 5, 'department_id' => 11, 'section_name' => 'مالية', 'capacity' => 3],
             ['administrative_id' => 5, 'department_id' => 12, 'section_name' => 'تكنولوجيا المعلومات', 'capacity' => 4],
-            ['administrative_id' => 5, 'department_id' => 13, 'section_name' => 'الإعلام والعلاقات العامة', 'capacity' => 3],
             // Administrative sub-sections under إدارة
             ['administrative_id' => 5, 'department_id' => 10, 'section_name' => 'خدمات عامة', 'capacity' => 4],
             ['administrative_id' => 5, 'department_id' => 10, 'section_name' => 'صيانة', 'capacity' => 4],
@@ -140,7 +144,6 @@ return new class extends Migration
             ['administrative_id' => 6, 'department_id' => 10, 'section_name' => 'إدارة', 'capacity' => 3],
             ['administrative_id' => 6, 'department_id' => 11, 'section_name' => 'مالية', 'capacity' => 2],
             ['administrative_id' => 6, 'department_id' => 12, 'section_name' => 'تكنولوجيا المعلومات', 'capacity' => 4],
-            ['administrative_id' => 6, 'department_id' => 13, 'section_name' => 'الإعلام والعلاقات العامة', 'capacity' => 2],
             // Administrative sub-sections under إدارة
             ['administrative_id' => 6, 'department_id' => 10, 'section_name' => 'خدمات عامة', 'capacity' => 3],
             ['administrative_id' => 6, 'department_id' => 10, 'section_name' => 'صيانة', 'capacity' => 4],
@@ -286,7 +289,11 @@ return new class extends Migration
             ['administrative_id' => 23, 'department_id' => 10, 'section_name' => 'إدارة', 'capacity' => 5],
             ['administrative_id' => 23, 'department_id' => 11, 'section_name' => 'مالية', 'capacity' => 3],
             ['administrative_id' => 23, 'department_id' => 12, 'section_name' => 'تكنولوجيا المعلومات', 'capacity' => 5],
-            ['administrative_id' => 23, 'department_id' => 13, 'section_name' => 'الإعلام والعلاقات العامة', 'capacity' => 3],
+            ['administrative_id' => 2, 'department_id' => 13, 'section_name' => 'الإعلام', 'capacity' => 2],
+            ['administrative_id' => 2, 'department_id' => 13, 'section_name' => ' العلاقات العامة', 'capacity' => 2],
+            ['administrative_id' => 2, 'department_id' => 13, 'section_name' => 'وسائط متعددة', 'capacity' => 1],
+            ['administrative_id' => 2, 'department_id' => 13, 'section_name' => 'ترجمة', 'capacity' => 1],
+
             // Administrative sub-sections under إدارة
             ['administrative_id' => 23, 'department_id' => 10, 'section_name' => 'خدمات عامة', 'capacity' => 4],
             ['administrative_id' => 23, 'department_id' => 10, 'section_name' => 'صيانة', 'capacity' => 4],
@@ -303,7 +310,7 @@ return new class extends Migration
             }
 
             Section::create([
-                'name_location'     => $sec['section_name'] . ' - ' . $admin->title,
+                'name_location'     => $sec['section_name'],
                 'administrative_id' => $sec['administrative_id'],
                 'department_id'     => $sec['department_id'],
                 'capacity'          => $sec['capacity'],

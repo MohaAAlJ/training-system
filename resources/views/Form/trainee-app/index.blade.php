@@ -4,6 +4,8 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta name="csrf-token" content="{{ csrf_token() }}" />
+        <!-- UUID for security - prevents form tampering and replay attacks -->
+        <meta name="form-uuid" content="{{ $formUuid }}" />
         <title>طلب تدريب المتدرب</title>
         <link rel="stylesheet" href="{{ asset('form-assets/trainee-app/styles.css') }}" />
     </head>
@@ -21,7 +23,7 @@
         <main class="page">
             <header class="hero hero--banner">
                 <div class="hero__text">
-                    <p class="eyebrow">بوابة التدريب التعاوني</p>
+                    <p class="eyebrow">بوابة التدريب </p>
                     <h1>طلب تدريب المتدرب</h1>
                     <p class="lead">
                         أكمل بياناتك لاختيار الجهة والتخصص والقسم المناسب وفق
@@ -44,8 +46,7 @@
                         </div>
                     </div>
                     <div class="hero__brand-meta">
-                        <span class="hero__brand-name">PRCS | UCAD</span>
-                        <span class="hero__brand-sub">بوابة التدريب</span>
+                        <span class="hero__brand-name">UCAD | PRCS</span>
                     </div>
                 </div>
             </header>
@@ -59,6 +60,8 @@
                     enctype="multipart/form-data"
                 >
                     @csrf
+                    <!-- UUID for form security - prevents replay attacks and form tampering -->
+                    <input type="hidden" name="form_uuid" value="{{ $formUuid }}" />
                     <fieldset>
                         <legend>
                             <span class="legend-icon">👤</span>البيانات الشخصية

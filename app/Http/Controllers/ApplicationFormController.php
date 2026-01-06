@@ -26,7 +26,8 @@ class ApplicationFormController extends Controller
     {
         $settings = \App\Models\GeneralSetting::instance();
         return view('Form.welcomeapp', [
-            'isFormEnabled' => $settings->is_public_form_enabled
+            'isFormEnabled' => $settings->is_public_form_enabled,
+            'formUuid' => (string) \Illuminate\Support\Str::uuid()
         ]);
     }
 
@@ -45,7 +46,9 @@ class ApplicationFormController extends Controller
             return redirect()->route('training.welcome')->with('error', 'نعتذر، لا توجد أنواع تدريب متاحة حالياً.');
         }
 
-        return view('Form.trainee-app.index');
+        return view('Form.trainee-app.index', [
+            'formUuid' => (string) \Illuminate\Support\Str::uuid()
+        ]);
     }
     /**
      * Public JSON endpoints to feed the form selects from the database.
@@ -288,11 +291,17 @@ class ApplicationFormController extends Controller
         $maxBirthYear = now()->year - 20; // Must be at least 20 years old
         $minBirthYear = now()->year - 60; // Must be at most 60 years old
 
+        // Validate form UUID for security - prevents replay attacks and form tampering
+        if (!$request->input('form_uuid') || !\Illuminate\Support\Str::isUuid($request->input('form_uuid'))) {
+            return response()->json(['message' => 'Invalid form submission. Please reload and try again.'], 422);
+        }
+
         // Get training type early for custom validation
         $trainingType = $request->input('training_type');
         $nationalId = $request->input('national_id');
 
         $validated = $request->validate([
+            'form_uuid' => ['required', 'uuid'],
             'full_name' => ['required', 'string', 'max:255', 'regex:/^[\p{Arabic}A-Za-z\s]+$/u'],
             'dob' => [
                 'required',
