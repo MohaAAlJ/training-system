@@ -23,23 +23,18 @@ const ENDPOINTS = {
         `/WelcomeForm/Form/api/major-college?major_id=${majorId ?? ""}`,
     trainingType: "/WelcomeForm/Form/api/training-type",
     administrative: (trainingType) =>
-        `/WelcomeForm/Form/api/administrative?training_type=${
-            trainingType ?? ""
+        `/WelcomeForm/Form/api/administrative?training_type=${trainingType ?? ""
         }`,
     department: (adminId, trainingType) =>
-        `/WelcomeForm/Form/api/department?administrative_id=${
-            adminId ?? ""
+        `/WelcomeForm/Form/api/department?administrative_id=${adminId ?? ""
         }&training_type=${trainingType ?? ""}`,
     section: (deptId, adminId, trainingType) =>
-        `/WelcomeForm/Form/api/section?department_id=${
-            deptId ?? ""
-        }&administrative_id=${adminId ?? ""}&training_type=${
-            trainingType ?? ""
+        `/WelcomeForm/Form/api/section?department_id=${deptId ?? ""
+        }&administrative_id=${adminId ?? ""}&training_type=${trainingType ?? ""
         }`,
     submit: "/WelcomeForm/Form",
     checkNationalId: (nationalId) =>
-        `/WelcomeForm/Form/api/check-national-id?national_id=${
-            nationalId ?? ""
+        `/WelcomeForm/Form/api/check-national-id?national_id=${nationalId ?? ""
         }`,
 };
 
