@@ -23,7 +23,7 @@
         <main class="page">
             <header class="hero hero--banner">
                 <div class="hero__text">
-                    <p class="eyebrow">بوابة التدريب التعاوني</p>
+                    <p class="eyebrow">بوابة التدريب </p>
                     <h1>طلب تدريب المتدرب</h1>
                     <p class="lead">
                         أكمل بياناتك لاختيار الجهة والتخصص والقسم المناسب وفق
@@ -46,8 +46,7 @@
                         </div>
                     </div>
                     <div class="hero__brand-meta">
-                        <span class="hero__brand-name">PRCS | UCAD</span>
-                        <span class="hero__brand-sub">بوابة التدريب</span>
+                        <span class="hero__brand-name">UCAD | PRCS</span>
                     </div>
                 </div>
             </header>

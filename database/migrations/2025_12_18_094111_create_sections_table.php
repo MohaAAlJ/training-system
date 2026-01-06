@@ -310,7 +310,7 @@ return new class extends Migration
             }
 
             Section::create([
-                'name_location'     => $sec['section_name'] . ' - ' . $admin->title,
+                'name_location'     => $sec['section_name'],
                 'administrative_id' => $sec['administrative_id'],
                 'department_id'     => $sec['department_id'],
                 'capacity'          => $sec['capacity'],

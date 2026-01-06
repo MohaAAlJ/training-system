@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <!-- UUID for security - prevents form tampering and replay attacks -->
         <meta name="form-uuid" content="{{ $formUuid }}" />
-        <title>مرحباً بك - نظام التدريب التعاوني</title>
+        <title>مرحباً بك - نظام التدريب </title>
         <link rel="stylesheet" href="{{ asset('form-assets/trainee-app/styles.css') }}" />
         <link rel="stylesheet" href="{{ asset('form-assets/welcome/styles.css') }}" />
     </head>
@@ -23,10 +23,10 @@
         <main class="page welcome-page">
             <header class="hero hero--banner welcome-hero">
                 <div class="hero__text">
-                    <p class="eyebrow">بوابة التدريب التعاوني</p>
+                    <p class="eyebrow">بوابة التدريب </p>
                     <h1>مرحباً بك في نظام التدريب</h1>
                     <p class="lead">
-                        نرحب بك في نظام التدريب التعاوني. يمكنك من خلال هذه البوابة تقديم طلب التدريب الخاص بك بكل سهولة ويسر.
+                        نرحب بك في نظام التدريب. يمكنك من خلال هذه البوابة تقديم طلب التدريب الخاص بك بكل سهولة ويسر.
                     </p>
                 </div>
                 <div class="hero__brand">
@@ -45,8 +45,7 @@
                         </div>
                     </div>
                     <div class="hero__brand-meta">
-                        <span class="hero__brand-name">PRCS | UCAD</span>
-                        <span class="hero__brand-sub">نظام التدريب التعاوني</span>
+                        <span class="hero__brand-name">UCAD | PRCS</span>
                     </div>
                 </div>
             </header>
@@ -56,7 +55,7 @@
                     <div class="welcome-content">
                         <h2>ابدأ رحلتك التدريبية</h2>
                         @if($isFormEnabled)
-                            <p>للتقديم على برنامج التدريب التعاوني، يرجى الضغط على الزر أدناه لتعبئة نموذج الطلب.</p>
+                            <p>للتقديم على برنامج التدريب  يرجى الضغط على الزر أدناه لتعبئة نموذج الطلب.</p>
                             <a href="{{ route('training.form') }}" class="glow-button welcome-button">
                                 اضغط هنا لتعبئة طلبك
                             </a>
