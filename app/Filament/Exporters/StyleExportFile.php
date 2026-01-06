@@ -14,6 +14,7 @@ use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
+use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 
 class StyleExportFile implements ShouldQueue
 {
@@ -33,7 +34,7 @@ class StyleExportFile implements ShouldQueue
     {
         try {
             $storage = Storage::disk($this->disk);
-            
+
             if (!$storage->exists($this->filePath)) {
                 Log::warning('Export file not found for styling: ' . $this->filePath);
                 return;
@@ -53,19 +54,36 @@ class StyleExportFile implements ShouldQueue
             $highestColumnIndex = Coordinate::columnIndexFromString($highestColumn);
             $lastColumnLetter = Coordinate::stringFromColumnIndex($highestColumnIndex);
 
-            // 2. Insert title row at top
-            $worksheet->insertNewRowBefore(1);
-            $highestRow++;
+            // 2. Insert header image and rows at top
+            $worksheet->insertNewRowBefore(1, 5);
+            $highestRow += 5;
 
-            // Merge cells for title
-            $worksheet->mergeCells('A1:' . $lastColumnLetter . '1');
-            $worksheet->setCellValue('A1', 'بيانات الطلبات');
+            // Add header image to row 1 - merge cells across all columns
+            $headerImagePath = public_path('images/file_header.jpeg');
+            if (file_exists($headerImagePath)) {
+                // Merge the first 3 rows across all columns for the image
+                $worksheet->mergeCells('A1:' . $lastColumnLetter . '3');
+
+                $drawing = new Drawing();
+                $drawing->setPath($headerImagePath);
+                $drawing->setHeight(180); // Height in pixels - increased
+                $drawing->setWidth(1200); // Width to span all columns - increased
+                $drawing->setCoordinates('A1');
+                $worksheet->addDrawing($drawing);
+                $worksheet->getRowDimension(1)->setRowHeight(90);
+                $worksheet->getRowDimension(2)->setRowHeight(90);
+                $worksheet->getRowDimension(3)->setRowHeight(90);
+            }
+
+            // Merge cells for title (row 4)
+            $worksheet->mergeCells('A4:' . $lastColumnLetter . '4');
+            $worksheet->setCellValue('A4', 'بيانات الطلبات');
 
             // Style title row - dark blue background, white bold text
-            $worksheet->getStyle('A1:' . $lastColumnLetter . '1')->applyFromArray([
+            $worksheet->getStyle('A4:' . $lastColumnLetter . '4')->applyFromArray([
                 'font' => [
-                    'bold' => true, 
-                    'size' => 16, 
+                    'bold' => true,
+                    'size' => 16,
                     'color' => ['rgb' => 'FFFFFF']
                 ],
                 'alignment' => [
@@ -74,23 +92,23 @@ class StyleExportFile implements ShouldQueue
                     'readOrder' => Alignment::READORDER_RTL,
                 ],
                 'fill' => [
-                    'fillType' => Fill::FILL_SOLID, 
+                    'fillType' => Fill::FILL_SOLID,
                     'startColor' => ['rgb' => '2F5496']
                 ],
                 'borders' => [
                     'allBorders' => [
-                        'borderStyle' => Border::BORDER_THICK, 
+                        'borderStyle' => Border::BORDER_THICK,
                         'color' => ['rgb' => '000000']
                     ]
                 ],
             ]);
-            $worksheet->getRowDimension(1)->setRowHeight(40);
+            $worksheet->getRowDimension(4)->setRowHeight(40);
 
-            // 3. Style header row (now row 2) - light blue, bold white text
-            $worksheet->getStyle('A2:' . $lastColumnLetter . '2')->applyFromArray([
+            // 3. Style header row (now row 5) - light blue, bold white text
+            $worksheet->getStyle('A5:' . $lastColumnLetter . '5')->applyFromArray([
                 'font' => [
-                    'bold' => true, 
-                    'size' => 12, 
+                    'bold' => true,
+                    'size' => 12,
                     'color' => ['rgb' => 'FFFFFF']
                 ],
                 'alignment' => [
@@ -99,21 +117,21 @@ class StyleExportFile implements ShouldQueue
                     'readOrder' => Alignment::READORDER_RTL,
                 ],
                 'fill' => [
-                    'fillType' => Fill::FILL_SOLID, 
+                    'fillType' => Fill::FILL_SOLID,
                     'startColor' => ['rgb' => '4472C4']
                 ],
                 'borders' => [
                     'allBorders' => [
-                        'borderStyle' => Border::BORDER_THICK, 
+                        'borderStyle' => Border::BORDER_THICK,
                         'color' => ['rgb' => '000000']
                     ]
                 ],
             ]);
-            $worksheet->getRowDimension(2)->setRowHeight(30);
+            $worksheet->getRowDimension(5)->setRowHeight(30);
 
             // 4. Style data rows - thick borders and right alignment
-            if ($highestRow >= 3) {
-                $dataRange = 'A3:' . $lastColumnLetter . $highestRow;
+            if ($highestRow >= 6) {
+                $dataRange = 'A6:' . $lastColumnLetter . $highestRow;
                 $worksheet->getStyle($dataRange)->applyFromArray([
                     'alignment' => [
                         'horizontal' => Alignment::HORIZONTAL_RIGHT,
@@ -122,14 +140,14 @@ class StyleExportFile implements ShouldQueue
                     ],
                     'borders' => [
                         'allBorders' => [
-                            'borderStyle' => Border::BORDER_THICK, 
+                            'borderStyle' => Border::BORDER_THICK,
                             'color' => ['rgb' => '000000']
                         ]
                     ],
                 ]);
 
                 // Set row heights for data
-                for ($i = 3; $i <= $highestRow; $i++) {
+                for ($i = 6; $i <= $highestRow; $i++) {
                     $worksheet->getRowDimension($i)->setRowHeight(25);
                 }
             }

@@ -10,10 +10,10 @@ use App\Models\Institution;
 use App\Models\Major;
 use App\Models\Trainee;
 use App\Models\Governorate;
-use App\Helpers\Constants;
+// use App\Helpers\Constants;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
+// use Illuminate\Support\Facades\Storage;
 
 class ApplicationFormController extends Controller
 {
@@ -203,15 +203,18 @@ class ApplicationFormController extends Controller
             $query->where('administrative_id', $administrativeId);
         }
 
+        // DEPRECATED: Feature to hide full sections - temporarily disabled
+        // Uncomment the following lines to enable this feature
         // $hideFull = \App\Models\GeneralSetting::instance()->hide_full_sections;
-
-        $sections = $query->active()->get();
-
         // if ($hideFull) {
-        //     $sections = $sections->reject(function ($sec) {
+        //     $sections = $query->active()->get()->reject(function ($sec) {
         //         return $sec->getCapacityStats()['is_full'] ?? false;
         //     });
+        // } else {
+        //     $sections = $query->active()->get();
         // }
+
+        $sections = $query->active()->get();
 
         $data = $sections->map(function ($sec) {
             $stats = $sec->getCapacityStats();
@@ -245,7 +248,20 @@ class ApplicationFormController extends Controller
 
     public function checkNationalId(Request $request)
     {
+        // SECURITY NOTE: This endpoint allows enumeration of national IDs
+        // Anyone can check if a national ID exists in the system
+        // This is acceptable for UX (duplicate check) but be aware of privacy implications
+
         $nationalId = $request->query('national_id');
+
+        // Validate input format before checking
+        if (!preg_match('/^\d{9}$/', $nationalId)) {
+            return response()->json([
+                'exists' => false,
+                'message' => ''
+            ], 200);
+        }
+
         $exists = Trainee::where('national_id', $nationalId)->exists();
 
         return response()->json([
@@ -257,11 +273,24 @@ class ApplicationFormController extends Controller
     /**
      * Store a trainee application into the Trainee and Application tables.
      * Uses a database transaction to ensure both save together or neither saves.
+     *
+     * IMPORTANT: Each trainee can have ONE application per training type.
+     * Examples:
+     *   - National ID 123456789 can have 1 UNIVERSITY training application
+     *   - Same ID 123456789 can ALSO have 1 PRACTICE training application
+     *   - BUT cannot have 2 UNIVERSITY applications or 2 PRACTICE applications
+     *
+     * The validation checks existing Applications, not just Trainees,
+     * to prevent duplicate applications of the same training type.
      */
     public function store(Request $request)
     {
         $maxBirthYear = now()->year - 20; // Must be at least 20 years old
         $minBirthYear = now()->year - 60; // Must be at most 60 years old
+
+        // Get training type early for custom validation
+        $trainingType = $request->input('training_type');
+        $nationalId = $request->input('national_id');
 
         $validated = $request->validate([
             'full_name' => ['required', 'string', 'max:255', 'regex:/^[\p{Arabic}A-Za-z\s]+$/u'],
@@ -281,7 +310,23 @@ class ApplicationFormController extends Controller
                     }
                 },
             ],
-            'national_id' => ['required', 'digits:9', 'unique:trainees,national_id'],
+            'national_id' => [
+                'required',
+                'digits:9',
+                // IMPROVED: Custom validation - check for duplicate applications of SAME training type
+                function ($attribute, $value, $fail) use ($trainingType) {
+                    $duplicateApp = Application::whereHas('trainee', function ($q) use ($value) {
+                        $q->where('national_id', $value);
+                    })->where('training_type', $trainingType)
+                      ->where('status', '!=', Application::STATUS_DROPPED) // Allow resubmission if dropped
+                      ->exists();
+
+                    if ($duplicateApp) {
+                        $trainingTypeName = Application::TRAINING_TYPES[$trainingType] ?? 'غير محدد';
+                        $fail("لديك بالفعل تطبيق تدريب من نوع '{$trainingTypeName}'.");
+                    }
+                },
+            ],
             'phone_number' => ['required', 'regex:/^97[02]5[69]\d{7}$/'],
             'governorate_id' => ['required', 'integer', 'exists:governorates,id'],
             'street' => ['required', 'string', 'max:255', 'regex:/^[\p{Arabic}A-Za-z0-9\s\-\.,#\/]+$/u'],
@@ -309,7 +354,7 @@ class ApplicationFormController extends Controller
             'letter_file' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
             'terms_approval' => ['required', 'accepted'],
         ], [
-            'national_id.unique' => 'رقم الهوية هذا مسجل مسبقاً في النظام.',
+            'national_id.digits' => 'رقم الهوية يجب أن يكون 9 أرقام.',
         ]);
 
         // Convert DOB from dd/mm/yyyy to Y-m-d format for database storage
@@ -391,12 +436,18 @@ class ApplicationFormController extends Controller
 
             return response()->json([
                 'message' => 'تم استلام الطلب بنجاح',
-                'slug' => $result['application']->slug,
+                'id' => $result['application']->id,
                 'redirect' => route('training.welcome'),
             ]);
         } catch (\Exception $e) {
-            // If there was an error, the transaction will be rolled back
-            // Spatie Media Library handles cleanup automatically
+            // If there was an error, the transaction will be rolled back automatically
+            // File uploads are managed by Laravel storage (automatically cleaned up on rollback)
+
+            \Log::error('Application submission failed', [
+                'national_id' => $request->input('national_id'),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
 
             return response()->json([
                 'message' => 'حدث خطأ أثناء حفظ الطلب. يرجى المحاولة مرة أخرى.',

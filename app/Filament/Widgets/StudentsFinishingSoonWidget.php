@@ -22,6 +22,7 @@ class StudentsFinishingSoonWidget extends BaseWidget
     protected int | string | array $columnSpan = 1;
 
     protected static ?string $heading = 'متابعة المتدربين المنتهين قريباً';
+    protected static bool $collapsible = false;
 
     public static function canView(): bool
     {

@@ -1,11 +1,27 @@
-const endpoints = {
+// ========================================
+// NEW REFACTORED CODE - Using Classes & Better Structure
+// ========================================
+
+// ==== CONFIGURATION & CONSTANTS ====
+const CONFIG = {
+    TRAINING_TYPE_UNIVERSITY: 1,
+    TRAINING_TYPE_PRACTICE: 2,
+    MAX_FILE_SIZE: 2 * 1024 * 1024, // 2MB
+    ALLOWED_FILE_TYPES: ["image/jpeg", "image/png", "application/pdf"],
+    NATIONAL_ID_LENGTH: 9,
+    TOAST_DURATION: 3000,
+    ANIMATION_DELAY: 100,
+};
+
+// API Endpoints configuration
+const ENDPOINTS = {
     address: "/WelcomeForm/Form/api/address",
     institution: "/WelcomeForm/Form/api/institution",
     major: (institutionId) =>
         `/WelcomeForm/Form/api/major?institution_id=${institutionId ?? ""}`,
     majorCollege: (majorId) =>
         `/WelcomeForm/Form/api/major-college?major_id=${majorId ?? ""}`,
-    trainingFocus: "/WelcomeForm/Form/api/training-type",
+    trainingType: "/WelcomeForm/Form/api/training-type",
     administrative: (trainingType) =>
         `/WelcomeForm/Form/api/administrative?training_type=${trainingType ?? ""
         }`,
@@ -22,7 +38,624 @@ const endpoints = {
         }`,
 };
 
-// --- THEME TOGGLE LOGIC ---
+// ==== UTILITY CLASSES ====
+
+/**
+ * ThemeManager - Handles theme switching logic
+ */
+class ThemeManager {
+    constructor() {
+        this.themeToggle = document.getElementById("themeToggle");
+        this.init();
+    }
+
+    init() {
+        if (this.themeToggle) {
+            this.themeToggle.addEventListener("click", () =>
+                this.toggleTheme()
+            );
+        }
+    }
+
+    toggleTheme() {
+        const currentTheme =
+            document.documentElement.getAttribute("data-theme");
+        const newTheme = currentTheme === "dark" ? "light" : "dark";
+
+        document.documentElement.setAttribute("data-theme", newTheme);
+        localStorage.setItem("theme", newTheme);
+
+        this.animateIcon();
+    }
+
+    animateIcon() {
+        const icon = this.themeToggle?.querySelector(".mode-icon");
+        if (icon) {
+            icon.style.transform = "scale(0.5) rotate(180deg)";
+            setTimeout(() => {
+                icon.style.transform = "scale(1) rotate(360deg)";
+            }, 150);
+        }
+    }
+}
+
+/**
+ * CsrfTokenManager - Handles CSRF token retrieval
+ */
+class CsrfTokenManager {
+    static getToken() {
+        try {
+            const metaToken = document.querySelector('meta[name="csrf-token"]');
+            if (metaToken) {
+                const token = metaToken.getAttribute("content");
+                if (token) return token;
+            }
+        } catch (e) {
+            console.warn("Failed to retrieve CSRF token from meta tag", e);
+        }
+
+        try {
+            const match = document.cookie
+                .split(";")
+                .map((c) => c.trim())
+                .find((c) => c.startsWith("XSRF-TOKEN="));
+            if (match) {
+                return decodeURIComponent(match.split("=")[1]);
+            }
+        } catch (e) {
+            console.warn("Failed to retrieve CSRF token from cookie", e);
+        }
+
+        console.error(
+            "WARNING: CSRF token not found. Form submission may fail."
+        );
+        return "";
+    }
+}
+
+/**
+ * NotificationManager - Handles messages and toasts
+ */
+class NotificationManager {
+    constructor() {
+        this.messageElement = document.getElementById("formMessage");
+        this.toastElement = document.getElementById("toast");
+        this.toastMessageElement = document.getElementById("toastMessage");
+        this.toastTimeoutId = null;
+    }
+
+    setMessage(text = "", type = "note") {
+        if (!this.messageElement) return;
+        this.messageElement.textContent = text;
+        this.messageElement.className =
+            type === "error"
+                ? "error"
+                : type === "success"
+                ? "success"
+                : "note";
+    }
+
+    showToast(text, type = "success") {
+        if (!this.toastElement || !this.toastMessageElement) return;
+
+        // Clear any existing timeout
+        if (this.toastTimeoutId) {
+            clearTimeout(this.toastTimeoutId);
+        }
+
+        this.toastMessageElement.textContent = text;
+        this.toastElement.className = "toast";
+
+        if (type === "error") {
+            this.toastElement.classList.add("error");
+        }
+
+        // Show the toast
+        setTimeout(() => {
+            this.toastElement.classList.add("show");
+        }, 10);
+
+        // Hide after duration
+        this.toastTimeoutId = setTimeout(() => {
+            this.toastElement.classList.remove("show");
+        }, CONFIG.TOAST_DURATION);
+    }
+
+    clearMessage() {
+        this.setMessage("", "note");
+    }
+}
+
+/**
+ * InputValidator - Handles input validation
+ */
+class InputValidator {
+    static isValidNationalId(nationalId) {
+        return nationalId && nationalId.length === CONFIG.NATIONAL_ID_LENGTH;
+    }
+
+    static sanitizeNameInput(input) {
+        return input.replace(/[^A-Za-z\u0600-\u06FF\s]/g, "");
+    }
+
+    static validateFileSize(file) {
+        return file.size <= CONFIG.MAX_FILE_SIZE;
+    }
+
+    static validateFileType(file) {
+        return CONFIG.ALLOWED_FILE_TYPES.includes(file.type);
+    }
+}
+
+/**
+ * SelectManager - Handles select/dropdown population and updates
+ */
+class SelectManager {
+    constructor() {
+        this.selects = {
+            governorate: document.getElementById("governorate_id"),
+            institution: document.getElementById("institution_id"),
+            major: document.getElementById("major_id"),
+            administrative: document.getElementById("administrative_id"),
+            department: document.getElementById("department_id"),
+            section: document.getElementById("section_id"),
+            trainingType: document.getElementById("training_type"),
+        };
+        this.universityContainer = document.getElementById(
+            "university_data_container"
+        );
+    }
+
+    /**
+     * Populate a select with options
+     */
+    populateOptions(selectElement, items, labelKey = "name") {
+        if (!selectElement) return;
+
+        selectElement.innerHTML =
+            '<option value="" disabled selected>اختر</option>';
+        items.forEach((item) => {
+            const opt = document.createElement("option");
+            opt.value = item.id;
+            opt.textContent = item[labelKey] ?? "";
+            if (item.is_full) {
+                opt.disabled = true;
+                opt.style.color = "#999";
+                opt.style.fontStyle = "italic";
+            }
+            selectElement.appendChild(opt);
+        });
+    }
+
+    /**
+     * Load options from API endpoint
+     */
+    async loadOptions(selectElement, url, labelKey = "name") {
+        if (!selectElement) return;
+        try {
+            const res = await fetch(url);
+            if (!res.ok) throw new Error("Request failed");
+            const data = await res.json();
+            this.populateOptions(selectElement, data, labelKey);
+
+            // Auto-select if only 1 option for training_type
+            if (data.length === 1 && selectElement.id === "training_type") {
+                selectElement.value = data[0].id;
+                selectElement.dispatchEvent(new Event("change"));
+            }
+        } catch (err) {
+            console.error("Failed to load options from API:", url, err);
+            this.populateOptions(selectElement, []);
+        }
+    }
+
+    /**
+     * Load administrative based on training type
+     */
+    async loadAdministrative() {
+        const trainingType = this.selects.trainingType?.value ?? "";
+        await this.loadOptions(
+            this.selects.administrative,
+            ENDPOINTS.administrative(trainingType)
+        );
+        this.populateOptions(this.selects.department, []);
+        this.populateOptions(this.selects.section, []);
+    }
+
+    /**
+     * Show/hide university fields based on training type
+     */
+    toggleUniversityFields(isUniversity) {
+        if (this.universityContainer) {
+            this.universityContainer.style.display = isUniversity
+                ? "contents"
+                : "none";
+        }
+
+        if (this.selects.institution) {
+            this.selects.institution.required = isUniversity;
+        }
+        if (this.selects.major) {
+            this.selects.major.required = isUniversity;
+        }
+
+        if (!isUniversity) {
+            if (this.selects.institution) this.selects.institution.value = "";
+            if (this.selects.major) this.selects.major.value = "";
+            const collegeInput = document.getElementById("college_id");
+            if (collegeInput) collegeInput.value = "";
+        }
+    }
+}
+
+/**
+ * FilePreviewManager - Handles file preview functionality
+ */
+class FilePreviewManager {
+    constructor(notificationManager) {
+        this.notificationManager = notificationManager;
+        this.fileInput = document.getElementById("letter_file");
+        this.filePreview = document.getElementById("file_preview");
+        this.previewImage = document.getElementById("preview_image");
+        this.previewPdf = document.getElementById("preview_pdf");
+        this.previewPdfName = document.getElementById("preview_pdf_name");
+
+        this.init();
+    }
+
+    init() {
+        if (this.fileInput) {
+            this.fileInput.addEventListener("change", (e) =>
+                this.handleFileChange(e)
+            );
+        }
+    }
+
+    handleFileChange(event) {
+        const file = event.target.files[0];
+        if (!file) {
+            this.hidePreview();
+            return;
+        }
+
+        // Validate file size
+        if (!InputValidator.validateFileSize(file)) {
+            this.notificationManager.showToast(
+                "حجم الملف كبير جداً. الحد الأقصى: 2MB",
+                "error"
+            );
+            this.fileInput.value = "";
+            this.hidePreview();
+            return;
+        }
+
+        // Validate file type
+        if (!InputValidator.validateFileType(file)) {
+            this.notificationManager.showToast(
+                "نوع الملف غير مدعوم. الأنواع المدعومة: JPG, PNG, PDF",
+                "error"
+            );
+            this.fileInput.value = "";
+            this.hidePreview();
+            return;
+        }
+
+        this.showPreview(file);
+    }
+
+    showPreview(file) {
+        if (this.filePreview) {
+            this.filePreview.style.display = "block";
+        }
+
+        if (file.type.startsWith("image/")) {
+            this.showImagePreview(file);
+        } else if (file.type === "application/pdf") {
+            this.showPdfPreview(file);
+        } else {
+            this.hidePreview();
+        }
+    }
+
+    showImagePreview(file) {
+        if (this.previewImage) {
+            this.previewImage.style.display = "block";
+        }
+        if (this.previewPdf) {
+            this.previewPdf.style.display = "none";
+        }
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            if (this.previewImage) {
+                this.previewImage.src = event.target.result;
+            }
+        };
+        reader.readAsDataURL(file);
+    }
+
+    showPdfPreview(file) {
+        if (this.previewImage) {
+            this.previewImage.style.display = "none";
+        }
+        if (this.previewPdf) {
+            this.previewPdf.style.display = "flex";
+            this.previewPdf.style.alignItems = "center";
+            this.previewPdf.style.gap = "8px";
+        }
+        if (this.previewPdfName) {
+            this.previewPdfName.textContent = file.name;
+        }
+    }
+
+    hidePreview() {
+        if (this.filePreview) {
+            this.filePreview.style.display = "none";
+        }
+    }
+}
+
+/**
+ * DateOfBirthManager - Handles DOB field combination
+ */
+class DateOfBirthManager {
+    constructor() {
+        this.dobInput = document.getElementById("dob");
+        this.dobDay = document.getElementById("dob_day");
+        this.dobMonth = document.getElementById("dob_month");
+        this.dobYear = document.getElementById("dob_year");
+
+        this.init();
+    }
+
+    init() {
+        if (this.dobDay)
+            this.dobDay.addEventListener("change", () =>
+                this.updateHiddenField()
+            );
+        if (this.dobMonth)
+            this.dobMonth.addEventListener("change", () =>
+                this.updateHiddenField()
+            );
+        if (this.dobYear)
+            this.dobYear.addEventListener("change", () =>
+                this.updateHiddenField()
+            );
+    }
+
+    updateHiddenField() {
+        if (!this.dobDay || !this.dobMonth || !this.dobYear || !this.dobInput)
+            return;
+
+        const day = this.dobDay.value;
+        const month = this.dobMonth.value;
+        const year = this.dobYear.value;
+
+        if (day && month && year) {
+            this.dobInput.value = `${day}/${month}/${year}`;
+        } else {
+            this.dobInput.value = "";
+        }
+    }
+}
+
+/**
+ * FormHandler - Main form submission and validation logic
+ */
+class FormHandler {
+    constructor(selectManager, notificationManager) {
+        this.selectManager = selectManager;
+        this.notificationManager = notificationManager;
+        this.form = document.getElementById("applicationForm");
+        this.submitBtn = document.getElementById("submitBtn");
+        this.termsCheckbox = document.getElementById("terms_approval");
+        this.collegeInput = document.getElementById("college_id");
+
+        this.init();
+    }
+
+    init() {
+        if (this.form) {
+            this.form.addEventListener("submit", (e) => this.handleSubmit(e));
+        }
+
+        if (this.termsCheckbox && this.submitBtn) {
+            this.termsCheckbox.addEventListener("change", (e) =>
+                this.updateSubmitButton(e)
+            );
+        }
+    }
+
+    updateSubmitButton(event) {
+        const isChecked = event.target.checked;
+        this.submitBtn.disabled = !isChecked;
+        this.submitBtn.style.opacity = isChecked ? "1" : "0.5";
+        this.submitBtn.style.cursor = isChecked ? "pointer" : "not-allowed";
+    }
+
+    async handleSubmit(event) {
+        event.preventDefault();
+        this.notificationManager.setMessage("جاري الإرسال...", "note");
+
+        try {
+            await this.ensureCollegeId();
+            const formData = new FormData(this.form);
+            const response = await fetch(ENDPOINTS.submit, {
+                method: "POST",
+                body: formData,
+                headers: {
+                    "X-CSRF-TOKEN": CsrfTokenManager.getToken(),
+                    "X-Requested-With": "XMLHttpRequest",
+                },
+            });
+
+            await this.handleResponse(response);
+        } catch (err) {
+            console.error("Form submission error:", err);
+            this.notificationManager.showToast(
+                "تعذر الإرسال، جرّب لاحقاً.",
+                "error"
+            );
+        }
+    }
+
+    async ensureCollegeId() {
+        if (this.collegeInput?.value) return;
+
+        const majorId = this.selectManager.selects.major?.value;
+        if (!majorId) return;
+
+        try {
+            const res = await fetch(ENDPOINTS.majorCollege(majorId));
+            if (res.ok) {
+                const data = await res.json();
+                if (Array.isArray(data) && data.length > 0) {
+                    this.collegeInput.value = data[0].id ?? "";
+                    if (
+                        data[0].institution_id &&
+                        this.selectManager.selects.institution
+                    ) {
+                        this.selectManager.selects.institution.value =
+                            data[0].institution_id;
+                    }
+                }
+            }
+        } catch (err) {
+            console.warn(
+                "Could not fetch college for major before submit",
+                err
+            );
+        }
+    }
+
+    async handleResponse(response) {
+        if (!response.ok) {
+            const body = await response.json();
+            if (response.status === 422 && body.errors) {
+                const errorMessage =
+                    body.errors.national_id?.[0] ||
+                    Object.values(body.errors)[0]?.[0] ||
+                    "حدث خطأ في البيانات المدخلة";
+                this.notificationManager.showToast(errorMessage, "error");
+                this.notificationManager.setMessage(errorMessage, "error");
+                return;
+            }
+            throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        this.notificationManager.clearMessage();
+        this.notificationManager.showToast(
+            "تم إرسال الطلب بنجاح. جاري التحويل...",
+            "success"
+        );
+        this.form.reset();
+
+        setTimeout(() => {
+            window.location.href = data.redirect || "/WelcomeForm";
+        }, 2000);
+    }
+}
+
+/**
+ * NationalIdValidator - Handles national ID validation
+ */
+class NationalIdValidator {
+    constructor(notificationManager) {
+        this.notificationManager = notificationManager;
+        this.input = document.getElementById("national_id");
+        this.init();
+    }
+
+    init() {
+        if (this.input) {
+            this.input.addEventListener("blur", (e) => this.validateOnBlur(e));
+        }
+    }
+
+    async validateOnBlur(event) {
+        const nationalId = event.target.value;
+        if (!InputValidator.isValidNationalId(nationalId)) return;
+
+        try {
+            const res = await fetch(ENDPOINTS.checkNationalId(nationalId));
+            if (!res.ok) return;
+
+            const data = await res.json();
+            if (data.exists) {
+                this.notificationManager.showToast(data.message, "error");
+                this.notificationManager.setMessage(data.message, "error");
+                event.target.classList.add("invalid");
+            } else {
+                event.target.classList.remove("invalid");
+            }
+        } catch (err) {
+            console.error("Error checking national ID", err);
+        }
+    }
+}
+
+/**
+ * InputNameFilter - Handles name input filtering
+ */
+class InputNameFilter {
+    constructor() {
+        this.fullNameInput = document.getElementById("full_name");
+        this.init();
+    }
+
+    init() {
+        if (this.fullNameInput) {
+            this.fullNameInput.addEventListener("input", (e) =>
+                this.filterInput(e)
+            );
+        }
+    }
+
+    filterInput(event) {
+        event.target.value = InputValidator.sanitizeNameInput(
+            event.target.value
+        );
+    }
+}
+
+/**
+ * FormAnimator - Handles page entrance animations
+ */
+class FormAnimator {
+    static animatePageElements() {
+        const heroElement = document.querySelector(".hero");
+        const formCard = document.querySelector(".card");
+
+        if (heroElement) {
+            this.animateElement(heroElement, "translateY(-20px)", 500);
+        }
+
+        if (formCard) {
+            setTimeout(() => {
+                this.animateElement(formCard, "translateY(20px)", 600);
+            }, CONFIG.ANIMATION_DELAY);
+        }
+    }
+
+    static animateElement(element, initialTransform, duration) {
+        element.style.opacity = "0";
+        element.style.transform = initialTransform;
+
+        requestAnimationFrame(() => {
+            element.style.transition = `opacity ${duration}ms ease, transform ${duration}ms ease`;
+            element.style.opacity = "1";
+            element.style.transform = "translateY(0)";
+        });
+    }
+}
+
+// ========================================
+// OLD CODE - KEPT FOR REFERENCE
+// ========================================
+
+/*
+// --- ORIGINAL THEME TOGGLE LOGIC ---
 const themeToggle = document.getElementById("themeToggle");
 if (themeToggle) {
     themeToggle.addEventListener("click", () => {
@@ -44,8 +677,9 @@ if (themeToggle) {
     });
 }
 
-// بيانات بديلة مؤقتة (أزلها عند توفر الـ API)
-const fallback = {};
+// NOTE: Fallback data object - DEPRECATED and no longer used
+// All form data is now loaded from API endpoints
+// const fallback = {};
 
 const form = document.getElementById("applicationForm");
 const message = document.getElementById("formMessage");
@@ -56,9 +690,7 @@ const administrativeSelect = document.getElementById("administrative_id");
 const departmentSelect = document.getElementById("department_id");
 const sectionSelect = document.getElementById("section_id");
 const trainingTypeSelect = document.getElementById("training_type");
-const universityContainer = document.getElementById(
-    "university_data_container"
-);
+const universityContainer = document.getElementById("university_data_container");
 const dobInput = document.getElementById("dob");
 const dobDay = document.getElementById("dob_day");
 const dobMonth = document.getElementById("dob_month");
@@ -67,23 +699,34 @@ const fullNameInput = document.getElementById("full_name");
 const nationalIdInput = document.getElementById("national_id");
 
 const getCsrfToken = () => {
-    // First try meta tag (Laravel blade)
-    const metaToken = document.querySelector('meta[name="csrf-token"]');
-    if (metaToken) {
-        return metaToken.getAttribute("content");
+    try {
+        const metaToken = document.querySelector('meta[name="csrf-token"]');
+        if (metaToken) {
+            const token = metaToken.getAttribute("content");
+            if (token) return token;
+        }
+    } catch (e) {
+        console.warn("Failed to retrieve CSRF token from meta tag", e);
     }
-    // Fallback to XSRF-TOKEN cookie
-    const match = document.cookie
-        .split(";")
-        .map((c) => c.trim())
-        .find((c) => c.startsWith("XSRF-TOKEN="));
-    return match ? decodeURIComponent(match.split("=")[1]) : "";
+
+    try {
+        const match = document.cookie
+            .split(";")
+            .map((c) => c.trim())
+            .find((c) => c.startsWith("XSRF-TOKEN="));
+        if (match) {
+            return decodeURIComponent(match.split("=")[1]);
+        }
+    } catch (e) {
+        console.warn("Failed to retrieve CSRF token from cookie", e);
+    }
+
+    console.error("WARNING: CSRF token not found. Form submission may fail.");
+    return "";
 };
 
-// Handle name input - only allow letters (Arabic and English) and spaces
 function handleNameInput(event) {
     const input = event.target;
-    // Remove anything that's not Arabic letters, English letters, or spaces
     input.value = input.value.replace(/[^A-Za-z\u0600-\u06FF\s]/g, "");
 }
 
@@ -103,7 +746,6 @@ const setMessage = (text, type = "note") => {
         type === "error" ? "error" : type === "success" ? "success" : "note";
 };
 
-// Toast notification function
 const showToast = (text, type = "success") => {
     const toast = document.getElementById("toast");
     const toastMessage = document.getElementById("toastMessage");
@@ -115,12 +757,10 @@ const showToast = (text, type = "success") => {
         toast.classList.add("error");
     }
 
-    // Show the toast
     setTimeout(() => {
         toast.classList.add("show");
     }, 10);
 
-    // Hide after 3 seconds (if not redirecting)
     setTimeout(() => {
         toast.classList.remove("show");
     }, 3000);
@@ -137,7 +777,6 @@ const populateOptions = (select, items, labelKey = "name") => {
             opt.disabled = true;
             opt.style.color = "#999";
             opt.style.fontStyle = "italic";
-            // Some browsers don't support style on options well, but disabled is standard
         }
         select.appendChild(opt);
     });
@@ -151,7 +790,6 @@ async function loadOptions(select, url, fallbackData, labelKey = "name") {
         const data = await res.json();
         populateOptions(select, data, labelKey);
 
-        // Auto-select if only 1 option for training_type
         if (data.length === 1 && select.id === "training_type") {
             select.value = data[0].id;
             select.dispatchEvent(new Event("change"));
@@ -172,324 +810,119 @@ async function loadAdministrative() {
     populateOptions(sectionSelect, []);
 }
 
-if (governorateSelect) {
-    governorateSelect.addEventListener("change", () => {
-        setMessage("");
-    });
-}
+// ... [rest of original event listeners] ...
+*/
 
-administrativeSelect.addEventListener("change", (e) => {
-    const adminId = e.target.value;
-    const trainingType = trainingTypeSelect ? trainingTypeSelect.value : "";
-    loadOptions(
-        departmentSelect,
-        endpoints.department(adminId, trainingType),
-        [],
-        "name"
+// ========================================
+// APPLICATION INITIALIZATION
+// ========================================
+
+document.addEventListener("DOMContentLoaded", () => {
+    // Initialize managers
+    const themeManager = new ThemeManager();
+    const notificationManager = new NotificationManager();
+    const selectManager = new SelectManager();
+    const filePreviewManager = new FilePreviewManager(notificationManager);
+    const dobManager = new DateOfBirthManager();
+    const formHandler = new FormHandler(selectManager, notificationManager);
+    const nationalIdValidator = new NationalIdValidator(notificationManager);
+    const inputNameFilter = new InputNameFilter();
+
+    // Setup event listeners for cascading selects
+    const governorateSelect = selectManager.selects.governorate;
+    if (governorateSelect) {
+        governorateSelect.addEventListener("change", () =>
+            notificationManager.clearMessage()
+        );
+    }
+
+    // Administrative change listener
+    selectManager.selects.administrative?.addEventListener(
+        "change",
+        async (e) => {
+            const adminId = e.target.value;
+            const trainingType =
+                selectManager.selects.trainingType?.value ?? "";
+            await selectManager.loadOptions(
+                selectManager.selects.department,
+                ENDPOINTS.department(adminId, trainingType)
+            );
+            selectManager.populateOptions(selectManager.selects.section, []);
+        }
     );
-    populateOptions(sectionSelect, []);
-});
 
-institutionSelect.addEventListener("change", (e) => {
-    const instId = e.target.value;
-    loadOptions(majorSelect, endpoints.major(instId), [], "name");
-});
-
-departmentSelect.addEventListener("change", (e) => {
-    const deptId = e.target.value;
-    const adminId = administrativeSelect.value;
-    const trainingType = trainingTypeSelect ? trainingTypeSelect.value : "";
-    loadOptions(
-        sectionSelect,
-        endpoints.section(deptId, adminId, trainingType),
-        [],
-        "name"
-    );
-});
-majorSelect.addEventListener("change", async (e) => {
-    try {
-        const res = await fetch(endpoints.majorCollege(e.target.value));
-        if (!res.ok) return;
-        const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) {
-            const first = data[0];
-            if (first.institution_id && institutionSelect) {
-                institutionSelect.value = first.institution_id;
-            }
-            // set hidden college_id field to the first linked college id
-            const collegeInput = document.getElementById("college_id");
-            if (collegeInput) {
-                collegeInput.value = first.id ?? "";
-            }
-        } else {
-            const collegeInput = document.getElementById("college_id");
-            if (collegeInput) collegeInput.value = "";
-        }
-    } catch (err) {
-        const collegeInput = document.getElementById("college_id");
-        if (collegeInput) collegeInput.value = "";
-    }
-});
-
-if (trainingTypeSelect) {
-    trainingTypeSelect.addEventListener("change", (e) => {
-        const val = parseInt(e.target.value);
-        // ID 1 is University (based on Constants::TRAINING_TYPE_UNIVERSITY)
-        const isUniversity = val === 1;
-
-        if (universityContainer) {
-            universityContainer.style.display = isUniversity
-                ? "contents"
-                : "none";
-        }
-
-        if (institutionSelect) institutionSelect.required = isUniversity;
-        if (majorSelect) majorSelect.required = isUniversity;
-
-        if (!isUniversity) {
-            if (institutionSelect) institutionSelect.value = "";
-            if (majorSelect) majorSelect.value = "";
-            const collegeInput = document.getElementById("college_id");
-            if (collegeInput) collegeInput.value = "";
-        }
-
-        // Reload administratives based on selected training type
-        loadAdministrative();
+    // Institution change listener
+    selectManager.selects.institution?.addEventListener("change", async (e) => {
+        await selectManager.loadOptions(
+            selectManager.selects.major,
+            ENDPOINTS.major(e.target.value)
+        );
     });
-}
 
-// Handle DOB dropdowns - combine to dd/mm/yyyy format for the hidden field
-function updateDobHiddenField() {
-    if (dobDay && dobMonth && dobYear && dobInput) {
-        const day = dobDay.value;
-        const month = dobMonth.value;
-        const year = dobYear.value;
-        if (day && month && year) {
-            dobInput.value = `${day}/${month}/${year}`;
-        } else {
-            dobInput.value = "";
-        }
-    }
-}
+    // Department change listener
+    selectManager.selects.department?.addEventListener("change", async (e) => {
+        const deptId = e.target.value;
+        const adminId = selectManager.selects.administrative?.value ?? "";
+        const trainingType = selectManager.selects.trainingType?.value ?? "";
+        await selectManager.loadOptions(
+            selectManager.selects.section,
+            ENDPOINTS.section(deptId, adminId, trainingType)
+        );
+    });
 
-if (dobDay) dobDay.addEventListener("change", updateDobHiddenField);
-if (dobMonth) dobMonth.addEventListener("change", updateDobHiddenField);
-if (dobYear) dobYear.addEventListener("change", updateDobHiddenField);
+    // Major change listener
+    selectManager.selects.major?.addEventListener("change", async (e) => {
+        try {
+            const res = await fetch(ENDPOINTS.majorCollege(e.target.value));
+            if (!res.ok) return;
+            const data = await res.json();
 
-// Handle full name input - only allow letters
-if (fullNameInput) {
-    fullNameInput.addEventListener("input", handleNameInput);
-}
-
-// Check national ID uniqueness in real-time
-if (nationalIdInput) {
-    nationalIdInput.addEventListener("blur", async (e) => {
-        const nationalId = e.target.value;
-        if (nationalId.length === 9) {
-            try {
-                const res = await fetch(endpoints.checkNationalId(nationalId));
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data.exists) {
-                        showToast(data.message, "error");
-                        setMessage(data.message, "error");
-                        nationalIdInput.classList.add("invalid");
-                    } else {
-                        nationalIdInput.classList.remove("invalid");
-                        if (message.textContent === data.message) {
-                            setMessage("");
-                        }
-                    }
+            if (Array.isArray(data) && data.length > 0) {
+                const first = data[0];
+                if (first.institution_id && selectManager.selects.institution) {
+                    selectManager.selects.institution.value =
+                        first.institution_id;
                 }
-            } catch (err) {
-                console.error("Error checking national ID", err);
-            }
-        }
-    });
-}
-
-// File preview handler
-const letterFileInput = document.getElementById("letter_file");
-const filePreview = document.getElementById("file_preview");
-const previewImage = document.getElementById("preview_image");
-const previewPdf = document.getElementById("preview_pdf");
-const previewPdfName = document.getElementById("preview_pdf_name");
-const submitBtn = document.getElementById("submitBtn");
-const termsCheckbox = document.getElementById("terms_approval");
-
-if (termsCheckbox && submitBtn) {
-    termsCheckbox.addEventListener("change", (e) => {
-        submitBtn.disabled = !e.target.checked;
-        if (e.target.checked) {
-            submitBtn.style.opacity = "1";
-            submitBtn.style.cursor = "pointer";
-        } else {
-            submitBtn.style.opacity = "0.5";
-            submitBtn.style.cursor = "not-allowed";
-        }
-    });
-}
-
-if (letterFileInput) {
-    letterFileInput.addEventListener("change", (e) => {
-        const file = e.target.files[0];
-        if (!file) {
-            filePreview.style.display = "none";
-            return;
-        }
-
-        filePreview.style.display = "block";
-
-        if (file.type.startsWith("image/")) {
-            // Show image preview
-            previewImage.style.display = "block";
-            previewPdf.style.display = "none";
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                previewImage.src = event.target.result;
-            };
-            reader.readAsDataURL(file);
-        } else if (file.type === "application/pdf") {
-            // Show PDF icon with filename
-            previewImage.style.display = "none";
-            previewPdf.style.display = "flex";
-            previewPdf.style.alignItems = "center";
-            previewPdf.style.gap = "8px";
-            previewPdfName.textContent = file.name;
-        } else {
-            filePreview.style.display = "none";
-        }
-    });
-}
-
-form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    setMessage("جاري الإرسال...", "note");
-    // Ensure college_id is set. If missing, try to fetch from major-colleges endpoint.
-    const collegeInput = document.getElementById("college_id");
-    const majorId = majorSelect ? majorSelect.value : null;
-    if (collegeInput && (!collegeInput.value || collegeInput.value === "")) {
-        if (majorId) {
-            try {
-                const res = await fetch(endpoints.majorCollege(majorId));
-                if (res.ok) {
-                    const data = await res.json();
-                    if (Array.isArray(data) && data.length > 0) {
-                        collegeInput.value = data[0].id ?? "";
-                        if (data[0].institution_id && institutionSelect) {
-                            institutionSelect.value = data[0].institution_id;
-                        }
-                    }
+                const collegeInput = document.getElementById("college_id");
+                if (collegeInput) {
+                    collegeInput.value = first.id ?? "";
                 }
-            } catch (err) {
-                // ignore and continue; server has a fallback too
-                console.warn(
-                    "Could not fetch college for major before submit",
-                    err
-                );
-            }
-        }
-    }
-
-    const formData = new FormData(form);
-    // status is set by server to STATUS_NEW (1)
-
-    // Debug: log key fields
-    try {
-        console.log("Submitting form", {
-            national_id: formData.get("national_id"),
-            full_name: formData.get("full_name"),
-            major_id: formData.get("major_id"),
-            college_id: formData.get("college_id"),
-            institution_id: formData.get("institution_id"),
-        });
-    } catch (err) { }
-
-    try {
-        const res = await fetch(endpoints.submit, {
-            method: "POST",
-            body: formData,
-            headers: {
-                "X-CSRF-TOKEN": getCsrfToken(),
-                "X-Requested-With": "XMLHttpRequest",
-            },
-        });
-
-        if (!res.ok) {
-            const body = await res.json();
-            if (res.status === 422 && body.errors) {
-                // Handle validation errors specifically
-                if (body.errors.national_id) {
-                    showToast(body.errors.national_id[0], "error");
-                    setMessage(body.errors.national_id[0], "error");
-                } else {
-                    const firstError = Object.values(body.errors)[0][0];
-                    showToast(firstError, "error");
-                    setMessage(firstError, "error");
-                }
-                return; // Stop execution
-            }
-            console.error("Submission failed", res.status, body);
-            throw new Error("Submission failed");
-        }
-
-        const data = await res.json();
-        setMessage("", "note"); // Clear the inline message
-        showToast("تم إرسال الطلب بنجاح. جاري التحويل...", "success");
-        form.reset();
-
-        // Redirect to welcome page after successful submission
-        setTimeout(() => {
-            if (data.redirect) {
-                window.location.href = data.redirect;
             } else {
-                window.location.href = "/WelcomeForm";
+                const collegeInput = document.getElementById("college_id");
+                if (collegeInput) collegeInput.value = "";
             }
-        }, 2000);
-    } catch (err) {
-        showToast("تعذر الإرسال، جرّب لاحقاً.", "error");
-    }
+        } catch (err) {
+            console.error("Error loading college for major:", err);
+            const collegeInput = document.getElementById("college_id");
+            if (collegeInput) collegeInput.value = "";
+        }
+    });
+
+    // Training type change listener
+    selectManager.selects.trainingType?.addEventListener(
+        "change",
+        async (e) => {
+            const isUniversity =
+                parseInt(e.target.value) === CONFIG.TRAINING_TYPE_UNIVERSITY;
+            selectManager.toggleUniversityFields(isUniversity);
+            await selectManager.loadAdministrative();
+        }
+    );
+
+    // Initialize form data
+    (async () => {
+        await selectManager.loadOptions(
+            selectManager.selects.institution,
+            ENDPOINTS.institution
+        );
+        await selectManager.loadOptions(
+            selectManager.selects.trainingType,
+            ENDPOINTS.trainingType
+        );
+        selectManager.populateOptions(selectManager.selects.section, []);
+        await selectManager.loadAdministrative();
+
+        // Animate page elements
+        FormAnimator.animatePageElements();
+    })();
 });
-
-(async function init() {
-    // governorateSelect is already populated by Blade @foreach
-    await loadOptions(
-        institutionSelect,
-        endpoints.institution,
-        fallback.institutions
-    );
-    await loadOptions(
-        trainingTypeSelect,
-        endpoints.trainingFocus,
-        fallback.trainingFocus
-    );
-    populateOptions(sectionSelect, []);
-    loadAdministrative();
-    // Start smooth entrance animation instantly
-    const heroElement = document.querySelector(".hero");
-    const formCard = document.querySelector(".card");
-
-    if (heroElement) {
-        heroElement.style.opacity = "0";
-        heroElement.style.transform = "translateY(-20px)";
-
-        requestAnimationFrame(() => {
-            heroElement.style.transition =
-                "opacity 0.5s ease, transform 0.5s ease";
-            heroElement.style.opacity = "1";
-            heroElement.style.transform = "translateY(0)";
-        });
-    }
-
-    if (formCard) {
-        formCard.style.opacity = "0";
-        formCard.style.transform = "translateY(20px)";
-
-        requestAnimationFrame(() => {
-            formCard.style.transition =
-                "opacity 0.6s ease, transform 0.6s ease";
-            formCard.style.opacity = "1";
-            formCard.style.transform = "translateY(0)";
-        });
-    }
-})();

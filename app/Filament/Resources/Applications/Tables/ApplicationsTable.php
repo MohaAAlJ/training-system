@@ -188,7 +188,8 @@ class ApplicationsTable
                 ExportAction::make('export_excel')
                     ->label('تحميل اكسل')
                     ->icon('heroicon-o-arrow-down-tray')
-                    ->exporter(\App\Filament\Exporters\ApplicationExporter::class),
+                    ->exporter(\App\Filament\Exporters\ApplicationExporter::class)
+                    ->disabled(fn ($livewire) => ($livewire->getFilteredTableQuery()?->count() ?? 0) === 0),
             ])
 
             ->recordActions([

@@ -32,6 +32,7 @@ class StatsResource extends Resource
     protected static ?string $modelLabel = 'إحصائيات';
     protected static ?string $pluralModelLabel = 'الإحصائيات';
     protected static ?string $navigationLabel = 'الإحصائيات';
+    
     protected static ?int $navigationSort = 1;
 
     public static function form(Schema $schema): Schema
@@ -60,9 +61,9 @@ class StatsResource extends Resource
     {
         return [
             'index' => ListStats::route('/'),
-            // 'create' => CreateStats::route('/create'),
-            // 'view' => ViewStats::route('/{record}'),
-            // 'edit' => EditStats::route('/{record}/edit'),
+            'create' => CreateStats::route('/create'),
+            'view' => ViewStats::route('/{record}'),
+            'edit' => EditStats::route('/{record}/edit'),
         ];
     }
 
@@ -72,5 +73,10 @@ class StatsResource extends Resource
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
             ]);
+    }
+
+    public static function canViewAny(): bool
+    {
+        return true;
     }
 }
