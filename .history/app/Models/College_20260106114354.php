@@ -28,7 +28,7 @@ class College extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function majors()
+    public function ()
     {
         return $this->belongsToMany(Major::class, 'college_major');
     }

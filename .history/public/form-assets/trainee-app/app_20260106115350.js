@@ -290,12 +290,76 @@ if (nationalIdInput) {
                 const res = await fetch(endpoints.checkNationalId(nationalId));
                 if (res.ok) {
                     const data = await res.json();
-                    if (data.exists) {
-                        showToast(data.message, "error");
-                        setMessage(data.message, "error");
-                        nationalIdInput.classList.add("invalid");
+                    if (data.exists && data.trainee) {
+                        const trainee = data.trainee;
+                        showToast(data.message, "success");
+                        setMessage(data.message, "success");
+                        nationalIdInput.classList.remove("invalid");
+
+                        // Populate basic info
+                        if (fullNameInput) fullNameInput.value = trainee.full_name || "";
+                        if (document.getElementById("phone_number")) {
+                            document.getElementById("phone_number").value = trainee.phone_number || "";
+                        }
+                        if (governorateSelect) governorateSelect.value = trainee.governorate_id || "";
+                        if (document.getElementById("street")) {
+                            document.getElementById("street").value = trainee.street || "";
+                        }
+                        if (document.getElementById("training_hours")) {
+                            document.getElementById("training_hours").value = trainee.training_hours || "";
+                        }
+
+                        // Populate DOB selects
+                        if (trainee.dob) {
+                            const dob = new Date(trainee.dob);
+                            if (dobDay) dobDay.value = String(dob.getDate()).padStart(2, '0');
+                            if (dobMonth) dobMonth.value = String(dob.getMonth() + 1).padStart(2, '0');
+                            if (dobYear) dobYear.value = String(dob.getFullYear());
+                            updateDobHiddenField();
+                        }
+
+                        // Populate Academic info
+                        if (institutionSelect) {
+                            institutionSelect.value = trainee.institution_id || "";
+                            await loadOptions(majorSelect, endpoints.major(trainee.institution_id), [], "name");
+                        }
+                        if (majorSelect && trainee.major_id) {
+                            majorSelect.value = trainee.major_id;
+                            majorSelect.dispatchEvent(new Event("change"));
+                        }
+
+                        // Set training type if it's university/practice base on academic data
+                        if (trainingTypeSelect) {
+                            if (trainee.institution_id || trainee.major_id || trainee.college_id) {
+                                trainingTypeSelect.value = "1"; // University
+                            } else {
+                                trainingTypeSelect.value = "2"; // Practice
+                            }
+                            trainingTypeSelect.dispatchEvent(new Event("change"));
+                        }
+
+                        // Lock fields that should not be changed for existing trainees
+                        const lockableFields = [fullNameInput, dobDay, dobMonth, dobYear, governorateSelect, document.getElementById("phone_number")];
+                        lockableFields.forEach(field => {
+                            if (field) {
+                                field.classList.add('field-readonly');
+                                // We don't use 'disabled' attribute to ensure they are submitted in form
+                                field.addEventListener('mousedown', (e) => {
+                                    if (field.classList.contains('field-readonly')) e.preventDefault();
+                                });
+                                field.addEventListener('keydown', (e) => {
+                                    if (field.classList.contains('field-readonly')) e.preventDefault();
+                                });
+                            }
+                        });
+
+
                     } else {
                         nationalIdInput.classList.remove("invalid");
+                        // Reset readonly if switching IDs
+                        const readonlyFields = document.querySelectorAll('.field-readonly');
+                        readonlyFields.forEach(f => f.classList.remove('field-readonly'));
+
                         if (message.textContent === data.message) {
                             setMessage("");
                         }

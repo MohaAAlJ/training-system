@@ -246,11 +246,12 @@ class ApplicationFormController extends Controller
     public function checkNationalId(Request $request)
     {
         $nationalId = $request->query('national_id');
-        $exists = Trainee::where('national_id', $nationalId)->exists();
+        $trainee = Trainee::with(['institution', 'major', 'college'])->where('national_id', $nationalId)->first();
 
         return response()->json([
-            'exists' => $exists,
-            'message' => $exists ? 'رقم الهوية هذا مسجل مسبقاً في النظام.' : ''
+            'exists' => !!$trainee,
+            'trainee' => $trainee,
+            'message' => $trainee ? 'رقم الهوية مسجل مسبقاً. سيتم استرجاع بياناتك.' : ''
         ]);
     }
 
@@ -281,7 +282,7 @@ class ApplicationFormController extends Controller
                     }
                 },
             ],
-            'national_id' => ['required', 'digits:9', 'unique:trainees,national_id'],
+            'national_id' => ['required', 'digits:9'],
             'phone_number' => ['required', 'regex:/^97[02]5[69]\d{7}$/'],
             'governorate_id' => ['required', 'integer', 'exists:governorates,id'],
             'street' => ['required', 'string', 'max:255', 'regex:/^[\p{Arabic}A-Za-z0-9\s\-\.,#\/]+$/u'],

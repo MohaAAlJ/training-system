@@ -23,9 +23,9 @@ class CollegeInfolist
 
                 \Filament\Schemas\Components\Section::make('الإحصائيات')
                     ->schema([
-                        \Filament\Infolists\Components\TextEntry::make('majors_count')
+                        \Filament\Infolists\Components\TextEntry::make('Major_count')
                             ->label('عدد التخصصات')
-                            ->getStateUsing(fn($record) => $record->majors()->count()),
+                            ->getStateUsing(fn($record) => $record->Major()->count()),
                         \Filament\Infolists\Components\TextEntry::make('Trainee_count')
                             ->label('عدد المتدربين المسجلين')
                             ->getStateUsing(fn($record) => $record->trainees()->count()),

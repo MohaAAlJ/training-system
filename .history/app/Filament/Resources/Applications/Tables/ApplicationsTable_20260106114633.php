@@ -532,7 +532,7 @@ class ApplicationsTable
                                         ->afterStateUpdated(fn(Set $set) => $set('department_id', null)),
                                     \Filament\Forms\Components\Select::make('department_id')
                                         ->label('الدائرة')
-                                        ->options(fn(Get $get) => Department::whereHas('sections', fn($q) => $q->where('administrative_id', $get('administrative_id')))->active()->pluck('title', 'id'))
+                                        ->options(fn(Get $get) => Department::whereHas('Section', fn($q) => $q->where('administrative_id', $get('administrative_id')))->active()->pluck('title', 'id'))
                                         ->required()
                                         ->live()
                                         ->disabled(fn(Get $get) => ! $get('administrative_id'))

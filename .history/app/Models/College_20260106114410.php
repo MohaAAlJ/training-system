@@ -18,7 +18,7 @@ class College extends Model
         'Can_add_Application' => 'boolean',
     ];
 
-    public function institution()
+    public function ()
     {
         return $this->belongsTo(Institution::class);
     }
