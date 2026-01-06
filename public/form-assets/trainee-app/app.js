@@ -201,9 +201,8 @@ class SelectManager {
             section: document.getElementById("section_id"),
             trainingType: document.getElementById("training_type"),
         };
-        this.universityContainer = document.getElementById(
-            "university_data_container"
-        );
+        this.institutionField = document.getElementById("institution_field");
+        this.majorField = document.getElementById("major_field");
     }
 
     /**
@@ -266,10 +265,14 @@ class SelectManager {
      * Show/hide university fields based on training type
      */
     toggleUniversityFields(isUniversity) {
-        if (this.universityContainer) {
-            this.universityContainer.style.display = isUniversity
-                ? "contents"
+        // Show/hide individual university field labels
+        if (this.institutionField) {
+            this.institutionField.style.display = isUniversity
+                ? "flex"
                 : "none";
+        }
+        if (this.majorField) {
+            this.majorField.style.display = isUniversity ? "flex" : "none";
         }
 
         if (this.selects.institution) {
@@ -690,7 +693,6 @@ const administrativeSelect = document.getElementById("administrative_id");
 const departmentSelect = document.getElementById("department_id");
 const sectionSelect = document.getElementById("section_id");
 const trainingTypeSelect = document.getElementById("training_type");
-const universityContainer = document.getElementById("university_data_container");
 const dobInput = document.getElementById("dob");
 const dobDay = document.getElementById("dob_day");
 const dobMonth = document.getElementById("dob_month");

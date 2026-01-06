@@ -66,7 +66,7 @@
                         <legend>
                             <span class="legend-icon">👤</span>البيانات الشخصية
                         </legend>
-                        <div class="grid two">
+                        <div class="grid three">
                             <label class="field">
                                 <span>رقم الهوية *</span>
                                 <input
@@ -176,7 +176,7 @@
                         <legend>
                             <span class="legend-icon">🏢</span>بيانات التدريب
                         </legend>
-                        <div class="grid two">
+                        <div class="grid three">
                              <label class="field" id="training_type_field">
                                 <span>نوع التدريب *</span>
                                 <select
@@ -188,27 +188,25 @@
                                 </select>
                             </label>
 
-                            <!-- Conditional: University data -->
-                            <div id="university_data_container" style="display: none;">
-                                <label class="field" id="institution_field">
-                                    <span>مؤسسة تعليمية *</span>
-                                    <select
-                                        id="institution_id"
-                                        name="institution_id"
-                                        required
-                                    >
-                                        <option value="" disabled selected>اختر</option>
-                                    </select>
-                                    <small class="note"></small>
-                                </label>
-                                <label class="field" id="major_field">
-                                    <span>التخصص *</span>
-                                    <select id="major_id" name="major_id" required>
-                                        <option value="" disabled selected>اختر</option>
-                                    </select>
-                                    <small class="note"> </small>
-                                </label>
-                            </div>
+                            <!-- Conditional: University fields shown as individual grid items -->
+                            <label class="field" id="institution_field" style="display: none;">
+                                <span>مؤسسة تعليمية *</span>
+                                <select
+                                    id="institution_id"
+                                    name="institution_id"
+                                    required
+                                >
+                                    <option value="" disabled selected>اختر</option>
+                                </select>
+                                <small class="note"></small>
+                            </label>
+                            <label class="field" id="major_field" style="display: none;">
+                                <span>التخصص *</span>
+                                <select id="major_id" name="major_id" required>
+                                    <option value="" disabled selected>اختر</option>
+                                </select>
+                                <small class="note"> </small>
+                            </label>
 
                             <label class="field">
                                 <span>عدد ساعات التدريب *</span>
@@ -277,13 +275,13 @@
                                 "
                             />
                             <div style="flex: 1;">
-                                <p style="margin: 0; font-weight: 700; font-size: 1.1rem; color: var(--text-main);">
+                                <p style="margin: 0; font-weight: 700; font-size: 0.95rem; color: var(--text-main);">
                                     إقرار صحة البيانات والالتزام
                                 </p>
-                                <p style="margin: 6px 0 0; font-size: 0.95rem; color: var(--text-muted);">
+                                <p style="margin: 6px 0 0; font-size: 0.85rem; color: var(--text-muted);">
                                     أقر بأن جميع البيانات المدخلة أعلاه صحيحة، وأتحمل كامل المسؤولية عن أي خطأ فيها.
                                 </p>
-                                <p style="margin: 8px 0 0; font-size: 0.9rem; color: var(--primary); font-weight: 600; line-height: 1.4;">
+                                <p style="margin: 8px 0 0; font-size: 0.8rem; color: var(--primary); font-weight: 600; line-height: 1.4;">
                                     ⚠️ ملاحظة هامة: أقر بعلمي أنه في حال قبول طلبي وتخلفي عن الحضور لمباشرة التدريب لمدة تزيد عن 7 أيام من تاريخ البدء المحدد، يحق للإدارة إلغاء التدريب وطي قيدي تلقائياً.
                                 </p>
                             </div>
