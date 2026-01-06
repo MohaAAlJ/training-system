@@ -15,10 +15,11 @@ use App\Models\Major;
 use App\Models\College;
 use App\Notifications\ApplicationCreated as ApplicationCreatedNotification;
 use App\Notifications\InitialApprovalNotification;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 class Application extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, HasUuids;
 
     /**
      * Application status constants
@@ -59,7 +60,6 @@ class Application extends Model
     protected $table = 'applications';
     protected $fillable = [
         'id',
-        'uuid',
         'training_type',
         'duration',
         'section_id',
@@ -134,12 +134,6 @@ class Application extends Model
      */
     protected static function booted()
     {
-        parent::booted();
-
-        static::creating(function ($model) {
-            $model->uuid = (string) \Illuminate\Support\Str::uuid();
-        });
-
         static::created(function (self $application) {
             // Gather recipients according to role-based rules
             $recipients = collect();
