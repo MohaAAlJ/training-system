@@ -59,6 +59,7 @@ class TraineesTable
                     )),
                 TextColumn::make('applications_count')
                     ->label('عدد الطلبات')
+                    ->counts('applications')
                     ->badge()
                     ->color('primary'),
                 TextColumn::make('created_at')
