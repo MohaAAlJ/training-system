@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Application;
 use Mccarlosen\LaravelMpdf\Facades\LaravelMpdf as Pdf;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class DownloadAbsorptionPaperController extends Controller
 {
