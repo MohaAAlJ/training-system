@@ -60,7 +60,7 @@ class SectionsTable
                     ->offIcon('heroicon-m-x-circle')
                     ->onColor('success')
                     ->offColor('danger')
-                    ->visible(fn() => (Auth::user()?->isMedicalManager() && !Auth::user()?->isGeneralTrainingManager()) ?? false),
+                    ->visible(fn() => (Auth::user()?->isMedicalManager() && !Auth::user()?->isGtm()) ?? false),
 
 
                 TextColumn::make('created_at')
