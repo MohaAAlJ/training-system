@@ -132,9 +132,9 @@ class ApplicationForm
                                     $set('training_hours', $trainee->training_hours);
 
                                     if ($trainee->institution_id || $trainee->college_id || $trainee->major_id) {
-                                        $set('training_type', Application::TRAINING_TYPE_UNIVERSITY);
+                                        $set('training_type', \App\Models\Application::TRAINING_TYPE_UNIVERSITY);
                                     } else {
-                                        $set('training_type', Application::TRAINING_TYPE_PRACTICE);
+                                        $set('training_type', \App\Models\Application::TRAINING_TYPE_PRACTICE);
                                     }
 
                                     if ($trainee->dob) {

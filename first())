@@ -15,8 +15,8 @@
     1000▕     /**
 
   1   vendor\psy\psysh\src\Shell.php:1530
-      Psy\Shell::setCode("print_r(App\Models\Trainee::find(3)-")
+      Psy\Shell::setCode("print_r(DB::table('trainees')-")
 
   2   vendor\laravel\tinker\src\Console\TinkerCommand.php:76
-      Psy\Shell::execute("print_r(App\Models\Trainee::find(3)-")
+      Psy\Shell::execute("print_r(DB::table('trainees')-")
 

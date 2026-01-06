@@ -82,7 +82,7 @@ class TraineeResource extends Resource
 
 
         if ($user->isAdmin() || $user->isGeneralTrainingManager()) {
-            return $query->withCount('applications');
+            return $query;
         }
 
         if ($user->isMinistry()) {
@@ -93,14 +93,7 @@ class TraineeResource extends Resource
                         Application::STATUS_STARTED_TRAINING,
                         Application::STATUS_ENDED_TRAINING
                     ]);
-            })->withCount(['applications' => function ($q) {
-                $q->where('training_type', Application::TRAINING_TYPE_PRACTICE)
-                    ->whereIn('status', [
-                        Application::STATUS_INITIAL_APPROVE,
-                        Application::STATUS_STARTED_TRAINING,
-                        Application::STATUS_ENDED_TRAINING
-                    ]);
-            }]);
+            });
         }
 
         if ($user->isCollegeSupervisor()) {
@@ -113,14 +106,7 @@ class TraineeResource extends Resource
                             Application::STATUS_STARTED_TRAINING,
                             Application::STATUS_ENDED_TRAINING
                         ]);
-                })->withCount(['applications' => function ($q) {
-                    $q->where('training_type', Application::TRAINING_TYPE_UNIVERSITY)
-                        ->whereIn('status', [
-                            Application::STATUS_INITIAL_APPROVE,
-                            Application::STATUS_STARTED_TRAINING,
-                            Application::STATUS_ENDED_TRAINING
-                        ]);
-                }]);
+                });
         }
 
         if ($user->isSectionHead()) {
@@ -130,13 +116,7 @@ class TraineeResource extends Resource
                         Application::STATUS_STARTED_TRAINING,
                         Application::STATUS_ENDED_TRAINING
                     ]);
-            })->withCount(['applications' => function ($q) use ($user) {
-                $q->where('section_id', $user->Section?->id)
-                    ->whereIn('status', [
-                        Application::STATUS_STARTED_TRAINING,
-                        Application::STATUS_ENDED_TRAINING
-                    ]);
-            }]);
+            });
         }
 
         if ($user->isDepartmentHead()) {
@@ -146,13 +126,7 @@ class TraineeResource extends Resource
                         Application::STATUS_STARTED_TRAINING,
                         Application::STATUS_ENDED_TRAINING
                     ]);
-            })->withCount(['applications' => function ($q) use ($user) {
-                $q->where('department_id', $user->department?->id)
-                    ->whereIn('status', [
-                        Application::STATUS_STARTED_TRAINING,
-                        Application::STATUS_ENDED_TRAINING
-                    ]);
-            }]);
+            });
         }
 
         if ($user->isAdministrative()) {
@@ -162,13 +136,7 @@ class TraineeResource extends Resource
                         Application::STATUS_STARTED_TRAINING,
                         Application::STATUS_ENDED_TRAINING
                     ]);
-            })->withCount(['applications' => function ($q) use ($user) {
-                $q->where('administrative_id', $user->administrative?->id)
-                    ->whereIn('status', [
-                        Application::STATUS_STARTED_TRAINING,
-                        Application::STATUS_ENDED_TRAINING
-                    ]);
-            }]);
+            });
         }
 
         if ($user->isMedicalManager()) {
@@ -180,14 +148,7 @@ class TraineeResource extends Resource
                         Application::STATUS_STARTED_TRAINING,
                         Application::STATUS_ENDED_TRAINING
                     ]);
-            })->withCount(['applications' => function ($q) use ($adminId) {
-                $q->where('administrative_id', $adminId)
-                    ->whereHas('department', fn($dept) => $dept->where('is_medical', true))
-                    ->whereIn('status', [
-                        Application::STATUS_STARTED_TRAINING,
-                        Application::STATUS_ENDED_TRAINING
-                    ]);
-            }]);
+            });
         }
 
         return $query->whereRaw('1 = 0');

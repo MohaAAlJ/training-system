@@ -132,9 +132,9 @@ class ApplicationForm
                                     $set('training_hours', $trainee->training_hours);
 
                                     if ($trainee->institution_id || $trainee->college_id || $trainee->major_id) {
-                                        $set('training_type', Application::TRAINING_TYPE_UNIVERSITY);
+                                        $set('training_type', \App\Models\Application::TRAINING_TYPE_UNIVERSITY);
                                     } else {
-                                        $set('training_type', Application::TRAINING_TYPE_PRACTICE);
+                                        $set('training_type', \App\Models\Application::TRAINING_TYPE_PRACTICE);
                                     }
 
                                     if ($trainee->dob) {
@@ -409,7 +409,7 @@ class ApplicationForm
                             ->native(false)
                             ->disabled(fn() => ! Auth::user()->isAdmin())
                             ->visible(fn() => ! Auth::user()->isCollegeSupervisor())
-                            ->required(fn(callable $get) => Auth::user()->isAdmin() && (int)$get('status') === Application::STATUS_STARTED_TRAINING)
+                            ->required(fn() => Auth::user()->isAdmin())
                             ->dehydrated(),
 
                         DatePicker::make('end_date')
@@ -417,7 +417,7 @@ class ApplicationForm
                             ->native(false)
                             ->disabled(fn() => ! Auth::user()->isAdmin())
                             ->visible(fn() => ! Auth::user()->isCollegeSupervisor())
-                            ->required(fn(callable $get) => Auth::user()->isAdmin() && (int)$get('status') === Application::STATUS_STARTED_TRAINING)
+                            ->required(fn() => Auth::user()->isAdmin())
                             ->afterOrEqual('start_date')
                             ->dehydrated(),
 
