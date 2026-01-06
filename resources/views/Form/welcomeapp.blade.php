@@ -3,6 +3,8 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <!-- UUID for security - prevents form tampering and replay attacks -->
+        <meta name="form-uuid" content="{{ $formUuid }}" />
         <title>مرحباً بك - نظام التدريب التعاوني</title>
         <link rel="stylesheet" href="{{ asset('form-assets/trainee-app/styles.css') }}" />
         <link rel="stylesheet" href="{{ asset('form-assets/welcome/styles.css') }}" />

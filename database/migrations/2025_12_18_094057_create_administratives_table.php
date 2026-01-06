@@ -48,7 +48,7 @@ return new class extends Migration
 
             // Non-Medical Administratives
             ['title' => 'مدينة النور', 'governorate' => 'غزة', 'is_medical' => false],
-            ['title' => 'مدينة القدس', 'governorate' => 'غزة', 'is_medical' => false],
+            // ['title' => 'مدينة القدس', 'governorate' => 'غزة', 'is_medical' => false],
             ['title' => 'مدينة الأمل', 'governorate' => 'خانيونس', 'is_medical' => false],
         ];
 
