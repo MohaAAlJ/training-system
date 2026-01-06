@@ -15,10 +15,11 @@ use App\Models\Major;
 use App\Models\College;
 use App\Notifications\ApplicationCreated as ApplicationCreatedNotification;
 use App\Notifications\InitialApprovalNotification;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 class Application extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, HasUuids;
 
     /**
      * Application status constants
@@ -328,5 +329,10 @@ class Application extends Model
                 }
             }
         });
+    }
+
+    public function getRouteKeyName()
+    {
+        return 'uuid';
     }
 }

@@ -17,7 +17,7 @@ return new class extends Migration
     {
         Schema::create('applications', function (Blueprint $table) {
             $table->id();
-            $table->uuid('uuid')->unique();
+            $table->uuid('uuid')->nullable()-
             $table->foreignIdFor(Trainee::class, 'trainee_id')->constrained()->cascadeOnDelete();
             $table->foreignIdFor(Administrative::class)->constrained()->cascadeOnDelete();
             $table->foreignIdFor(Department::class, 'department_id')->constrained('departments')->cascadeOnDelete();
