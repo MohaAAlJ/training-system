@@ -399,8 +399,47 @@ class FilePreviewManager {
 }
 
 /**
- * DateOfBirthManager - Handles DOB field combination
+ * ArabicDatePicker - Initialize Flatpickr with Arabic localization
+ * Displays date picker with Arabic month names
  */
+class ArabicDatePicker {
+    constructor() {
+        this.dobInput = document.getElementById("dob");
+        this.calendarBtn = document.getElementById("dobCalendarBtn");
+        this.init();
+    }
+
+    init() {
+        if (!this.dobInput) return;
+
+        const picker = flatpickr(this.dobInput, {
+            locale: "ar",
+            dateFormat: "Y-m-d",
+            mode: "single",
+            maxDate: new Date(new Date().setFullYear(new Date().getFullYear() - 18)), // Min age: 18
+            minDate: new Date(new Date().setFullYear(new Date().getFullYear() - 60)), // Max age: 60
+            enableTime: false,
+            monthSelectorType: "dropdown",
+            altInput: true,
+            altFormat: "j F Y",
+        });
+
+        // Make calendar button open the date picker
+        if (this.calendarBtn) {
+            this.calendarBtn.addEventListener("click", (e) => {
+                e.preventDefault();
+                picker.open();
+            });
+        }
+    }
+}
+
+/**
+ * DateOfBirthManager - DEPRECATED - Using Filament's datepicker instead
+ * This class handled the old select-based DOB (day/month/year) combination.
+ * Now using Filament's native datepicker component for better UX.
+ */
+/*
 class DateOfBirthManager {
     constructor() {
         this.dobInput = document.getElementById("dob");
@@ -441,6 +480,7 @@ class DateOfBirthManager {
         }
     }
 }
+*/
 
 /**
  * FormHandler - Main form submission and validation logic
@@ -825,7 +865,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const notificationManager = new NotificationManager();
     const selectManager = new SelectManager();
     const filePreviewManager = new FilePreviewManager(notificationManager);
-    const dobManager = new DateOfBirthManager();
+    const arabicDatePicker = new ArabicDatePicker(); // Initialize Arabic date picker
+    // const dobManager = new DateOfBirthManager(); // DEPRECATED - Using Filament's datepicker instead
     const formHandler = new FormHandler(selectManager, notificationManager);
     const nationalIdValidator = new NationalIdValidator(notificationManager);
     const inputNameFilter = new InputNameFilter();

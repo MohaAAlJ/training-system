@@ -8,6 +8,8 @@
         <meta name="form-uuid" content="{{ $formUuid }}" />
         <title>طلب تدريب المتدرب</title>
         <link rel="stylesheet" href="{{ asset('form-assets/trainee-app/styles.css') }}" />
+        <!-- Flatpickr Date Picker with Arabic Support -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     </head>
     <script>
         // Initialize theme before page loads to prevent flickering
@@ -98,35 +100,21 @@
                             </label>
                             <label class="field">
                                 <span>تاريخ الميلاد *</span>
-                                <div class="dob-selects" style="display: flex; gap: 8px;">
-                                    <select id="dob_day" required style="flex: 1; text-align: center;">
-                                        <option value="" disabled selected>اليوم</option>
-                                        @for ($d = 1; $d <= 31; $d++)
-                                            <option value="{{ str_pad($d, 2, '0', STR_PAD_LEFT) }}">{{ $d }}</option>
-                                        @endfor
-                                    </select>
-                                    <select id="dob_month" required style="flex: 1; text-align: center;">
-                                        <option value="" disabled selected>الشهر</option>
-                                        @php
-                                            $months = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
-                                        @endphp
-                                        @for ($m = 1; $m <= 12; $m++)
-                                            <option value="{{ str_pad($m, 2, '0', STR_PAD_LEFT) }}">{{ $months[$m - 1] }}</option>
-                                        @endfor
-                                    </select>
-                                    <select id="dob_year" required style="flex: 1; text-align: center;">
-                                        <option value="" disabled selected>السنة</option>
-                                        @for ($y = date('Y') - 20; $y >= date('Y') - 60; $y--)
-                                            <option value="{{ $y }}">{{ $y }}</option>
-                                        @endfor
-                                    </select>
+                                <div class="date-input-wrapper">
+                                    <input
+                                        id="dob"
+                                        name="dob"
+                                        type="date"
+                                        lang="ar"
+                                        max="{{ \Carbon\Carbon::now()->subYears(18)->format('Y-m-d') }}"
+                                        min="{{ \Carbon\Carbon::now()->subYears(60)->format('Y-m-d') }}"
+                                        required
+                                    />
+                                    <button type="button" id="dobCalendarBtn" class="calendar-btn" title="اختر التاريخ">
+                                        📅
+                                    </button>
                                 </div>
-                                <input
-                                    id="dob"
-                                    name="dob"
-                                    type="hidden"
-                                />
-                                <small class="note"></small>
+                                <small class="note">استخدم منتقي التاريخ لاختيار تاريخ ميلادك</small>
                             </label>
 
                             <label class="field">
@@ -306,6 +294,9 @@
         </div>
 
                 <input type="hidden" id="college_id" name="college_id" />
+        <!-- Flatpickr Library -->
+        <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+        <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ar.js"></script>
         <script src="{{ asset('form-assets/trainee-app/app.js') }}" defer></script>
     </body>
 </html>
