@@ -27,17 +27,18 @@ Route::get('/applications/{application}/absorption-paper', DownloadAbsorptionPap
     ->middleware(['auth', 'can:downloadAbsorptionPaper,application'])
     ->name('applications.download-absorption');
 
-// Public form data endpoints (no auth)
-Route::prefix('WelcomeForm/Form/api')->group(function () {
-    Route::get('address', [ApplicationFormController::class, 'address']);
-    Route::get('institution', [ApplicationFormController::class, 'institution']);
-    Route::get('major', [ApplicationFormController::class, 'major']);
-    Route::get('major-college', [ApplicationFormController::class, 'majorCollege']);
-    Route::get('administrative', [ApplicationFormController::class, 'administrative']);
-    Route::get('department', [ApplicationFormController::class, 'department']);
-    Route::get('section', [ApplicationFormController::class, 'section']);
-    Route::get('training-type', [ApplicationFormController::class, 'trainingType']);
-    Route::get('check-national-id', [ApplicationFormController::class, 'checkNationalId']);
+// Public form data endpoints (protected with CSRF token verification + rate limiting)
+Route::prefix('WelcomeForm/Form/api')->middleware('throttle:60,1')->group(function () {
+    Route::get('address', [ApplicationFormController::class, 'address'])->middleware(\App\Http\Middleware\VerifyCsrfForApi::class);
+    Route::get('institution', [ApplicationFormController::class, 'institution'])->middleware(\App\Http\Middleware\VerifyCsrfForApi::class);
+    Route::get('major', [ApplicationFormController::class, 'major'])->middleware(\App\Http\Middleware\VerifyCsrfForApi::class);
+    Route::get('major-college', [ApplicationFormController::class, 'majorCollege'])->middleware(\App\Http\Middleware\VerifyCsrfForApi::class);
+    Route::get('administrative', [ApplicationFormController::class, 'administrative'])->middleware(\App\Http\Middleware\VerifyCsrfForApi::class);
+    Route::get('department', [ApplicationFormController::class, 'department'])->middleware(\App\Http\Middleware\VerifyCsrfForApi::class);
+    Route::get('section', [ApplicationFormController::class, 'section'])->middleware(\App\Http\Middleware\VerifyCsrfForApi::class);
+    Route::get('training-type', [ApplicationFormController::class, 'trainingType'])->middleware(\App\Http\Middleware\VerifyCsrfForApi::class);
+    Route::get('check-national-id', [ApplicationFormController::class, 'checkNationalId'])->middleware(\App\Http\Middleware\VerifyCsrfForApi::class);
+    Route::get('check-existing-application', [ApplicationFormController::class, 'checkExistingApplication'])->middleware(\App\Http\Middleware\VerifyCsrfForApi::class);
 });
 
 Route::get('/test', function () {

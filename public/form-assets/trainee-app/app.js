@@ -41,6 +41,10 @@ const ENDPOINTS = {
         `/WelcomeForm/Form/api/check-national-id?national_id=${
             nationalId ?? ""
         }`,
+    checkExistingApplication: (nationalId, trainingType) =>
+        `/WelcomeForm/Form/api/check-existing-application?national_id=${
+            nationalId ?? ""
+        }&training_type=${trainingType ?? ""}`,
 };
 
 // ==== UTILITY CLASSES ====
@@ -237,9 +241,23 @@ class SelectManager {
     async loadOptions(selectElement, url, labelKey = "name") {
         if (!selectElement) return;
         try {
-            const res = await fetch(url);
-            if (!res.ok) throw new Error("Request failed");
+            const csrfToken = CsrfTokenManager.getToken();
+            console.log("[SelectManager] Loading from:", url, "with token:", csrfToken.substring(0, 10) + "...");
+
+            const res = await fetch(url, {
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                }
+            });
+
+            if (!res.ok) {
+                console.error("[SelectManager] Failed with status:", res.status);
+                throw new Error("Request failed");
+            }
+
             const data = await res.json();
+            console.log("[SelectManager] Received:", data.length, "items");
             this.populateOptions(selectElement, data, labelKey);
 
             // Auto-select if only 1 option for training_type
@@ -404,6 +422,153 @@ class FilePreviewManager {
 }
 
 /**
+ * ApplicationValidator - Check for existing applications on initial form load
+ * Uses async/await for clean, modern JavaScript
+ */
+/**
+ * ApplicationValidator - Check if trainee has existing application for same training type
+ */
+class ApplicationValidator {
+    constructor(formHandler) {
+        this.formHandler = formHandler;
+        this.nationalIdInput = document.getElementById("national_id");
+        this.trainingTypeSelect = document.getElementById("training_type");
+        this.errorContainer = document.getElementById("applicationErrorContainer");
+        this.errorMessage = document.getElementById("applicationErrorMessage");
+        this.formContent = document.getElementById("formContent");
+        this.isValidating = false;
+
+        this.init();
+    }
+
+    init() {
+        if (!this.nationalIdInput || !this.trainingTypeSelect) {
+            console.warn("ApplicationValidator: Missing form elements");
+            return;
+        }
+
+        this.nationalIdInput.addEventListener("input", () => this.validate());
+        this.trainingTypeSelect.addEventListener("change", () => this.validate());
+    }
+
+    /**
+     * Main validation - check national_id + training_type for existing application
+     */
+    async validate() {
+        const nationalId = this.nationalIdInput.value?.trim() || "";
+        const trainingType = this.trainingTypeSelect.value || "";
+
+        console.log("[ApplicationValidator] Checking:", { nationalId, trainingType });
+
+        // Invalid state - hide everything
+        if (!this.isValidInput(nationalId, trainingType)) {
+            console.log("[ApplicationValidator] Invalid input - hiding form");
+            this.hideError();
+            this.hideForm();
+            return;
+        }
+
+        // Skip if already validating
+        if (this.isValidating) return;
+
+        this.isValidating = true;
+
+        try {
+            const data = await this.checkApplication(nationalId, trainingType);
+            console.log("[ApplicationValidator] API Response:", data);
+
+            // Application found with same training type - block user
+            if (data.hasApplication === true) {
+                console.log("[ApplicationValidator] Found blocking application - showing error");
+                this.showBlockingError(data.message);
+                this.hideForm();
+            } else {
+                // No blocking application - allow continuation
+                console.log("[ApplicationValidator] No blocking app - showing form");
+                this.hideError();
+                this.showForm();
+            }
+        } catch (error) {
+            console.error("[ApplicationValidator] Error:", error);
+            // Fail gracefully
+            this.hideError();
+            this.showForm();
+        } finally {
+            this.isValidating = false;
+        }
+    }
+
+    /**
+     * Validate: 9 digit national_id + training_type selected
+     */
+    isValidInput(nationalId, trainingType) {
+        const isValid = /^\d{9}$/.test(nationalId) && trainingType !== "";
+        if (!isValid) {
+            console.log("[ApplicationValidator] Invalid input - nationalId length:", nationalId.length, "trainingType:", trainingType);
+        }
+        return isValid;
+    }
+
+    /**
+     * Fetch from API
+     */
+    async checkApplication(nationalId, trainingType) {
+        const url = ENDPOINTS.checkExistingApplication(nationalId, trainingType);
+        console.log("[ApplicationValidator] Fetching:", url);
+
+        const csrfToken = CsrfTokenManager.getToken();
+        const response = await fetch(url, {
+            headers: {
+                'X-CSRF-TOKEN': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest',
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+
+        return await response.json();
+    }
+
+    /**
+     * Show blocking error: toast + text message
+     */
+    showBlockingError(message) {
+        console.log("[ApplicationValidator] Displaying error message:", message);
+
+        // Toast notification
+        if (window.notificationManager) {
+            window.notificationManager.showToast(message, "error");
+        }
+
+        // Text message
+        if (this.errorContainer && this.errorMessage) {
+            this.errorMessage.textContent = message;
+            this.errorContainer.style.display = "block";
+        }
+    }
+
+    hideError() {
+        if (this.errorContainer) {
+            this.errorContainer.style.display = "none";
+        }
+    }
+
+    showForm() {
+        if (this.formContent) {
+            this.formContent.style.display = "block";
+        }
+    }
+
+    hideForm() {
+        if (this.formContent) {
+            this.formContent.style.display = "none";
+        }
+    }
+}
+
+/**
  * ArabicDatePicker - Initialize Flatpickr with Arabic localization
  * Displays date picker with Arabic month names
  */
@@ -554,7 +719,13 @@ class FormHandler {
         if (!majorId) return;
 
         try {
-            const res = await fetch(ENDPOINTS.majorCollege(majorId));
+            const csrfToken = CsrfTokenManager.getToken();
+            const res = await fetch(ENDPOINTS.majorCollege(majorId), {
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                }
+            });
             if (res.ok) {
                 const data = await res.json();
                 if (Array.isArray(data) && data.length > 0) {
@@ -608,6 +779,13 @@ class FormHandler {
 /**
  * NationalIdValidator - Handles national ID validation
  */
+/**
+ * NationalIdValidator - DISABLED - Validation now handled by ApplicationValidator
+ * This class was checking if national ID already exists in system
+ * But we now use ApplicationValidator which checks by BOTH national_id AND training_type
+ * Keeping this commented to avoid duplicate validation logic
+ */
+/*
 class NationalIdValidator {
     constructor(notificationManager) {
         this.notificationManager = notificationManager;
@@ -642,6 +820,7 @@ class NationalIdValidator {
         }
     }
 }
+*/
 
 /**
  * InputNameFilter - Handles name input filtering
@@ -865,16 +1044,17 @@ async function loadAdministrative() {
 // ========================================
 
 document.addEventListener("DOMContentLoaded", () => {
-    // Initialize managers
+    // Initialize managers in order (some depend on others)
     const themeManager = new ThemeManager();
     const notificationManager = new NotificationManager();
     const selectManager = new SelectManager();
     const filePreviewManager = new FilePreviewManager(notificationManager);
     const arabicDatePicker = new ArabicDatePicker(); // Initialize Arabic date picker
-    // const dobManager = new DateOfBirthManager(); // DEPRECATED - Using Filament's datepicker instead
     const formHandler = new FormHandler(selectManager, notificationManager);
-    const nationalIdValidator = new NationalIdValidator(notificationManager);
+    const applicationValidator = new ApplicationValidator(formHandler); // Check for existing applications
+    // const nationalIdValidator = new NationalIdValidator(notificationManager); // DISABLED - ApplicationValidator now handles all validation
     const inputNameFilter = new InputNameFilter();
+    // const dobManager = new DateOfBirthManager(); // DEPRECATED - Using Filament's datepicker instead
 
     // Setup event listeners for cascading selects
     const governorateSelect = selectManager.selects.governorate;
@@ -921,7 +1101,13 @@ document.addEventListener("DOMContentLoaded", () => {
     // Major change listener
     selectManager.selects.major?.addEventListener("change", async (e) => {
         try {
-            const res = await fetch(ENDPOINTS.majorCollege(e.target.value));
+            const csrfToken = CsrfTokenManager.getToken();
+            const res = await fetch(ENDPOINTS.majorCollege(e.target.value), {
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                }
+            });
             if (!res.ok) return;
             const data = await res.json();
 

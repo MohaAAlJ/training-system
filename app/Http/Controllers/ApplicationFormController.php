@@ -274,6 +274,96 @@ class ApplicationFormController extends Controller
     }
 
     /**
+     * Check if trainee has existing application for the same training type
+     */
+    public function checkExistingApplication(Request $request)
+    {
+        $nationalId = $request->query('national_id');
+        $trainingType = (int) $request->query('training_type');
+
+        // Validate input
+        if (!$this->isValidNationalId($nationalId) || !$this->isValidTrainingType($trainingType)) {
+            return $this->noApplicationResponse();
+        }
+
+        // Find trainee
+        $trainee = Trainee::where('national_id', $nationalId)->first();
+
+        if (!$trainee) {
+            return $this->noApplicationResponse();
+        }
+
+        // Check for existing application with same training type (use the relationship correctly)
+        $existingApplication = Application::where('trainee_id', $trainee->id)
+            ->where('training_type', $trainingType)
+            ->whereNull('deleted_at')
+            ->first();
+
+        // No application found
+        if (!$existingApplication) {
+            return $this->noApplicationResponse();
+        }
+
+        // Application exists - return blocking message
+        return response()->json([
+            'hasApplication' => true,
+            'status' => $existingApplication->status,
+            'message' => $this->getApplicationStatusMessage($existingApplication),
+            'canContinue' => false
+        ], 200);
+    }
+
+    /**
+     * Get user-friendly message for application status
+     */
+    private function getApplicationStatusMessage(Application $application): string
+    {
+        return match($application->status) {
+            Application::STATUS_NEW => 'لديك طلب قيد الانتظار',
+            Application::STATUS_INITIAL_APPROVE => 'لديك طلب في انتظار القبول الجامعي',
+            Application::STATUS_CONFIRMATION => 'لديك طلب في انتظار التأكيد',
+            Application::STATUS_WAITING_LIST => 'لديك طلب في قائمة الانتظار',
+            Application::STATUS_STARTED_TRAINING => 'لديك تدريب نشط',
+            Application::STATUS_ENDED_TRAINING => 'لديك طلب منتهي',
+            Application::STATUS_REJECTED => 'لديك طلب سابق لايمكنك اصادر طلب جديد',
+            Application::STATUS_DROPPED => 'لديك طلب منسحب',
+            default => 'لديك طلب قائم',
+        };
+    }
+
+    /**
+     * Validate national ID format
+     */
+    private function isValidNationalId(string $nationalId): bool
+    {
+        return !empty($nationalId) && preg_match('/^\d{9}$/', $nationalId);
+    }
+
+    /**
+     * Validate training type is valid
+     */
+    private function isValidTrainingType(int $trainingType): bool
+    {
+        return in_array($trainingType, [
+            Application::TRAINING_TYPE_UNIVERSITY,
+            Application::TRAINING_TYPE_PRACTICE
+        ]);
+    }
+
+    /**
+     * Standard response when no application exists
+     */
+    private function noApplicationResponse(): \Illuminate\Http\JsonResponse
+    {
+        return response()->json([
+            'hasApplication' => false,
+            'status' => null,
+            'message' => '',
+            'canContinue' => true
+        ], 200);
+    }
+
+    /**
      * Store a trainee application into the Trainee and Application tables.
      * Uses a database transaction to ensure both save together or neither saves.
      *
@@ -305,11 +395,12 @@ class ApplicationFormController extends Controller
             'full_name' => ['required', 'string', 'max:255', 'regex:/^[\p{Arabic}A-Za-z\s]+$/u'],
             'dob' => [
                 'required',
-                'regex:/^\d{2}\/\d{2}\/\d{4}$/',
+                'regex:/^\d{4}-\d{2}-\d{2}$/',
                 function ($attribute, $value, $fail) use ($maxBirthYear, $minBirthYear) {
-                    $parts = explode('/', $value);
+                    // Accept ISO format (Y-m-d) from modern date picker
+                    $parts = explode('-', $value);
                     if (count($parts) === 3) {
-                        $year = (int) $parts[2];
+                        $year = (int) $parts[0];
                         if ($year > $maxBirthYear) {
                             $fail("يجب أن يكون العمر 20 سنة على الأقل (سنة الميلاد يجب أن تكون {$maxBirthYear} أو أقل)");
                         }
@@ -366,9 +457,8 @@ class ApplicationFormController extends Controller
             'national_id.digits' => 'رقم الهوية يجب أن يكون 9 أرقام.',
         ]);
 
-        // Convert DOB from dd/mm/yyyy to Y-m-d format for database storage
-        $dobParts = explode('/', $validated['dob']);
-        $dobFormatted = "{$dobParts[2]}-{$dobParts[1]}-{$dobParts[0]}";
+        // DOB is already in Y-m-d format from the date picker, ready for database storage
+        $dobFormatted = $validated['dob'];
 
         // Get the uploaded file (will be renamed after we have IDs)
         $uploadedFile = $request->file('letter_file');
