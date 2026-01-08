@@ -64,11 +64,24 @@
                     @csrf
                     <!-- UUID for form security - prevents replay attacks and form tampering -->
                     <input type="hidden" name="form_uuid" value="{{ $formUuid }}" />
-                    <fieldset>
+
+                    <!-- Application Status Check Fieldset -->
+                    <fieldset id="applicationCheckFieldset">
                         <legend>
-                            <span class="legend-icon">👤</span>البيانات الشخصية
+                            <span class="legend-icon">🔍</span>التحقق من الطلب
                         </legend>
                         <div class="grid three">
+                            <label class="field">
+                                <span>نوع التدريب *</span>
+                                <select
+                                    id="training_type"
+                                    name="training_type"
+                                    required
+                                >
+                                    <option value="" disabled selected>اختر</option>
+                                </select>
+                            </label>
+
                             <label class="field">
                                 <span>رقم الهوية *</span>
                                 <input
@@ -84,6 +97,24 @@
                                 />
                                 <small class="note">9 أرقام</small>
                             </label>
+                        </div>
+                    </fieldset>
+
+                    <!-- Application Status Error Message -->
+                    <div id="applicationErrorContainer" class="error-banner" style="display: none; margin-bottom: 24px;">
+                        <div style="padding: 16px; background: #fee; border: 1px solid #fcc; border-radius: 12px; color: #c33;">
+                            <p id="applicationErrorMessage" style="margin: 0; font-weight: 600; text-align: center;"></p>
+                        </div>
+                    </div>
+
+                    <!-- Form Content (Hidden if application error) -->
+                    <div id="formContent" style="display: none;">
+
+                    <fieldset>
+                        <legend>
+                            <span class="legend-icon">👤</span>البيانات الشخصية
+                        </legend>
+                        <div class="grid three">
                             <label class="field">
                                 <span>الاسم الكامل *</span>
                                 <input
@@ -165,17 +196,6 @@
                             <span class="legend-icon">🏢</span>بيانات التدريب
                         </legend>
                         <div class="grid three">
-                             <label class="field" id="training_type_field">
-                                <span>نوع التدريب *</span>
-                                <select
-                                    id="training_type"
-                                    name="training_type"
-                                    required
-                                >
-                                    <option value="" disabled selected>اختر</option>
-                                </select>
-                            </label>
-
                             <!-- Conditional: University fields shown as individual grid items -->
                             <label class="field" id="institution_field" style="display: none;">
                                 <span>مؤسسة تعليمية *</span>
@@ -284,6 +304,8 @@
                         class="note"
                         style="margin-top: 15px; text-align: center;"
                     ></div>
+
+                    </div> <!-- Close formContent div -->
                 </form>
             </div>
         </main>

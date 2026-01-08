@@ -351,6 +351,22 @@ select option {
     color: var(--text-muted);
 }
 
+/* Error Banner for Application Status */
+.error-banner {
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 /* --- GLOWING BUTTON --- */
 .glow-button {
     display: inline-block;
