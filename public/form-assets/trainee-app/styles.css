@@ -283,6 +283,43 @@ legend {
     margin-right: 4px;
 }
 
+/* Date input wrapper with calendar button */
+.date-input-wrapper {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.date-input-wrapper input {
+    flex: 1;
+}
+
+.calendar-btn {
+    background: var(--field-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    padding: 12px 16px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 50px;
+    color: var(--text-main);
+    transition: all 0.3s ease;
+}
+
+.calendar-btn:hover {
+    border-color: var(--primary);
+    background: var(--primary);
+    transform: scale(1.05);
+    filter: brightness(1.1);
+}
+
+.calendar-btn:active {
+    transform: scale(0.95);
+}
+
 input,
 select,
 textarea {
