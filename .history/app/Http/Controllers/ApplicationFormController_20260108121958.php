@@ -315,13 +315,12 @@ class ApplicationFormController extends Controller
 
         // No blocking application found
         if (!$blockingApplication) {
-            return $this->noApplicationResponse($trainee);
+            return $this->noApplicationResponse();
         }
 
         // Blocking application exists - return message
         return response()->json([
             'hasApplication' => true,
-            'trainee' => $trainee,
             'status' => $blockingApplication->status,
             'message' => $this->getApplicationStatusMessage($blockingApplication),
             'canContinue' => false
@@ -368,11 +367,10 @@ class ApplicationFormController extends Controller
     /**
      * Standard response when no application exists
      */
-    private function noApplicationResponse(?Trainee $trainee = null): \Illuminate\Http\JsonResponse
+    private function noApplicationResponse(): \Illuminate\Http\JsonResponse
     {
         return response()->json([
             'hasApplication' => false,
-            'trainee' => $trainee,
             'status' => null,
             'message' => '',
             'canContinue' => true
@@ -578,7 +576,7 @@ class ApplicationFormController extends Controller
             // If there was an error, the transaction will be rolled back automatically
             // File uploads are managed by Laravel storage (automatically cleaned up on rollback)
 
-            Log::error('Application submission failed', [
+            \Log::error('Application submission failed', [
                 'national_id' => $request->input('national_id'),
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
