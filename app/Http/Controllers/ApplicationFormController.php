@@ -12,6 +12,7 @@ use App\Models\Trainee;
 use App\Models\Governorate;
 // use App\Helpers\Constants;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 // use Illuminate\Support\Facades\Storage;
 
@@ -165,7 +166,7 @@ class ApplicationFormController extends Controller
 
         if ($administrativeId) {
             // Filter departments that have sections in this administrative unit
-            $query->whereHas('Section', function ($q) use ($administrativeId) {
+            $query->whereHas('sections', function ($q) use ($administrativeId) {
                 $q->where('administrative_id', $administrativeId);
             });
         }
@@ -415,15 +416,37 @@ class ApplicationFormController extends Controller
                 'digits:9',
                 // IMPROVED: Custom validation - check for duplicate applications of SAME training type
                 function ($attribute, $value, $fail) use ($trainingType) {
-                    $duplicateApp = Application::whereHas('trainee', function ($q) use ($value) {
-                        $q->where('national_id', $value);
-                    })->where('training_type', $trainingType)
-                      ->where('status', '!=', Application::STATUS_DROPPED) // Allow resubmission if dropped
-                      ->exists();
+                    $settings = \App\Models\GeneralSetting::instance();
 
-                    if ($duplicateApp) {
-                        $trainingTypeName = Application::TRAINING_TYPES[$trainingType] ?? 'غير محدد';
-                        $fail("لديك بالفعل تطبيق تدريب من نوع '{$trainingTypeName}'.");
+                    $canReapply = ($trainingType == Application::TRAINING_TYPE_UNIVERSITY)
+                        ? $settings->can_university_reapply
+                        : $settings->can_practice_reapply;
+
+                    $query = Application::whereHas('trainee', function ($q) use ($value) {
+                        $q->where('national_id', $value);
+                    })->where('training_type', $trainingType);
+
+                    if ($canReapply) {
+                        // If reapplication is allowed, only block if there's an application 
+                        // that is NOT dropped AND NOT ended training.
+                        $hasActiveApp = (clone $query)
+                            ->whereNotIn('status', [Application::STATUS_DROPPED, Application::STATUS_ENDED_TRAINING])
+                            ->exists();
+
+                        if ($hasActiveApp) {
+                            $trainingTypeName = Application::TRAINING_TYPES[$trainingType] ?? 'غير محدد';
+                            $fail("لديك بالفعل طلب تدريب قيد المعالجة من نوع '{$trainingTypeName}'. لا يمكنك التقديم مجدداً حتى ينتهي التدريب الحالي.");
+                        }
+                    } else {
+                        // Default behavior: block if any application exists that is NOT dropped
+                        $duplicateApp = (clone $query)
+                            ->where('status', '!=', Application::STATUS_DROPPED)
+                            ->exists();
+
+                        if ($duplicateApp) {
+                            $trainingTypeName = Application::TRAINING_TYPES[$trainingType] ?? 'غير محدد';
+                            $fail("لديك بالفعل تطبيق تدريب من نوع '{$trainingTypeName}'.");
+                        }
                     }
                 },
             ],
