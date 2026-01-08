@@ -598,16 +598,10 @@ class ApplicationValidator {
             // Handle date format if needed (trainee.dob is usually Y-m-d)
             const dob = trainee.dob ? trainee.dob.split('T')[0] : "";
             this.fields.dob.value = dob;
-
-            // For Flatpickr, we must handle the wrapper and altInput
+            // For Flatpickr, we might need to set it via the instance, 
+            // but setting value and making it readonly should work for simple cases
             this.fields.dob.readOnly = true;
             this.fields.dob.classList.add("readonly-field");
-
-            const dobWrapper = this.fields.dob.closest(".date-input-wrapper");
-            if (dobWrapper) {
-                dobWrapper.classList.add("readonly-field");
-                dobWrapper.style.pointerEvents = "none";
-            }
 
             // Disable the calendar button
             const calendarBtn = document.getElementById("dobCalendarBtn");
@@ -652,13 +646,6 @@ class ApplicationValidator {
         if (this.fields.dob) {
             this.fields.dob.readOnly = false;
             this.fields.dob.classList.remove("readonly-field");
-
-            const dobWrapper = this.fields.dob.closest(".date-input-wrapper");
-            if (dobWrapper) {
-                dobWrapper.classList.remove("readonly-field");
-                dobWrapper.style.pointerEvents = "auto";
-            }
-
             const calendarBtn = document.getElementById("dobCalendarBtn");
             if (calendarBtn) calendarBtn.style.display = "flex";
         }
