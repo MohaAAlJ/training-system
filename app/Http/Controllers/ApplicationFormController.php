@@ -10,11 +10,11 @@ use App\Models\Institution;
 use App\Models\Major;
 use App\Models\Trainee;
 use App\Models\Governorate;
-// use App\Helpers\Constants;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
-// use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Cache;
+use App\Jobs\CheckApplicationStatus;
 
 class ApplicationFormController extends Controller
 {
@@ -287,45 +287,20 @@ class ApplicationFormController extends Controller
             return $this->noApplicationResponse();
         }
 
-        // Find trainee
-        $trainee = Trainee::where('national_id', $nationalId)->first();
-
-        if (!$trainee) {
-            return $this->noApplicationResponse();
+        // Try to get cached result first (5 minute cache)
+        $cacheKey = "app_status:{$nationalId}:{$trainingType}";
+        $cachedResult = \Illuminate\Support\Facades\Cache::get($cacheKey);
+        
+        if ($cachedResult !== null) {
+            return response()->json($cachedResult, 200);
         }
 
-        // Check settings
-        $settings = \App\Models\GeneralSetting::instance();
-        $canReapply = ($trainingType == Application::TRAINING_TYPE_UNIVERSITY)
-            ? $settings->can_university_reapply
-            : $settings->can_practice_reapply;
+        // If not cached, dispatch job to check and cache for next request
+        \App\Jobs\CheckApplicationStatus::dispatch($nationalId, $trainingType)->onQueue('default');
 
-        // Build query for existing applications
-        $query = Application::where('trainee_id', $trainee->id)
-            ->where('training_type', $trainingType)
-            ->whereNull('deleted_at');
-
-        if ($canReapply) {
-            // If re-application allowed, only block if there's an application NOT in Ended status
-            $blockingApplication = $query->where('status', '!=', Application::STATUS_ENDED_TRAINING)->first();
-        } else {
-            // If NOT allowed, block if ANY application exists
-            $blockingApplication = $query->first();
-        }
-
-        // No blocking application found
-        if (!$blockingApplication) {
-            return $this->noApplicationResponse($trainee);
-        }
-
-        // Blocking application exists - return message
-        return response()->json([
-            'hasApplication' => true,
-            'trainee' => $trainee,
-            'status' => $blockingApplication->status,
-            'message' => $this->getApplicationStatusMessage($blockingApplication),
-            'canContinue' => false
-        ], 200);
+        // Return immediately without blocking - assume no application (optimistic)
+        // The job will update cache for subsequent requests
+        return $this->noApplicationResponse();
     }
 
     /**
