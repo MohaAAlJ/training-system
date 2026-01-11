@@ -4,7 +4,7 @@ namespace App\Settings;
 
 use Spatie\LaravelSettings\Settings;
 
-class TrainingSettings extends Settings 
+class TrainingSettings extends Settings
 {
     public bool $hoa_can_edit_section;
     public bool $hoa_can_enable_section;
@@ -19,6 +19,6 @@ class TrainingSettings extends Settings
 
     public static function group(): string
     {
-        return 'training'; 
+        return 'training';
     }
 }
