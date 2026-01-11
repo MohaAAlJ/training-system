@@ -44,7 +44,7 @@ class CapacityOverviewWidget extends BaseWidget
             ->query(
                 Section::query()
                     ->with(['administrative', 'department'])
-                    ->withCount(['Application as active_Trainee_count' => function (Builder $query) {
+                    ->withCount(['applications as active_Trainee_count' => function (Builder $query) {
                         $query->where('status', Application::STATUS_STARTED_TRAINING);
                     }])
             )
