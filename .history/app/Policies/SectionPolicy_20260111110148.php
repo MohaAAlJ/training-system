@@ -55,8 +55,6 @@ class SectionPolicy
             return true;
         }
 
-        // Check HOA permissions
-        if ($user->isHOA()) {
             if ($model->administrative_id === $user->administrative?->id) {
                 return $this->settings->hoa_can_edit_section || $this->settings->hoa_can_enable_section;
             }
