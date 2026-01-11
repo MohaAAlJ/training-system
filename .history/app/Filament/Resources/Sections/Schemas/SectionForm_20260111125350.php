@@ -5,7 +5,6 @@ namespace App\Filament\Resources\Sections\Schemas;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
-use Illuminate\Support\Facades\Auth;
 
 class SectionForm
 {

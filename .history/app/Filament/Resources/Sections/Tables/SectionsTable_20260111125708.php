@@ -64,6 +64,7 @@ class SectionsTable
                         $user = Auth::user();
                         if (!$user) return false;
 
+                        // Admin always sees/can change
                         if ($user->isAdmin()) return true;
 
                         if ($user->isGeneralTrainingManager()) return false;
@@ -78,6 +79,7 @@ class SectionsTable
                             return $settings->dept_head_can_enable_section;
                         }
 
+                        // Medical Manager legacy logic
                         if ($user->isMedicalManager()) return true;
 
                         return false;
@@ -111,8 +113,7 @@ class SectionsTable
             ])
             ->recordActions([
                 ViewAction::make(),
-                EditAction::make()
-                    ->visible(fn($record) => Auth::user()->can('editDetails', $record)),
+                EditAction::make(),
                 DeleteAction::make()->visible(fn($record) => !$record->trashed() && Auth::user()?->isAdmin()),
                 RestoreAction::make()->visible(fn($record) => $record->trashed() && Auth::user()?->isAdmin()),
             ])
