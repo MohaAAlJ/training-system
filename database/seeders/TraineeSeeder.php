@@ -28,7 +28,7 @@ class TraineeSeeder extends Seeder
                 ->first();
             if (!$col) return [$uni->id, null, null];
 
-            $major = $col->Major()->where('name', 'like', "%$majorName%")->first();
+            $major = $col->majors()->where('name', 'like', "%$majorName%")->first();
             if (!$major) {
                 // محاولة البحث عن التخصص بشكل عام إذا لم يكن مرتبطاً بالكلية في جدول الوسيط
                 $major = Major::where('name', 'like', "%$majorName%")->first();
