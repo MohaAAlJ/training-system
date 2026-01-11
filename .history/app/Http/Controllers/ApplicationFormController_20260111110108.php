@@ -30,8 +30,9 @@ class ApplicationFormController extends Controller
      */
     public function showWelcome()
     {
+        $settings = app(\App\Settings\TrainingSettings::class);
         return view('Form.welcomeapp', [
-            'isFormEnabled' => $this->settings->is_public_form_enabled,
+            'isFormEnabled' => $settings->is_public_form_enabled,
             'formUuid' => (string) \Illuminate\Support\Str::uuid()
         ]);
     }
@@ -41,11 +42,13 @@ class ApplicationFormController extends Controller
      */
     public function showForm()
     {
-        if (!$this->settings->is_public_form_enabled) {
+        $settings = app(\App\Settings\TrainingSettings::class);
+
+        if (!$settings->is_public_form_enabled) {
             return redirect()->route('training.welcome')->with('error', 'نعتذر، نموذج الالتحاق مغلق حالياً.');
         }
 
-        if (!$this->settings->enable_training_type_university && !$this->settings->enable_training_type_practice) {
+        if (!$settings->enable_training_type_university && !$settings->enable_training_type_practice) {
             return redirect()->route('training.welcome')->with('error', 'نعتذر، لا توجد أنواع تدريب متاحة حالياً.');
         }
 
@@ -211,7 +214,7 @@ class ApplicationFormController extends Controller
 
         // DEPRECATED: Feature to hide full sections - temporarily disabled
         // Uncomment the following lines to enable this feature
-        // $hideFull = $this->settings->hide_full_sections;
+        // $hideFull = app(\App\Settings\TrainingSettings::class)->hide_full_sections;
         // if ($hideFull) {
         //     $sections = $query->active()->get()->reject(function ($sec) {
         //         return $sec->getCapacityStats()['is_full'] ?? false;
@@ -238,13 +241,14 @@ class ApplicationFormController extends Controller
 
     public function trainingType()
     {
+        $settings = app(\App\Settings\TrainingSettings::class);
         $data = [];
 
-        if ($this->settings->enable_training_type_university) {
+        if ($settings->enable_training_type_university) {
             $data[] = ['id' => Application::TRAINING_TYPE_UNIVERSITY, 'name' => Application::TRAINING_TYPES[Application::TRAINING_TYPE_UNIVERSITY]];
         }
 
-        if ($this->settings->enable_training_type_practice) {
+        if ($settings->enable_training_type_practice) {
             $data[] = ['id' => Application::TRAINING_TYPE_PRACTICE, 'name' => Application::TRAINING_TYPES[Application::TRAINING_TYPE_PRACTICE]];
         }
 
@@ -296,9 +300,10 @@ class ApplicationFormController extends Controller
         }
 
         // Check settings
+        $settings = app(\App\Settings\TrainingSettings::class);
         $canReapply = ($trainingType == Application::TRAINING_TYPE_UNIVERSITY)
-            ? $this->settings->can_university_reapply
-            : $this->settings->can_practice_reapply;
+            ? $settings->can_university_reapply
+            : $settings->can_practice_reapply;
 
         // Build query for existing applications
         $query = Application::where('trainee_id', $trainee->id)
@@ -431,16 +436,11 @@ class ApplicationFormController extends Controller
                 'digits:9',
                 // IMPROVED: Custom validation - check for duplicate applications of SAME training type
                 function ($attribute, $value, $fail) use ($trainingType) {
-                    // Access settings via controller instance if available, but this is a closure.
-                    // Closures in validation might not have access to $this if static or different scope.
-                    // However, 'validate' is called on $request, typically inside controller method.
-                    // BUT $this is available in the controller method closure context? Yes.
-                    // Let's use the local variable approach for safety or $this->settings if safe.
-                    // Actually, for closure inside controller method, $this is available.
+                    $settings = app(\App\Settings\TrainingSettings::class);
 
                     $canReapply = ($trainingType == Application::TRAINING_TYPE_UNIVERSITY)
-                        ? $this->settings->can_university_reapply
-                        : $this->settings->can_practice_reapply;
+                        ? $settings->can_university_reapply
+                        : $settings->can_practice_reapply;
 
                     $query = Application::whereHas('trainee', function ($q) use ($value) {
                         $q->where('national_id', $value);

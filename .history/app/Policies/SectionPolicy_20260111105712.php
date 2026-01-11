@@ -5,14 +5,8 @@ namespace App\Policies;
 use App\Models\Section;
 use App\Models\User;
 
-use App\Settings\TrainingSettings;
-
 class SectionPolicy
 {
-    public function __construct(
-        protected TrainingSettings $settings
-    ) {}
-
     public function viewAny(User $user): bool
     {
         return $user->isAdmin() ||
@@ -55,16 +49,22 @@ class SectionPolicy
             return true;
         }
 
+        $settings = app(\App\Settings\TrainingSettings::class);
+
         // Check HOA permissions
         if ($user->isHOA()) {
+            // Can update if: owned by their unit AND (can_edit OR can_enable)
+            // Note: We allow access to 'update' if they have either permission,
+            // verifying specific field access is done in Resource/Form.
             if ($model->administrative_id === $user->administrative?->id) {
-                return $this->settings->hoa_can_edit_section || $this->settings->hoa_can_enable_section;
+                return $settings->hoa_can_edit_section || $settings->hoa_can_enable_section;
             }
         }
 
+        // Check Department permissions
         if ($user->isDepartment()) {
             if ($model->department_id === $user->department?->id) {
-                return $this->settings->dept_head_can_edit_section || $this->settings->dept_head_can_enable_section;
+                return $settings->dept_head_can_edit_section || $settings->dept_head_can_enable_section;
             }
         }
 
@@ -78,12 +78,14 @@ class SectionPolicy
     {
         if ($user->isAdmin() || $user->isGeneralTrainingManager()) return true;
 
+        $settings = app(\App\Settings\TrainingSettings::class);
+
         if ($user->isHOA() && $model->administrative_id === $user->administrative?->id) {
-            return $this->settings->hoa_can_edit_section;
+            return $settings->hoa_can_edit_section;
         }
 
         if ($user->isDepartment() && $model->department_id === $user->department?->id) {
-            return $this->settings->dept_head_can_edit_section;
+            return $settings->dept_head_can_edit_section;
         }
 
         return false;
@@ -96,12 +98,14 @@ class SectionPolicy
     {
         if ($user->isAdmin() || $user->isGeneralTrainingManager()) return true;
 
+        $settings = app(\App\Settings\TrainingSettings::class);
+
         if ($user->isHOA() && $model->administrative_id === $user->administrative?->id) {
-            return $this->settings->hoa_can_enable_section;
+            return $settings->hoa_can_enable_section;
         }
 
         if ($user->isDepartment() && $model->department_id === $user->department?->id) {
-            return $this->settings->dept_head_can_enable_section;
+            return $settings->dept_head_can_enable_section;
         }
 
         return false;

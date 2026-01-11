@@ -4,8 +4,8 @@ namespace App\Settings;
 
 use Spatie\LaravelSettings\Settings;
 
-class TrainingSettings extends Settings 
-{
+class TrainingSettings extends Sett
+<<<<<<    // Define public properties for each setting you added in the migration
     public bool $hoa_can_edit_section;
     public bool $hoa_can_enable_section;
     public bool $dept_head_can_edit_section;

@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -22,7 +23,6 @@ return new class extends Migration
             $table->boolean('dept_head_can_enable_section')->default(false);
             $table->timestamps();
         });
-    }
 
     public function down(): void
     {

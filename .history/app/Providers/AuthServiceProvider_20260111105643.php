@@ -16,7 +16,8 @@ use App\Policies\ApplicationPolicy;
 use App\Policies\TraineePolicy;
 use App\Policies\DepartmentPolicy;
 use App\Policies\SectionPolicy;
-
+use App\Policies\GeneralSettingPolicy;
+use App\Models\GeneralSetting;
 
 class AuthServiceProvider extends ServiceProvider
 {
