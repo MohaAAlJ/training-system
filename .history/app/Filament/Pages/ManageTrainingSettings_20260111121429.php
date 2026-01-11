@@ -36,7 +36,7 @@ class ManageTrainingSettings extends SettingsPage
                     ->schema([
                         Toggle::make('hide_full_sections')
                             ->label('اظهار الأقسام المكتملة')
-                            ->helperText('عند التفعيل، سيتم اظهار الأقسام التي وصلت إلى سعتها القصوى في طلب الالتحاق. عند التعطيل، لن تظهر الأقسام المكتملة.')
+                            ->helperText('عند التفعيل، لن تظهر الأقسام التي وصلت لسعتها القصوى في طلب الالتحاق. عند التعطيل، ستظهر كافة الأقسام وسيسمح بالتقديم فيها.')
                             ->default(true)
                             ->live(),
 
@@ -53,7 +53,7 @@ class ManageTrainingSettings extends SettingsPage
                                     ->helperText('إتاحة خيار تدريب المزاولة في نموذج الالتحاق.')
                                     ->default(true)
                                     ->rules([
-                                        fn(callable $get) => function (string $attribute, $value, Closure $fail) use ($get) {
+                                        fn(callable $get) => function (string $attribute, $value, \Closure $fail) use ($get) {
                                             if (!$value && !$get('enable_training_type_university')) {
                                                 $fail('يجب تفعيل نوع واحد على الأقل من التدريب.');
                                             }
@@ -66,7 +66,7 @@ class ManageTrainingSettings extends SettingsPage
                                     ->helperText('إتاحة خيار تدريب الجامعات في نموذج الالتحاق.')
                                     ->default(true)
                                     ->rules([
-                                        fn(callable $get) => function (string $attribute, $value, Closure $fail) use ($get) {
+                                        fn(callable $get) => function (string $attribute, $value, \Closure $fail) use ($get) {
                                             if (!$value && !$get('enable_training_type_practice')) {
                                                 $fail('يجب تفعيل نوع واحد على الأقل من التدريب.');
                                             }

@@ -64,12 +64,15 @@ class SectionsTable
                         $user = Auth::user();
                         if (!$user) return false;
 
+                        // Admin always sees/can change
                         if ($user->isAdmin()) return true;
 
+                        // Per user request: GTM can't change status
                         if ($user->isGeneralTrainingManager()) return false;
 
                         $settings = app(\App\Settings\TrainingSettings::class);
 
+                        // Checks based on settings for HOA and Dept Head
                         if ($user->isHOA()) {
                             return $settings->hoa_can_enable_section;
                         }
@@ -78,6 +81,7 @@ class SectionsTable
                             return $settings->dept_head_can_enable_section;
                         }
 
+                        // Medical Manager legacy logic
                         if ($user->isMedicalManager()) return true;
 
                         return false;
@@ -111,8 +115,7 @@ class SectionsTable
             ])
             ->recordActions([
                 ViewAction::make(),
-                EditAction::make()
-                    ->visible(fn($record) => Auth::user()->can('editDetails', $record)),
+                EditAction::make(),
                 DeleteAction::make()->visible(fn($record) => !$record->trashed() && Auth::user()?->isAdmin()),
                 RestoreAction::make()->visible(fn($record) => $record->trashed() && Auth::user()?->isAdmin()),
             ])

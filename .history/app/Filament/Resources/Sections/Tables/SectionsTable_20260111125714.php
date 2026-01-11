@@ -111,8 +111,7 @@ class SectionsTable
             ])
             ->recordActions([
                 ViewAction::make(),
-                EditAction::make()
-                    ->visible(fn($record) => Auth::user()->can('editDetails', $record)),
+                EditAction::make(),
                 DeleteAction::make()->visible(fn($record) => !$record->trashed() && Auth::user()?->isAdmin()),
                 RestoreAction::make()->visible(fn($record) => $record->trashed() && Auth::user()?->isAdmin()),
             ])

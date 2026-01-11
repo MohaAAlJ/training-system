@@ -391,32 +391,17 @@ class ApplicationForm
                                     $query->where('department_id', $deptId);
                                 }
 
-                                // Respect the "Show full sections" toggle (true = show, false = hide)
+                                // The toggle is now "Show full sections" (true = show, false = hide)
                                 $showFull = app(\App\Settings\TrainingSettings::class)->hide_full_sections;
-                                $isAdmin = Auth::user()->isAdmin();
+                                $hideFull = !$showFull;
 
-                                // Hide completely ONLY if toggle is OFF AND user is NOT Admin
-                                $shouldHide = !$showFull && !$isAdmin;
-
-                                $sections = $query->get();
-
-                                if ($shouldHide) {
-                                    $sections = $sections->reject(fn(Section $sec) => $sec->getCapacityStats()['is_full'] ?? false);
-                                }
-
-                                return $sections->mapWithKeys(function (Section $sec) {
-                                    $stats = $sec->getCapacityStats();
-                                    $label = $sec->name_location . ($stats['is_full'] ? ' (ممتلئ)' : '');
-                                    return [$sec->id => $label];
-                                });
-                            })
-                            ->disableOptionWhen(function (string $value) {
                                 if (Auth::user()->isAdmin()) {
-                                    return false;
+                                    $hideFull = false;
                                 }
 
-                                $section = Section::find($value);
-                                return $section && ($section->getCapacityStats()['is_full'] ?? false);
+                                return $query->get()
+                                    ->when($hideFull, fn($collection) => $collection->reject(fn($sec) => $sec->getCapacityStats()['is_full']))
+                                    ->pluck('name_location', 'id');
                             })
                             ->searchable()
                             ->preload()
