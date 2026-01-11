@@ -21,8 +21,7 @@ return new class extends Migration
             $table->boolean('is_public_form_enabled')->default(true);
             $table->boolean('enable_training_type_practice')->default(true);
             $table->boolean('enable_training_type_university')->default(true);
-            $table->boolean('can_university_reapply')->default(false);
-            $table->boolean('can_practice_reapply')->default(false);
+            $table->boolean('can_university_reapply')->default(false)
             $table->timestamps();
         });
 
