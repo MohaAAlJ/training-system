@@ -1,4 +1,6 @@
-<?php
+ining'; 
+    }
+}<?php
 
 namespace App\Settings;
 

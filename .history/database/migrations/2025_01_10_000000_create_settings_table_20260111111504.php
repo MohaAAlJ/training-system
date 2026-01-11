@@ -23,6 +23,22 @@ return new class extends Migration
             $table->boolean('dept_head_can_enable_section')->default(false);
             $table->timestamps();
         });
+
+        // Create initial record
+        DB::table('training_settings')->insert([
+            'hide_full_sections' => true,
+            'is_public_form_enabled' => true,
+            'enable_training_type_practice' => true,
+            'enable_training_type_university' => true,
+            'can_university_reapply' => false,
+            'can_practice_reapply' => false,
+            'hoa_can_edit_section' => false,
+            'hoa_can_enable_section' => false,
+            'dept_head_can_edit_section' => false,
+            'dept_head_can_enable_section' => false,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 
     public function down(): void

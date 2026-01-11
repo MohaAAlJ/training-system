@@ -23,7 +23,6 @@ return new class extends Migration
             $table->boolean('dept_head_can_enable_section')->default(false);
             $table->timestamps();
         });
-    }
 
     public function down(): void
     {
