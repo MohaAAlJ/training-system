@@ -66,7 +66,7 @@ class ManageTrainingSettings extends SettingsPage
                                     ->helperText('إتاحة خيار تدريب الجامعات في نموذج الالتحاق.')
                                     ->default(true)
                                     ->rules([
-                                        fn(callable $get) => function (string $attribute, $value, Closure $fail) use ($get) {
+                                        fn(callable $get) => function (string $attribute, $value, \Closure $fail) use ($get) {
                                             if (!$value && !$get('enable_training_type_practice')) {
                                                 $fail('يجب تفعيل نوع واحد على الأقل من التدريب.');
                                             }
