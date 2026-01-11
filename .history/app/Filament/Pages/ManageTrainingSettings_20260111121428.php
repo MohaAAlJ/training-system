@@ -35,8 +35,8 @@ class ManageTrainingSettings extends SettingsPage
                     ->icon('heroicon-o-cog-6-tooth')
                     ->schema([
                         Toggle::make('hide_full_sections')
-                            ->label('اظهار الأقسام المكتملة')
-                            ->helperText('عند التفعيل، سيتم اظهار الأقسام التي وصلت إلى سعتها القصوى في طلب الالتحاق. عند التعطيل، لن تظهر الأقسام المكتملة.')
+                            ->label('اظها الأقسام المكتملة')
+                            ->helperText('عند التفعيل، لن تظهر الأقسام التي وصلت لسعتها القصوى في طلب الالتحاق. عند التعطيل، ستظهر كافة الأقسام وسيسمح بالتقديم فيها.')
                             ->default(true)
                             ->live(),
 

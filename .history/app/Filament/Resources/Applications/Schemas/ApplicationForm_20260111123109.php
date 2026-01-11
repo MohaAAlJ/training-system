@@ -398,17 +398,13 @@ class ApplicationForm
                                 // Hide completely ONLY if toggle is OFF AND user is NOT Admin
                                 $shouldHide = !$showFull && !$isAdmin;
 
-                                $sections = $query->get();
-
-                                if ($shouldHide) {
-                                    $sections = $sections->reject(fn(Section $sec) => $sec->getCapacityStats()['is_full'] ?? false);
-                                }
-
-                                return $sections->mapWithKeys(function (Section $sec) {
-                                    $stats = $sec->getCapacityStats();
-                                    $label = $sec->name_location . ($stats['is_full'] ? ' (ممتلئ)' : '');
-                                    return [$sec->id => $label];
-                                });
+                                return $query->get()
+                                    ->when($shouldHide, fn($collection) => $collection->reject(fn(Section $sec) => $sec->getCapacityStats()['is_full']))
+                                    ->mapWithKeys(function (Section $sec) {
+                                        $stats = $sec->getCapacityStats();
+                                        $label = $sec->name_location . ($stats['is_full'] ? ' (ممتلئ)' : '');
+                                        return [$sec->id => $label];
+                                    });
                             })
                             ->disableOptionWhen(function (string $value) {
                                 if (Auth::user()->isAdmin()) {
