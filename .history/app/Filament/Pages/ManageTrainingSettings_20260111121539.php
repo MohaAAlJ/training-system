@@ -36,7 +36,7 @@ class ManageTrainingSettings extends SettingsPage
                     ->schema([
                         Toggle::make('hide_full_sections')
                             ->label('اظهار الأقسام المكتملة')
-                            ->helperText('عند التفعيل، سيتم اظهار الأقسام التي وصلت إلى سعتها القصوى في طلب الالتحاق. عند التعطيل، لن تظهر الأقسام المكتملة.')
+                            ->helperText('عند التفعيل، سيتم اظهار الأقسام التي و لسعتها القصوى في طلب الالتحاق. عند التعطيل، سيتم اظهار كافة الأقسام.')
                             ->default(true)
                             ->live(),
 

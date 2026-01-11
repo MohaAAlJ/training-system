@@ -209,8 +209,8 @@ class ApplicationFormController extends Controller
             $query->where('administrative_id', $administrativeId);
         }
 
-        $showFull = $this->settings->hide_full_sections;
-        if (!$showFull) {
+        $hideFull = $this->settings->hide_full_sections;
+        if ($hideFull) {
             $sections = $query->active()->get()->reject(function ($sec) {
                 return $sec->getCapacityStats()['is_full'] ?? false;
             });
@@ -491,12 +491,9 @@ class ApplicationFormController extends Controller
                 'integer',
                 'exists:sections,id',
                 function ($attribute, $value, $fail) {
-                    $section = Section::find($value);
+                    $section = \App\Models\Section::find($value);
                     if ($section && ($section->getCapacityStats()['is_full'] ?? false)) {
-                        // Logic flip: block ONLY if show_full_sections is false (meaning hide=true)
-                        if (!$this->settings->hide_full_sections) {
-                            $fail('نعتذر، هذا القسم ' . $section->name_location . ' ممتلئ حالياً. يرجى اختيار قسم آخر.');
-                        }
+                        $fail('نعتذر، هذا القسم ممتلئ حالياً. يرجى اختيار قسم آخر.');
                     }
                 }
             ],
