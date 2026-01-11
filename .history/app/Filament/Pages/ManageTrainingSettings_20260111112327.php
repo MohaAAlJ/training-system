@@ -2,7 +2,7 @@
 
 namespace App\Filament\Pages;
 
-use App\Settings\TrainingSettings;
+use App\Settings\GeneralSettings;
 use Filament\Schemas\Schema;
 use Filament\Pages\SettingsPage;
 use Filament\Schemas\Components\Grid;
