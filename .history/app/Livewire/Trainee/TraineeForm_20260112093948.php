@@ -12,11 +12,15 @@ use App\Models\Governorate;
 use App\Models\Institution;
 use App\Models\Administrative;
 use App\Models\Section;
+use App\Models\Department;
+use App\Models\College;
 use App\Settings\TrainingSettings;
 use App\Models\Trainee;
 use App\Models\Application;
 use App\Models\Major;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * TraineeForm Livewire Component
@@ -105,7 +109,7 @@ class TraineeForm extends Component
     protected function rules()
     {
         $rules = [
-            'trainingType' => 'required|in:' . \App\Models\Application::TRAINING_TYPE_UNIVERSITY . ',' . \App\Models\Application::TRAINING_TYPE_PRACTICE,
+            'trainingType' => 'required|in:' . Application::TRAINING_TYPE_UNIVERSITY . ',' . Application::TRAINING_TYPE_PRACTICE,
             'nationalId' => 'required|digits:9',
         ];
 
@@ -131,7 +135,7 @@ class TraineeForm extends Component
                 'sectionId' => 'required|exists:sections,id',
             ]);
 
-            if ($this->trainingType === \App\Models\Application::TRAINING_TYPE_UNIVERSITY) {
+            if ($this->trainingType === Application::TRAINING_TYPE_UNIVERSITY) {
                 $rules = array_merge($rules, [
                     'institutionId' => 'required|exists:institutions,id',
                     'majorId' => 'required|exists:majors,id',
@@ -154,7 +158,7 @@ class TraineeForm extends Component
     public function mount()
     {
         // Generate UUID for form security (prevents replay attacks)
-        $this->formUuid = \Illuminate\Support\Str::uuid()->toString();
+        $this->formUuid = Str::uuid()->toString();
 
         $this->governorates = collect();
         $this->institutions = collect();
@@ -296,12 +300,18 @@ class TraineeForm extends Component
             $types = [];
 
             if ($settings->enable_training_type_university) {
-                $types[] = ['id' => \App\Models\Application::TRAINING_TYPE_UNIVERSITY, 'name' => 'تدريب جامعي'];
+                $types[] = ['id' => Application::TRAINING_TYPE_UNIVERSITY, 'name' => Application::TRAINING_TYPES[Application::TRAINING_TYPE_UNIVERSITY]];
             }
             if ($settings->enable_training_type_practice) {
-                $types[] = ['id' => \App\Models\Application::TRAINING_TYPE_PRACTICE, 'name' => 'مزاولة مهنة'];
+                $types[] = ['id' => Application::TRAINING_TYPE_PRACTICE, 'name' => Application::TRAINING_TYPES[Application::TRAINING_TYPE_PRACTICE]];
             }
+
             $this->trainingTypes = collect($types);
+
+            // Auto-select if only one option
+            if ($this->trainingTypes->count() === 1) {
+                $this->trainingType = $this->trainingTypes->first()['id'] ?? 0;
+            }
         } catch (\Exception $e) {
             $this->logException('Training Type Load Error', $e);
         }
@@ -342,7 +352,7 @@ class TraineeForm extends Component
         }
 
         try {
-            $this->majors = \App\Models\Major::whereHas('colleges', function ($q) {
+            $this->majors = Major::whereHas('colleges', function ($q) {
                 $q->where('colleges.institution_id', $this->institutionId)
                     ->where('colleges.is_active', true);
             })
@@ -361,7 +371,7 @@ class TraineeForm extends Component
             $query = Administrative::query();
 
             // Filter by medical if training type is practice
-            if ($this->trainingType === \App\Models\Application::TRAINING_TYPE_PRACTICE) {
+            if ($this->trainingType === Application::TRAINING_TYPE_PRACTICE) {
                 $query->where('is_medical', true);
             }
 
@@ -381,13 +391,13 @@ class TraineeForm extends Component
     {
         try {
             // Load ALL sections with their relationships and capacity info
-            $sections = \App\Models\Section::with(['department', 'administrative'])
+            $sections = Section::with(['department', 'administrative'])
                 ->select('id', 'name_location', 'department_id', 'administrative_id', 'capacity')
                 ->orderBy('name_location')
                 ->get();
 
             // Filter by medical if training type is practice
-            if ($this->trainingType === \App\Models\Application::TRAINING_TYPE_PRACTICE) {
+            if ($this->trainingType === Application::TRAINING_TYPE_PRACTICE) {
                 $sections = $sections->filter(fn($sec) => $sec->department?->is_medical);
             }
 
@@ -426,10 +436,10 @@ class TraineeForm extends Component
     {
         try {
             // Load ALL departments for client-side filtering
-            $query = \App\Models\Department::query();
+            $query = Department::query();
 
             // Filter by medical if training type is practice
-            if ($this->trainingType === \App\Models\Application::TRAINING_TYPE_PRACTICE) {
+            if ($this->trainingType === Application::TRAINING_TYPE_PRACTICE) {
                 $query->where('is_medical', true);
             }
 
@@ -453,7 +463,7 @@ class TraineeForm extends Component
     {
         try {
             // Load ALL majors with college relationships for client-side filtering
-            $this->allMajors = \App\Models\Major::with(['colleges'])
+            $this->allMajors = Major::with(['colleges'])
                 ->select('id', 'name')
                 ->orderBy('name')
                 ->get()
@@ -480,7 +490,7 @@ class TraineeForm extends Component
 
         try {
             // Get college related to this major and institution
-            $college = \App\Models\College::whereHas('majors', function ($q) {
+            $college = College::whereHas('majors', function ($q) {
                 $q->where('major_id', $this->majorId);
             })
                 ->where('institution_id', $this->institutionId)
@@ -506,7 +516,7 @@ class TraineeForm extends Component
         try {
             // Check cache first
             $cacheKey = "app_status:{$this->nationalId}:{$this->trainingType}";
-            $cachedResult = \Illuminate\Support\Facades\Cache::get($cacheKey);
+            $cachedResult = Cache::get($cacheKey);
 
             if ($cachedResult !== null) {
                 $this->processApplicationStatusResult($cachedResult);
@@ -514,7 +524,7 @@ class TraineeForm extends Component
             }
 
             // Query database directly for application check
-            $trainee = \App\Models\Trainee::where('national_id', $this->nationalId)->first();
+            $trainee = Trainee::where('national_id', $this->nationalId)->first();
 
             if (!$trainee) {
                 // No trainee found - allow to proceed
@@ -526,18 +536,18 @@ class TraineeForm extends Component
 
             // Check settings for re-application policy
             $settings = app(TrainingSettings::class);
-            $canReapply = ($this->trainingType === \App\Models\Application::TRAINING_TYPE_UNIVERSITY)
+            $canReapply = ($this->trainingType === Application::TRAINING_TYPE_UNIVERSITY)
                 ? $settings->can_university_reapply
                 : $settings->can_practice_reapply;
 
             // Build query for existing applications
-            $query = \App\Models\Application::where('trainee_id', $trainee->id)
+            $query = Application::where('trainee_id', $trainee->id)
                 ->where('training_type', $this->trainingType)
                 ->whereNull('deleted_at');
 
             if ($canReapply) {
                 // If re-application allowed, only block if there's an application NOT in Ended status
-                $blockingApplication = $query->where('status', '!=', \App\Models\Application::STATUS_ENDED_TRAINING)->first();
+                $blockingApplication = $query->where('status', '!=', Application::STATUS_ENDED_TRAINING)->first();
             } else {
                 // If NOT allowed, block if ANY application exists
                 $blockingApplication = $query->first();
@@ -551,7 +561,7 @@ class TraineeForm extends Component
                     'message' => $this->getApplicationStatusMessage($blockingApplication),
                 ];
                 // Cache for configured TTL
-                \Illuminate\Support\Facades\Cache::put($cacheKey, $result, now()->addMinutes(self::CACHE_TTL_MINUTES));
+                Cache::put($cacheKey, $result, now()->addMinutes(self::CACHE_TTL_MINUTES));
                 $this->processApplicationStatusResult($result);
             } else {
                 $result = [
@@ -559,7 +569,7 @@ class TraineeForm extends Component
                     'status' => null,
                 ];
                 // Cache for configured TTL
-                \Illuminate\Support\Facades\Cache::put($cacheKey, $result, now()->addMinutes(self::CACHE_TTL_MINUTES));
+                Cache::put($cacheKey, $result, now()->addMinutes(self::CACHE_TTL_MINUTES));
                 $this->clearStatusMessage();
                 $this->showPersonalDetails = true;
                 $this->showTrainingDetails = true;
@@ -586,9 +596,34 @@ class TraineeForm extends Component
         }
     }
 
-    private function getApplicationStatusMessage(\App\Models\Application $application): string
+    private function getApplicationStatusMessage(Application $application): string
     {
-        return \App\Models\Application::getStatusMessage($application->status);
+        return match ($application->status) {
+            Application::STATUS_NEW => 'لديك طلب قيد الانتظار',
+            Application::STATUS_INITIAL_APPROVE => 'لديك طلب في انتظار القبول الجامعي',
+            Application::STATUS_CONFIRMATION => 'لديك طلب في انتظار التأكيد',
+            Application::STATUS_WAITING_LIST => 'لديك طلب في قائمة الانتظار',
+            Application::STATUS_STARTED_TRAINING => 'لديك تدريب نشط',
+            Application::STATUS_ENDED_TRAINING => 'لديك طلب منتهي',
+            Application::STATUS_REJECTED => 'لديك طلب سابق لايمكنك اصادر طلب جديد',
+            Application::STATUS_DROPPED => 'لديك طلب منسحب',
+            default => 'لديك طلب قائم',
+        };
+    }
+
+    private function getArabicStatusMessage(string $status): string
+    {
+        $messages = [
+            'pending' => 'لديك طلب قيد الانتظار',
+            'waiting_university' => 'لديك طلب في انتظار القبول الجامعي',
+            'waiting_list' => 'لديك طلب في قائمة الانتظار',
+            'active_training' => 'لديك تدريب نشط',
+            'completed' => 'لديك طلب منتهي',
+            'previous_application' => 'لديك طلب سابق لايمكنك اصادر طلب جديد',
+            'unknown' => 'لا يمكنك تقديم طلب جديد في هذا الوقت',
+        ];
+
+        return $messages[$status] ?? $messages['unknown'];
     }
 
     private function setStatusMessage(string $text, string $type = 'note'): void
@@ -666,7 +701,7 @@ class TraineeForm extends Component
     // ========================================
     private function toggleUniversityFields(): void
     {
-        $isUniversity = $this->trainingType === \App\Models\Application::TRAINING_TYPE_UNIVERSITY;
+        $isUniversity = $this->trainingType === Application::TRAINING_TYPE_UNIVERSITY;
 
         if (!$isUniversity) {
             // Reset university fields if not university training

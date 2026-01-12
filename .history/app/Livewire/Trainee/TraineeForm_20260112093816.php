@@ -296,12 +296,18 @@ class TraineeForm extends Component
             $types = [];
 
             if ($settings->enable_training_type_university) {
-                $types[] = ['id' => \App\Models\Application::TRAINING_TYPE_UNIVERSITY, 'name' => 'تدريب جامعي'];
+                $types[] = ['id' => Application::TRAINING_TYPE_UNIVERSITY, 'name' => Application::TRAINING_TYPES[Application::TRAINING_TYPE_UNIVERSITY]];
             }
             if ($settings->enable_training_type_practice) {
-                $types[] = ['id' => \App\Models\Application::TRAINING_TYPE_PRACTICE, 'name' => 'مزاولة مهنة'];
+                $types[] = ['id' => Application::TRAINING_TYPE_PRACTICE, 'name' => Application::TRAINING_TYPES[Application::TRAINING_TYPE_PRACTICE]];
             }
+
             $this->trainingTypes = collect($types);
+
+            // Auto-select if only one option
+            if ($this->trainingTypes->count() === 1) {
+                $this->trainingType = $this->trainingTypes->first()['id'] ?? 0;
+            }
         } catch (\Exception $e) {
             $this->logException('Training Type Load Error', $e);
         }
@@ -342,7 +348,7 @@ class TraineeForm extends Component
         }
 
         try {
-            $this->majors = \App\Models\Major::whereHas('colleges', function ($q) {
+            $this->majors = Major::whereHas('colleges', function ($q) {
                 $q->where('colleges.institution_id', $this->institutionId)
                     ->where('colleges.is_active', true);
             })
@@ -361,7 +367,7 @@ class TraineeForm extends Component
             $query = Administrative::query();
 
             // Filter by medical if training type is practice
-            if ($this->trainingType === \App\Models\Application::TRAINING_TYPE_PRACTICE) {
+            if ($this->trainingType === Application::TRAINING_TYPE_PRACTICE) {
                 $query->where('is_medical', true);
             }
 
@@ -387,7 +393,7 @@ class TraineeForm extends Component
                 ->get();
 
             // Filter by medical if training type is practice
-            if ($this->trainingType === \App\Models\Application::TRAINING_TYPE_PRACTICE) {
+            if ($this->trainingType === Application::TRAINING_TYPE_PRACTICE) {
                 $sections = $sections->filter(fn($sec) => $sec->department?->is_medical);
             }
 
@@ -588,7 +594,32 @@ class TraineeForm extends Component
 
     private function getApplicationStatusMessage(\App\Models\Application $application): string
     {
-        return \App\Models\Application::getStatusMessage($application->status);
+        return match ($application->status) {
+            \App\Models\Application::STATUS_NEW => 'لديك طلب قيد الانتظار',
+            \App\Models\Application::STATUS_INITIAL_APPROVE => 'لديك طلب في انتظار القبول الجامعي',
+            \App\Models\Application::STATUS_CONFIRMATION => 'لديك طلب في انتظار التأكيد',
+            \App\Models\Application::STATUS_WAITING_LIST => 'لديك طلب في قائمة الانتظار',
+            \App\Models\Application::STATUS_STARTED_TRAINING => 'لديك تدريب نشط',
+            \App\Models\Application::STATUS_ENDED_TRAINING => 'لديك طلب منتهي',
+            \App\Models\Application::STATUS_REJECTED => 'لديك طلب سابق لايمكنك اصادر طلب جديد',
+            \App\Models\Application::STATUS_DROPPED => 'لديك طلب منسحب',
+            default => 'لديك طلب قائم',
+        };
+    }
+
+    private function getArabicStatusMessage(string $status): string
+    {
+        $messages = [
+            'pending' => 'لديك طلب قيد الانتظار',
+            'waiting_university' => 'لديك طلب في انتظار القبول الجامعي',
+            'waiting_list' => 'لديك طلب في قائمة الانتظار',
+            'active_training' => 'لديك تدريب نشط',
+            'completed' => 'لديك طلب منتهي',
+            'previous_application' => 'لديك طلب سابق لايمكنك اصادر طلب جديد',
+            'unknown' => 'لا يمكنك تقديم طلب جديد في هذا الوقت',
+        ];
+
+        return $messages[$status] ?? $messages['unknown'];
     }
 
     private function setStatusMessage(string $text, string $type = 'note'): void

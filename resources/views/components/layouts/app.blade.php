@@ -7,6 +7,12 @@
 
     <title>{{ $title ?? 'نظام التدريب' }}</title>
 
+    <!-- Early theme initialization to prevent flash -->
+    <script>
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+    </script>
+
     <!-- Styles -->
     <link rel="stylesheet" href="{{ asset('form-assets/trainee-app/styles.css') }}" />
     <link rel="stylesheet" href="{{ asset('form-assets/welcome/styles.css') }}" />

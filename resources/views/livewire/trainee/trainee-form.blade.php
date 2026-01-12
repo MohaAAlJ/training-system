@@ -44,44 +44,42 @@
             <form wire:submit.prevent="submit" id="applicationForm" class="card">
                 <!-- ERROR FIELDSET: Application Status Error (Hidden by default) -->
                 @if ($statusMessage && $statusMessageType === 'error')
-                    <fieldset class="fieldset fieldset--error" wire:transition>
-                        <legend>
-                            <span class="legend-icon">⚠️</span>تنبيه مهم
-                        </legend>
-                        <div class="error-message">
-                            <p style="color: #d32f2f; font-weight: 600; font-size: 16px; margin: 0; text-align: right;">
-                                {{ $statusMessage }}
-                            </p>
-                        </div>
-                    </fieldset>
+                <fieldset class="fieldset fieldset--error" wire:transition>
+                    <legend>
+                        <span class="legend-icon">⚠️</span>تنبيه مهم
+                    </legend>
+                    <div class="error-message">
+                        <p style="color: #d32f2f; font-weight: 600; font-size: 16px; margin: 0; text-align: right;">
+                            {{ $statusMessage }}
+                        </p>
+                    </div>
+                </fieldset>
                 @endif
 
                 <!-- FIELDSET 1: Training Type & National ID -->
-                <x-form.fieldset-training-type :$trainingTypes :$nationalIdReadonly />
+                @include('livewire.trainee.components.fieldset-training-type')
 
                 <!-- FIELDSET 2: Personal Details (shown conditionally) -->
-                <x-form.fieldset-personal-details :$showPersonalDetails :$governorates :$fullNameReadonly
-                    :$dobReadonly />
+                @include('livewire.trainee.components.fieldset-personal-details')
 
                 <!-- FIELDSET 3: Training Details (shown conditionally) -->
-                <x-form.fieldset-training-details :$showPersonalDetails :$institutions :$allMajors :$administratives
-                    :$allSections :$allDepartments :$trainingType />
+                @include('livewire.trainee.components.fieldset-training-details')
 
                 <!-- Terms & Conditions Section (shown only when personal details are visible) -->
-                <x-form.form-terms :$showPersonalDetails />
+                @include('livewire.trainee.components.form-terms')
 
                 <!-- Submit Button - Posts to ApplicationFormController::store -->
-                <x-form.form-footer :$showPersonalDetails :$isValidating :$termsApproval />
+                @include('livewire.trainee.components.form-footer')
             </form>
 
-            <!-- Toast container -->
-            <div id="toast" class="toast">
-                <span id="toastMessage"></span>
-            </div>
+        <!-- Toast container -->
+        <div id="toast" class="toast">
+            <span id="toastMessage"></span>
+        </div>
     </main>
 </div>
 
-<link rel="stylesheet" href="{{ asset('form-assets/trainee-app/styles.css') }}" />
+<link rel="stylesheet" href="{{ asset('css/trainee-form.css') }}">
 
 @script
 <script>
@@ -93,7 +91,7 @@
         // Setup input filtering for National ID - Only digits, no negative, no letters, no icons
         setupNationalIdFilter();
         setupPhoneFilter();
-
+        
         // Listen for theme toggle events from Livewire
         Livewire.on('toggle-theme', () => {
             const currentTheme = document.documentElement.getAttribute('data-theme');
@@ -113,26 +111,26 @@
             nationalIdInputs.forEach(input => {
                 if (!input.dataset.filteredNationalId) {
                     input.dataset.filteredNationalId = 'true';
-
+                    
                     // Prevent non-digit input
                     input.addEventListener('input', (e) => {
                         e.target.value = e.target.value.replace(/[^0-9]/g, '');
                     });
-
+                    
                     input.addEventListener('keypress', (e) => {
                         // Only allow digits 0-9
                         if (!/[0-9]/.test(e.key)) {
                             e.preventDefault();
                         }
                     });
-
+                    
                     // Prevent pasting non-digit content
                     input.addEventListener('paste', (e) => {
                         e.preventDefault();
                         const pastedText = (e.clipboardData || window.clipboardData).getData('text');
                         const digitsOnly = pastedText.replace(/[^0-9]/g, '');
                         e.target.value = digitsOnly;
-
+                        
                         // Trigger Livewire update
                         e.target.dispatchEvent(new Event('input', { bubbles: true }));
                     });
@@ -152,25 +150,25 @@
             phoneInputs.forEach(input => {
                 if (!input.dataset.filteredPhone) {
                     input.dataset.filteredPhone = 'true';
-
+                    
                     // Prevent non-digit input
                     input.addEventListener('input', (e) => {
                         e.target.value = e.target.value.replace(/[^0-9]/g, '');
                     });
-
+                    
                     input.addEventListener('keypress', (e) => {
                         if (!/[0-9]/.test(e.key)) {
                             e.preventDefault();
                         }
                     });
-
+                    
                     // Prevent pasting non-digit content
                     input.addEventListener('paste', (e) => {
                         e.preventDefault();
                         const pastedText = (e.clipboardData || window.clipboardData).getData('text');
                         const digitsOnly = pastedText.replace(/[^0-9]/g, '');
                         e.target.value = digitsOnly;
-
+                        
                         // Trigger Livewire update
                         e.target.dispatchEvent(new Event('input', { bubbles: true }));
                     });
