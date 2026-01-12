@@ -5,91 +5,69 @@
         </button>
     </div>
 
-    <main class="page">
-        <!-- Hero Section -->
-        <header class="hero hero--banner">
-            <div class="hero__text">
-                <p class="eyebrow">بوابة التدريب</p>
-                <h1>مرحباً بك في نظام التدريب</h1>
-                <p class="lead">
-                    بوابة التسجيل الموحدة لجميع برامج التدريب
-                </p>
-            </div>
-            <div class="hero__brand">
-                <div class="hero__logos">
-                    <div class="hero__logo">
-                        <img src="{{ asset('form-assets/trainee-app/logo.png') }}" alt="PRCS" />
-                    </div>
-                    <div class="hero__logo">
-                        <img src="{{ asset('favicon.ico') }}" alt="UCAD" />
-                    </div>
+    <main class="page welcome-page">
+    <header class="hero hero--banner welcome-hero">
+        <div class="hero__text">
+            <p class="eyebrow">بوابة التدريب</p>
+            <h1>مرحباً بك في نظام التدريب</h1>
+            <p class="lead">
+                نرحب بك في نظام التدريب. يمكنك من خلال هذه البوابة تقديم طلب التدريب الخاص بك بكل سهولة ويسر.
+            </p>
+        </div>
+        <div class="hero__brand">
+            <div class="hero__logos">
+                <div class="hero__logo">
+                    <img src="{{ asset('form-assets/trainee-app/logo.png') }}" alt="PRCS" />
+                </div>
+                <div class="hero__logo">
+                    <img src="{{ asset('favicon.ico') }}" alt="UCAD" />
                 </div>
             </div>
-        </header>
+            <div class="hero__brand-meta">
+                <span class="hero__brand-name">UCAD | PRCS</span>
+            </div>
+        </div>
+    </header>
 
-        <!-- Welcome Card -->
-        <div class="card-wrapper">
-            <div class="card">
-                <div class="welcome-content">
-                    <h2>خطوات بسيطة للبدء</h2>
-                    
-                    <div class="steps">
-                        <div class="step">
-                            <div class="step-number">1</div>
-                            <h3>اختر نوع البرنامج</h3>
-                            <p>حدد ما إذا كنت تريد برنامج تدريب جامعي أو عملي</p>
-                        </div>
+    <div class="card-wrapper">
+        <div class="card welcome-card">
+            <div class="welcome-content">
+                <h2>ابدأ رحلتك التدريبية</h2>
 
-                        <div class="step">
-                            <div class="step-number">2</div>
-                            <h3>أدخل بياناتك</h3>
-                            <p>قم بملء نموذج التسجيل ببيانات صحيحة وكاملة</p>
-                        </div>
-
-                        <div class="step">
-                            <div class="step-number">3</div>
-                            <h3>أرسل طلبك</h3>
-                            <p>اضغط على زر الإرسال لتقديم طلبك للقبول</p>
-                        </div>
-
-                        <div class="step">
-                            <div class="step-number">4</div>
-                            <h3>انتظر التأكيد</h3>
-                            <p>ستتلقى تأكيداً عبر البريد الإلكتروني أو الهاتف</p>
-                        </div>
+                @if (session('error'))
+                    <div class="disabled-message" style="margin-bottom: 1rem;">
+                        <p class="error-text">{{ session('error') }}</p>
                     </div>
+                @endif
 
-                    <div class="cta-section">
-                        <p class="highlight">هل أنت مستعد للتقديم؟</p>
-                        <a href="{{ route('training.form') }}" class="btn btn-primary btn-lg">
-                            ابدأ الآن
-                        </a>
+                @if ($isFormEnabled)
+                    <p>للتقديم على برنامج التدريب يرجى الضغط على الزر أدناه لتعبئة نموذج الطلب.</p>
+                    <a href="{{ route('training.form') }}" class="glow-button welcome-button">
+                        اضغط هنا لتعبئة طلبك
+                    </a>
+                @else
+                    <div class="disabled-message">
+                        <p class="error-text">عذراً، تقديم الطلبات عبر البوابة مغلق حالياً.</p>
+                        <p>نعتذر عن عدم إمكانية استقبال طلبات جديدة في الوقت الحالي. يرجى المحاولة لاحقاً أو التواصل مع الإدارة.</p>
                     </div>
-
-                    <div class="info-box">
-                        <h3>معلومات مهمة</h3>
-                        <ul>
-                            <li>تأكد من صحة جميع البيانات قبل الإرسال</li>
-                            <li>لا يمكن تعديل الهوية الوطنية بعد التقديم</li>
-                    <li>الملفات المقبولة: JPG, PNG, PDF (بحد أقصى 2MB)</li>
-                    <li>للاستفسارات تواصل معنا عبر البريد: info@training.gov</li>
-                </ul>
+                @endif
             </div>
         </div>
     </div>
+    </main>
 </div>
 
 @script
 <script>
-    // Animate page elements on load
+    // Animate hero and card for a subtle entrance
     document.addEventListener('livewire:initialized', () => {
-        const heroElement = document.querySelector('.hero');
+        const heroElement = document.querySelector('.welcome-hero');
         const welcomeCard = document.querySelector('.welcome-card');
 
         if (heroElement) {
             heroElement.style.opacity = '0';
             heroElement.style.transform = 'translateY(-20px)';
-            
+
             setTimeout(() => {
                 heroElement.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
                 heroElement.style.opacity = '1';
@@ -100,7 +78,7 @@
         if (welcomeCard) {
             welcomeCard.style.opacity = '0';
             welcomeCard.style.transform = 'translateY(20px)';
-            
+
             setTimeout(() => {
                 welcomeCard.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
                 welcomeCard.style.opacity = '1';

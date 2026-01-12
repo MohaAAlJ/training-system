@@ -1,0 +1,103 @@
+/* ========================================
+   TRAINEE FORM MAIN STYLES
+   ======================================== */
+
+/* Hero Section Spacing */
+.hero {
+    margin-top: 20px;
+}
+
+/* Error Fieldset Styling - Light Theme (Default) */
+.fieldset--error {
+    background-color: #ffebee;
+    border: 2px solid #d32f2f;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.fieldset--error legend {
+    color: #d32f2f;
+    font-weight: 700;
+    font-size: 18px;
+    margin-bottom: 15px;
+}
+
+.fieldset--error .legend-icon {
+    font-size: 24px;
+    margin-left: 8px;
+}
+
+.error-message {
+    padding: 15px;
+    background-color: #fff;
+    border-left: 4px solid #d32f2f;
+    border-radius: 4px;
+}
+
+.error-message p {
+    color: #d32f2f;
+    line-height: 1.6;
+    margin-bottom: 8px;
+}
+
+.error-message p:last-child {
+    margin-bottom: 0;
+}
+
+/* Error Fieldset Styling - Dark Theme */
+[data-theme="dark"] .fieldset--error {
+    background-color: #4a1f1f;
+    border: 2px solid #ff6b6b;
+}
+
+[data-theme="dark"] .fieldset--error legend {
+    color: #ff6b6b;
+}
+
+[data-theme="dark"] .error-message {
+    background-color: #2a2a2a;
+    border-left-color: #ff6b6b;
+}
+
+[data-theme="dark"] .error-message p {
+    color: #ff6b6b;
+}
+
+/* Toast Notification Styling */
+.toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #323232;
+    color: white;
+    padding: 16px 24px;
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    opacity: 0;
+    transform: translateY(100%);
+    transition: all 0.3s ease;
+    max-width: 400px;
+    z-index: 9999;
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.toast.error {
+    background-color: #d32f2f;
+}
+
+.toast.success {
+    background-color: #388e3c;
+}
+
+.toast.warning {
+    background-color: #f57c00;
+}
+
+.toast.info {
+    background-color: #1976d2;
+}

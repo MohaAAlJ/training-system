@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Http;
 use App\Models\Governorate;
 use App\Models\Institution;
 use App\Models\Administrative;
+use App\Models\Section;
+use App\Settings\TrainingSettings;
 
 /**
  * TraineeForm Livewire Component
@@ -21,6 +23,14 @@ use App\Models\Administrative;
 class TraineeForm extends Component
 {
     use WithFileUploads;
+
+    // ========================================
+    // VALIDATION & CONFIGURATION CONSTANTS
+    // ========================================
+    const PHONE_REGEX = '/^97(0|2)5\d{8}$/';
+    const NAME_REGEX = '/^[\p{L}\s]+$/u';
+    const CACHE_TTL_MINUTES = 5;
+    const FILE_STORAGE_PATH = 'applications';
 
     // ========================================
     // FORM INPUTS - Public properties that bind to form
@@ -61,7 +71,10 @@ class TraineeForm extends Component
     public Collection $governorates;
     public Collection $institutions;
     public Collection $majors;
+    public Collection $allMajors;  // Load ALL majors once for client-side filtering
     public Collection $administratives;
+    public Collection $allSections;  // Load ALL sections once for client-side filtering
+    public Collection $allDepartments;  // Load ALL departments once for client-side filtering
     public Collection $departments;
     public Collection $sections;
     public Collection $trainingTypes;
@@ -80,27 +93,28 @@ class TraineeForm extends Component
     public string $filePreviewUrl = '';
 
     // ========================================
-    // VALIDATION RULES
+    // VALIDATION RULES & MESSAGES
     // ========================================
     protected function rules()
     {
         $rules = [
-            'trainingType' => 'required|in:1,2',
+            'trainingType' => 'required|in:' . \App\Models\Application::TRAINING_TYPE_UNIVERSITY . ',' . \App\Models\Application::TRAINING_TYPE_PRACTICE,
             'nationalId' => 'required|digits:9',
         ];
         
         if ($this->showPersonalDetails) {
             $rules = array_merge($rules, [
-                'fullName' => 'required|string|regex:/^[\p{L}\s]+$/u|max:150',
+                'fullName' => 'required|string|regex:' . self::NAME_REGEX . '|max:150',
                 'dob' => [
                     'required',
                     'date_format:Y-m-d',
-                    'before_or_equal:' . now()->subYears(20)->format('Y-m-d'),
+                    'before_or_equal:' . now()->subYears(20)->format('Y-m-d'),  // Minimum age: 20 years
+                    'after_or_equal:' . now()->subYears(60)->format('Y-m-d'),   // Maximum age: 60 years
                 ],
                 'phoneNumber' => [
                     'required',
                     'string',
-                    'regex:/^97(0|2)5\d{8}$/',
+                    'regex:' . self::PHONE_REGEX,
                 ],
                 'governorateId' => 'required|exists:governorates,id',
                 'street' => 'required|string|max:255',
@@ -110,7 +124,7 @@ class TraineeForm extends Component
                 'sectionId' => 'required|exists:sections,id',
             ]);
             
-            if ($this->trainingType === 1) {
+            if ($this->trainingType === \App\Models\Application::TRAINING_TYPE_UNIVERSITY) {
                 $rules = array_merge($rules, [
                     'institutionId' => 'required|exists:institutions,id',
                     'majorId' => 'required|exists:majors,id',
@@ -138,7 +152,10 @@ class TraineeForm extends Component
         $this->governorates = collect();
         $this->institutions = collect();
         $this->majors = collect();
+        $this->allMajors = collect();
         $this->administratives = collect();
+        $this->allSections = collect();
+        $this->allDepartments = collect();
         $this->departments = collect();
         $this->sections = collect();
         $this->trainingTypes = collect();
@@ -147,7 +164,10 @@ class TraineeForm extends Component
         $this->loadTrainingTypes();
         $this->loadGovernoratesIfNeeded();
         $this->loadInstitutions();
-        // Don't load administratives here - they depend on trainingType being selected
+        $this->loadAdministratives();
+        $this->loadAllMajors();  // Load all majors for client-side filtering
+        $this->loadAllDepartments();  // Load all departments for client-side filtering
+        $this->loadAllSections();  // Load all sections for client-side filtering
     }
 
     // ========================================
@@ -198,9 +218,11 @@ class TraineeForm extends Component
         $this->showPersonalDetails = false;
         $this->showTrainingDetails = false;
         
-        // Load administratives when training type is selected
+        // Reload all data filtered by training type when training type is selected
         if ($this->trainingType) {
-            $this->loadAdministratives();
+            $this->loadAdministratives();  // Filters by medical if practice training
+            $this->loadAllDepartments();    // Filters by medical if practice training
+            $this->loadAllSections();       // Reloads sections with updated capacity
             $this->checkApplicationStatus();
         }
     }
@@ -218,24 +240,22 @@ class TraineeForm extends Component
 
     public function updatedAdministrativeId()
     {
-        // Load departments when administrative changes
+        // Reset dependent fields when administrative changes
         if ($this->administrativeId) {
-            $this->loadDepartments();
-        } else {
-            $this->departments = collect();
             $this->departmentId = 0;
-            $this->sections = collect();
+            $this->sectionId = 0;
+        } else {
+            $this->departmentId = 0;
             $this->sectionId = 0;
         }
     }
 
     public function updatedDepartmentId()
     {
-        // Load sections when department changes
+        // Reset section when department changes
         if ($this->departmentId) {
-            $this->loadSections();
+            $this->sectionId = 0;
         } else {
-            $this->sections = collect();
             $this->sectionId = 0;
         }
     }
@@ -265,14 +285,14 @@ class TraineeForm extends Component
     {
         try {
             // Load training types from settings based on enabled types
-            $settings = \App\Models\GeneralSetting::instance();
+            $settings = app(TrainingSettings::class);
             $types = [];
             
             if ($settings->enable_training_type_university) {
-                $types[] = ['id' => 1, 'name' => 'تدريب جامعي'];
+                $types[] = ['id' => \App\Models\Application::TRAINING_TYPE_UNIVERSITY, 'name' => 'تدريب جامعي'];
             }
             if ($settings->enable_training_type_practice) {
-                $types[] = ['id' => 2, 'name' => 'تدريب عملي'];
+                $types[] = ['id' => \App\Models\Application::TRAINING_TYPE_PRACTICE, 'name' => 'تدريب عملي'];
             }
             
             $this->trainingTypes = collect($types);
@@ -282,9 +302,7 @@ class TraineeForm extends Component
                 $this->trainingType = $this->trainingTypes->first()['id'] ?? 0;
             }
         } catch (\Exception $e) {
-            \Log::error('Training Type Load Error', [
-                'message' => $e->getMessage(),
-            ]);
+            $this->logException('Training Type Load Error', $e);
         }
     }
 
@@ -297,7 +315,7 @@ class TraineeForm extends Component
                     ->get()
                     ->map(fn($gov) => ['id' => $gov->id, 'name' => $gov->name]);
             } catch (\Exception $e) {
-                \Log::error('Failed to load governorates', ['error' => $e->getMessage()]);
+                $this->logException('Failed to load governorates', $e);
             }
         }
     }
@@ -311,7 +329,7 @@ class TraineeForm extends Component
                 ->get()
                 ->map(fn($inst) => ['id' => $inst->id, 'name' => $inst->name]);
         } catch (\Exception $e) {
-            \Log::error('Failed to load institutions', ['error' => $e->getMessage()]);
+            $this->logException('Failed to load institutions', $e);
         }
     }
 
@@ -332,55 +350,123 @@ class TraineeForm extends Component
             ->get()
             ->map(fn($major) => ['id' => $major->id, 'name' => $major->name]);
         } catch (\Exception $e) {
-            \Log::error('Failed to load majors', ['error' => $e->getMessage()]);
+            $this->logException('Failed to load majors', $e);
         }
     }
 
     private function loadAdministratives(): void
     {
         try {
-            $this->administratives = Administrative::select('id', 'name')
-                ->orderBy('name')
+            $query = Administrative::query();
+            
+            // Filter by medical if training type is practice
+            if ($this->trainingType === \App\Models\Application::TRAINING_TYPE_PRACTICE) {
+                $query->where('is_medical', true);
+            }
+            
+            $this->administratives = $query
+                ->select('id', 'title as name')
+                ->orderBy('title')
                 ->get()
                 ->map(fn($admin) => ['id' => $admin->id, 'name' => $admin->name]);
+            
+            \Log::info('Administratives loaded', ['count' => $this->administratives->count(), 'trainingType' => $this->trainingType]);
         } catch (\Exception $e) {
-            \Log::error('Failed to load administratives', ['error' => $e->getMessage()]);
+            $this->logException('Failed to load administratives', $e);
         }
     }
 
-    private function loadDepartments(): void
+    private function loadAllSections(): void
     {
-        if (!$this->administrativeId || !$this->trainingType) {
-            $this->departments = collect();
-            return;
-        }
-
         try {
-            $this->departments = \App\Models\Department::where('administrative_id', $this->administrativeId)
-                ->select('id', 'name')
-                ->orderBy('name')
-                ->get()
-                ->map(fn($dept) => ['id' => $dept->id, 'name' => $dept->name]);
+            // Load ALL sections with their relationships and capacity info
+            $sections = \App\Models\Section::with(['department', 'administrative'])
+                ->select('id', 'name_location', 'department_id', 'administrative_id', 'capacity')
+                ->orderBy('name_location')
+                ->get();
+            
+            // Filter by medical if training type is practice
+            if ($this->trainingType === \App\Models\Application::TRAINING_TYPE_PRACTICE) {
+                $sections = $sections->filter(fn($sec) => $sec->department?->is_medical);
+            }
+            
+            $this->allSections = $sections
+                ->map(function($section) {
+                    $stats = $section->getCapacityStats();
+                    $isFull = $stats['is_full'] ?? false;
+                    
+                    // Debug logging
+                    \Log::debug('Section capacity stats', [
+                        'section_id' => $section->id,
+                        'section_name' => $section->name_location,
+                        'capacity' => $stats['total'],
+                        'used' => $stats['used'],
+                        'available' => $stats['available'],
+                        'is_full' => $isFull,
+                    ]);
+                    
+                    return [
+                        'id' => $section->id,
+                        'name' => $section->name_location,
+                        'departmentId' => $section->department_id,
+                        'administrativeId' => $section->administrative_id,
+                        'isFull' => $isFull,
+                    ];
+                })
+                ->values();
+            
+            \Log::info('All sections loaded', ['count' => $this->allSections->count(), 'trainingType' => $this->trainingType]);
         } catch (\Exception $e) {
-            \Log::error('Failed to load departments', ['error' => $e->getMessage()]);
+            $this->logException('Failed to load sections', $e);
         }
     }
 
-    private function loadSections(): void
+    private function loadAllDepartments(): void
     {
-        if (!$this->departmentId || !$this->administrativeId || !$this->trainingType) {
-            $this->sections = collect();
-            return;
-        }
-
         try {
-            $this->sections = \App\Models\Section::where('department_id', $this->departmentId)
+            // Load ALL departments for client-side filtering
+            $query = \App\Models\Department::query();
+            
+            // Filter by medical if training type is practice
+            if ($this->trainingType === \App\Models\Application::TRAINING_TYPE_PRACTICE) {
+                $query->where('is_medical', true);
+            }
+            
+            $this->allDepartments = $query
+                ->select('id', 'title as name')
+                ->orderBy('title')
+                ->get()
+                ->map(fn($dept) => [
+                    'id' => $dept->id,
+                    'name' => $dept->name,
+                ])
+                ->values();
+            
+            \Log::info('All departments loaded', ['count' => $this->allDepartments->count(), 'trainingType' => $this->trainingType]);
+        } catch (\Exception $e) {
+            $this->logException('Failed to load departments', $e);
+        }
+    }
+
+    private function loadAllMajors(): void
+    {
+        try {
+            // Load ALL majors with college relationships for client-side filtering
+            $this->allMajors = \App\Models\Major::with(['colleges'])
                 ->select('id', 'name')
                 ->orderBy('name')
                 ->get()
-                ->map(fn($section) => ['id' => $section->id, 'name' => $section->name]);
+                ->map(fn($major) => [
+                    'id' => $major->id,
+                    'name' => $major->name,
+                    'collegeIds' => $major->colleges->pluck('id')->toArray(),
+                    'institutionIds' => $major->colleges->pluck('institution_id')->unique()->toArray(),
+                ])
+                ->values();
+            
+            \Log::info('All majors loaded', ['count' => $this->allMajors->count()]);
         } catch (\Exception $e) {
-            \Log::error('Failed to load sections', ['error' => $e->getMessage()]);
+            $this->logException('Failed to load majors', $e);
         }
     }
 
@@ -401,7 +487,7 @@ class TraineeForm extends Component
             
             $this->collegeId = $college ? $college->id : 0;
         } catch (\Exception $e) {
-            \Log::error('Failed to load college data', ['error' => $e->getMessage()]);
+            $this->logException('Failed to load college data', $e);
         }
     }
 
@@ -438,8 +524,8 @@ class TraineeForm extends Component
             }
 
             // Check settings for re-application policy
-            $settings = \App\Models\GeneralSetting::instance();
-            $canReapply = ($this->trainingType == \App\Models\Application::TRAINING_TYPE_UNIVERSITY)
+            $settings = app(TrainingSettings::class);
+            $canReapply = ($this->trainingType === \App\Models\Application::TRAINING_TYPE_UNIVERSITY)
                 ? $settings->can_university_reapply
                 : $settings->can_practice_reapply;
 
@@ -463,25 +549,22 @@ class TraineeForm extends Component
                     'status' => $blockingApplication->status,
                     'message' => $this->getApplicationStatusMessage($blockingApplication),
                 ];
-                // Cache for 5 minutes
-                \Illuminate\Support\Facades\Cache::put($cacheKey, $result, now()->addMinutes(5));
+                // Cache for configured TTL
+                \Illuminate\Support\Facades\Cache::put($cacheKey, $result, now()->addMinutes(self::CACHE_TTL_MINUTES));
                 $this->processApplicationStatusResult($result);
             } else {
                 $result = [
                     'has_application' => false,
                     'status' => null,
                 ];
-                // Cache for 5 minutes
-                \Illuminate\Support\Facades\Cache::put($cacheKey, $result, now()->addMinutes(5));
+                // Cache for configured TTL
+                \Illuminate\Support\Facades\Cache::put($cacheKey, $result, now()->addMinutes(self::CACHE_TTL_MINUTES));
                 $this->clearStatusMessage();
                 $this->showPersonalDetails = true;
                 $this->showTrainingDetails = true;
             }
         } catch (\Exception $e) {
-            \Log::error('Application Status Check Error', [
-                'message' => $e->getMessage(),
-                'national_id' => $this->nationalId,
-            ]);
+            $this->logException('Application Status Check Error', $e);
         } finally {
             $this->isValidating = false;
         }
@@ -607,7 +690,7 @@ class TraineeForm extends Component
     // ========================================
     private function toggleUniversityFields(): void
     {
-        $isUniversity = $this->trainingType === 1;
+        $isUniversity = $this->trainingType === \App\Models\Application::TRAINING_TYPE_UNIVERSITY;
 
         if (!$isUniversity) {
             // Reset university fields if not university training
@@ -622,6 +705,13 @@ class TraineeForm extends Component
     {
         $this->message = $text;
         $this->messageType = $type;
+        $toastType = match ($type) {
+            'error' => 'error',
+            'success' => 'success',
+            'warning' => 'warning',
+            default => 'info',
+        };
+        $this->dispatchToast($text, $toastType);
     }
 
     public function clearMessage(): void
@@ -643,71 +733,82 @@ class TraineeForm extends Component
     // ========================================
     public function submit()
     {
-        // Validate all fields
-        $validated = $this->validate();
-
-        // Prepare data for submission
-        $data = [
-            'form_uuid' => $this->formUuid,
-            'full_name' => $this->fullName,
-            'national_id' => $this->nationalId,
-            'phone_number' => $this->phoneNumber,
-            'dob' => $this->dob,
-            'governorate_id' => $this->governorateId,
-            'street' => $this->street,
-            'institution_id' => $this->institutionId ?: null,
-            'major_id' => $this->majorId ?: null,
-            'college_id' => $this->collegeId ?: null,
-            'administrative_id' => $this->administrativeId,
-            'department_id' => $this->departmentId,
-            'section_id' => $this->sectionId,
-            'training_type' => $this->trainingType,
-            'training_hours' => $this->trainingHours,
-            'terms_approval' => $this->termsApproval ? 1 : 0,
-        ];
-
         try {
-            // Store file if present
-            if ($this->letterFile) {
-                $data['letter_file'] = $this->letterFile->store('applications', 'public');
-            }
+            // Validate all fields
+            $validated = $this->validate();
 
-            // Submit to backend endpoint
-            $response = Http::withHeaders([
-                'X-CSRF-TOKEN' => csrf_token(),
-                'X-Requested-With' => 'XMLHttpRequest',
-            ])->post(url('/WelcomeForm/Form'), $data);
+            // Prepare data for submission
+            $data = [
+                'form_uuid' => $this->formUuid,
+                'full_name' => $this->fullName,
+                'national_id' => $this->nationalId,
+                'phone_number' => $this->phoneNumber,
+                'dob' => $this->dob,
+                'governorate_id' => $this->governorateId,
+                'street' => $this->street,
+                'institution_id' => $this->institutionId ?: null,
+                'major_id' => $this->majorId ?: null,
+                'college_id' => $this->collegeId ?: null,
+                'administrative_id' => $this->administrativeId,
+                'department_id' => $this->departmentId,
+                'section_id' => $this->sectionId,
+                'training_type' => $this->trainingType,
+                'training_hours' => $this->trainingHours,
+                'terms_approval' => $this->termsApproval ? 1 : 0,
+            ];
 
-            \Log::info('Form Submission Response', [
-                'status' => $response->status(),
-                'body' => $response->body(),
-            ]);
+            try {
+                // Store file if present
+                if ($this->letterFile) {
+                    $data['letter_file'] = $this->letterFile->store(self::FILE_STORAGE_PATH, 'public');
+                }
 
-            if ($response->successful()) {
-                $this->setMessage('تم إرسال الطلب بنجاح. جاري التحويل...', 'success');
-                
-                // Reset form
-                $this->resetForm();
+                // Submit to backend endpoint
+                $response = Http::withHeaders([
+                    'X-CSRF-TOKEN' => csrf_token(),
+                    'X-Requested-With' => 'XMLHttpRequest',
+                ])->post(url('/WelcomeForm/Form'), $data);
 
-                // Redirect to success page
-                return redirect()->to('/WelcomeForm/Success');
-            } else {
-                // Handle validation errors from backend
-                $errors = $response->json();
-                \Log::warning('Form Submission Failed', ['errors' => $errors]);
-                
-                if (isset($errors['message'])) {
-                    $this->showError($errors['message']);
+                \Log::info('Form Submission Response', [
+                    'status' => $response->status(),
+                ]);
+
+                if ($response->successful()) {
+                    $this->setMessage('تم إرسال الطلب بنجاح. جاري التحويل...', 'success');
+                    
+                    // Reset form
+                    $this->resetForm();
+
+                    // Redirect to success page
+                    return redirect()->to('/WelcomeForm/Success');
                 } else {
-                    $this->showError('فشل إرسال الطلب. يرجى المحاولة مرة أخرى');
+                    // Handle validation errors from backend
+                    $errors = $response->json();
+                    \Log::warning('Form Submission Failed', ['errors' => $errors]);
+                    
+                    if (isset($errors['message'])) {
+                        $this->showError($errors['message']);
+                    } else {
+                        $this->showError('فشل إرسال الطلب. يرجى المحاولة مرة أخرى');
+                    }
+                }
+            } catch (\Exception $e) {
+                $this->logException('Form Submission Error', $e);
+                $this->showError('حدث خطأ أثناء إرسال الطلب: ' . $e->getMessage(), $e);
+            }
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Catch validation errors and show as toast
+            $messages = [];
+            foreach ($e->errors() as $field => $errors) {
+                foreach ($errors as $error) {
+                    $messages[] = $error;
                 }
             }
-        } catch (\Exception $e) {
-            \Log::error('Form Submission Error', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-            $this->showError('حدث خطأ أثناء إرسال الطلب: ' . $e->getMessage(), $e);
+            
+            $errorMessage = implode("\n", $messages);
+            $this->showError($errorMessage);
+            
+            \Log::warning('Form Validation Error', ['errors' => $e->errors()]);
         }
     }
 
@@ -734,12 +835,32 @@ class TraineeForm extends Component
     }
 
     // ========================================
+    // EXCEPTION LOGGING HELPER
+    // ========================================
+    private function logException(string $msg, \Exception $e): void
+    {
+        \Log::error($msg, [
+            'message' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+        ]);
+    }
+
+    // ========================================
+    // THEME TOGGLE
+    // ========================================
+    public function toggleTheme(): void
+    {
+        $this->dispatch('toggle-theme');
+    }
+
+    // ========================================
     // RENDERING
     // ========================================
     public function render()
     {
         return view('livewire.trainee.trainee-form', [
-            'isUniversity' => $this->trainingType === 1,
+            'isUniversity' => $this->trainingType === \App\Models\Application::TRAINING_TYPE_UNIVERSITY,
             'isLoading' => $this->isValidating,
         ])->layout('components.layouts.app');
     }

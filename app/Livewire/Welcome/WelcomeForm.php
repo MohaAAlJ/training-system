@@ -2,6 +2,8 @@
 
 namespace App\Livewire\Welcome;
 
+use App\Models\TrainingSetting;
+use Illuminate\Support\Str;
 use Livewire\Component;
 use Livewire\Attributes\Title;
 
@@ -16,6 +18,24 @@ use Livewire\Attributes\Title;
 #[Title('صفحة الترحيب - نظام التدريب')]
 class WelcomeForm extends Component
 {
+    /**
+     * Toggle for whether the public form is open.
+     */
+    public bool $isFormEnabled = false;
+
+    /**
+     * Unique identifier for this session to mirror legacy behavior.
+     */
+    public string $formUuid = '';
+
+    public function mount(): void
+    {
+        $settings = TrainingSetting::getInstance();
+
+        $this->isFormEnabled = (bool) $settings->is_public_form_enabled;
+        $this->formUuid = (string) Str::uuid();
+    }
+
     /**
      * Component doesn't need much state management,
      * just rendering the welcome view.
