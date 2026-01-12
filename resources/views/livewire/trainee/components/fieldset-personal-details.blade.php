@@ -1,4 +1,4 @@
-@vite(['app/Livewire/Trainee/Components/fieldset-personal-details.css'])
+<link rel="stylesheet" href="{{ asset('css/fieldset-personal-details.css') }}">
 
 <!-- FIELDSET 2: Personal Details (shown conditionally) -->
 @if ($showPersonalDetails)

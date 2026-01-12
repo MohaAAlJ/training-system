@@ -1,4 +1,4 @@
-@vite(['app/Livewire/Trainee/Components/form-terms.css'])
+<link rel="stylesheet" href="{{ asset('css/form-terms.css') }}">
 
 <!-- Terms & Conditions Section (shown only when personal details are visible) -->
 @if ($showPersonalDetails)

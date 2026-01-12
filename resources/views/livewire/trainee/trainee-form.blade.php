@@ -57,19 +57,19 @@
                 @endif
 
                 <!-- FIELDSET 1: Training Type & National ID -->
-                <livewire:trainee.components.fieldset-training-type />
+                @include('livewire.trainee.components.fieldset-training-type')
 
                 <!-- FIELDSET 2: Personal Details (shown conditionally) -->
-                <livewire:trainee.components.fieldset-personal-details />
+                @include('livewire.trainee.components.fieldset-personal-details')
 
                 <!-- FIELDSET 3: Training Details (shown conditionally) -->
-                <livewire:trainee.components.fieldset-training-details />
+                @include('livewire.trainee.components.fieldset-training-details')
 
                 <!-- Terms & Conditions Section (shown only when personal details are visible) -->
-                <livewire:trainee.components.form-terms />
+                @include('livewire.trainee.components.form-terms')
 
                 <!-- Submit Button - Posts to ApplicationFormController::store -->
-                <livewire:trainee.components.form-footer />
+                @include('livewire.trainee.components.form-footer')
             </form>
 
         <!-- Toast container -->
@@ -79,7 +79,7 @@
     </main>
 </div>
 
-@vite(['app/Livewire/Trainee/trainee-form.css'])
+<link rel="stylesheet" href="{{ asset('css/trainee-form.css') }}">
 
 @script
 <script>

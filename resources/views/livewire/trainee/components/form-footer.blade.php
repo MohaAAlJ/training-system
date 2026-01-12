@@ -1,4 +1,4 @@
-@vite(['app/Livewire/Trainee/Components/form-footer.css'])
+<link rel="stylesheet" href="{{ asset('css/form-footer.css') }}">
 
 <!-- Submit Button - Posts to ApplicationFormController::store -->
 @if ($showPersonalDetails)

@@ -59,8 +59,11 @@
 
 @script
 <script>
-    // Animate hero and card for a subtle entrance
+    // Initialize theme on page load
     document.addEventListener('livewire:initialized', () => {
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+
         const heroElement = document.querySelector('.welcome-hero');
         const welcomeCard = document.querySelector('.welcome-card');
 
@@ -84,6 +87,17 @@
                 welcomeCard.style.opacity = '1';
                 welcomeCard.style.transform = 'translateY(0)';
             }, 100);
+        }
+
+        // Handle theme toggle
+        const themeToggle = document.getElementById('themeToggle');
+        if (themeToggle) {
+            themeToggle.addEventListener('click', () => {
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+            });
         }
     });
 </script>

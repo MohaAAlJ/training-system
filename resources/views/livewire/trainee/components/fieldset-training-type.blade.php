@@ -1,4 +1,4 @@
-@vite(['app/Livewire/Trainee/Components/fieldset-training-type.css'])
+<link rel="stylesheet" href="{{ asset('css/fieldset-training-type.css') }}">
 
 <!-- FIELDSET 1: Training Type & Basic Info -->
 <fieldset class="fieldset">

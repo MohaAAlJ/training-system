@@ -2,7 +2,7 @@
 
 namespace App\Livewire\Welcome;
 
-use App\Models\TrainingSetting;
+use App\Settings\TrainingSettings;
 use Illuminate\Support\Str;
 use Livewire\Component;
 use Livewire\Attributes\Title;
@@ -30,7 +30,7 @@ class WelcomeForm extends Component
 
     public function mount(): void
     {
-        $settings = TrainingSetting::getInstance();
+        $settings = app(TrainingSettings::class);
 
         $this->isFormEnabled = (bool) $settings->is_public_form_enabled;
         $this->formUuid = (string) Str::uuid();
