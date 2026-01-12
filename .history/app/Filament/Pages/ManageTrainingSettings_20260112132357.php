@@ -139,19 +139,34 @@ class ManageTrainingSettings extends SettingsPage
                     ->schema([
                         Toggle::make('is_maintenance_mode')
                             ->label('تفعيل وضع الصيانة')
+                            ->helperText('عند التفعيل، سيتم منع المستخدمين من الأدوار المحددة من الدخول إلى لوحة التحكم.')
                             ->live(),
+
                         Textarea::make('maintenance_message')
                             ->label('رسالة الصيانة')
+                            ->helperText('الرسالة التي سيتم عرضها للمستخدمين المتأثرين بوضع الصيانة.')
+                            ->placeholder('الموقع تحت الصيانة حالياً. سنعود قريباً.')
+                            ->rows(3)
                             ->visible(fn($get) => $get('is_maintenance_mode'))
-                            ->required(),
+                            ->required(fn($get) => $get('is_maintenance_mode')),
+
                         CheckboxList::make('maintenance_roles')
                             ->label('الأدوار المطبق عليها الصيانة')
+                            ->helperText('اختر الأدوار التي سيتم منعها من الدخول. المسؤولون معفيون دائماً.')
                             ->options([
                                 \App\Models\User::ROLE_COLLEGE => 'مشرف كلية',
                                 \App\Models\User::ROLE_MOH => 'وزارة الصحة',
                                 \App\Models\User::ROLE_GTM => 'مدير التدريب العام',
                             ])
                             ->visible(fn($get) => $get('is_maintenance_mode'))
+                            ->required(fn($get) => $get('is_maintenance_mode'))
+                            ->rules([
+                                fn(callable $get) => function (string $attribute, $value, Closure $fail) use ($get) {
+                                    if ($get('is_maintenance_mode') && empty($value)) {
+                                        $fail('يجب اختيار دور واحد على الأقل عند تفعيل وضع الصيانة.');
+                                    }
+                                },
+                            ])
                             ->columns(2),
                     ]),
             ]);

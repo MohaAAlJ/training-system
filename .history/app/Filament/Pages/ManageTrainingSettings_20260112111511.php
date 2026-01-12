@@ -8,8 +8,6 @@ use Filament\Pages\SettingsPage;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\Toggle;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\CheckboxList;
 use Closure;
 
 use UnitEnum;

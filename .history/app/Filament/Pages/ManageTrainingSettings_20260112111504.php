@@ -8,8 +8,6 @@ use Filament\Pages\SettingsPage;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\Toggle;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\CheckboxList;
 use Closure;
 
 use UnitEnum;
@@ -140,11 +138,11 @@ class ManageTrainingSettings extends SettingsPage
                         Toggle::make('is_maintenance_mode')
                             ->label('تفعيل وضع الصيانة')
                             ->live(),
-                        Textarea::make('maintenance_message')
+                        \Filament\Forms\Components\Textarea::make('maintenance_message')
                             ->label('رسالة الصيانة')
                             ->visible(fn($get) => $get('is_maintenance_mode'))
                             ->required(),
-                        CheckboxList::make('maintenance_roles')
+                        \Filament\Forms\Components\CheckboxList::make('maintenance_roles')
                             ->label('الأدوار المطبق عليها الصيانة')
                             ->options([
                                 \App\Models\User::ROLE_COLLEGE => 'مشرف كلية',
