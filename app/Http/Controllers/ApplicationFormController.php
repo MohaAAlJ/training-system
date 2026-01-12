@@ -390,156 +390,24 @@ class ApplicationFormController extends Controller
      */
     public function store(Request $request)
     {
-        $maxBirthYear = now()->year - 20; // Must be at least 20 years old
-        $minBirthYear = now()->year - 60; // Must be at most 60 years old
-
-        // Validate form UUID for security - prevents replay attacks and form tampering
-        if (!$request->input('form_uuid') || !\Illuminate\Support\Str::isUuid($request->input('form_uuid'))) {
-            return response()->json(['message' => 'Invalid form submission. Please reload and try again.'], 422);
-        }
-
-        // Get training type early for custom validation
-        $trainingType = $request->input('training_type');
-        $nationalId = $request->input('national_id');
-
         $validated = $request->validate([
             'form_uuid' => ['required', 'uuid'],
+            'national_id' => ['required', 'digits:9'],
             'full_name' => ['required', 'string', 'max:255', 'regex:/^[\p{Arabic}A-Za-z\s]+$/u'],
-            'dob' => [
-                'required',
-                'regex:/^\d{4}-\d{2}-\d{2}$/',
-                function ($attribute, $value, $fail) use ($maxBirthYear, $minBirthYear) {
-                    // Accept ISO format (Y-m-d) from modern date picker
-                    $parts = explode('-', $value);
-                    if (count($parts) === 3) {
-                        $year = (int) $parts[0];
-                        if ($year > $maxBirthYear) {
-                            $fail("يجب أن يكون العمر 20 سنة على الأقل (سنة الميلاد يجب أن تكون {$maxBirthYear} أو أقل)");
-                        }
-                        if ($year < $minBirthYear) {
-                            $fail("يجب أن يكون العمر 60 سنة على الأكثر (سنة الميلاد يجب أن تكون {$minBirthYear} أو أكثر)");
-                        }
-                    }
-                },
-            ],
-            'national_id' => [
-                'required',
-                'digits:9',
-                // IMPROVED: Custom validation - check for duplicate applications of SAME training type
-                function ($attribute, $value, $fail) use ($trainingType) {
-                    // Access settings via controller instance if available, but this is a closure.
-                    // Closures in validation might not have access to $this if static or different scope.
-                    // However, 'validate' is called on $request, typically inside controller method.
-                    // BUT $this is available in the controller method closure context? Yes.
-                    // Let's use the local variable approach for safety or $this->settings if safe.
-                    // Actually, for closure inside controller method, $this is available.
-
-                    $canReapply = ($trainingType == Application::TRAINING_TYPE_UNIVERSITY)
-                        ? $this->settings->can_university_reapply
-                        : $this->settings->can_practice_reapply;
-
-                    $query = Application::whereHas('trainee', function ($q) use ($value) {
-                        $q->where('national_id', $value);
-                    })->where('training_type', $trainingType);
-
-                    if ($canReapply) {
-                        // If reapplication is allowed, only block if there's an application 
-                        // that is NOT ended training.
-                        $hasActiveApp = (clone $query)
-                            ->where('status', '!=', Application::STATUS_ENDED_TRAINING)
-                            ->exists();
-
-                        if ($hasActiveApp) {
-                            $trainingTypeName = Application::TRAINING_TYPES[$trainingType] ?? 'غير محدد';
-                            $fail("لديك بالفعل طلب تدريب قيد المعالجة من نوع '{$trainingTypeName}'. لا يمكنك التقديم مجدداً حتى ينتهي التدريب الحالي.");
-                        }
-                    } else {
-                        // Default behavior: block if any application exists
-                        $duplicateApp = (clone $query)->exists();
-
-                        if ($duplicateApp) {
-                            $trainingTypeName = Application::TRAINING_TYPES[$trainingType] ?? 'غير محدد';
-                            $fail("لديك بالفعل تطبيق تدريب من نوع '{$trainingTypeName}'.");
-                        }
-                    }
-                },
-            ],
+            'dob' => ['required', 'date_format:Y-m-d', 'before_or_equal:' . now()->subYears(20)->format('Y-m-d'), 'after_or_equal:' . now()->subYears(60)->format('Y-m-d')],
             'phone_number' => ['required', 'regex:/^97[02]5[69]\d{7}$/'],
             'governorate_id' => ['required', 'integer', 'exists:governorates,id'],
             'street' => ['required', 'string', 'max:255', 'regex:/^[\p{Arabic}A-Za-z0-9\s\-\.,#\/]+$/u'],
-            'institution_id' => [
-                'required_if:training_type,' . Application::TRAINING_TYPE_UNIVERSITY,
-                'nullable',
-                'integer',
-                \Illuminate\Validation\Rule::exists('institutions', 'id')->where(function ($query) {
-                    $query->where('is_active', true);
-                }),
-            ],
-            'college_id' => [
-                'nullable',
-                'integer',
-                \Illuminate\Validation\Rule::exists('colleges', 'id')->where(function ($query) {
-                    $query->where('is_active', true);
-                }),
-            ],
+            'institution_id' => ['required_if:training_type,' . Application::TRAINING_TYPE_UNIVERSITY, 'nullable', 'integer', 'exists:institutions,id'],
+            'college_id' => ['nullable', 'integer', 'exists:colleges,id'],
             'major_id' => ['required_if:training_type,' . Application::TRAINING_TYPE_UNIVERSITY, 'nullable', 'integer', 'exists:majors,id'],
-            'training_hours' => ['required', 'integer', 'min:1', 'max:999'],
+            'training_hours' => ['required', 'integer', 'min:1', 'max:1000'],
             'administrative_id' => ['required', 'integer', 'exists:administratives,id'],
-            'department_id' => [
-                'required',
-                'integer',
-                'exists:departments,id',
-                function ($attribute, $value, $fail) use ($trainingType) {
-                    // Validate that department matches training type (medical for practice)
-                    if ($trainingType == Application::TRAINING_TYPE_PRACTICE) {
-                        $department = Department::find($value);
-                        if ($department && !$department->is_medical) {
-                            $fail('لا يمكن اختيار قسم غير طبي للتدريب العملي.');
-                        }
-                    }
-                }
-            ],
-            'section_id' => [
-                'required',
-                'integer',
-                function ($attribute, $value, $fail) use ($request, $trainingType) {
-                    $section = Section::where('id', $value)
-                        ->where('is_active', true)
-                        ->first();
-                    
-                    if (!$section) {
-                        $fail('القسم المختار غير متاح.');
-                        return;
-                    }
-                    
-                    // Validate section belongs to correct department and administrative
-                    if ($section->department_id != $request->input('department_id') || 
-                        $section->administrative_id != $request->input('administrative_id')) {
-                        $fail('القسم المختار لا ينتمي للقسم والجهة المحددة.');
-                        return;
-                    }
-                    
-                    // Validate training type matches section's department (medical for practice)
-                    if ($trainingType == Application::TRAINING_TYPE_PRACTICE) {
-                        $department = $section->department;
-                        if ($department && !$department->is_medical) {
-                            $fail('لا يمكن اختيار قسم غير طبي للتدريب العملي.');
-                            return;
-                        }
-                    }
-                    
-                    // Check capacity - respect the hide_full_sections setting
-                    $stats = $section->getCapacityStats();
-                    if (($stats['is_full'] ?? false) && !$this->settings->hide_full_sections) {
-                        $fail('نعتذر، هذا القسم ' . $section->name_location . ' ممتلئ حالياً. يرجى اختيار قسم آخر.');
-                    }
-                }
-            ],
+            'department_id' => ['required', 'integer', 'exists:departments,id'],
+            'section_id' => ['required', 'integer', 'exists:sections,id'],
             'training_type' => ['required', 'integer', 'in:' . implode(',', array_keys(Application::TRAINING_TYPES))],
             'letter_file' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
             'terms_approval' => ['required', 'accepted'],
-        ], [
-            'national_id.digits' => 'رقم الهوية يجب أن يكون 9 أرقام.',
         ]);
 
         // DOB is already in Y-m-d format from the date picker, ready for database storage
