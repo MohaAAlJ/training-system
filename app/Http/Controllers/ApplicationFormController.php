@@ -329,17 +329,7 @@ class ApplicationFormController extends Controller
      */
     private function getApplicationStatusMessage(Application $application): string
     {
-        return match ($application->status) {
-            Application::STATUS_NEW => 'لديك طلب قيد الانتظار',
-            Application::STATUS_INITIAL_APPROVE => 'لديك طلب في انتظار القبول الجامعي',
-            Application::STATUS_CONFIRMATION => 'لديك طلب في انتظار التأكيد',
-            Application::STATUS_WAITING_LIST => 'لديك طلب في قائمة الانتظار',
-            Application::STATUS_STARTED_TRAINING => 'لديك تدريب نشط',
-            Application::STATUS_ENDED_TRAINING => 'لديك طلب منتهي',
-            Application::STATUS_REJECTED => 'لديك طلب سابق لايمكنك اصادر طلب جديد',
-            Application::STATUS_DROPPED => 'لديك طلب منسحب',
-            default => 'لديك طلب قائم',
-        };
+        return Application::getStatusMessage($application->status);
     }
 
     /**

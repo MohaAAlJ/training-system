@@ -56,6 +56,20 @@ class Application extends Model
         self::TRAINING_TYPE_PRACTICE => 'مزاولة مهنة',
     ];
 
+    /**
+     * Status messages in Arabic - used for both frontend and API responses
+     */
+    public const STATUS_MESSAGES = [
+        self::STATUS_NEW => 'لديك طلب قيد الانتظار',
+        self::STATUS_INITIAL_APPROVE => 'لديك طلب في انتظار القبول الجامعي',
+        self::STATUS_CONFIRMATION => 'لديك طلب في انتظار التأكيد',
+        self::STATUS_WAITING_LIST => 'لديك طلب في قائمة الانتظار',
+        self::STATUS_STARTED_TRAINING => 'لديك تدريب نشط',
+        self::STATUS_ENDED_TRAINING => 'لديك طلب منتهي',
+        self::STATUS_REJECTED => 'لديك طلب سابق لايمكنك اصادر طلب جديد',
+        self::STATUS_DROPPED => 'لديك طلب منسحب',
+    ];
+
     protected $table = 'applications';
     protected $fillable = [
         'id',
@@ -86,6 +100,22 @@ class Application extends Model
     public function getTrainingTypeLabelAttribute(): string
     {
         return self::TRAINING_TYPES[$this->training_type] ?? 'غير محدد';
+    }
+
+    /**
+     * Get status message in Arabic
+     */
+    public function getStatusMessageAttribute(): string
+    {
+        return self::STATUS_MESSAGES[$this->status] ?? 'لا يمكنك تقديم طلب جديد في هذا الوقت';
+    }
+
+    /**
+     * Static helper to get status message by status code
+     */
+    public static function getStatusMessage(int $status): string
+    {
+        return self::STATUS_MESSAGES[$status] ?? 'لا يمكنك تقديم طلب جديد في هذا الوقت';
     }
 
     public function trainee()
