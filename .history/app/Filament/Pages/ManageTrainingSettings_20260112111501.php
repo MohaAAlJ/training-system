@@ -8,8 +8,6 @@ use Filament\Pages\SettingsPage;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\Toggle;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\CheckboxList;
 use Closure;
 
 use UnitEnum;
@@ -133,27 +131,27 @@ class ManageTrainingSettings extends SettingsPage
                             ]),
                     ]),
 
-                Section::make('وضع الصيانة')
-                    ->description('تعطيل دخول المستخدمين إلى لوحة التحكم مع عرض رسالة مخصصة.')
-                    ->icon('heroicon-o-wrench-screwdriver')
-                    ->schema([
-                        Toggle::make('is_maintenance_mode')
-                            ->label('تفعيل وضع الصيانة')
-                            ->live(),
-                        Textarea::make('maintenance_message')
-                            ->label('رسالة الصيانة')
-                            ->visible(fn($get) => $get('is_maintenance_mode'))
-                            ->required(),
-                        CheckboxList::make('maintenance_roles')
-                            ->label('الأدوار المطبق عليها الصيانة')
-                            ->options([
-                                \App\Models\User::ROLE_COLLEGE => 'مشرف كلية',
-                                \App\Models\User::ROLE_MOH => 'وزارة الصحة',
-                                \App\Models\User::ROLE_GTM => 'مدير التدريب العام',
-                            ])
-                            ->visible(fn($get) => $get('is_maintenance_mode'))
-                            ->columns(2),
-                    ]),
+                    Section::make('وضع الصيانة')
+    ->description('تعطيل دخول المستخدمين إلى لوحة التحكم مع عرض رسالة مخصصة.')
+    ->icon('heroicon-o-wrench-screwdriver')
+    ->schema([
+        Toggle::make('is_maintenance_mode')
+            ->label('تفعيل وضع الصيانة')
+            ->live(),
+        \Filament\Forms\Components\Textarea::make('maintenance_message')
+            ->label('رسالة الصيانة')
+            ->visible(fn ($get) => $get('is_maintenance_mode'))
+            ->required(),
+        \Filament\Forms\Components\CheckboxList::make('maintenance_roles')
+            ->label('الأدوار المطبق عليها الصيانة')
+            ->options([
+                \App\Models\User::ROLE_COLLEGE => 'مشرف كلية',
+                \App\Models\User::ROLE_MOH => 'وزارة الصحة',
+                \App\Models\User::ROLE_GTM => 'مدير التدريب العام',
+            ])
+            ->visible(fn ($get) => $get('is_maintenance_mode'))
+            ->columns(2),
+    ]),
             ]);
     }
 }

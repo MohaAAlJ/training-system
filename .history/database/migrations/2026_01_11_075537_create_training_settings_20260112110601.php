@@ -33,8 +33,5 @@ return new class extends SettingsMigration
         $this->migrator->delete('training.enable_training_type_university');
         $this->migrator->delete('training.can_university_reapply');
         $this->migrator->delete('training.can_practice_reapply');
-        $this->migrator->delete('training.is_maintenance_mode');
-        $this->migrator->delete('training.maintenance_message');
-        $this->migrator->delete('training.maintenance_roles');
     }
 };
