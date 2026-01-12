@@ -25,10 +25,12 @@ return new class extends Migration
         // Seed data: Centers from image (Medical) + HQ units (Non-Medical)
         $administratives = [
             // Medical Centers (from image)
-            ['title' => 'مستشفى السرايا الميداني', 'governorate' => 'غزة', 'is_medical' => true],
-            ['title' => 'مستشفى القدس', 'governorate' => 'غزة', 'is_medical' => true],
-            ['title' => 'مستشفى المواصي الميداني', 'governorate' => 'خانيونس', 'is_medical' => true],
             ['title' => 'مستشفى الأمل', 'governorate' => 'خانيونس', 'is_medical' => true],
+            ['title' => 'مدينة الأمل', 'governorate' => 'خانيونس', 'is_medical' => false],
+            ['title' => 'مستشفى المواصي الميداني', 'governorate' => 'خانيونس', 'is_medical' => true],
+            ['title' => 'مدينة النور', 'governorate' => 'غزة', 'is_medical' => false],
+            ['title' => 'مستشفى القدس', 'governorate' => 'غزة', 'is_medical' => true],
+            ['title' => 'مستشفى السرايا الميداني', 'governorate' => 'غزة', 'is_medical' => true],
             ['title' => 'النقطة الطبية المينا', 'governorate' => 'خانيونس', 'is_medical' => true],
             ['title' => 'النقطة الطبية مواصي القرارة', 'governorate' => 'خانيونس', 'is_medical' => true],
             ['title' => 'عيادة المواصي', 'governorate' => 'خانيونس', 'is_medical' => true],
@@ -47,9 +49,7 @@ return new class extends Migration
             ['title' => 'النقطة الطبية الزيتون', 'governorate' => 'غزة', 'is_medical' => true],
 
             // Non-Medical Administratives
-            ['title' => 'مدينة النور', 'governorate' => 'غزة', 'is_medical' => false],
             // ['title' => 'مدينة القدس', 'governorate' => 'غزة', 'is_medical' => false],
-            ['title' => 'مدينة الأمل', 'governorate' => 'خانيونس', 'is_medical' => false],
         ];
 
         foreach ($administratives as $adm) {

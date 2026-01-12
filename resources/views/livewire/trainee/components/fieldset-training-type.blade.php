@@ -23,7 +23,8 @@
             <span>رقم الهوية *</span>
             <input 
                 type="text" 
-                wire:model.live="nationalId"
+                wire:model="nationalId"
+                @blur="$validate('nationalId')"
                 pattern="[0-9]*"
                 placeholder="رقم الهوية"
                 maxlength="9"

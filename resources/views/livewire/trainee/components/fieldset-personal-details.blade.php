@@ -12,11 +12,13 @@
             <span>الاسم الكامل *</span>
             <input 
                 type="text" 
-                wire:model.live="fullName"
+                wire:model="fullName"
+                @blur="$validate('fullName')"
                 placeholder="الاسم الكامل"
                 class="form__input @error('fullName') form__input--error @enderror"
                 required
                 @readonly($fullNameReadonly)
+                @input="$el.value = $el.value.replace(/[^a-zA-Zء-ي\s]/g, '')"
             >
             @error('fullName')
                 <small class="error-message">{{ $message }}</small>
@@ -47,7 +49,8 @@
             <span>رقم الجوال *</span>
             <input 
                 type="tel" 
-                wire:model.live="phoneNumber"
+                wire:model="phoneNumber"
+                @blur="$validate('phoneNumber')"
                 placeholder="9705XXXXXXXX"
                 class="form__input @error('phoneNumber') form__input--error @enderror"
                 required
