@@ -7,6 +7,8 @@ use App\Models\Application;
 use App\Models\Section;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\DownloadAbsorptionPaperController;
+use App\Livewire\Welcome\WelcomeForm;
+use App\Livewire\Trainee\TraineeForm;
 
 Route::get('/', function () {
     if (Auth::check()) {
@@ -15,13 +17,20 @@ Route::get('/', function () {
     return redirect('/Home/login');
 });
 
-// Welcome page (public landing)
-Route::get('/WelcomeForm', [ApplicationFormController::class, 'showWelcome'])->name('training.welcome');
+// ========================================
+// LIVEWIRE FORMS - Fully reactive components
+// ========================================
 
-// Trainee application form (public)
-Route::get('/WelcomeForm/Form', [ApplicationFormController::class, 'showForm'])->name('training.form');
+// Welcome page (public landing)
+Route::get('/WelcomeForm', WelcomeForm::class)->name('training.welcome');
+
+// Trainee application form (public) - Livewire component
+Route::get('/WelcomeForm/Form', TraineeForm::class)->name('training.form');
+
+// Form submission endpoint
 Route::post('/WelcomeForm/Form', [ApplicationFormController::class, 'store'])
-    ->name('training.form.store');
+    ->name('training.form.submit')
+    ->middleware('throttle:60,1');
 
 Route::get('/applications/{application}/absorption-paper', DownloadAbsorptionPaperController::class)
     ->middleware(['auth', 'can:downloadAbsorptionPaper,application'])
