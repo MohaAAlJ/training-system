@@ -35,6 +35,11 @@ return new class extends Migration
             $table->timestamp('accepted_at')->nullable();
             $table->timestamps();
             $table->softDeletes();
+            
+            // Add indexes for fast application lookups
+            $table->index(['trainee_id', 'training_type', 'status'], 'idx_applications_trainee_type_status');
+            $table->index('trainee_id', 'idx_applications_trainee_id');
+            $table->index('training_type', 'idx_applications_training_type');
         });
     }
 
