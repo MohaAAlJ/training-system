@@ -3,20 +3,14 @@
 namespace App\Livewire\Trainee;
 
 use Livewire\Component;
-use Livewire\Attributes\Layout;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 use App\Models\Governorate;
 use App\Models\Institution;
 use App\Models\Administrative;
 use App\Models\Section;
 use App\Settings\TrainingSettings;
-use App\Models\Trainee;
-use App\Models\Application;
-use App\Models\Major;
-use Illuminate\Support\Facades\DB;
 
 /**
  * TraineeForm Livewire Component
@@ -26,7 +20,6 @@ use Illuminate\Support\Facades\DB;
  * 
  * Replaces vanilla JavaScript app.js with reactive Livewire state management.
  */
-#[Layout('components.layouts.app')]
 class TraineeForm extends Component
 {
     use WithFileUploads;
@@ -108,7 +101,7 @@ class TraineeForm extends Component
             'trainingType' => 'required|in:' . \App\Models\Application::TRAINING_TYPE_UNIVERSITY . ',' . \App\Models\Application::TRAINING_TYPE_PRACTICE,
             'nationalId' => 'required|digits:9',
         ];
-
+        
         if ($this->showPersonalDetails) {
             $rules = array_merge($rules, [
                 'fullName' => 'required|string|regex:' . self::NAME_REGEX . '|max:150',
@@ -130,7 +123,7 @@ class TraineeForm extends Component
                 'departmentId' => 'required|exists:departments,id',
                 'sectionId' => 'required|exists:sections,id',
             ]);
-
+            
             if ($this->trainingType === \App\Models\Application::TRAINING_TYPE_UNIVERSITY) {
                 $rules = array_merge($rules, [
                     'institutionId' => 'required|exists:institutions,id',
@@ -138,13 +131,13 @@ class TraineeForm extends Component
                 ]);
             }
         }
-
+        
         if ($this->showTrainingDetails) {
             $rules = array_merge($rules, [
                 'termsApproval' => 'required|accepted',
             ]);
         }
-
+        
         return $rules;
     }
 
@@ -155,7 +148,7 @@ class TraineeForm extends Component
     {
         // Generate UUID for form security (prevents replay attacks)
         $this->formUuid = \Illuminate\Support\Str::uuid()->toString();
-
+        
         $this->governorates = collect();
         $this->institutions = collect();
         $this->majors = collect();
@@ -224,7 +217,7 @@ class TraineeForm extends Component
         $this->collegeId = 0;
         $this->showPersonalDetails = false;
         $this->showTrainingDetails = false;
-
+        
         // Reload all data filtered by training type when training type is selected
         if ($this->trainingType) {
             $this->loadAdministratives();  // Filters by medical if practice training
@@ -294,16 +287,16 @@ class TraineeForm extends Component
             // Load training types from settings based on enabled types
             $settings = app(TrainingSettings::class);
             $types = [];
-
+            
             if ($settings->enable_training_type_university) {
                 $types[] = ['id' => \App\Models\Application::TRAINING_TYPE_UNIVERSITY, 'name' => 'تدريب جامعي'];
             }
             if ($settings->enable_training_type_practice) {
                 $types[] = ['id' => \App\Models\Application::TRAINING_TYPE_PRACTICE, 'name' => 'تدريب عملي'];
             }
-
+            
             $this->trainingTypes = collect($types);
-
+            
             // Auto-select if only one option
             if ($this->trainingTypes->count() === 1) {
                 $this->trainingType = $this->trainingTypes->first()['id'] ?? 0;
@@ -350,12 +343,12 @@ class TraineeForm extends Component
         try {
             $this->majors = \App\Models\Major::whereHas('colleges', function ($q) {
                 $q->where('colleges.institution_id', $this->institutionId)
-                    ->where('colleges.is_active', true);
+                  ->where('colleges.is_active', true);
             })
-                ->select('majors.id', 'majors.name')
-                ->orderBy('majors.name')
-                ->get()
-                ->map(fn($major) => ['id' => $major->id, 'name' => $major->name]);
+            ->select('majors.id', 'majors.name')
+            ->orderBy('majors.name')
+            ->get()
+            ->map(fn($major) => ['id' => $major->id, 'name' => $major->name]);
         } catch (\Exception $e) {
             $this->logException('Failed to load majors', $e);
         }
@@ -365,19 +358,19 @@ class TraineeForm extends Component
     {
         try {
             $query = Administrative::query();
-
+            
             // Filter by medical if training type is practice
             if ($this->trainingType === \App\Models\Application::TRAINING_TYPE_PRACTICE) {
                 $query->where('is_medical', true);
             }
-
+            
             $this->administratives = $query
                 ->select('id', 'title as name')
                 ->orderBy('title')
                 ->get()
                 ->map(fn($admin) => ['id' => $admin->id, 'name' => $admin->name]);
-
-            Log::info('Administratives loaded', ['count' => $this->administratives->count(), 'trainingType' => $this->trainingType]);
+            
+            \Log::info('Administratives loaded', ['count' => $this->administratives->count(), 'trainingType' => $this->trainingType]);
         } catch (\Exception $e) {
             $this->logException('Failed to load administratives', $e);
         }
@@ -391,19 +384,19 @@ class TraineeForm extends Component
                 ->select('id', 'name_location', 'department_id', 'administrative_id', 'capacity')
                 ->orderBy('name_location')
                 ->get();
-
+            
             // Filter by medical if training type is practice
             if ($this->trainingType === \App\Models\Application::TRAINING_TYPE_PRACTICE) {
                 $sections = $sections->filter(fn($sec) => $sec->department?->is_medical);
             }
-
+            
             $this->allSections = $sections
-                ->map(function ($section) {
+                ->map(function($section) {
                     $stats = $section->getCapacityStats();
                     $isFull = $stats['is_full'] ?? false;
-
+                    
                     // Debug logging
-                    Log::debug('Section capacity stats', [
+                    \Log::debug('Section capacity stats', [
                         'section_id' => $section->id,
                         'section_name' => $section->name_location,
                         'capacity' => $stats['total'],
@@ -411,7 +404,7 @@ class TraineeForm extends Component
                         'available' => $stats['available'],
                         'is_full' => $isFull,
                     ]);
-
+                    
                     return [
                         'id' => $section->id,
                         'name' => $section->name_location,
@@ -421,8 +414,8 @@ class TraineeForm extends Component
                     ];
                 })
                 ->values();
-
-            Log::info('All sections loaded', ['count' => $this->allSections->count(), 'trainingType' => $this->trainingType]);
+            
+            \Log::info('All sections loaded', ['count' => $this->allSections->count(), 'trainingType' => $this->trainingType]);
         } catch (\Exception $e) {
             $this->logException('Failed to load sections', $e);
         }
@@ -433,12 +426,12 @@ class TraineeForm extends Component
         try {
             // Load ALL departments for client-side filtering
             $query = \App\Models\Department::query();
-
+            
             // Filter by medical if training type is practice
             if ($this->trainingType === \App\Models\Application::TRAINING_TYPE_PRACTICE) {
                 $query->where('is_medical', true);
             }
-
+            
             $this->allDepartments = $query
                 ->select('id', 'title as name')
                 ->orderBy('title')
@@ -448,8 +441,8 @@ class TraineeForm extends Component
                     'name' => $dept->name,
                 ])
                 ->values();
-
-            Log::info('All departments loaded', ['count' => $this->allDepartments->count(), 'trainingType' => $this->trainingType]);
+            
+            \Log::info('All departments loaded', ['count' => $this->allDepartments->count(), 'trainingType' => $this->trainingType]);
         } catch (\Exception $e) {
             $this->logException('Failed to load departments', $e);
         }
@@ -470,8 +463,8 @@ class TraineeForm extends Component
                     'institutionIds' => $major->colleges->pluck('institution_id')->unique()->toArray(),
                 ])
                 ->values();
-
-            Log::info('All majors loaded', ['count' => $this->allMajors->count()]);
+            
+            \Log::info('All majors loaded', ['count' => $this->allMajors->count()]);
         } catch (\Exception $e) {
             $this->logException('Failed to load majors', $e);
         }
@@ -489,9 +482,9 @@ class TraineeForm extends Component
             $college = \App\Models\College::whereHas('majors', function ($q) {
                 $q->where('major_id', $this->majorId);
             })
-                ->where('institution_id', $this->institutionId)
-                ->first();
-
+            ->where('institution_id', $this->institutionId)
+            ->first();
+            
             $this->collegeId = $college ? $college->id : 0;
         } catch (\Exception $e) {
             $this->logException('Failed to load college data', $e);
@@ -513,7 +506,7 @@ class TraineeForm extends Component
             // Check cache first
             $cacheKey = "app_status:{$this->nationalId}:{$this->trainingType}";
             $cachedResult = \Illuminate\Support\Facades\Cache::get($cacheKey);
-
+            
             if ($cachedResult !== null) {
                 $this->processApplicationStatusResult($cachedResult);
                 return;
@@ -618,7 +611,7 @@ class TraineeForm extends Component
             'previous_application' => 'لديك طلب سابق لايمكنك اصادر طلب جديد',
             'unknown' => 'لا يمكنك تقديم طلب جديد في هذا الوقت',
         ];
-
+        
         return $messages[$status] ?? $messages['unknown'];
     }
 
@@ -731,7 +724,7 @@ class TraineeForm extends Component
     {
         $this->setMessage($message, 'error');
         if ($exception) {
-            Log::error($message, ['exception' => $exception]);
+            \Log::error($message, ['exception' => $exception]);
         }
     }
 
@@ -744,119 +737,80 @@ class TraineeForm extends Component
             // Validate all fields
             $validated = $this->validate();
 
-            // Check for training type specific re-application policy
-            $settings = app(TrainingSettings::class);
-            $canReapply = ($this->trainingType == Application::TRAINING_TYPE_UNIVERSITY)
-                ? $settings->can_university_reapply
-                : $settings->can_practice_reapply;
-
-            // Double check existing application status (server-side)
-            $trainee = Trainee::where('national_id', $this->nationalId)->first();
-            if ($trainee) {
-                $query = Application::where('trainee_id', $trainee->id)
-                    ->where('training_type', $this->trainingType)
-                    ->whereNull('deleted_at');
-
-                if ($canReapply) {
-                    $hasActiveApp = $query->where('status', '!=', Application::STATUS_ENDED_TRAINING)->exists();
-                    if ($hasActiveApp) {
-                        $this->showError('لديك بالفعل طلب تدريب قيد المعالجة. لا يمكنك التقديم مجدداً حتى ينتهي التدريب الحالي.');
-                        return;
-                    }
-                } else {
-                    if ($query->exists()) {
-                        $this->showError('لديك بالفعل تطبيق تدريب من هذا النوع.');
-                        return;
-                    }
-                }
-            }
-
-            // Verify section capacity one last time
-            $section = Section::find($this->sectionId);
-            if ($section && ($section->getCapacityStats()['is_full'] ?? false)) {
-                if (!$settings->hide_full_sections) {
-                    $this->showError('نعتذر، هذا القسم ممتلئ حالياً. يرجى اختيار قسم آخر.');
-                    return;
-                }
-            }
+            // Prepare data for submission
+            $data = [
+                'form_uuid' => $this->formUuid,
+                'full_name' => $this->fullName,
+                'national_id' => $this->nationalId,
+                'phone_number' => $this->phoneNumber,
+                'dob' => $this->dob,
+                'governorate_id' => $this->governorateId,
+                'street' => $this->street,
+                'institution_id' => $this->institutionId ?: null,
+                'major_id' => $this->majorId ?: null,
+                'college_id' => $this->collegeId ?: null,
+                'administrative_id' => $this->administrativeId,
+                'department_id' => $this->departmentId,
+                'section_id' => $this->sectionId,
+                'training_type' => $this->trainingType,
+                'training_hours' => $this->trainingHours,
+                'terms_approval' => $this->termsApproval ? 1 : 0,
+            ];
 
             try {
-                // Use transaction to ensure data integrity
-                $result = DB::transaction(function () use ($settings) {
-                    // 1. Infer college_id if missing
-                    if (empty($this->collegeId) && !empty($this->majorId)) {
-                        $major = Major::find($this->majorId);
-                        if ($major) {
-                            $firstCollege = $major->colleges()->first();
-                            if ($firstCollege) {
-                                $this->collegeId = $firstCollege->id;
-                                $this->institutionId = $firstCollege->institution_id ?? $this->institutionId;
-                            }
-                        }
-                    }
+                // Store file if present
+                if ($this->letterFile) {
+                    $data['letter_file'] = $this->letterFile->store(self::FILE_STORAGE_PATH, 'public');
+                }
 
-                    // 2. Create or update trainee record
-                    $trainee = Trainee::updateOrCreate(
-                        ['national_id' => $this->nationalId],
-                        [
-                            'full_name' => $this->fullName,
-                            'phone_number' => $this->phoneNumber,
-                            'dob' => $this->dob,
-                            'governorate_id' => $this->governorateId,
-                            'street' => $this->street,
-                            'institution_id' => $this->institutionId ?: null,
-                            'college_id' => $this->collegeId ?: null,
-                            'major_id' => $this->majorId ?: null,
-                            'training_hours' => $this->trainingHours,
-                        ]
-                    );
+                // Submit to backend endpoint
+                $response = Http::withHeaders([
+                    'X-CSRF-TOKEN' => csrf_token(),
+                    'X-Requested-With' => 'XMLHttpRequest',
+                ])->post(url('/WelcomeForm/Form'), $data);
 
-                    // 3. Create application record
-                    $application = Application::create([
-                        'trainee_id' => $trainee->id,
-                        'department_id' => $this->departmentId,
-                        'administrative_id' => $this->administrativeId,
-                        'section_id' => $this->sectionId,
-                        'street' => $this->street,
-                        'training_type' => $this->trainingType,
-                        'status' => Application::STATUS_NEW,
-                    ]);
+                \Log::info('Form Submission Response', [
+                    'status' => $response->status(),
+                ]);
 
-                    // 4. Handle file upload (if present)
-                    if ($this->letterFile) {
-                        $extension = $this->letterFile->getClientOriginalExtension();
-                        $customFileName = "{$application->id}_{$trainee->id}.{$extension}";
-                        $letterPath = $this->letterFile->storeAs('application-letters', $customFileName, 'public');
-
-                        $application->update(['application_letter' => $letterPath]);
-                    }
-
-                    return $application;
-                });
-
-                if ($result) {
+                if ($response->successful()) {
                     $this->setMessage('تم إرسال الطلب بنجاح. جاري التحويل...', 'success');
+                    
+                    // Reset form
                     $this->resetForm();
-                    return redirect()->to('/WelcomeForm');
+
+                    // Redirect to success page
+                    return redirect()->to('/WelcomeForm/Success');
+                } else {
+                    // Handle validation errors from backend
+                    $errors = $response->json();
+                    \Log::warning('Form Submission Failed', ['errors' => $errors]);
+                    
+                    if (isset($errors['message'])) {
+                        $this->showError($errors['message']);
+                    } else {
+                        $this->showError('فشل إرسال الطلب. يرجى المحاولة مرة أخرى');
+                    }
                 }
             } catch (\Exception $e) {
-                $this->logException('Database Transaction Error', $e);
-                $this->showError('حدث خطأ أثناء حفظ الطلب. يرجى المحاولة مرة أخرى.');
+                $this->logException('Form Submission Error', $e);
+                $this->showError('حدث خطأ أثناء إرسال الطلب: ' . $e->getMessage(), $e);
             }
         } catch (\Illuminate\Validation\ValidationException $e) {
+            // Catch validation errors and show as toast
             $messages = [];
             foreach ($e->errors() as $field => $errors) {
                 foreach ($errors as $error) {
                     $messages[] = $error;
                 }
             }
-            $this->showError(implode("\n", $messages));
-        } catch (\Exception $e) {
-            $this->logException('Form Submission Error', $e);
-            $this->showError('حدث خطأ غير متوقع: ' . $e->getMessage());
+            
+            $errorMessage = implode("\n", $messages);
+            $this->showError($errorMessage);
+            
+            \Log::warning('Form Validation Error', ['errors' => $e->errors()]);
         }
     }
-
 
     private function resetForm(): void
     {
@@ -885,7 +839,7 @@ class TraineeForm extends Component
     // ========================================
     private function logException(string $msg, \Exception $e): void
     {
-        Log::error($msg, [
+        \Log::error($msg, [
             'message' => $e->getMessage(),
             'file' => $e->getFile(),
             'line' => $e->getLine(),
@@ -908,6 +862,6 @@ class TraineeForm extends Component
         return view('livewire.trainee.trainee-form', [
             'isUniversity' => $this->trainingType === \App\Models\Application::TRAINING_TYPE_UNIVERSITY,
             'isLoading' => $this->isValidating,
-        ]);
+        ])->layout('components.layouts.app');
     }
 }

@@ -13,10 +13,6 @@ use App\Models\Institution;
 use App\Models\Administrative;
 use App\Models\Section;
 use App\Settings\TrainingSettings;
-use App\Models\Trainee;
-use App\Models\Application;
-use App\Models\Major;
-use Illuminate\Support\Facades\DB;
 
 /**
  * TraineeForm Livewire Component
@@ -744,119 +740,80 @@ class TraineeForm extends Component
             // Validate all fields
             $validated = $this->validate();
 
-            // Check for training type specific re-application policy
-            $settings = app(TrainingSettings::class);
-            $canReapply = ($this->trainingType == Application::TRAINING_TYPE_UNIVERSITY)
-                ? $settings->can_university_reapply
-                : $settings->can_practice_reapply;
-
-            // Double check existing application status (server-side)
-            $trainee = Trainee::where('national_id', $this->nationalId)->first();
-            if ($trainee) {
-                $query = Application::where('trainee_id', $trainee->id)
-                    ->where('training_type', $this->trainingType)
-                    ->whereNull('deleted_at');
-
-                if ($canReapply) {
-                    $hasActiveApp = $query->where('status', '!=', Application::STATUS_ENDED_TRAINING)->exists();
-                    if ($hasActiveApp) {
-                        $this->showError('لديك بالفعل طلب تدريب قيد المعالجة. لا يمكنك التقديم مجدداً حتى ينتهي التدريب الحالي.');
-                        return;
-                    }
-                } else {
-                    if ($query->exists()) {
-                        $this->showError('لديك بالفعل تطبيق تدريب من هذا النوع.');
-                        return;
-                    }
-                }
-            }
-
-            // Verify section capacity one last time
-            $section = Section::find($this->sectionId);
-            if ($section && ($section->getCapacityStats()['is_full'] ?? false)) {
-                if (!$settings->hide_full_sections) {
-                    $this->showError('نعتذر، هذا القسم ممتلئ حالياً. يرجى اختيار قسم آخر.');
-                    return;
-                }
-            }
+            // Prepare data for submission
+            $data = [
+                'form_uuid' => $this->formUuid,
+                'full_name' => $this->fullName,
+                'national_id' => $this->nationalId,
+                'phone_number' => $this->phoneNumber,
+                'dob' => $this->dob,
+                'governorate_id' => $this->governorateId,
+                'street' => $this->street,
+                'institution_id' => $this->institutionId ?: null,
+                'major_id' => $this->majorId ?: null,
+                'college_id' => $this->collegeId ?: null,
+                'administrative_id' => $this->administrativeId,
+                'department_id' => $this->departmentId,
+                'section_id' => $this->sectionId,
+                'training_type' => $this->trainingType,
+                'training_hours' => $this->trainingHours,
+                'terms_approval' => $this->termsApproval ? 1 : 0,
+            ];
 
             try {
-                // Use transaction to ensure data integrity
-                $result = DB::transaction(function () use ($settings) {
-                    // 1. Infer college_id if missing
-                    if (empty($this->collegeId) && !empty($this->majorId)) {
-                        $major = Major::find($this->majorId);
-                        if ($major) {
-                            $firstCollege = $major->colleges()->first();
-                            if ($firstCollege) {
-                                $this->collegeId = $firstCollege->id;
-                                $this->institutionId = $firstCollege->institution_id ?? $this->institutionId;
-                            }
-                        }
-                    }
+                // Store file if present
+                if ($this->letterFile) {
+                    $data['letter_file'] = $this->letterFile->store(self::FILE_STORAGE_PATH, 'public');
+                }
 
-                    // 2. Create or update trainee record
-                    $trainee = Trainee::updateOrCreate(
-                        ['national_id' => $this->nationalId],
-                        [
-                            'full_name' => $this->fullName,
-                            'phone_number' => $this->phoneNumber,
-                            'dob' => $this->dob,
-                            'governorate_id' => $this->governorateId,
-                            'street' => $this->street,
-                            'institution_id' => $this->institutionId ?: null,
-                            'college_id' => $this->collegeId ?: null,
-                            'major_id' => $this->majorId ?: null,
-                            'training_hours' => $this->trainingHours,
-                        ]
-                    );
+                // Submit to backend endpoint
+                $response = Http::withHeaders([
+                    'X-CSRF-TOKEN' => csrf_token(),
+                    'X-Requested-With' => 'XMLHttpRequest',
+                ])->post(url('/WelcomeForm/Form'), $data);
 
-                    // 3. Create application record
-                    $application = Application::create([
-                        'trainee_id' => $trainee->id,
-                        'department_id' => $this->departmentId,
-                        'administrative_id' => $this->administrativeId,
-                        'section_id' => $this->sectionId,
-                        'street' => $this->street,
-                        'training_type' => $this->trainingType,
-                        'status' => Application::STATUS_NEW,
-                    ]);
+                Log::info('Form Submission Response', [
+                    'status' => $response->status(),
+                ]);
 
-                    // 4. Handle file upload (if present)
-                    if ($this->letterFile) {
-                        $extension = $this->letterFile->getClientOriginalExtension();
-                        $customFileName = "{$application->id}_{$trainee->id}.{$extension}";
-                        $letterPath = $this->letterFile->storeAs('application-letters', $customFileName, 'public');
-
-                        $application->update(['application_letter' => $letterPath]);
-                    }
-
-                    return $application;
-                });
-
-                if ($result) {
+                if ($response->successful()) {
                     $this->setMessage('تم إرسال الطلب بنجاح. جاري التحويل...', 'success');
+
+                    // Reset form
                     $this->resetForm();
-                    return redirect()->to('/WelcomeForm');
+
+                    // Redirect to success page
+                    return redirect()->to('/WelcomeForm/Success');
+                } else {
+                    // Handle validation errors from backend
+                    $errors = $response->json();
+                    \Log::warning('Form Submission Failed', ['errors' => $errors]);
+
+                    if (isset($errors['message'])) {
+                        $this->showError($errors['message']);
+                    } else {
+                        $this->showError('فشل إرسال الطلب. يرجى المحاولة مرة أخرى');
+                    }
                 }
             } catch (\Exception $e) {
-                $this->logException('Database Transaction Error', $e);
-                $this->showError('حدث خطأ أثناء حفظ الطلب. يرجى المحاولة مرة أخرى.');
+                $this->logException('Form Submission Error', $e);
+                $this->showError('حدث خطأ أثناء إرسال الطلب: ' . $e->getMessage(), $e);
             }
         } catch (\Illuminate\Validation\ValidationException $e) {
+            // Catch validation errors and show as toast
             $messages = [];
             foreach ($e->errors() as $field => $errors) {
                 foreach ($errors as $error) {
                     $messages[] = $error;
                 }
             }
-            $this->showError(implode("\n", $messages));
-        } catch (\Exception $e) {
-            $this->logException('Form Submission Error', $e);
-            $this->showError('حدث خطأ غير متوقع: ' . $e->getMessage());
+
+            $errorMessage = implode("\n", $messages);
+            $this->showError($errorMessage);
+
+            Log::warning('Form Validation Error', ['errors' => $e->errors()]);
         }
     }
-
 
     private function resetForm(): void
     {
