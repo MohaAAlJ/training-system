@@ -2,11 +2,10 @@
 
 namespace App\Livewire\Welcome;
 
-use App\Settings\TrainingSettings;
+use App\Models\TrainingSetting;
 use Illuminate\Support\Str;
 use Livewire\Component;
 use Livewire\Attributes\Title;
-use Livewire\Attributes\Layout;
 
 /**
  * WelcomeForm Livewire Component
@@ -17,7 +16,6 @@ use Livewire\Attributes\Layout;
  * Replaces vanilla JavaScript welcome/app.js with Livewire component.
  */
 #[Title('صفحة الترحيب - نظام التدريب')]
-#[Layout('components.layouts.app')]
 class WelcomeForm extends Component
 {
     /**
@@ -32,7 +30,7 @@ class WelcomeForm extends Component
 
     public function mount(): void
     {
-        $settings = app(TrainingSettings::class);
+        $settings = TrainingSetting::getInstance();
 
         $this->isFormEnabled = (bool) $settings->is_public_form_enabled;
         $this->formUuid = (string) Str::uuid();
@@ -44,6 +42,6 @@ class WelcomeForm extends Component
      */
     public function render()
     {
-        return view('livewire.welcome.welcome-form');
+        return view('livewire.welcome.welcome-form')->layout('components.layouts.app');
     }
 }

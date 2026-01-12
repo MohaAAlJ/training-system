@@ -827,7 +827,7 @@ class TraineeForm extends Component
                         $extension = $this->letterFile->getClientOriginalExtension();
                         $customFileName = "{$application->id}_{$trainee->id}.{$extension}";
                         $letterPath = $this->letterFile->storeAs('application-letters', $customFileName, 'public');
-
+                        
                         $application->update(['application_letter' => $letterPath]);
                     }
 
@@ -837,12 +837,14 @@ class TraineeForm extends Component
                 if ($result) {
                     $this->setMessage('تم إرسال الطلب بنجاح. جاري التحويل...', 'success');
                     $this->resetForm();
-                    return redirect()->to('/WelcomeForm');
+                    return redirect()->to('/WelcomeForm/Success');
                 }
+
             } catch (\Exception $e) {
                 $this->logException('Database Transaction Error', $e);
                 $this->showError('حدث خطأ أثناء حفظ الطلب. يرجى المحاولة مرة أخرى.');
             }
+
         } catch (\Illuminate\Validation\ValidationException $e) {
             $messages = [];
             foreach ($e->errors() as $field => $errors) {
@@ -857,6 +859,9 @@ class TraineeForm extends Component
         }
     }
 
+            Log::warning('Form Validation Error', ['errors' => $e->errors()]);
+        }
+    }
 
     private function resetForm(): void
     {

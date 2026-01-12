@@ -81,7 +81,7 @@
     </main>
 </div>
 
-<link rel="stylesheet" href="{{ asset('form-assets/trainee-app/styles.css') }}" />
+@vite(['app/Livewire/Trainee/trainee-form.css'])
 
 @script
 <script>
