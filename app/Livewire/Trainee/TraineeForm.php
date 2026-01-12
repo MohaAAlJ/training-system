@@ -299,15 +299,7 @@ class TraineeForm extends Component
                 $types[] = ['id' => \App\Models\Application::TRAINING_TYPE_UNIVERSITY, 'name' => 'تدريب جامعي'];
             }
             if ($settings->enable_training_type_practice) {
-                $types[] = ['id' => \App\Models\Application::TRAINING_TYPE_PRACTICE, 'name' => 'تدريب عملي'];
-            }
-
-            $this->trainingTypes = collect($types);
-
-            // Auto-select if only one option
-            if ($this->trainingTypes->count() === 1) {
-                $this->trainingType = $this->trainingTypes->first()['id'] ?? 0;
-            }
+                $types[] = ['id' => \App\Models\Application::TRAINING_TYPE_PRACTICE, 'name' => 'مزاولة مهنة'];
         } catch (\Exception $e) {
             $this->logException('Training Type Load Error', $e);
         }
