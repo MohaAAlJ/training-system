@@ -6,6 +6,7 @@ use Livewire\Component;
 use Livewire\Attributes\Layout;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use App\Models\Governorate;
 use App\Models\Institution;
@@ -313,7 +314,7 @@ class TraineeForm extends Component
             if ($this->trainingTypes->count() === 1) {
                 $this->trainingType = $this->trainingTypes->first()['id'] ?? 0;
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->logException('Training Type Load Error', $e);
         }
     }
@@ -340,7 +341,7 @@ class TraineeForm extends Component
                 ->orderBy('name')
                 ->get()
                 ->map(fn($inst) => ['id' => $inst->id, 'name' => $inst->name]);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->logException('Failed to load institutions', $e);
         }
     }
@@ -361,7 +362,7 @@ class TraineeForm extends Component
                 ->orderBy('majors.name')
                 ->get()
                 ->map(fn($major) => ['id' => $major->id, 'name' => $major->name]);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->logException('Failed to load majors', $e);
         }
     }
@@ -383,7 +384,7 @@ class TraineeForm extends Component
                 ->map(fn($admin) => ['id' => $admin->id, 'name' => $admin->name]);
 
             Log::info('Administratives loaded', ['count' => $this->administratives->count(), 'trainingType' => $this->trainingType]);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->logException('Failed to load administratives', $e);
         }
     }
@@ -428,7 +429,7 @@ class TraineeForm extends Component
                 ->values();
 
             Log::info('All sections loaded', ['count' => $this->allSections->count(), 'trainingType' => $this->trainingType]);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->logException('Failed to load sections', $e);
         }
     }
@@ -455,7 +456,7 @@ class TraineeForm extends Component
                 ->values();
 
             Log::info('All departments loaded', ['count' => $this->allDepartments->count(), 'trainingType' => $this->trainingType]);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->logException('Failed to load departments', $e);
         }
     }
@@ -498,7 +499,7 @@ class TraineeForm extends Component
                 ->first();
 
             $this->collegeId = $college ? $college->id : 0;
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->logException('Failed to load college data', $e);
         }
     }

@@ -6,22 +6,17 @@ use Livewire\Component;
 use Livewire\Attributes\Layout;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use App\Models\Governorate;
 use App\Models\Institution;
 use App\Models\Administrative;
 use App\Models\Section;
-use App\Models\Department;
-use App\Models\College;
 use App\Settings\TrainingSettings;
 use App\Models\Trainee;
 use App\Models\Application;
 use App\Models\Major;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Validation\ValidationException;
-use Exception;
 
 /**
  * TraineeForm Livewire Component
@@ -110,7 +105,7 @@ class TraineeForm extends Component
     protected function rules()
     {
         $rules = [
-            'trainingType' => 'required|in:' . Application::TRAINING_TYPE_UNIVERSITY . ',' . Application::TRAINING_TYPE_PRACTICE,
+            'trainingType' => 'required|in:' . \App\Models\Application::TRAINING_TYPE_UNIVERSITY . ',' . \App\Models\Application::TRAINING_TYPE_PRACTICE,
             'nationalId' => 'required|digits:9',
         ];
 
@@ -136,7 +131,7 @@ class TraineeForm extends Component
                 'sectionId' => 'required|exists:sections,id',
             ]);
 
-            if ($this->trainingType === Application::TRAINING_TYPE_UNIVERSITY) {
+            if ($this->trainingType === \App\Models\Application::TRAINING_TYPE_UNIVERSITY) {
                 $rules = array_merge($rules, [
                     'institutionId' => 'required|exists:institutions,id',
                     'majorId' => 'required|exists:majors,id',
@@ -159,7 +154,7 @@ class TraineeForm extends Component
     public function mount()
     {
         // Generate UUID for form security (prevents replay attacks)
-        $this->formUuid = Str::uuid()->toString();
+        $this->formUuid = \Illuminate\Support\Str::uuid()->toString();
 
         $this->governorates = collect();
         $this->institutions = collect();
@@ -313,7 +308,7 @@ class TraineeForm extends Component
             if ($this->trainingTypes->count() === 1) {
                 $this->trainingType = $this->trainingTypes->first()['id'] ?? 0;
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->logException('Training Type Load Error', $e);
         }
     }
@@ -326,7 +321,7 @@ class TraineeForm extends Component
                     ->orderBy('name')
                     ->get()
                     ->map(fn($gov) => ['id' => $gov->id, 'name' => $gov->name]);
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 $this->logException('Failed to load governorates', $e);
             }
         }
@@ -340,7 +335,7 @@ class TraineeForm extends Component
                 ->orderBy('name')
                 ->get()
                 ->map(fn($inst) => ['id' => $inst->id, 'name' => $inst->name]);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->logException('Failed to load institutions', $e);
         }
     }
@@ -361,7 +356,7 @@ class TraineeForm extends Component
                 ->orderBy('majors.name')
                 ->get()
                 ->map(fn($major) => ['id' => $major->id, 'name' => $major->name]);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->logException('Failed to load majors', $e);
         }
     }
@@ -383,7 +378,7 @@ class TraineeForm extends Component
                 ->map(fn($admin) => ['id' => $admin->id, 'name' => $admin->name]);
 
             Log::info('Administratives loaded', ['count' => $this->administratives->count(), 'trainingType' => $this->trainingType]);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->logException('Failed to load administratives', $e);
         }
     }
@@ -428,7 +423,7 @@ class TraineeForm extends Component
                 ->values();
 
             Log::info('All sections loaded', ['count' => $this->allSections->count(), 'trainingType' => $this->trainingType]);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->logException('Failed to load sections', $e);
         }
     }
@@ -437,10 +432,10 @@ class TraineeForm extends Component
     {
         try {
             // Load ALL departments for client-side filtering
-            $query = Department::query();
+            $query = \App\Models\Department::query();
 
             // Filter by medical if training type is practice
-            if ($this->trainingType === Application::TRAINING_TYPE_PRACTICE) {
+            if ($this->trainingType === \App\Models\Application::TRAINING_TYPE_PRACTICE) {
                 $query->where('is_medical', true);
             }
 
@@ -455,7 +450,7 @@ class TraineeForm extends Component
                 ->values();
 
             Log::info('All departments loaded', ['count' => $this->allDepartments->count(), 'trainingType' => $this->trainingType]);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->logException('Failed to load departments', $e);
         }
     }
@@ -464,7 +459,7 @@ class TraineeForm extends Component
     {
         try {
             // Load ALL majors with college relationships for client-side filtering
-            $this->allMajors = Major::with(['colleges'])
+            $this->allMajors = \App\Models\Major::with(['colleges'])
                 ->select('id', 'name')
                 ->orderBy('name')
                 ->get()
@@ -477,7 +472,7 @@ class TraineeForm extends Component
                 ->values();
 
             Log::info('All majors loaded', ['count' => $this->allMajors->count()]);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->logException('Failed to load majors', $e);
         }
     }
@@ -491,14 +486,14 @@ class TraineeForm extends Component
 
         try {
             // Get college related to this major and institution
-            $college = College::whereHas('majors', function ($q) {
+            $college = \App\Models\College::whereHas('majors', function ($q) {
                 $q->where('major_id', $this->majorId);
             })
                 ->where('institution_id', $this->institutionId)
                 ->first();
 
             $this->collegeId = $college ? $college->id : 0;
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->logException('Failed to load college data', $e);
         }
     }
@@ -517,7 +512,7 @@ class TraineeForm extends Component
         try {
             // Check cache first
             $cacheKey = "app_status:{$this->nationalId}:{$this->trainingType}";
-            $cachedResult = Cache::get($cacheKey);
+            $cachedResult = \Illuminate\Support\Facades\Cache::get($cacheKey);
 
             if ($cachedResult !== null) {
                 $this->processApplicationStatusResult($cachedResult);
@@ -525,7 +520,7 @@ class TraineeForm extends Component
             }
 
             // Query database directly for application check
-            $trainee = Trainee::where('national_id', $this->nationalId)->first();
+            $trainee = \App\Models\Trainee::where('national_id', $this->nationalId)->first();
 
             if (!$trainee) {
                 // No trainee found - allow to proceed
@@ -537,18 +532,18 @@ class TraineeForm extends Component
 
             // Check settings for re-application policy
             $settings = app(TrainingSettings::class);
-            $canReapply = ($this->trainingType === Application::TRAINING_TYPE_UNIVERSITY)
+            $canReapply = ($this->trainingType === \App\Models\Application::TRAINING_TYPE_UNIVERSITY)
                 ? $settings->can_university_reapply
                 : $settings->can_practice_reapply;
 
             // Build query for existing applications
-            $query = Application::where('trainee_id', $trainee->id)
+            $query = \App\Models\Application::where('trainee_id', $trainee->id)
                 ->where('training_type', $this->trainingType)
                 ->whereNull('deleted_at');
 
             if ($canReapply) {
                 // If re-application allowed, only block if there's an application NOT in Ended status
-                $blockingApplication = $query->where('status', '!=', Application::STATUS_ENDED_TRAINING)->first();
+                $blockingApplication = $query->where('status', '!=', \App\Models\Application::STATUS_ENDED_TRAINING)->first();
             } else {
                 // If NOT allowed, block if ANY application exists
                 $blockingApplication = $query->first();
@@ -562,7 +557,7 @@ class TraineeForm extends Component
                     'message' => $this->getApplicationStatusMessage($blockingApplication),
                 ];
                 // Cache for configured TTL
-                Cache::put($cacheKey, $result, now()->addMinutes(self::CACHE_TTL_MINUTES));
+                \Illuminate\Support\Facades\Cache::put($cacheKey, $result, now()->addMinutes(self::CACHE_TTL_MINUTES));
                 $this->processApplicationStatusResult($result);
             } else {
                 $result = [
@@ -570,12 +565,12 @@ class TraineeForm extends Component
                     'status' => null,
                 ];
                 // Cache for configured TTL
-                Cache::put($cacheKey, $result, now()->addMinutes(self::CACHE_TTL_MINUTES));
+                \Illuminate\Support\Facades\Cache::put($cacheKey, $result, now()->addMinutes(self::CACHE_TTL_MINUTES));
                 $this->clearStatusMessage();
                 $this->showPersonalDetails = true;
                 $this->showTrainingDetails = true;
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->logException('Application Status Check Error', $e);
         } finally {
             $this->isValidating = false;
@@ -597,17 +592,17 @@ class TraineeForm extends Component
         }
     }
 
-    private function getApplicationStatusMessage(Application $application): string
+    private function getApplicationStatusMessage(\App\Models\Application $application): string
     {
         return match ($application->status) {
-            Application::STATUS_NEW => 'لديك طلب قيد الانتظار',
-            Application::STATUS_INITIAL_APPROVE => 'لديك طلب في انتظار القبول الجامعي',
-            Application::STATUS_CONFIRMATION => 'لديك طلب في انتظار التأكيد',
-            Application::STATUS_WAITING_LIST => 'لديك طلب في قائمة الانتظار',
-            Application::STATUS_STARTED_TRAINING => 'لديك تدريب نشط',
-            Application::STATUS_ENDED_TRAINING => 'لديك طلب منتهي',
-            Application::STATUS_REJECTED => 'لديك طلب سابق لايمكنك اصادر طلب جديد',
-            Application::STATUS_DROPPED => 'لديك طلب منسحب',
+            \App\Models\Application::STATUS_NEW => 'لديك طلب قيد الانتظار',
+            \App\Models\Application::STATUS_INITIAL_APPROVE => 'لديك طلب في انتظار القبول الجامعي',
+            \App\Models\Application::STATUS_CONFIRMATION => 'لديك طلب في انتظار التأكيد',
+            \App\Models\Application::STATUS_WAITING_LIST => 'لديك طلب في قائمة الانتظار',
+            \App\Models\Application::STATUS_STARTED_TRAINING => 'لديك تدريب نشط',
+            \App\Models\Application::STATUS_ENDED_TRAINING => 'لديك طلب منتهي',
+            \App\Models\Application::STATUS_REJECTED => 'لديك طلب سابق لايمكنك اصادر طلب جديد',
+            \App\Models\Application::STATUS_DROPPED => 'لديك طلب منسحب',
             default => 'لديك طلب قائم',
         };
     }
@@ -702,7 +697,7 @@ class TraineeForm extends Component
     // ========================================
     private function toggleUniversityFields(): void
     {
-        $isUniversity = $this->trainingType === Application::TRAINING_TYPE_UNIVERSITY;
+        $isUniversity = $this->trainingType === \App\Models\Application::TRAINING_TYPE_UNIVERSITY;
 
         if (!$isUniversity) {
             // Reset university fields if not university training
@@ -732,7 +727,7 @@ class TraineeForm extends Component
         $this->messageType = 'note';
     }
 
-    public function showError(string $message, Exception $exception = null): void
+    public function showError(string $message, \Exception $exception = null): void
     {
         $this->setMessage($message, 'error');
         if ($exception) {
@@ -844,11 +839,11 @@ class TraineeForm extends Component
                     $this->resetForm();
                     return redirect()->to('/WelcomeForm');
                 }
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 $this->logException('Database Transaction Error', $e);
                 $this->showError('حدث خطأ أثناء حفظ الطلب. يرجى المحاولة مرة أخرى.');
             }
-        } catch (ValidationException $e) {
+        } catch (\Illuminate\Validation\ValidationException $e) {
             $messages = [];
             foreach ($e->errors() as $field => $errors) {
                 foreach ($errors as $error) {
@@ -856,7 +851,7 @@ class TraineeForm extends Component
                 }
             }
             $this->showError(implode("\n", $messages));
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->logException('Form Submission Error', $e);
             $this->showError('حدث خطأ غير متوقع: ' . $e->getMessage());
         }
@@ -888,7 +883,7 @@ class TraineeForm extends Component
     // ========================================
     // EXCEPTION LOGGING HELPER
     // ========================================
-    private function logException(string $msg, Exception $e): void
+    private function logException(string $msg, \Exception $e): void
     {
         Log::error($msg, [
             'message' => $e->getMessage(),
@@ -911,7 +906,7 @@ class TraineeForm extends Component
     public function render()
     {
         return view('livewire.trainee.trainee-form', [
-            'isUniversity' => $this->trainingType === Application::TRAINING_TYPE_UNIVERSITY,
+            'isUniversity' => $this->trainingType === \App\Models\Application::TRAINING_TYPE_UNIVERSITY,
             'isLoading' => $this->isValidating,
         ]);
     }
