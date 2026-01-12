@@ -485,18 +485,53 @@ class ApplicationFormController extends Controller
             'major_id' => ['required_if:training_type,' . Application::TRAINING_TYPE_UNIVERSITY, 'nullable', 'integer', 'exists:majors,id'],
             'training_hours' => ['required', 'integer', 'min:1', 'max:999'],
             'administrative_id' => ['required', 'integer', 'exists:administratives,id'],
-            'department_id' => ['required', 'integer', 'exists:departments,id'],
+            'department_id' => [
+                'required',
+                'integer',
+                'exists:departments,id',
+                function ($attribute, $value, $fail) use ($trainingType) {
+                    // Validate that department matches training type (medical for practice)
+                    if ($trainingType == Application::TRAINING_TYPE_PRACTICE) {
+                        $department = Department::find($value);
+                        if ($department && !$department->is_medical) {
+                            $fail('لا يمكن اختيار قسم غير طبي للتدريب العملي.');
+                        }
+                    }
+                }
+            ],
             'section_id' => [
                 'required',
                 'integer',
-                'exists:sections,id',
-                function ($attribute, $value, $fail) {
-                    $section = Section::find($value);
-                    if ($section && ($section->getCapacityStats()['is_full'] ?? false)) {
-                        // Logic flip: block ONLY if show_full_sections is false (meaning hide=true)
-                        if (!$this->settings->hide_full_sections) {
-                            $fail('نعتذر، هذا القسم ' . $section->name_location . ' ممتلئ حالياً. يرجى اختيار قسم آخر.');
+                function ($attribute, $value, $fail) use ($request, $trainingType) {
+                    $section = Section::where('id', $value)
+                        ->where('is_active', true)
+                        ->first();
+                    
+                    if (!$section) {
+                        $fail('القسم المختار غير متاح.');
+                        return;
+                    }
+                    
+                    // Validate section belongs to correct department and administrative
+                    if ($section->department_id != $request->input('department_id') || 
+                        $section->administrative_id != $request->input('administrative_id')) {
+                        $fail('القسم المختار لا ينتمي للقسم والجهة المحددة.');
+                        return;
+                    }
+                    
+                    // Validate training type matches section's department (medical for practice)
+                    if ($trainingType == Application::TRAINING_TYPE_PRACTICE) {
+                        $department = $section->department;
+                        if ($department && !$department->is_medical) {
+                            $fail('لا يمكن اختيار قسم غير طبي للتدريب العملي.');
+                            return;
                         }
+                    }
+                    
+                    // Check capacity - respect the hide_full_sections setting
+                    $stats = $section->getCapacityStats();
+                    if (($stats['is_full'] ?? false) && !$this->settings->hide_full_sections) {
+                        $fail('نعتذر، هذا القسم ' . $section->name_location . ' ممتلئ حالياً. يرجى اختيار قسم آخر.');
                     }
                 }
             ],
