@@ -35,7 +35,7 @@ class AdminPanelProvider extends PanelProvider
             ->brandLogo(null)
             ->brandName(new HtmlString(sprintf('<img src="%s" alt="%s" style="height:1.8rem;width:auto;display:inline-block;vertical-align:middle;margin-inline-end:.6rem;"/><span style="font-size:1.8rem;line-height:1;display:inline-block;vertical-align:middle;font-weight:600">%s</span>', asset('favicon.ico'), config('app.name'), config('app.name'))))
             ->id('home')
-            ->path('home')
+            ->path('Home')
             ->login(Login::class)
             ->colors([
                 'primary' => Color::Red,
@@ -53,6 +53,9 @@ class AdminPanelProvider extends PanelProvider
             ->databaseNotifications()
             ->globalSearch(false) // Disable global search
             ->navigationGroups([
+                // \Filament\Navigation\NavigationGroup::make()
+                //     ->label('إدارة الطلبات')
+                //     ->collapsed(true),
                 \Filament\Navigation\NavigationGroup::make()
                     ->label('إدارة المتدربين')
                     ->collapsible(false),

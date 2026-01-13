@@ -20,7 +20,7 @@ class AdminLatestUsers extends BaseWidget
 
     public static function canView(): bool
     {
-        return !request()->routeIs('filament.home.pages.dashboard') && Auth::user()->role === User::ROLE_ADMIN;
+        return !request()->routeIs('filament.Home.pages.dashboard') && Auth::user()->role === User::ROLE_ADMIN;
     }
 
     public function table(Table $table): Table
@@ -38,7 +38,7 @@ class AdminLatestUsers extends BaseWidget
                     ->label('البريد الإلكتروني'),
                 Tables\Columns\TextColumn::make('role')
                     ->label('الدور')
-                    ->formatStateUsing(fn($state) => User::ROLE_LABELS[$state] ?? $state)
+                    ->formatStateUsing(fn ($state) => User::ROLE_LABELS[$state] ?? $state)
                     ->badge(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('تاريخ الإضافة')
@@ -48,3 +48,8 @@ class AdminLatestUsers extends BaseWidget
             ]);
     }
 }
+
+
+
+
+
