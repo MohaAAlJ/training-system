@@ -20,6 +20,7 @@ class ManageTrainingSettings extends SettingsPage
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-cog-6-tooth';
     protected static ?string $navigationLabel = 'اعدادات التدريب';
     protected static ?string $title = 'اعدادات التدريب';
+    protected static string|UnitEnum|null $navigationGroup = 'الإعدادات';
 
     protected static string $settings = TrainingSettings::class;
 
@@ -153,7 +154,7 @@ class ManageTrainingSettings extends SettingsPage
                                                     ->inline(false)
                                                     ->live(),
 
-                                                Toggle::make('dept_head_can_enable_section')
+                                                Toggle::make('hoa_can_enable_section')
                                                     ->label('السماح بالتحكم في حالة الأقسام')
                                                     ->helperText('تفعيل أو تعطيل الأقسام (تغيير حالة نشط/غير نشط)')
                                                     ->default(false)
