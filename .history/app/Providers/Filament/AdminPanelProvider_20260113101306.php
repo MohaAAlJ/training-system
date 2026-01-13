@@ -53,6 +53,9 @@ class AdminPanelProvider extends PanelProvider
             ->databaseNotifications()
             ->globalSearch(false) // Disable global search
             ->navigationGroups([
+                // \Filament\Navigation\NavigationGroup::make()
+                //     ->label('إدارة الطلبات')
+                //     ->collapsed(true),
                 \Filament\Navigation\NavigationGroup::make()
                     ->label('إدارة المتدربين')
                     ->collapsible(false),
