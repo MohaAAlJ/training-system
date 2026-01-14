@@ -25,12 +25,12 @@ Route::get('/', function () {
 // ========================================
 
 // Welcome/Landing Page
-Route::get('/WelcomeForm', WelcomeForm::class)->name('training.welcome');
-Route::get('/welcome', WelcomeForm::class)->name('welcome'); // Backwards compatible alias
+Route::get('/welcome-form', WelcomeForm::class)->name('training.welcome');
+// Route::get('/welcome', WelcomeForm::class)->name('welcome'); // Backwards compatible alias
 
 // Trainee Application Form (Livewire handles form submission internally)
-Route::get('/WelcomeForm/Form', TraineeForm::class)->name('training.form');
-Route::get('/trainee-form', TraineeForm::class)->name('trainee.form'); // Backwards compatible alias
+Route::get('/welcome-form/form', TraineeForm::class)->name('training.form');
+// Route::get('/trainee-form', TraineeForm::class)->name('trainee.form'); // Backwards compatible alias
 
 // ========================================
 // FILE DOWNLOADS

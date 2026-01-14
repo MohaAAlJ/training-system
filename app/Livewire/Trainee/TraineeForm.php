@@ -225,9 +225,9 @@ class TraineeForm extends Component
         // Hide form if requirements are not met (less than 9 digits or no type selected)
         if ($property === 'nationalId' || $property === 'trainingType') {
             if (strlen($this->nationalId ?? '') < 9 || empty($this->trainingType)) {
-                $this->showPersonalDetails = false;
-                $this->showTrainingDetails = false;
-                $this->termsApproval = false; // Reset approval when form is hidden
+                $this->togglePersonalDetails(false);
+                $this->toggleTrainingDetails(false);
+                $this->termsApproval = false;
             }
 
             // Both first fieldset fields are complete - check application status
