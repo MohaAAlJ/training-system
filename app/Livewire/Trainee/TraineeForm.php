@@ -227,7 +227,7 @@ class TraineeForm extends Component
             if (strlen($this->nationalId ?? '') < 9 || empty($this->trainingType)) {
                 $this->showPersonalDetails = false;
                 $this->showTrainingDetails = false;
-                $this->termsApproval = false; // Reset approval when form is hidden
+                $this->termsApproval = false;
             }
 
             // Both first fieldset fields are complete - check application status
@@ -687,8 +687,8 @@ class TraineeForm extends Component
             $statusText = $result['message'] ?? 'لا يمكنك تقديم طلب جديد في هذا الوقت';
             $this->setStatusMessage($statusText, 'error');
             $this->dispatchToast($statusText, 'error');
-            $this->togglePersonalDetails(false);
-            $this->toggleTrainingDetails(false);
+            $this->showPersonalDetails = false;
+            $this->showTrainingDetails = false;
             $this->termsApproval = false;
         } else {
             $this->clearStatusMessage();
