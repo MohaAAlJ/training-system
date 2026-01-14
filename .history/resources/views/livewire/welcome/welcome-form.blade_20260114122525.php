@@ -41,7 +41,31 @@
                     @endif
 
                     @if ($isFormEnabled)
-                        <div class="welcome-inputs" style="margin-top: 1.5rem; text-align: center;">
+                        <div class="welcome-inputs" style="margin-top: 1.5rem; text-align: right; direction: rtl;">
+                            <div class="form-group" style="margin-bottom: 1rem;">
+                                <label for="trainingType"
+                                    style="display: block; margin-bottom: 0.5rem; font-weight: bold;">نوع التدريب *</label>
+                                <select wire:model="trainingType" id="trainingType" class="form__input"
+                                    style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid #ddd;">
+                                    <option value="">-- اختر نوع التدريب --</option>
+                                    @foreach ($trainingTypes as $type)
+                                        <option value="{{ $type['id'] }}">{{ $type['name'] }}</option>
+                                    @endforeach
+                                </select>
+                                @error('trainingType') <small class="error-text"
+                                style="color: #e63946;">{{ $message }}</small> @enderror
+                            </div>
+
+                            <div class="form-group" style="margin-bottom: 1.5rem;">
+                                <label for="nationalId"
+                                    style="display: block; margin-bottom: 0.5rem; font-weight: bold;">رقم الهوية *</label>
+                                <input type="text" wire:model="nationalId" id="nationalId" maxlength="9"
+                                    placeholder="رقم الهوية (9 أرقام)" class="form__input"
+                                    style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid #ddd;">
+                                @error('nationalId') <small class="error-text"
+                                style="color: #e63946;">{{ $message }}</small> @enderror
+                            </div>
+
                             <button wire:click="startApplication" class="glow-button welcome-button"
                                 style="width: 100%; border: none; cursor: pointer;">
                                 ابدأ تعبئة طلبك

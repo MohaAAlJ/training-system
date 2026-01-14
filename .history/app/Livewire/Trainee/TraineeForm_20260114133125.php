@@ -595,7 +595,19 @@ class TraineeForm extends Component
     // ========================================
     private function checkApplicationStatus(): void
     {
+        Log::info('checkApplicationStatus TRIGGERED', [
+            'nationalId' => $this->nationalId,
+            'dob' => $this->dob,
+            'trainingType' => $this->trainingType,
+            'uuid' => $this->formUuid ?? 'N/A'
+        ]);
+
         if (strlen($this->nationalId ?? '') !== 9 || !$this->trainingType || !$this->dob) {
+            Log::warning('checkApplicationStatus ABORTED: Missing Fields', [
+                'hasNationalId' => strlen($this->nationalId ?? '') === 9,
+                'hasTrainingType' => !empty($this->trainingType),
+                'hasDob' => !empty($this->dob),
+            ]);
             return;
         }
 

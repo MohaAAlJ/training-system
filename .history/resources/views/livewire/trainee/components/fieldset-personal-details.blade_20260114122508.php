@@ -28,7 +28,25 @@
             @enderror
         </label>
 
-
+        <!-- Date of Birth -->
+        <label class="field">
+            <span>تاريخ الميلاد *</span>
+            <input 
+                type="date" 
+                wire:model.live="dob"
+                class="form__input @error('dob') form__input--error @enderror"
+                required
+                @readonly($dobReadonly)
+                :disabled="$wire.dobReadonly"
+                min="{{ now()->subYears(App\Livewire\Trainee\Config\TraineeFormConfig::MAX_AGE)->format('Y-m-d') }}"
+                max="{{ now()->subYears(App\Livewire\Trainee\Config\TraineeFormConfig::MIN_AGE)->format('Y-m-d') }}"
+            >
+            @error('dob')
+                <small class="error-message">{{ $message }}</small>
+            @else
+                <small class="note">يجب أن تكون 20 سنة أو أكثر</small>
+            @enderror
+        </label>
 
         <!-- Phone Number -->
         <label class="field">

@@ -96,6 +96,7 @@ class TraineeForm extends Component
     public bool $fullNameReadonly = false;
     public bool $dobReadonly = false;
     public bool $nationalIdReadonly = false;
+    public bool $trainingTypeReadonly = false;
 
     // ========================================
     // FILE UPLOAD PREVIEW
@@ -113,17 +114,17 @@ class TraineeForm extends Component
         $rules = [
             'trainingType' => 'required|in:' . Application::TRAINING_TYPE_UNIVERSITY . ',' . Application::TRAINING_TYPE_PRACTICE,
             'nationalId' => 'required|digits:9|regex:' . $config::NATIONAL_ID_REGEX,
-            'dob' => [
-                'required',
-                'date_format:Y-m-d',
-                'before_or_equal:' . now()->subYears($config::MIN_AGE)->format('Y-m-d'),
-                'after_or_equal:' . now()->subYears($config::MAX_AGE)->format('Y-m-d'),
-            ],
         ];
 
         if ($this->showPersonalDetails) {
             $rules = array_merge($rules, [
                 'fullName' => 'required|string|regex:' . $config::NAME_REGEX . '|max:150',
+                'dob' => [
+                    'required',
+                    'date_format:Y-m-d',
+                    'before_or_equal:' . now()->subYears($config::MIN_AGE)->format('Y-m-d'),
+                    'after_or_equal:' . now()->subYears($config::MAX_AGE)->format('Y-m-d'),
+                ],
                 'phoneNumber' => [
                     'required',
                     'string',
@@ -157,18 +158,14 @@ class TraineeForm extends Component
     // ========================================
     // INITIALIZATION & MOUNTING
     // ========================================
-    public function mount(?string $nationalId = null, ?int $trainingType = null)
+    public function mount()
     {
         // Initialize form state (from ManagesFormState trait)
         $this->initializeFormState();
 
-        if ($nationalId) {
-            $this->nationalId = $nationalId;
-        }
-
-        if ($trainingType) {
-            $this->trainingType = $trainingType;
-        }
+        // Check for query parameters from WelcomeForm
+        $this->nationalId = request()->query('national_id', $this->nationalId);
+        $this->trainingType = request()->query('training_type', (int) $this->trainingType) ?: null;
 
         // Generate UUID for form security (prevents replay attacks)
         $this->formUuid = Str::uuid()->toString();
@@ -193,7 +190,7 @@ class TraineeForm extends Component
         $this->loadAllDepartments();  // Load all departments for client-side filtering
         $this->loadAllSections();  // Load all sections for client-side filtering
 
-        // Check status if pre-filled
+        // If we have both, check application status to potentially pre-fill
         if ($this->nationalId && $this->trainingType) {
             $this->checkApplicationStatus();
         }
@@ -202,11 +199,7 @@ class TraineeForm extends Component
     // ========================================
     // LIFECYCLE HOOKS
     // ========================================
-    public function hydrate()
-    {
-        $this->ensureDataLoaded();
-    }
-
+    #[\Livewire\Attributes\Hydrate]
     public function ensureDataLoaded()
     {
         // Ensure dropdown data is always loaded and available
@@ -239,16 +232,16 @@ class TraineeForm extends Component
             $this->clearMessage();
         }
 
-        // Hide form if requirements are not met (less than 9 digits or no type selected or no DOB)
-        if ($property === 'nationalId' || $property === 'trainingType' || $property === 'dob') {
-            if (strlen($this->nationalId ?? '') < 9 || empty($this->trainingType) || empty($this->dob)) {
+        // Hide form if requirements are not met (less than 9 digits or no type selected)
+        if ($property === 'nationalId' || $property === 'trainingType') {
+            if (strlen($this->nationalId ?? '') < 9 || empty($this->trainingType)) {
                 $this->showPersonalDetails = false;
                 $this->showTrainingDetails = false;
                 $this->termsApproval = false;
             }
 
-            // All first fieldset fields are complete - check application status
-            if (strlen($this->nationalId ?? '') === 9 && $this->trainingType && $this->dob) {
+            // Both first fieldset fields are complete - check application status
+            if (strlen($this->nationalId ?? '') === 9 && $this->trainingType) {
                 $this->checkApplicationStatus();
             }
         }
@@ -595,22 +588,15 @@ class TraineeForm extends Component
     // ========================================
     private function checkApplicationStatus(): void
     {
-        if (strlen($this->nationalId ?? '') !== 9 || !$this->trainingType || !$this->dob) {
+        if (strlen($this->nationalId ?? '') !== 9 || !$this->trainingType) {
             return;
         }
 
         $this->isValidating = true;
 
         try {
-            // 1. Determine Settings FIRST
-            $settings = app(TrainingSettings::class);
-            $canReapply = ($this->trainingType == Application::TRAINING_TYPE_UNIVERSITY)
-                ? (bool) $settings->can_university_reapply
-                : (bool) $settings->can_practice_reapply;
-
-            // 2. Build Cache Key including settings
-            // Including canReapply in key ensures cache invalidates if settings change
-            $cacheKey = "app_status:{$this->nationalId}:{$this->trainingType}:{$this->dob}:" . ($canReapply ? '1' : '0');
+            // Check cache first
+            $cacheKey = "app_status:{$this->nationalId}:{$this->trainingType}";
             $cachedResult = Cache::get($cacheKey);
 
             if ($cachedResult !== null) {
@@ -620,47 +606,25 @@ class TraineeForm extends Component
                     'result' => $cachedResult
                 ]);
                 $this->processApplicationStatusResult($cachedResult);
-
-                // Prefill if trainee data exists in cache (and no blocking application)
-                if (!($cachedResult['has_application'] ?? false) && isset($cachedResult['trainee_data'])) {
-                    $this->prefillForm($cachedResult['trainee_data']);
-                }
                 return;
             }
 
             Log::debug('Checking application status', [
                 'nationalId' => $this->nationalId,
-                'trainingType' => $this->trainingType,
-                'canReapply' => $canReapply
+                'trainingType' => $this->trainingType
             ]);
 
             // Query database directly for application check
             $trainee = Trainee::where('national_id', $this->nationalId)->first();
 
             if (!$trainee) {
-                // ... (no trainee code unchanged) ...
                 // No trainee found - allow to proceed
                 Log::debug('No trainee found, allowing to proceed', [
                     'nationalId' => $this->nationalId
                 ]);
                 $this->clearStatusMessage();
-                $this->resetFormRestrictions();
                 $this->showPersonalDetails = true;
                 $this->showTrainingDetails = true;
-                return;
-            }
-
-            // Verify DOB matches
-            if ($trainee->dob->format('Y-m-d') !== $this->dob) {
-                Log::warning('Trainee DOB mismatch', [
-                    'traineeId' => $trainee->id,
-                    'providedDob' => $this->dob,
-                    'actualDob' => $trainee->dob->format('Y-m-d')
-                ]);
-                $this->setStatusMessage('بيانات التحقق غير مطابقة للسجلات', 'error');
-                $this->dispatchToast('بيانات التحقق غير مطابقة للسجلات', 'error');
-                $this->showPersonalDetails = false;
-                $this->showTrainingDetails = false;
                 return;
             }
 
@@ -669,15 +633,11 @@ class TraineeForm extends Component
                 'trainingType' => $this->trainingType
             ]);
 
-            // Settings are already checked above
-
-            Log::info('Checking Application Status', [
-                'nationalId' => $this->nationalId,
-                'trainingType' => $this->trainingType,
-                'canReapply' => $canReapply,
-                'setting_uni' => $settings->can_university_reapply,
-                'setting_practice' => $settings->can_practice_reapply,
-            ]);
+            // Check settings for re-application policy
+            $settings = app(TrainingSettings::class);
+            $canReapply = ($this->trainingType === Application::TRAINING_TYPE_UNIVERSITY)
+                ? $settings->can_university_reapply
+                : $settings->can_practice_reapply;
 
             // Build query for existing applications
             $query = Application::where('trainee_id', $trainee->id)
@@ -693,7 +653,6 @@ class TraineeForm extends Component
             }
 
             // Prepare result
-            // Prepare result
             if ($blockingApplication) {
                 Log::info('Blocking application found', [
                     'applicationId' => $blockingApplication->id,
@@ -703,7 +662,6 @@ class TraineeForm extends Component
                     'has_application' => true,
                     'status' => $blockingApplication->status,
                     'message' => $this->getApplicationStatusMessage($blockingApplication),
-                    'trainee_data' => null
                 ];
                 // Cache for configured TTL (from TraineeFormConfig)
                 Cache::put($cacheKey, $result, now()->addMinutes(TraineeFormConfig::CACHE_TTL_MINUTES));
@@ -713,15 +671,24 @@ class TraineeForm extends Component
                     'traineeId' => $trainee->id,
                     'trainingType' => $this->trainingType
                 ]);
+
+                // Check if they are re-applying (have a finished application)
+                $finishedApplication = Application::where('trainee_id', $trainee->id)
+                    ->where('training_type', $this->trainingType)
+                    ->where('status', Application::STATUS_ENDED_TRAINING)
+                    ->first();
+
+                if ($finishedApplication) {
+                    $this->prefillForm($trainee->toArray());
+                }
+
                 $result = [
                     'has_application' => false,
                     'status' => null,
-                    'trainee_data' => $trainee->toArray()
                 ];
                 // Cache for configured TTL (from TraineeFormConfig)
                 Cache::put($cacheKey, $result, now()->addMinutes(TraineeFormConfig::CACHE_TTL_MINUTES));
                 $this->clearStatusMessage();
-                $this->prefillForm($trainee->toArray());
                 $this->showPersonalDetails = true;
                 $this->showTrainingDetails = true;
             }
@@ -780,14 +747,11 @@ class TraineeForm extends Component
         $this->fullName = $trainee['full_name'] ?? null;
         $this->fullNameReadonly = true;
 
-        if (isset($trainee['dob'])) {
-            $this->dob = \Carbon\Carbon::parse($trainee['dob'])->format('Y-m-d');
-        } else {
-            $this->dob = null;
-        }
+        $this->dob = $trainee['dob'] ?? null;
         $this->dobReadonly = true;
 
         $this->nationalIdReadonly = true;
+        $this->trainingTypeReadonly = true;
 
         $this->phoneNumber = $trainee['phone_number'] ?? null;
         $this->governorateId = !empty($trainee['governorate_id']) ? (int) $trainee['governorate_id'] : null;
@@ -902,8 +866,8 @@ class TraineeForm extends Component
             // Check for training type specific re-application policy
             $settings = app(TrainingSettings::class);
             $canReapply = ($this->trainingType == Application::TRAINING_TYPE_UNIVERSITY)
-                ? (bool) $settings->can_university_reapply
-                : (bool) $settings->can_practice_reapply;
+                ? $settings->can_university_reapply
+                : $settings->can_practice_reapply;
 
             // Double check existing application status (server-side)
             $trainee = Trainee::where('national_id', $this->nationalId)->first();
@@ -1013,7 +977,7 @@ class TraineeForm extends Component
     }
 
 
-    public function resetForm(): void
+    private function resetForm(): void
     {
         $this->reset([
             'fullName',
@@ -1033,10 +997,6 @@ class TraineeForm extends Component
             'termsApproval',
             'letterFile',
         ]);
-        $this->resetFormRestrictions();
-        $this->clearStatusMessage();
-        $this->showPersonalDetails = false;
-        $this->showTrainingDetails = false;
     }
 
     // ========================================

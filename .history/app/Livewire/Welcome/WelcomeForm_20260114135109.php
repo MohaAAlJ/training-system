@@ -37,6 +37,14 @@ class WelcomeForm extends Component
 
         $this->isFormEnabled = (bool) $settings->is_public_form_enabled;
         $this->formUuid = (string) Str::uuid();
+
+        // Load training types
+        if ($settings->enable_training_type_university) {
+            $this->trainingTypes[] = ['id' => \App\Models\Application::TRAINING_TYPE_UNIVERSITY, 'name' => \App\Models\Application::TRAINING_TYPES[\App\Models\Application::TRAINING_TYPE_UNIVERSITY]];
+        }
+        if ($settings->enable_training_type_practice) {
+            $this->trainingTypes[] = ['id' => \App\Models\Application::TRAINING_TYPE_PRACTICE, 'name' => \App\Models\Application::TRAINING_TYPES[\App\Models\Application::TRAINING_TYPE_PRACTICE]];
+        }
     }
 
     /**

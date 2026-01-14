@@ -23,7 +23,7 @@
             <span>رقم الهوية *</span>
             <input 
                 type="text" 
-                wire:model.blur="nationalId"
+                wire:model.live="nationalId"
                 pattern="[0-9]*"
                 placeholder="رقم الهوية"
                 maxlength="9"
@@ -44,12 +44,11 @@
             <span>تاريخ الميلاد *</span>
             <input 
                 type="date" 
-                wire:model.blur="dob"
+                wire:model.live="dob"
                 class="form__input @error('dob') form__input--error @enderror"
                 required
-                required
                 @readonly($dobReadonly)
-                @disabled($isValidating || $dobReadonly)
+                :disabled="$wire.isValidating || $wire.dobReadonly"
                 min="{{ now()->subYears(App\Livewire\Trainee\Config\TraineeFormConfig::MAX_AGE)->format('Y-m-d') }}"
                 max="{{ now()->subYears(App\Livewire\Trainee\Config\TraineeFormConfig::MIN_AGE)->format('Y-m-d') }}"
             >
@@ -60,7 +59,8 @@
             @enderror
         </label>
     </div>
-
+        </label>
+    </div>
 
     <!-- Reset/New Search Button -->
     <div style="margin-top: 1rem; text-align: left;">

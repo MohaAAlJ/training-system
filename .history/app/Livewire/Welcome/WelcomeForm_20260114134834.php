@@ -24,7 +24,9 @@ class WelcomeForm extends Component
      * Toggle for whether the public form is open.
      */
     public bool $isFormEnabled = false;
-
+    public ?string $nationalId = null;
+    public ?int $trainingType = null;
+    public array $trainingTypes = [];
 
     /**
      * Unique identifier for this session to mirror legacy behavior.
@@ -37,14 +39,30 @@ class WelcomeForm extends Component
 
         $this->isFormEnabled = (bool) $settings->is_public_form_enabled;
         $this->formUuid = (string) Str::uuid();
+
+        // Load training types
+        if ($settings->enable_training_type_university) {
+            $this->trainingTypes[] = ['id' => \App\Models\Application::TRAINING_TYPE_UNIVERSITY, 'name' => \App\Models\Application::TRAINING_TYPES[\App\Models\Application::TRAINING_TYPE_UNIVERSITY]];
+        }
+        if ($settings->enable_training_type_practice) {
+            $this->trainingTypes[] = ['id' => \App\Models\Application::TRAINING_TYPE_PRACTICE, 'name' => \App\Models\Application::TRAINING_TYPES[\App\Models\Application::TRAINING_TYPE_PRACTICE]];
+        }
     }
 
     /**
-     * One-click start application
+     * Redirect to the main form with pre-filled basic info
      */
     public function startApplication()
     {
-        return redirect()->route('training.form');
+        $this->validate([
+            'nationalId' => 'required|digits:9',
+            'trainingType' => 'required',
+        ]);
+
+        return redirect()->route('training.form', [
+            'nationalId' => $this->nationalId,
+            'trainingType' => $this->trainingType,
+        ]);
     }
 
     /**

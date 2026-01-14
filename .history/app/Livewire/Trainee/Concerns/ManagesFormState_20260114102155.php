@@ -164,15 +164,15 @@ trait ManagesFormState
     public function isFormValid(): bool
     {
         return $this->showPersonalDetails &&
-            !empty($this->trainingType) &&
-            !empty($this->nationalId) &&
-            !empty($this->fullName) &&
-            !empty($this->phoneNumber) &&
-            !empty($this->governorateId) &&
-            !empty($this->administrativeId) &&
-            !empty($this->sectionId) &&
-            $this->trainingHours > 0 &&
-            $this->termsApproval;
+               !empty($this->trainingType) &&
+               !empty($this->nationalId) &&
+               !empty($this->fullName) &&
+               !empty($this->phoneNumber) &&
+               !empty($this->governorateId) &&
+               !empty($this->administrativeId) &&
+               !empty($this->sectionId) &&
+               $this->trainingHours > 0 &&
+               $this->termsApproval;
     }
 
     /**
