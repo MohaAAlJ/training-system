@@ -13,7 +13,7 @@
             <input 
                 type="text" 
                 wire:model="fullName"
-                @blur="$validate('fullName')"
+                wire:blur="validateField('fullName')"
                 placeholder="الاسم الكامل"
                 class="form__input @error('fullName') form__input--error @enderror"
                 required
@@ -50,7 +50,7 @@
             <input 
                 type="tel" 
                 wire:model="phoneNumber"
-                @blur="$validate('phoneNumber')"
+                wire:blur="validateField('phoneNumber')"
                 placeholder="9705XXXXXXXX"
                 class="form__input @error('phoneNumber') form__input--error @enderror"
                 required
