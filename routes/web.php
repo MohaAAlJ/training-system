@@ -25,12 +25,11 @@ Route::get('/', function () {
 // ========================================
 
 // Welcome/Landing Page
-Route::get('/welcome-form', WelcomeForm::class)->name('training.welcome');
-// Route::get('/welcome', WelcomeForm::class)->name('welcome'); // Backwards compatible alias
+Route::get('/welcome', WelcomeForm::class)->name('training.welcome');
 
 // Trainee Application Form (Livewire handles form submission internally)
-Route::get('/welcome-form/form', TraineeForm::class)->name('training.form');
-// Route::get('/trainee-form', TraineeForm::class)->name('trainee.form'); // Backwards compatible alias
+Route::get('/welcome/form', TraineeForm::class)->name('training.form');
+// Route::get('/form', TraineeForm::class)->name('trainee.form'); // Backwards compatible alias
 
 // ========================================
 // FILE DOWNLOADS
@@ -43,7 +42,7 @@ Route::get('/applications/{application}/absorption-paper', DownloadAbsorptionPap
 // FORM API ENDPOINTS
 // ========================================
 // Protected with CSRF token verification + rate limiting (60 requests per minute)
-Route::prefix('WelcomeForm/Form/api')
+Route::prefix('welcome/form/api')
     ->middleware(['throttle:60,1', \App\Http\Middleware\VerifyCsrfForApi::class])
     ->group(function () {
         Route::get('address', [ApplicationFormController::class, 'address']);

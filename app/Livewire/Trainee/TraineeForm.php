@@ -933,7 +933,7 @@ class TraineeForm extends Component
                 if ($result) {
                     $this->setMessage('تم إرسال الطلب بنجاح. جاري التحويل...', 'success');
                     $this->resetForm();
-                    return redirect()->to('/WelcomeForm');
+                    return redirect()->route('training.welcome');
                 }
             } catch (Exception $e) {
                 $this->logException('Database Transaction Error', $e);
