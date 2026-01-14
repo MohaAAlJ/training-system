@@ -225,8 +225,8 @@ class TraineeForm extends Component
         // Hide form if requirements are not met (less than 9 digits or no type selected)
         if ($property === 'nationalId' || $property === 'trainingType') {
             if (strlen($this->nationalId ?? '') < 9 || empty($this->trainingType)) {
-                $this->togglePersonalDetails(false);
-                $this->toggleTrainingDetails(false);
+                $this->showPersonalDetails = false;
+                $this->showTrainingDetails = false;
                 $this->termsApproval = false;
             }
 
@@ -687,8 +687,8 @@ class TraineeForm extends Component
             $statusText = $result['message'] ?? 'لا يمكنك تقديم طلب جديد في هذا الوقت';
             $this->setStatusMessage($statusText, 'error');
             $this->dispatchToast($statusText, 'error');
-            $this->togglePersonalDetails(false);
-            $this->toggleTrainingDetails(false);
+            $this->showPersonalDetails = false;
+            $this->showTrainingDetails = false;
             $this->termsApproval = false;
         } else {
             $this->clearStatusMessage();
