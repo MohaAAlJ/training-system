@@ -15,10 +15,10 @@ class SetCspHeaders
     {
         $response = $next($request);
 
-        // Set CSP header that allows Livewire
+        // Set CSP header that allows Livewire and Google Fonts
         $response->headers->set(
             'Content-Security-Policy',
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com; img-src 'self' data: https:; font-src 'self' data: https:; connect-src 'self' https:;"
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com https://fonts.googleapis.com; img-src 'self' data: https:; font-src 'self' data: https: https://fonts.gstatic.com; connect-src 'self' https:;"
         );
 
         return $response;

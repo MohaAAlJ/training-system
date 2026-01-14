@@ -22,22 +22,22 @@ trait ManagesFormState
     public function initializeFormState(): void
     {
         // Form inputs - Personal details
-        $this->fullName = '';
-        $this->nationalId = '';
-        $this->phoneNumber = '';
-        $this->dob = '';
-        $this->governorateId = 0;
-        $this->street = '';
+        $this->fullName = null;
+        $this->nationalId = null;
+        $this->phoneNumber = null;
+        $this->dob = null;
+        $this->governorateId = null;
+        $this->street = null;
 
         // Form inputs - Training details
-        $this->trainingType = 0;
-        $this->institutionId = 0;
-        $this->majorId = 0;
-        $this->administrativeId = 0;
-        $this->departmentId = 0;
-        $this->sectionId = 0;
-        $this->trainingHours = 0;
-        $this->collegeId = 0;
+        $this->trainingType = null;
+        $this->institutionId = null;
+        $this->majorId = null;
+        $this->administrativeId = null;
+        $this->departmentId = null;
+        $this->sectionId = null;
+        $this->trainingHours = null;
+        $this->collegeId = null;
 
         // Form controls
         $this->termsApproval = false;
@@ -73,10 +73,10 @@ trait ManagesFormState
      */
     public function resetPersonalDetails(): void
     {
-        $this->fullName = '';
-        $this->phoneNumber = '';
-        $this->governorateId = 0;
-        $this->street = '';
+        $this->fullName = null;
+        $this->phoneNumber = null;
+        $this->governorateId = null;
+        $this->street = null;
         $this->letterFile = null;
     }
 
@@ -85,13 +85,13 @@ trait ManagesFormState
      */
     public function resetTrainingDetails(): void
     {
-        $this->institutionId = 0;
-        $this->majorId = 0;
-        $this->administrativeId = 0;
-        $this->departmentId = 0;
-        $this->sectionId = 0;
-        $this->trainingHours = 0;
-        $this->collegeId = 0;
+        $this->institutionId = null;
+        $this->majorId = null;
+        $this->administrativeId = null;
+        $this->departmentId = null;
+        $this->sectionId = null;
+        $this->trainingHours = null;
+        $this->collegeId = null;
     }
 
     /**

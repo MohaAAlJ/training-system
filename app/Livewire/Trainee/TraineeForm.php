@@ -46,20 +46,20 @@ class TraineeForm extends Component
     // ========================================
     // FORM INPUTS - Public properties that bind to form
     // ========================================
-    public string $fullName = '';
-    public string $nationalId = '';
-    public string $phoneNumber = '';
-    public string $dob = '';
-    public int $governorateId = 0;
-    public string $street = '';
-    public int $institutionId = 0;
-    public int $majorId = 0;
-    public int $administrativeId = 0;
-    public int $departmentId = 0;
-    public int $sectionId = 0;
-    public int $trainingType = 0;
-    public int $trainingHours = 0;
-    public int $collegeId = 0;
+    public ?string $fullName = null;
+    public ?string $nationalId = null;
+    public ?string $phoneNumber = null;
+    public ?string $dob = null;
+    public ?int $governorateId = null;
+    public ?string $street = null;
+    public ?int $institutionId = null;
+    public ?int $majorId = null;
+    public ?int $administrativeId = null;
+    public ?int $departmentId = null;
+    public ?int $sectionId = null;
+    public ?int $trainingType = null;
+    public ?int $trainingHours = null;
+    public ?int $collegeId = null;
     public bool $termsApproval = false;
     public $letterFile = null;
     public string $formUuid = '';
@@ -202,6 +202,17 @@ class TraineeForm extends Component
         if ($this->allMajors->isEmpty()) {
             $this->loadAllMajors();
         }
+
+        // Keep filtered lists in sync after hydration
+        if ($this->institutionId && $this->majors->isEmpty()) {
+            $this->loadFilteredMajors();
+        }
+        if ($this->administrativeId && $this->departments->isEmpty()) {
+            $this->loadFilteredDepartments();
+        }
+        if ($this->departmentId && $this->sections->isEmpty()) {
+            $this->loadFilteredSections();
+        }
     }
 
     public function updated($property)
@@ -211,16 +222,18 @@ class TraineeForm extends Component
             $this->clearMessage();
         }
 
-        // Don't validate individual fields on every update - too noisy
-        // Only validate on blur (validateField method) or on submit
-        // This prevents errors from showing while user is still typing
-        
-        // Special handling for first fieldset completion
-        if (($property === 'nationalId' || $property === 'trainingType') && 
-            strlen($this->nationalId) === 9 && 
-            $this->trainingType) {
+        // Hide form if requirements are not met (less than 9 digits or no type selected)
+        if ($property === 'nationalId' || $property === 'trainingType') {
+            if (strlen($this->nationalId ?? '') < 9 || empty($this->trainingType)) {
+                $this->showPersonalDetails = false;
+                $this->showTrainingDetails = false;
+                $this->termsApproval = false; // Reset approval when form is hidden
+            }
+
             // Both first fieldset fields are complete - check application status
-            $this->checkApplicationStatus();
+            if (strlen($this->nationalId ?? '') === 9 && $this->trainingType) {
+                $this->checkApplicationStatus();
+            }
         }
     }
 
@@ -244,46 +257,18 @@ class TraineeForm extends Component
         // This ensures it works whether nationalId or trainingType is updated last
     }
 
-    /**
-     * Public method to validate first fieldset and show next form
-     * Can be called from the view if needed
-     */
-    public function validateAndProceed(): void
-    {
-        Log::debug('validateAndProceed called', [
-            'nationalId' => $this->nationalId,
-            'trainingType' => $this->trainingType,
-            'nationalIdLength' => strlen($this->nationalId),
-        ]);
-        
-        // Validate first fieldset
-        try {
-            $this->validate([
-                'trainingType' => 'required|in:' . Application::TRAINING_TYPE_UNIVERSITY . ',' . Application::TRAINING_TYPE_PRACTICE,
-                'nationalId' => 'required|digits:9|regex:' . TraineeFormConfig::NATIONAL_ID_REGEX,
-            ]);
-            
-            Log::debug('First fieldset validation passed');
-            $this->checkApplicationStatus();
-        } catch (ValidationException $e) {
-            Log::warning('First fieldset validation failed', [
-                'errors' => $e->errors()
-            ]);
-            throw $e;
-        }
-    }
-
     public function updatedTrainingType()
     {
         // Reset dependent fields when training type changes
-        $this->administrativeId = 0;
-        $this->departmentId = 0;
-        $this->sectionId = 0;
-        $this->institutionId = 0;
-        $this->majorId = 0;
-        $this->collegeId = 0;
+        $this->administrativeId = null;
+        $this->departmentId = null;
+        $this->sectionId = null;
+        $this->institutionId = null;
+        $this->majorId = null;
+        $this->collegeId = null;
         $this->showPersonalDetails = false;
         $this->showTrainingDetails = false;
+        $this->termsApproval = false;
 
         // Reload all data filtered by training type when training type is selected
         if ($this->trainingType) {
@@ -298,32 +283,80 @@ class TraineeForm extends Component
     {
         // Load majors when institution changes
         if ($this->institutionId) {
-            $this->loadMajors();
+            $this->loadFilteredMajors();
         } else {
             $this->majors = collect();
-            $this->majorId = 0;
+            $this->majorId = null;
+        }
+    }
+
+    private function loadFilteredMajors(): void
+    {
+        try {
+            $this->majors = $this->allMajors
+                ->filter(fn($m) => in_array($this->institutionId, $m['institutionIds'] ?? []))
+                ->values();
+        } catch (Exception $e) {
+            $this->logException('Failed to filter majors', $e);
         }
     }
 
     public function updatedAdministrativeId()
     {
-        // Reset dependent fields when administrative changes
+        // Reset dependent fields and reload filtered lists
+        $this->departmentId = null;
+        $this->sectionId = null;
+        
         if ($this->administrativeId) {
-            $this->departmentId = 0;
-            $this->sectionId = 0;
+            $this->loadFilteredDepartments();
+            $this->sections = collect();
         } else {
-            $this->departmentId = 0;
-            $this->sectionId = 0;
+            $this->departments = collect();
+            $this->sections = collect();
         }
     }
 
     public function updatedDepartmentId()
     {
-        // Reset section when department changes
-        if ($this->departmentId) {
-            $this->sectionId = 0;
+        // Reset section and reload filtered sections
+        $this->sectionId = null;
+        
+        if ($this->departmentId && $this->administrativeId) {
+            $this->loadFilteredSections();
         } else {
-            $this->sectionId = 0;
+            $this->sections = collect();
+        }
+    }
+
+    private function loadFilteredDepartments(): void
+    {
+        try {
+            // Get department IDs that have sections in this administrative location
+            $deptIds = $this->allSections
+                ->filter(fn($s) => $s['administrativeId'] == $this->administrativeId)
+                ->pluck('departmentId')
+                ->unique()
+                ->toArray();
+
+            $this->departments = $this->allDepartments
+                ->filter(fn($d) => in_array($d['id'], $deptIds))
+                ->values();
+        } catch (Exception $e) {
+            $this->logException('Failed to filter departments', $e);
+        }
+    }
+
+    private function loadFilteredSections(): void
+    {
+        try {
+            $this->sections = $this->allSections
+                ->filter(fn($s) => 
+                    $s['administrativeId'] == $this->administrativeId && 
+                    $s['departmentId'] == $this->departmentId
+                )
+                ->values();
+        } catch (Exception $e) {
+            $this->logException('Failed to filter sections', $e);
         }
     }
 
@@ -332,6 +365,8 @@ class TraineeForm extends Component
         // Load college ID when major changes
         if ($this->majorId) {
             $this->loadCollegeId();
+        } else {
+            $this->collegeId = null;
         }
     }
 
@@ -397,27 +432,6 @@ class TraineeForm extends Component
                 ->map(fn($inst) => ['id' => $inst->id, 'name' => $inst->name]);
         } catch (Exception $e) {
             $this->logException('Failed to load institutions', $e);
-        }
-    }
-
-    private function loadMajors(): void
-    {
-        if (!$this->institutionId) {
-            $this->majors = collect();
-            return;
-        }
-
-        try {
-            $this->majors = Major::whereHas('colleges', function ($q) {
-                $q->where('colleges.institution_id', $this->institutionId)
-                    ->where('colleges.is_active', true);
-            })
-                ->select('majors.id', 'majors.name')
-                ->orderBy('majors.name')
-                ->get()
-                ->map(fn($major) => ['id' => $major->id, 'name' => $major->name]);
-        } catch (Exception $e) {
-            $this->logException('Failed to load majors', $e);
         }
     }
 
@@ -540,7 +554,7 @@ class TraineeForm extends Component
     private function loadCollegeId(): void
     {
         if (!$this->majorId) {
-            $this->collegeId = 0;
+            $this->collegeId = null;
             return;
         }
 
@@ -552,7 +566,7 @@ class TraineeForm extends Component
                 ->where('institution_id', $this->institutionId)
                 ->first();
 
-            $this->collegeId = $college ? $college->id : 0;
+            $this->collegeId = $college ? $college->id : null;
         } catch (Exception $e) {
             $this->logException('Failed to load college data', $e);
         }
@@ -563,7 +577,7 @@ class TraineeForm extends Component
     // ========================================
     private function checkApplicationStatus(): void
     {
-        if (strlen($this->nationalId) !== 9 || !$this->trainingType) {
+        if (strlen($this->nationalId ?? '') !== 9 || !$this->trainingType) {
             return;
         }
 
@@ -673,8 +687,8 @@ class TraineeForm extends Component
             $statusText = $result['message'] ?? 'لا يمكنك تقديم طلب جديد في هذا الوقت';
             $this->setStatusMessage($statusText, 'error');
             $this->dispatchToast($statusText, 'error');
-            $this->showPersonalDetails = false;
-            $this->showTrainingDetails = false;
+            $this->togglePersonalDetails(false);
+            $this->toggleTrainingDetails(false);
             $this->termsApproval = false;
         } else {
             $this->clearStatusMessage();
@@ -708,25 +722,29 @@ class TraineeForm extends Component
 
     private function prefillForm(array $trainee): void
     {
-        $this->fullName = $trainee['full_name'] ?? '';
+        $this->fullName = $trainee['full_name'] ?? null;
         $this->fullNameReadonly = true;
 
-        $this->dob = $trainee['dob'] ?? '';
+        $this->dob = $trainee['dob'] ?? null;
         $this->dobReadonly = true;
 
         $this->nationalIdReadonly = true;
 
-        $this->phoneNumber = $trainee['phone_number'] ?? '';
-        $this->governorateId = (int) ($trainee['governorate_id'] ?? 0);
-        $this->street = $trainee['street'] ?? '';
-        $this->institutionId = (int) ($trainee['institution_id'] ?? 0);
-        $this->majorId = (int) ($trainee['major_id'] ?? 0);
-        $this->trainingHours = (int) ($trainee['training_hours'] ?? 0);
+        $this->phoneNumber = $trainee['phone_number'] ?? null;
+        $this->governorateId = !empty($trainee['governorate_id']) ? (int) $trainee['governorate_id'] : null;
+        $this->street = $trainee['street'] ?? null;
+        $this->institutionId = !empty($trainee['institution_id']) ? (int) $trainee['institution_id'] : null;
+        $this->majorId = !empty($trainee['major_id']) ? (int) $trainee['major_id'] : null;
+        $this->trainingHours = !empty($trainee['training_hours']) ? (int) $trainee['training_hours'] : null;
 
-        // Load cascading selects if institution is set
+        // Load filtered lists if needed
         if ($this->institutionId) {
-            $this->loadMajors();
+            $this->loadFilteredMajors();
         }
+
+        // Show personal details since we have data
+        $this->showPersonalDetails = true;
+        $this->showTrainingDetails = true;
     }
 
     private function resetFormRestrictions(): void
@@ -767,9 +785,9 @@ class TraineeForm extends Component
 
         if (!$isUniversity) {
             // Reset university fields if not university training
-            $this->institutionId = 0;
-            $this->majorId = 0;
-            $this->collegeId = 0;
+            $this->institutionId = null;
+            $this->majorId = null;
+            $this->collegeId = null;
             $this->majors = collect();
         }
     }

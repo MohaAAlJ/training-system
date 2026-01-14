@@ -36,6 +36,8 @@
                 class="form__input @error('dob') form__input--error @enderror"
                 required
                 @readonly($dobReadonly)
+                min="{{ now()->subYears(App\Livewire\Trainee\Config\TraineeFormConfig::MAX_AGE)->format('Y-m-d') }}"
+                max="{{ now()->subYears(App\Livewire\Trainee\Config\TraineeFormConfig::MIN_AGE)->format('Y-m-d') }}"
             >
             @error('dob')
                 <small class="error-message">{{ $message }}</small>
