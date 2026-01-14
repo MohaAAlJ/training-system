@@ -12,6 +12,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->statefulApi();
+        $middleware->trustProxies(at: '*');
+        $middleware->append(\App\Http\Middleware\SetCspHeaders::class);
         $middleware->web(append: [
             CheckMaintenanceMode::class,
         ]);

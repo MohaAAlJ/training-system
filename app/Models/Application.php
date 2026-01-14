@@ -58,6 +58,7 @@ class Application extends Model
 
     /**
      * Status messages in Arabic - used for both frontend and API responses
+     * Note: STATUS_INITIAL_APPROVE message varies by training type - see STATUS_INITIAL_APPROVE_MESSAGES
      */
     public const STATUS_MESSAGES = [
         self::STATUS_NEW => 'لديك طلب قيد الانتظار',
@@ -68,6 +69,14 @@ class Application extends Model
         self::STATUS_ENDED_TRAINING => 'لديك طلب منتهي',
         self::STATUS_REJECTED => 'لديك طلب سابق لايمكنك اصادر طلب جديد',
         self::STATUS_DROPPED => 'لديك طلب منسحب',
+    ];
+
+    /**
+     * Training type-specific messages for STATUS_INITIAL_APPROVE
+     */
+    public const STATUS_INITIAL_APPROVE_MESSAGES = [
+        self::TRAINING_TYPE_UNIVERSITY => 'لديك طلب في انتظار القبول الجامعي',
+        self::TRAINING_TYPE_PRACTICE => 'لديك طلب في انتظار قبول الوزارة',
     ];
 
     protected $table = 'applications';
@@ -112,9 +121,17 @@ class Application extends Model
 
     /**
      * Static helper to get status message by status code
+     * For STATUS_INITIAL_APPROVE, provide training type to get the correct message
      */
-    public static function getStatusMessage(int $status): string
+    public static function getStatusMessage(int $status, ?int $trainingType = null): string
     {
+        // Special handling for STATUS_INITIAL_APPROVE with training type
+        if ($status === self::STATUS_INITIAL_APPROVE && $trainingType !== null) {
+            return self::STATUS_INITIAL_APPROVE_MESSAGES[$trainingType]
+                ?? self::STATUS_MESSAGES[$status]
+                ?? 'لا يمكنك تقديم طلب جديد في هذا الوقت';
+        }
+
         return self::STATUS_MESSAGES[$status] ?? 'لا يمكنك تقديم طلب جديد في هذا الوقت';
     }
 

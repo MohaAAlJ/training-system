@@ -10,6 +10,9 @@ use App\Http\Controllers\DownloadAbsorptionPaperController;
 use App\Livewire\Welcome\WelcomeForm;
 use App\Livewire\Trainee\TraineeForm;
 
+// ========================================
+// ROOT REDIRECT
+// ========================================
 Route::get('/', function () {
     if (Auth::check()) {
         return redirect('/home');
@@ -21,36 +24,36 @@ Route::get('/', function () {
 // LIVEWIRE FORMS - Fully reactive components
 // ========================================
 
-// Welcome page (public landing)
+// Welcome/Landing Page
 Route::get('/WelcomeForm', WelcomeForm::class)->name('training.welcome');
+Route::get('/welcome', WelcomeForm::class)->name('welcome'); // Backwards compatible alias
 
-// Trainee application form (public) - Livewire component
+// Trainee Application Form (Livewire handles form submission internally)
 Route::get('/WelcomeForm/Form', TraineeForm::class)->name('training.form');
+Route::get('/trainee-form', TraineeForm::class)->name('trainee.form'); // Backwards compatible alias
 
-// Form submission endpoint
-Route::post('/WelcomeForm/Form', [ApplicationFormController::class, 'store'])
-    ->name('training.form.submit')
-    ->middleware('throttle:60,1');
-
+// ========================================
+// FILE DOWNLOADS
+// ========================================
 Route::get('/applications/{application}/absorption-paper', DownloadAbsorptionPaperController::class)
     ->middleware(['auth', 'can:downloadAbsorptionPaper,application'])
     ->name('applications.download-absorption');
 
-// Public form data endpoints (protected with CSRF token verification + rate limiting)
-Route::prefix('WelcomeForm/Form/api')->middleware('throttle:60,1')->group(function () {
-    Route::get('address', [ApplicationFormController::class, 'address'])->middleware(\App\Http\Middleware\VerifyCsrfForApi::class);
-    Route::get('institution', [ApplicationFormController::class, 'institution'])->middleware(\App\Http\Middleware\VerifyCsrfForApi::class);
-    Route::get('major', [ApplicationFormController::class, 'major'])->middleware(\App\Http\Middleware\VerifyCsrfForApi::class);
-    Route::get('major-college', [ApplicationFormController::class, 'majorCollege'])->middleware(\App\Http\Middleware\VerifyCsrfForApi::class);
-    Route::get('administrative', [ApplicationFormController::class, 'administrative'])->middleware(\App\Http\Middleware\VerifyCsrfForApi::class);
-    Route::get('department', [ApplicationFormController::class, 'department'])->middleware(\App\Http\Middleware\VerifyCsrfForApi::class);
-    Route::get('section', [ApplicationFormController::class, 'section'])->middleware(\App\Http\Middleware\VerifyCsrfForApi::class);
-    Route::get('training-type', [ApplicationFormController::class, 'trainingType'])->middleware(\App\Http\Middleware\VerifyCsrfForApi::class);
-    Route::get('check-national-id', [ApplicationFormController::class, 'checkNationalId'])->middleware(\App\Http\Middleware\VerifyCsrfForApi::class);
-    Route::get('check-existing-application', [ApplicationFormController::class, 'checkExistingApplication'])->middleware(\App\Http\Middleware\VerifyCsrfForApi::class);
-});
-
-Route::get('/test', function () {
-    $s = Section::find(1);
-    $s->capacity - Application::where('section_id', $s->id)->where('status', Application::STATUS_STARTED_TRAINING)->count();
-});
+// ========================================
+// FORM API ENDPOINTS
+// ========================================
+// Protected with CSRF token verification + rate limiting (60 requests per minute)
+Route::prefix('WelcomeForm/Form/api')
+    ->middleware(['throttle:60,1', \App\Http\Middleware\VerifyCsrfForApi::class])
+    ->group(function () {
+        Route::get('address', [ApplicationFormController::class, 'address']);
+        Route::get('institution', [ApplicationFormController::class, 'institution']);
+        Route::get('major', [ApplicationFormController::class, 'major']);
+        Route::get('major-college', [ApplicationFormController::class, 'majorCollege']);
+        Route::get('administrative', [ApplicationFormController::class, 'administrative']);
+        Route::get('department', [ApplicationFormController::class, 'department']);
+        Route::get('section', [ApplicationFormController::class, 'section']);
+        Route::get('training-type', [ApplicationFormController::class, 'trainingType']);
+        Route::get('check-national-id', [ApplicationFormController::class, 'checkNationalId']);
+        Route::get('check-existing-application', [ApplicationFormController::class, 'checkExistingApplication']);
+    });

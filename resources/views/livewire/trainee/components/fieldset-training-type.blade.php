@@ -5,11 +5,11 @@
     <legend>
         <span class="legend-icon">🔍</span>التحقق من الطلب
     </legend>
-    <div class="grid three">
+    <div class="grid two">
         <!-- Training Type Selection -->
         <label class="field">
             <span>نوع التدريب *</span>
-            <select wire:model.live="trainingType" class="form__input" required>
+            <select wire:model.live="trainingType" class="form__input" required :disabled="$wire.isValidating">
                 <option value="">-- اختر نوع التدريب --</option>
                 @foreach ($trainingTypes as $type)
                     <option value="{{ $type['id'] }}">{{ $type['name'] }}</option>
@@ -23,14 +23,14 @@
             <span>رقم الهوية *</span>
             <input 
                 type="text" 
-                wire:model="nationalId"
-                @blur="$validate('nationalId')"
+                wire:model.live="nationalId"
                 pattern="[0-9]*"
                 placeholder="رقم الهوية"
                 maxlength="9"
                 class="form__input @error('nationalId') form__input--error @enderror"
                 required
                 @readonly($nationalIdReadonly)
+                :disabled="$wire.isValidating"
             >
             @error('nationalId')
                 <small class="error-message">{{ $message }}</small>
