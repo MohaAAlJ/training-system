@@ -23,14 +23,14 @@
             <span>رقم الهوية *</span>
             <input 
                 type="text" 
-                wire:model.blur="nationalId"
+                wire:model.live="nationalId"
                 pattern="[0-9]*"
                 placeholder="رقم الهوية"
                 maxlength="9"
                 class="form__input @error('nationalId') form__input--error @enderror"
                 required
                 @readonly($nationalIdReadonly)
-                :disabled="$wire.isValidating || $wire.nationalIdReadonly"
+                :disabled="$wire.isValidating"
             >
             @error('nationalId')
                 <small class="error-message">{{ $message }}</small>
@@ -38,36 +38,5 @@
                 <small class="note">رقم الهوية (9 أرقام)</small>
             @enderror
         </label>
-
-        <!-- Date of Birth -->
-        <label class="field">
-            <span>تاريخ الميلاد *</span>
-            <input 
-                type="date" 
-                wire:model.blur="dob"
-                class="form__input @error('dob') form__input--error @enderror"
-                required
-                required
-                @readonly($dobReadonly)
-                @disabled($isValidating || $dobReadonly)
-                min="{{ now()->subYears(App\Livewire\Trainee\Config\TraineeFormConfig::MAX_AGE)->format('Y-m-d') }}"
-                max="{{ now()->subYears(App\Livewire\Trainee\Config\TraineeFormConfig::MIN_AGE)->format('Y-m-d') }}"
-            >
-            @error('dob')
-                <small class="error-message">{{ $message }}</small>
-            @else
-                <small class="note">تاريخ الميلاد للتحقق</small>
-            @enderror
-        </label>
-    </div>
-
-
-    <!-- Reset/New Search Button -->
-    <div style="margin-top: 1rem; text-align: left;">
-        @if($nationalIdReadonly || $statusMessage)
-            <button type="button" wire:click="resetForm" class="btn btn-secondary">
-                <span class="icon">🔄</span> بحث جديد
-            </button>
-        @endif
     </div>
 </fieldset>

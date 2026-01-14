@@ -23,7 +23,7 @@
             <span>رقم الهوية *</span>
             <input 
                 type="text" 
-                wire:model.blur="nationalId"
+                wire:model.live="nationalId"
                 pattern="[0-9]*"
                 placeholder="رقم الهوية"
                 maxlength="9"
@@ -44,7 +44,7 @@
             <span>تاريخ الميلاد *</span>
             <input 
                 type="date" 
-                wire:model.blur="dob"
+                wire:model.live="dob"
                 class="form__input @error('dob') form__input--error @enderror"
                 required
                 required

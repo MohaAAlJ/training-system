@@ -25,7 +25,6 @@ class WelcomeForm extends Component
      */
     public bool $isFormEnabled = false;
 
-
     /**
      * Unique identifier for this session to mirror legacy behavior.
      */
@@ -37,14 +36,6 @@ class WelcomeForm extends Component
 
         $this->isFormEnabled = (bool) $settings->is_public_form_enabled;
         $this->formUuid = (string) Str::uuid();
-    }
-
-    /**
-     * One-click start application
-     */
-    public function startApplication()
-    {
-        return redirect()->route('training.form');
     }
 
     /**

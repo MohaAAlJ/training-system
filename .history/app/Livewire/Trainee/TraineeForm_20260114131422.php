@@ -602,15 +602,8 @@ class TraineeForm extends Component
         $this->isValidating = true;
 
         try {
-            // 1. Determine Settings FIRST
-            $settings = app(TrainingSettings::class);
-            $canReapply = ($this->trainingType == Application::TRAINING_TYPE_UNIVERSITY)
-                ? (bool) $settings->can_university_reapply
-                : (bool) $settings->can_practice_reapply;
-
-            // 2. Build Cache Key including settings
-            // Including canReapply in key ensures cache invalidates if settings change
-            $cacheKey = "app_status:{$this->nationalId}:{$this->trainingType}:{$this->dob}:" . ($canReapply ? '1' : '0');
+            // Check cache first
+            $cacheKey = "app_status:{$this->nationalId}:{$this->trainingType}:{$this->dob}";
             $cachedResult = Cache::get($cacheKey);
 
             if ($cachedResult !== null) {
@@ -620,25 +613,18 @@ class TraineeForm extends Component
                     'result' => $cachedResult
                 ]);
                 $this->processApplicationStatusResult($cachedResult);
-
-                // Prefill if trainee data exists in cache (and no blocking application)
-                if (!($cachedResult['has_application'] ?? false) && isset($cachedResult['trainee_data'])) {
-                    $this->prefillForm($cachedResult['trainee_data']);
-                }
                 return;
             }
 
             Log::debug('Checking application status', [
                 'nationalId' => $this->nationalId,
-                'trainingType' => $this->trainingType,
-                'canReapply' => $canReapply
+                'trainingType' => $this->trainingType
             ]);
 
             // Query database directly for application check
             $trainee = Trainee::where('national_id', $this->nationalId)->first();
 
             if (!$trainee) {
-                // ... (no trainee code unchanged) ...
                 // No trainee found - allow to proceed
                 Log::debug('No trainee found, allowing to proceed', [
                     'nationalId' => $this->nationalId
@@ -669,7 +655,11 @@ class TraineeForm extends Component
                 'trainingType' => $this->trainingType
             ]);
 
-            // Settings are already checked above
+            // Check settings for re-application policy
+            $settings = app(TrainingSettings::class);
+            $canReapply = ($this->trainingType === Application::TRAINING_TYPE_UNIVERSITY)
+                ? (bool) $settings->can_university_reapply
+                : (bool) $settings->can_practice_reapply;
 
             Log::info('Checking Application Status', [
                 'nationalId' => $this->nationalId,
@@ -693,7 +683,6 @@ class TraineeForm extends Component
             }
 
             // Prepare result
-            // Prepare result
             if ($blockingApplication) {
                 Log::info('Blocking application found', [
                     'applicationId' => $blockingApplication->id,
@@ -703,7 +692,6 @@ class TraineeForm extends Component
                     'has_application' => true,
                     'status' => $blockingApplication->status,
                     'message' => $this->getApplicationStatusMessage($blockingApplication),
-                    'trainee_data' => null
                 ];
                 // Cache for configured TTL (from TraineeFormConfig)
                 Cache::put($cacheKey, $result, now()->addMinutes(TraineeFormConfig::CACHE_TTL_MINUTES));
@@ -716,7 +704,6 @@ class TraineeForm extends Component
                 $result = [
                     'has_application' => false,
                     'status' => null,
-                    'trainee_data' => $trainee->toArray()
                 ];
                 // Cache for configured TTL (from TraineeFormConfig)
                 Cache::put($cacheKey, $result, now()->addMinutes(TraineeFormConfig::CACHE_TTL_MINUTES));

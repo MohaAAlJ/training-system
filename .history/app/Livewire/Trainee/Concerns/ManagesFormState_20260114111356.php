@@ -58,6 +58,7 @@ trait ManagesFormState
         $this->fullNameReadonly = false;
         $this->dobReadonly = false;
         $this->nationalIdReadonly = false;
+        $this->trainingTypeReadonly = false;
     }
 
     /**

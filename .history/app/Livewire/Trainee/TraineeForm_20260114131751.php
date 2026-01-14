@@ -620,11 +620,6 @@ class TraineeForm extends Component
                     'result' => $cachedResult
                 ]);
                 $this->processApplicationStatusResult($cachedResult);
-
-                // Prefill if trainee data exists in cache (and no blocking application)
-                if (!($cachedResult['has_application'] ?? false) && isset($cachedResult['trainee_data'])) {
-                    $this->prefillForm($cachedResult['trainee_data']);
-                }
                 return;
             }
 
@@ -693,7 +688,6 @@ class TraineeForm extends Component
             }
 
             // Prepare result
-            // Prepare result
             if ($blockingApplication) {
                 Log::info('Blocking application found', [
                     'applicationId' => $blockingApplication->id,
@@ -703,7 +697,6 @@ class TraineeForm extends Component
                     'has_application' => true,
                     'status' => $blockingApplication->status,
                     'message' => $this->getApplicationStatusMessage($blockingApplication),
-                    'trainee_data' => null
                 ];
                 // Cache for configured TTL (from TraineeFormConfig)
                 Cache::put($cacheKey, $result, now()->addMinutes(TraineeFormConfig::CACHE_TTL_MINUTES));
@@ -716,7 +709,6 @@ class TraineeForm extends Component
                 $result = [
                     'has_application' => false,
                     'status' => null,
-                    'trainee_data' => $trainee->toArray()
                 ];
                 // Cache for configured TTL (from TraineeFormConfig)
                 Cache::put($cacheKey, $result, now()->addMinutes(TraineeFormConfig::CACHE_TTL_MINUTES));

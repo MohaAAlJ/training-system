@@ -41,18 +41,49 @@
                     @endif
 
                     @if ($isFormEnabled)
-                        <div class="welcome-inputs" style="margin-top: 1.5rem; text-align: center;">
-                            <button wire:click="startApplication" class="glow-button welcome-button"
-                                style="width: 100%; border: none; cursor: pointer;">
-                                ابدأ تعبئة طلبك
-                            </button>
+                    <p>للتقديم على برنامج التدريب يرجى إدخال رقم الهوية واختيار نوع التدريب.</p>
+
+                    <div class="welcome-form-fields"
+                        style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 1rem; max-width: 400px; margin-left: auto; margin-right: auto;">
+                        <div class="form-group">
+                            <label for="national_id"
+                                style="display: block; margin-bottom: 0.5rem; text-align: right; font-weight: 600;">رقم
+                                الهوية</label>
+                            <input type="text" id="national_id" wire:model="nationalId" class="form-control"
+                                placeholder="أدخل رقم الهوية (9 أرقام)" maxlength="9"
+                                style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; text-align: center;">
+                            @error('nationalId') <span
+                                style="color: #d32f2f; font-size: 0.875rem; display: block; margin-top: 0.25rem; text-align: right;">{{ $message }}</span>
+                            @error
                         </div>
-                    @else
-                        <div class="disabled-message">
-                            <p class="error-text">عذراً، تقديم الطلبات عبر البوابة مغلق حالياً.</p>
-                            <p>نعتذر عن عدم إمكانية استقبال طلبات جديدة في الوقت الحالي. يرجى المحاولة لاحقاً أو التواصل مع
-                                الإدارة.</p>
-                        </div>
+
+                        <div class="form-group">
+                            <label for="training_type"
+                                style="display: block; margin-bottom: 0.5rem; text-align: right; font-weight: 600;">نوع
+                                التدريب</label>
+                            <select id="training_type" wire:model="trainingType" class="form-control"
+                                style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; text-align: center;">
+                                <option value="">اختر نوع التدريب</option>
+                                @foreach($trainingTypes as $type)
+                                    <option value="{{ $type['id'] }}">{{ $type['name'] }}</option>
+                                @endforeach
+                            </select>
+                            @error('trainingType') <span
+                                style="color: #d32f2f; font-size: 0.875rem; display: block; margin-top: 0.25rem; text-align: right;">{{ $message }}</span>
+                            @error
+                                    </div>
+
+                                    <button wire:click="checkApplication" class="glow-button welcome-button"
+                                        style="width: 100%; margin-top: 1rem;">
+                                        ابدأ تعبئة الطلب
+                                    </button>
+                                </div>
+                            @else
+                    <div class="disabled-message">
+                        <p class="error-text">عذراً، تقديم الطلبات عبر البوابة مغلق حالياً.</p>
+                        <p>نعتذر عن عدم إمكانية استقبال طلبات جديدة في الوقت الحالي. يرجى المحاولة لاحقاً أو التواصل مع
+                            الإدارة.</p>
+                    </div>
                     @endif
                 </div>
             </div>
