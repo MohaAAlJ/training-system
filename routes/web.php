@@ -15,9 +15,9 @@ use App\Livewire\Trainee\TraineeForm;
 // ========================================
 Route::get('/', function () {
     if (Auth::check()) {
-        return redirect('/Home');
+        return redirect('/home');
     }
-    return redirect('/Home/login');
+    return redirect('/home/login');
 });
 
 // ========================================
