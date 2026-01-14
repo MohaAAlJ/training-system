@@ -31,7 +31,7 @@ class DashboardStatsOverview extends BaseWidget
 
         // Hidden from: MOH (4), College Supervisor (5)
         // These roles currently have no stats logic in getStats()
-        return in_array($user->role, [
+        return \in_array($user->role, [
             User::ROLE_GTM,
             User::ROLE_ADMIN,
             User::ROLE_HOA,
@@ -70,8 +70,8 @@ class DashboardStatsOverview extends BaseWidget
                     ->where('training_type', Application::TRAINING_TYPE_UNIVERSITY)
                     ->count();
 
-                // $stats[] = Stat::make('إجمالي المتدربين (الكلية)', $totalTrainees)
-                //     ->icon('heroicon-o-academic-cap');
+                $stats[] = Stat::make('إجمالي المتدربين (الكلية)', $totalTrainees)
+                    ->icon('heroicon-o-academic-cap');
 
                 $stats[] = Stat::make('قيد التدريب', $activeTrainees)
                     ->description('بدأوا التدريب فعلياً')
@@ -99,8 +99,8 @@ class DashboardStatsOverview extends BaseWidget
                 ->where('status', Application::STATUS_STARTED_TRAINING)
                 ->count();
 
-            // $stats[] = Stat::make('إجمالي طلبات المزاولة', $totalApps)
-            //     ->icon('heroicon-o-document-text');
+            $stats[] = Stat::make('إجمالي طلبات المزاولة', $totalApps)
+                ->icon('heroicon-o-document-text');
 
             $stats[] = Stat::make('قيد التدريب', $activeTrainees)
                 ->color('success')
