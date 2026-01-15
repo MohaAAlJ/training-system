@@ -24,6 +24,7 @@
             <input 
                 type="text" 
                 wire:model.blur="nationalId"
+                wire:blur="validatePalestinianIdOnBlur"
                 pattern="[0-9]*"
                 placeholder="رقم الهوية"
                 maxlength="9"

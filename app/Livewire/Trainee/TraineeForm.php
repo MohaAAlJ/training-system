@@ -263,6 +263,30 @@ class TraineeForm extends Component
         }
     }
 
+    /**
+     * Validate Palestinian ID on blur (when user leaves the field)
+     */
+    #[\Livewire\Attributes\On('blur')]
+    public function validatePalestinianIdOnBlur()
+    {
+        if (strlen($this->nationalId ?? '') !== 9) {
+            return;
+        }
+
+        // Validate Palestinian National ID checksum
+        if (validatePalestinianId($this->nationalId) !== 'valid') {
+            $this->setStatusMessage('رقم الهوية الوطنية غير صحيح.', 'error');
+            $this->dispatchToast('رقم الهوية الوطنية غير صحيح.', 'error');
+            $this->showPersonalDetails = false;
+            $this->showTrainingDetails = false;
+            $this->nationalId = null;
+            return;
+        }
+
+        // ID is valid, clear any previous error
+        $this->clearMessage();
+    }
+
     #[\Livewire\Attributes\On('update-dob')]
     public function updateDob($dob)
     {
