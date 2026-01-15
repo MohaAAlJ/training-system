@@ -33,11 +33,7 @@
                 @readonly($nationalIdReadonly)
                 :disabled="$wire.isValidating || $wire.nationalIdReadonly"
             >
-            @error('nationalId')
-                <small class="error-message">{{ $message }}</small>
-            @else
-                <small class="note">رقم الهوية (9 أرقام)</small>
-            @enderror
+            <small class="note">رقم الهوية (9 أرقام)</small>
         </label>
 
         <!-- Date of Birth -->

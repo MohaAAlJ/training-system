@@ -275,11 +275,9 @@ class TraineeForm extends Component
 
         // Validate Palestinian National ID checksum
         if (validatePalestinianId($this->nationalId) !== 'valid') {
-            $this->setStatusMessage('رقم الهوية الوطنية غير صحيح.', 'error');
             $this->dispatchToast('رقم الهوية الوطنية غير صحيح.', 'error');
             $this->showPersonalDetails = false;
             $this->showTrainingDetails = false;
-            $this->nationalId = null;
             return;
         }
 
