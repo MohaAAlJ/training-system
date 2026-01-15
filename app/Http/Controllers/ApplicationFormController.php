@@ -259,7 +259,17 @@ class ApplicationFormController extends Controller
         if (!preg_match('/^\d{9}$/', $nationalId)) {
             return response()->json([
                 'exists' => false,
+                'valid' => false,
                 'message' => ''
+            ], 200);
+        }
+
+        // Validate Palestinian ID checksum
+        if (validatePalestinianId($nationalId) !== 'valid') {
+            return response()->json([
+                'exists' => false,
+                'valid' => false,
+                'message' => 'رقم الهوية الوطنية غير صحيح.'
             ], 200);
         }
 
@@ -267,6 +277,7 @@ class ApplicationFormController extends Controller
 
         return response()->json([
             'exists' => $exists,
+            'valid' => true,
             'message' => $exists ? 'رقم الهوية هذا مسجل مسبقاً في النظام.' : ''
         ]);
     }
@@ -282,6 +293,15 @@ class ApplicationFormController extends Controller
         // Validate input
         if (!$this->isValidNationalId($nationalId) || !$this->isValidTrainingType($trainingType)) {
             return $this->noApplicationResponse();
+        }
+
+        // Validate Palestinian ID checksum before proceeding
+        if (validatePalestinianId($nationalId) !== 'valid') {
+            return response()->json([
+                'hasApplication' => true,
+                'message' => 'رقم الهوية الوطنية غير صحيح.',
+                'trainee' => null
+            ], 200);
         }
 
         // Find trainee

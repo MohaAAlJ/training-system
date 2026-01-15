@@ -12,6 +12,64 @@ if (!function_exists('arabicFaker')) {
     }
 }
 
+if (!function_exists('validatePalestinianId')) {
+    /**
+     * Validate Palestinian National ID using checksum algorithm
+     * 
+     * Algorithm:
+     * 1. ID must be exactly 9 digits
+     * 2. Apply weights (1,2,1,2,1,2,1,2,1) to each digit
+     * 3. Multiply digit × weight
+     * 4. If product > 9, subtract 9
+     * 5. Sum all results
+     * 6. Valid if sum % 10 === 0
+     * 
+     * @param string|null $id The Palestinian National ID to validate
+     * @return string "valid" if ID passes validation, "failed" if invalid
+     * 
+     * @example
+     * validatePalestinianId('410010284') // Returns "valid"
+     * validatePalestinianId('123456789') // Returns "failed"
+     */
+    function validatePalestinianId(?string $id): string
+    {
+        // Handle null or empty input
+        if (empty($id)) {
+            return 'failed';
+        }
+
+        // Remove any whitespace
+        $id = trim($id);
+
+        // Check if exactly 9 digits
+        if (!preg_match('/^\d{9}$/', $id)) {
+            return 'failed';
+        }
+
+        // Weights for each position (1-indexed)
+        $weights = [1, 2, 1, 2, 1, 2, 1, 2, 1];
+        
+        $sum = 0;
+
+        // Process each digit
+        for ($i = 0; $i < 9; $i++) {
+            $digit = (int)$id[$i];
+            $weight = $weights[$i];
+            $product = $digit * $weight;
+
+            // If product > 9, subtract 9 (equivalent to sum of digits)
+            if ($product > 9) {
+                $product -= 9;
+            }
+
+            $sum += $product;
+        }
+
+        // Valid if sum is divisible by 10
+        return ($sum % 10 === 0) ? 'valid' : 'failed';
+    }
+}
+
 
 
 

@@ -112,7 +112,16 @@ class TraineeForm extends Component
 
         $rules = [
             'trainingType' => 'required|in:' . Application::TRAINING_TYPE_UNIVERSITY . ',' . Application::TRAINING_TYPE_PRACTICE,
-            'nationalId' => 'required|digits:9|regex:' . $config::NATIONAL_ID_REGEX,
+            'nationalId' => [
+                'required',
+                'digits:9',
+                'regex:' . $config::NATIONAL_ID_REGEX,
+                function ($attribute, $value, $fail) {
+                    if (validatePalestinianId($value) !== 'valid') {
+                        $fail('رقم الهوية الوطنية غير صحيح.');
+                    }
+                },
+            ],
             'dob' => [
                 'required',
                 'date_format:Y-m-d',
@@ -596,6 +605,15 @@ class TraineeForm extends Component
     private function checkApplicationStatus(): void
     {
         if (strlen($this->nationalId ?? '') !== 9 || !$this->trainingType || !$this->dob) {
+            return;
+        }
+
+        // Validate Palestinian National ID format and checksum
+        if (validatePalestinianId($this->nationalId) !== 'valid') {
+            $this->setStatusMessage('رقم الهوية الوطنية غير صحيح.', 'error');
+            $this->dispatchToast('رقم الهوية الوطنية غير صحيح.', 'error');
+            $this->showPersonalDetails = false;
+            $this->showTrainingDetails = false;
             return;
         }
 
