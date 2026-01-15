@@ -25,6 +25,13 @@ class TraineeForm
                         'regex' => 'يجب أن يتكون رقم الهوية من 9 أرقام فقط.',
                         'minLength' => 'يجب أن يتكون رقم الهوية من 9 أرقام.',
                         'maxLength' => 'يجب أن يتكون رقم الهوية من 9 أرقام.',
+                    ])
+                    ->rules([
+                        function ($attribute, $value, $fail) {
+                            if (validatePalestinianId($value) !== 'valid') {
+                                $fail('رقم الهوية الوطنية غير صحيح.');
+                            }
+                        },
                     ]),
                 TextInput::make('full_name')
                     ->label('الاسم الكامل')
