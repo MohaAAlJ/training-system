@@ -316,9 +316,5 @@
         </div>
 
                 <input type="hidden" id="college_id" name="college_id" />
-        <!-- Flatpickr Library -->
-        <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-        <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ar.js"></script>
-        <script src="{{ asset('form-assets/trainee-app/app.js') }}" defer></script>
     </body>
 </html>

@@ -66,7 +66,16 @@ class ApplicationForm
                                     // حقول النافذة المنبثقة
                                     ->form([
                                         TextInput::make('full_name')->label('الاسم الكامل')->required(),
-                                        TextInput::make('national_id')->label('رقم الهوية')->required(),
+                                        TextInput::make('national_id')
+                                            ->label('رقم الهوية')
+                                            ->required()
+                                            ->rules([
+                                                function ($attribute, $value, $fail) {
+                                                    if (validatePalestinianId($value) !== 'valid') {
+                                                        $fail('رقم الهوية الوطنية غير صحيح.');
+                                                    }
+                                                },
+                                            ]),
                                         TextInput::make('phone_number')->label('رقم الهاتف')->required(),
                                         TextInput::make('street')->label('المنطقة / الشارع'),
                                         DatePicker::make('dob')->label('تاريخ الميلاد')->native(false),
@@ -116,6 +125,16 @@ class ApplicationForm
                             ->live(onBlur: true)
                             ->afterStateUpdated(function ($state, callable $set, callable $get) {
                                 if (empty($state) || strlen($state) < 9) {
+                                    return;
+                                }
+
+                                // Validate Palestinian National ID checksum
+                                if (validatePalestinianId($state) !== 'valid') {
+                                    \Filament\Notifications\Notification::make()
+                                        ->title('رقم الهوية الوطنية غير صحيح')
+                                        ->danger()
+                                        ->send();
+                                    $set('national_id', null);
                                     return;
                                 }
 
