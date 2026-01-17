@@ -69,7 +69,7 @@ class StyleExportFile implements ShouldQueue
                 $drawing->setHeight(180); // Height in pixels - increased
                 $drawing->setWidth(1200); // Width to span all columns - increased
                 $drawing->setCoordinates('A1');
-                $worksheet->addChartOrImage($drawing);
+                $worksheet->getDrawingCollection()->append($drawing);
                 $worksheet->getRowDimension(1)->setRowHeight(90);
                 $worksheet->getRowDimension(2)->setRowHeight(90);
                 $worksheet->getRowDimension(3)->setRowHeight(90);
@@ -79,7 +79,7 @@ class StyleExportFile implements ShouldQueue
             $worksheet->mergeCells('A4:' . $lastColumnLetter . '4');
             $worksheet->setCellValue('A4', 'بيانات الطلبات');
 
-            // Style title row - dark blue background, white bold text
+            // Style title row - dark red background, white bold text
             $worksheet->getStyle('A4:' . $lastColumnLetter . '4')->applyFromArray([
                 'font' => [
                     'bold' => true,
@@ -93,7 +93,7 @@ class StyleExportFile implements ShouldQueue
                 ],
                 'fill' => [
                     'fillType' => Fill::FILL_SOLID,
-                    'startColor' => ['rgb' => '2F5496']
+                    'startColor' => ['rgb' => 'C00000']
                 ],
                 'borders' => [
                     'allBorders' => [
@@ -104,7 +104,7 @@ class StyleExportFile implements ShouldQueue
             ]);
             $worksheet->getRowDimension(4)->setRowHeight(40);
 
-            // 3. Style header row (now row 5) - light blue, bold white text
+            // 3. Style header row (now row 5) - light red, bold white text
             $worksheet->getStyle('A5:' . $lastColumnLetter . '5')->applyFromArray([
                 'font' => [
                     'bold' => true,
@@ -118,7 +118,7 @@ class StyleExportFile implements ShouldQueue
                 ],
                 'fill' => [
                     'fillType' => Fill::FILL_SOLID,
-                    'startColor' => ['rgb' => '4472C4']
+                    'startColor' => ['rgb' => 'FF6B6B']
                 ],
                 'borders' => [
                     'allBorders' => [
