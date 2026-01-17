@@ -38,7 +38,6 @@ return new class extends Migration
             ['administrative_id' => 1, 'department_id' => 5, 'section_name' => 'تمريض', 'capacity' => 22],
             ['administrative_id' => 1, 'department_id' => 6, 'section_name' => 'علاج طبيعي', 'capacity' => 4],
             ['administrative_id' => 1, 'department_id' => 7, 'section_name' => 'علاج وظيفي', 'capacity' => 3],
-            ['administrative_id' => 1, 'department_id' => 8, 'section_name' => 'صحة نفسية', 'capacity' => 4],
             ['administrative_id' => 1, 'department_id' => 9, 'section_name' => 'أسنان', 'capacity' => 3],
             ['administrative_id' => 1, 'department_id' => 10, 'section_name' => 'إدارة', 'capacity' => 3],
             ['administrative_id' => 1, 'department_id' => 11, 'section_name' => 'مالية', 'capacity' => 2],
@@ -60,6 +59,8 @@ return new class extends Migration
             ['administrative_id' => 2, 'department_id' => 13, 'section_name' => ' العلاقات العامة', 'capacity' => 2],
             ['administrative_id' => 2, 'department_id' => 13, 'section_name' => 'وسائط متعددة', 'capacity' => 1],
             ['administrative_id' => 2, 'department_id' => 13, 'section_name' => 'ترجمة', 'capacity' => 1],
+            ['administrative_id' => 2, 'department_id' => 8, 'section_name' => 'صحة نفسية', 'capacity' => 4],
+
             // Administrative sub-sections under إدارة
             ['administrative_id' => 2, 'department_id' => 10, 'section_name' => 'خدمات عامة', 'capacity' => 5],
             ['administrative_id' => 2, 'department_id' => 10, 'section_name' => 'صيانة', 'capacity' => 5],
@@ -77,7 +78,6 @@ return new class extends Migration
             ['administrative_id' => 3, 'department_id' => 5, 'section_name' => 'تمريض', 'capacity' => 10],
             ['administrative_id' => 3, 'department_id' => 6, 'section_name' => 'علاج طبيعي', 'capacity' => 3],
             ['administrative_id' => 3, 'department_id' => 7, 'section_name' => 'علاج وظيفي', 'capacity' => 2],
-            ['administrative_id' => 3, 'department_id' => 8, 'section_name' => 'صحة نفسية', 'capacity' => 3],
             ['administrative_id' => 3, 'department_id' => 9, 'section_name' => 'أسنان', 'capacity' => 4],
             ['administrative_id' => 3, 'department_id' => 10, 'section_name' => 'إدارة', 'capacity' => 3],
             ['administrative_id' => 3, 'department_id' => 11, 'section_name' => 'مالية', 'capacity' => 2],
@@ -89,22 +89,23 @@ return new class extends Migration
             ['administrative_id' => 3, 'department_id' => 10, 'section_name' => 'مخازن', 'capacity' => 3],
             ['administrative_id' => 3, 'department_id' => 10, 'section_name' => 'شؤون قانونية', 'capacity' => 2],
 
-            // // ============================================
-            // // مدينة القدس (Admin ID: 4) - CITY - غزة
-            // // ONLY ADMINISTRATIVE SECTIONS
-            // // ============================================
-            // ['administrative_id' => 4, 'department_id' => 10, 'section_name' => 'إدارة', 'capacity' => 6],
-            // ['administrative_id' => 4, 'department_id' => 11, 'section_name' => 'مالية', 'capacity' => 4],
-            // ['administrative_id' => 4, 'department_id' => 12, 'section_name' => 'تكنولوجيا المعلومات', 'capacity' => 6],
-            // ['administrative_id' => 2, 'department_id' => 13, 'section_name' => 'الإعلام', 'capacity' => 2],
-            // ['administrative_id' => 2, 'department_id' => 13, 'section_name' => ' العلاقات العامة', 'capacity' => 2],
-            // ['administrative_id' => 2, 'department_id' => 13, 'section_name' => 'وسائط متعددة', 'capacity' => 1],
-            // ['administrative_id' => 2, 'department_id' => 13, 'section_name' => 'ترجمة', 'capacity' => 1],
-            // // Administrative sub-sections under إدارة
-            // ['administrative_id' => 4, 'department_id' => 10, 'section_name' => 'خدمات عامة', 'capacity' => 5],
-            // ['administrative_id' => 4, 'department_id' => 10, 'section_name' => 'صيانة', 'capacity' => 5],
-            // ['administrative_id' => 4, 'department_id' => 10, 'section_name' => 'مخازن', 'capacity' => 4],
-            // ['administrative_id' => 4, 'department_id' => 10, 'section_name' => 'شؤون قانونية', 'capacity' => 4],
+            // ============================================
+            // مدينة القدس (Admin ID: 4) - CITY - غزة
+            // ONLY ADMINISTRATIVE SECTIONS
+            // ============================================
+            ['administrative_id' => 4, 'department_id' => 10, 'section_name' => 'إدارة', 'capacity' => 6],
+            ['administrative_id' => 4, 'department_id' => 11, 'section_name' => 'مالية', 'capacity' => 4],
+            ['administrative_id' => 4, 'department_id' => 12, 'section_name' => 'تكنولوجيا المعلومات', 'capacity' => 6],
+            ['administrative_id' => 4, 'department_id' => 13, 'section_name' => 'الإعلام', 'capacity' => 2],
+            ['administrative_id' => 4, 'department_id' => 13, 'section_name' => ' العلاقات العامة', 'capacity' => 2],
+            ['administrative_id' => 4, 'department_id' => 13, 'section_name' => 'وسائط متعددة', 'capacity' => 1],
+            ['administrative_id' => 4, 'department_id' => 13, 'section_name' => 'ترجمة', 'capacity' => 1],
+            ['administrative_id' => 4, 'department_id' => 8, 'section_name' => 'صحة نفسية', 'capacity' => 4],
+            // Administrative sub-sections under إدارة
+            ['administrative_id' => 4, 'department_id' => 10, 'section_name' => 'خدمات عامة', 'capacity' => 5],
+            ['administrative_id' => 4, 'department_id' => 10, 'section_name' => 'صيانة', 'capacity' => 5],
+            ['administrative_id' => 4, 'department_id' => 10, 'section_name' => 'مخازن', 'capacity' => 4],
+            ['administrative_id' => 4, 'department_id' => 10, 'section_name' => 'شؤون قانونية', 'capacity' => 4],
 
             // ============================================
             // مستشفى القدس (Admin ID: 5) - HOSPITAL - غزة
@@ -117,7 +118,6 @@ return new class extends Migration
             ['administrative_id' => 5, 'department_id' => 5, 'section_name' => 'تمريض', 'capacity' => 10],
             ['administrative_id' => 5, 'department_id' => 6, 'section_name' => 'علاج طبيعي', 'capacity' => 4],
             ['administrative_id' => 5, 'department_id' => 7, 'section_name' => 'علاج وظيفي', 'capacity' => 3],
-            ['administrative_id' => 5, 'department_id' => 8, 'section_name' => 'صحة نفسية', 'capacity' => 5],
             ['administrative_id' => 5, 'department_id' => 9, 'section_name' => 'أسنان', 'capacity' => 4],
             ['administrative_id' => 5, 'department_id' => 10, 'section_name' => 'إدارة', 'capacity' => 4],
             ['administrative_id' => 5, 'department_id' => 11, 'section_name' => 'مالية', 'capacity' => 3],
@@ -139,7 +139,6 @@ return new class extends Migration
             ['administrative_id' => 6, 'department_id' => 5, 'section_name' => 'تمريض', 'capacity' => 9],
             ['administrative_id' => 6, 'department_id' => 6, 'section_name' => 'علاج طبيعي', 'capacity' => 3],
             ['administrative_id' => 6, 'department_id' => 7, 'section_name' => 'علاج وظيفي', 'capacity' => 3],
-            ['administrative_id' => 6, 'department_id' => 8, 'section_name' => 'صحة نفسية', 'capacity' => 4],
             ['administrative_id' => 6, 'department_id' => 9, 'section_name' => 'أسنان', 'capacity' => 3],
             ['administrative_id' => 6, 'department_id' => 10, 'section_name' => 'إدارة', 'capacity' => 3],
             ['administrative_id' => 6, 'department_id' => 11, 'section_name' => 'مالية', 'capacity' => 2],
@@ -282,23 +281,6 @@ return new class extends Migration
             ['administrative_id' => 22, 'department_id' => 11, 'section_name' => 'مالية', 'capacity' => 1],
             ['administrative_id' => 22, 'department_id' => 10, 'section_name' => 'إدارة', 'capacity' => 2],
 
-            // ============================================
-            // مدينة النور (Admin ID 23) - CITY - غزة
-            // ONLY ADMINISTRATIVE SECTIONS
-            // ============================================
-            ['administrative_id' => 23, 'department_id' => 10, 'section_name' => 'إدارة', 'capacity' => 5],
-            ['administrative_id' => 23, 'department_id' => 11, 'section_name' => 'مالية', 'capacity' => 3],
-            ['administrative_id' => 23, 'department_id' => 12, 'section_name' => 'تكنولوجيا المعلومات', 'capacity' => 5],
-            ['administrative_id' => 2, 'department_id' => 13, 'section_name' => 'الإعلام', 'capacity' => 2],
-            ['administrative_id' => 2, 'department_id' => 13, 'section_name' => ' العلاقات العامة', 'capacity' => 2],
-            ['administrative_id' => 2, 'department_id' => 13, 'section_name' => 'وسائط متعددة', 'capacity' => 1],
-            ['administrative_id' => 2, 'department_id' => 13, 'section_name' => 'ترجمة', 'capacity' => 1],
-
-            // Administrative sub-sections under إدارة
-            ['administrative_id' => 23, 'department_id' => 10, 'section_name' => 'خدمات عامة', 'capacity' => 4],
-            ['administrative_id' => 23, 'department_id' => 10, 'section_name' => 'صيانة', 'capacity' => 4],
-            ['administrative_id' => 23, 'department_id' => 10, 'section_name' => 'مخازن', 'capacity' => 3],
-            ['administrative_id' => 23, 'department_id' => 10, 'section_name' => 'شؤون قانونية', 'capacity' => 2],
         ];
 
 
