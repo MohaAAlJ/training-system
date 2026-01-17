@@ -38,7 +38,7 @@ class ApplicationsTable
                 'trainee.major:id,name',
                 'administrative:id,title',
                 'department:id,title',
-                'section:id,name_location,department_id,administrative_id',
+                'section:id,name_location,department_id,administrative_id,status',
             ]))
             ->columns([
                 TextColumn::make('trainee.full_name')
@@ -202,7 +202,7 @@ class ApplicationsTable
                     ->label('تحميل اكسل')
                     ->icon('heroicon-o-arrow-down-tray')
                     ->exporter(\App\Filament\Exporters\ApplicationExporter::class)
-                    ->disabled(fn ($livewire) => ($livewire->getFilteredTableQuery()?->count() ?? 0) === 0),
+                    ->disabled(fn($livewire) => ($livewire->getFilteredTableQuery()?->count() ?? 0) === 0),
             ])
 
             ->recordActions([
@@ -399,12 +399,12 @@ class ApplicationsTable
                     ->successNotificationTitle('تم تأكيد الطلب بنجاح')
                     ->action(fn($record) => $record->update(['status' => Application::STATUS_CONFIRMATION])),
 
-                Action::make('start_training')
-                    ->label('معالجة التأكيد')
-                    ->color(fn(Application $record) => $record->section?->status ? 'success' : 'danger')
-                    ->icon('heroicon-o-play')
+                Action::make('process_application')
+                    ->label('معالجة الطلب')
+                    ->color(fn(Application $record) => $record->section?->status ? 'primary' : 'danger')
+                    ->icon('heroicon-o-cog-6-tooth')
                     ->visible(fn($record, $livewire) => $livewire->activeTab === 'confirmed' && Auth::user()->isGeneralTrainingManager())
-                    ->modalHeading('معالجة التأكيد')
+                    ->modalHeading('معالجة الطلب')
                     ->form(function (Application $record) {
                         $isSectionInactive = ! ($record->section?->status ?? false);
                         $schema = [];
@@ -444,6 +444,10 @@ class ApplicationsTable
                                 ]);
                         }
 
+                        $defaultStatus = ($record->status === Application::STATUS_CONFIRMATION)
+                            ? Application::STATUS_WAITING_LIST
+                            : Application::STATUS_STARTED_TRAINING;
+
                         $schema[] = \Filament\Forms\Components\Select::make('new_status')
                             ->label('الحالة الجديدة')
                             ->options([
@@ -452,7 +456,7 @@ class ApplicationsTable
                             ])
                             ->required()
                             ->reactive()
-                            ->default(Application::STATUS_STARTED_TRAINING);
+                            ->default($defaultStatus);
 
                         $schema[] = DatePicker::make('start_date')
                             ->label('تاريخ البدء')
@@ -493,7 +497,7 @@ class ApplicationsTable
 
                         return $schema;
                     })
-                    ->successNotificationTitle('تمت معالجة التأكيد بنجاح')
+                    ->successNotificationTitle('تمت معالجة الطلب بنجاح')
                     ->action(function (Application $record, array $data) {
                         if (isset($data['section_id'])) {
                             $record->update([
@@ -524,109 +528,6 @@ class ApplicationsTable
                                 'end_date' => null,
                             ]);
                         }
-                    }),
-
-                Action::make('begin_training_from_waiting')
-                    ->label('بدء التدريب')
-                    ->color(fn(Application $record) => $record->section?->status ? 'success' : 'danger')
-                    ->icon('heroicon-o-play-circle')
-                    ->visible(fn($record, $livewire) => $livewire->activeTab === 'confirmed' && $record->status == Application::STATUS_WAITING_LIST && Auth::user()->isGeneralTrainingManager())
-                    ->form(function (Application $record) {
-                        $isSectionInactive = ! ($record->section?->status ?? false);
-                        $schema = [];
-
-                        if ($isSectionInactive) {
-                            $schema[] = Fieldset::make('تنبيه: القسم المسجل غير نشط')
-                                ->schema([
-                                    \Filament\Forms\Components\Select::make('administrative_id')
-                                        ->label('الإدارة')
-                                        ->options(Administrative::all()->pluck('name_with_governorate', 'id'))
-                                        ->required()
-                                        ->live()
-                                        ->afterStateUpdated(fn(Set $set) => $set('department_id', null)),
-                                    \Filament\Forms\Components\Select::make('department_id')
-                                        ->label('الدائرة')
-                                        ->options(fn(Get $get) => Department::whereHas('sections', fn($q) => $q->where('administrative_id', $get('administrative_id')))->active()->pluck('title', 'id'))
-                                        ->required()
-                                        ->live()
-                                        ->disabled(fn(Get $get) => ! $get('administrative_id'))
-                                        ->afterStateUpdated(fn(Set $set) => $set('section_id', null)),
-                                    \Filament\Forms\Components\Select::make('section_id')
-                                        ->label('القسم')
-                                        ->options(function (Get $get) {
-                                            $adminId = $get('administrative_id');
-                                            $deptId = $get('department_id');
-                                            if (! $adminId || ! $deptId) return [];
-
-                                            return Section::where('administrative_id', $adminId)
-                                                ->where('department_id', $deptId)
-                                                ->active()
-                                                ->get()
-                                                ->filter(fn($sec) => ! ($sec->getCapacityStats()['is_full'] ?? false))
-                                                ->pluck('name_location', 'id');
-                                        })
-                                        ->required()
-                                        ->disabled(fn(Get $get) => ! $get('department_id')),
-                                ]);
-                        }
-
-                        $schema[] = DatePicker::make('start_date')
-                            ->label('تاريخ البدء')
-                            ->required()
-                            ->default(now())
-                            ->native(false)
-                            ->format('Y/m/d')
-                            ->displayFormat('Y/m/d')
-                            ->reactive();
-
-                        $schema[] = TextInput::make('duration')
-                            ->label('المدة (يوم)')
-                            ->numeric()
-                            ->required()
-                            ->default(30)
-                            ->reactive();
-
-                        $schema[] = \Filament\Forms\Components\Placeholder::make('calculated_end_date')
-                            ->label('تاريخ الانتهاء المتوقع')
-                            ->content(function ($get) {
-                                $startDate = $get('start_date');
-                                $duration = $get('duration');
-
-                                if ($startDate && $duration) {
-                                    try {
-                                        $start = \Carbon\Carbon::parse($startDate);
-                                        $end = $start->copy()->addDays((int)$duration);
-                                        return $end->format('Y-m-d') . ' (' . $end->translatedFormat('l، d F Y') . ')';
-                                    } catch (\Exception $e) {
-                                        return 'غير محدد';
-                                    }
-                                }
-                                return 'غير محدد';
-                            });
-
-                        return $schema;
-                    })
-                    ->successNotificationTitle('تم بدء التدريب بنجاح')
-                    ->action(function (Application $record, array $data) {
-                        if (isset($data['section_id'])) {
-                            $record->update([
-                                'administrative_id' => $data['administrative_id'],
-                                'department_id' => $data['department_id'],
-                                'section_id' => $data['section_id'],
-                            ]);
-                            $record->refresh();
-                        }
-
-                        $startDate = \Carbon\Carbon::parse($data['start_date']);
-                        $duration = (int)$data['duration'];
-                        $endDate = $startDate->copy()->addDays($duration);
-
-                        $record->update([
-                            'status' => Application::STATUS_STARTED_TRAINING,
-                            'start_date' => $startDate,
-                            'duration' => $duration,
-                            'end_date' => $endDate,
-                        ]);
                     }),
 
                 Action::make('end_training')
@@ -685,6 +586,102 @@ class ApplicationsTable
             ])
             ->bulkActions([
                 BulkActionGroup::make([
+                    BulkActionGroup::make([
+                        BulkAction::make('bulk_to_new')
+                            ->label('تحويل إلى جديد')
+                            ->icon('heroicon-o-sparkles')
+                            ->requiresConfirmation()
+                            ->action(fn(\Illuminate\Database\Eloquent\Collection $records) => $records->each->update(['status' => Application::STATUS_NEW]))
+                            ->deselectRecordsAfterCompletion(),
+
+                        BulkAction::make('bulk_to_initial_approve')
+                            ->label('موافقة مبدئية')
+                            ->icon('heroicon-o-check-circle')
+                            ->requiresConfirmation()
+                            ->action(fn(\Illuminate\Database\Eloquent\Collection $records) => $records->each->update(['status' => Application::STATUS_INITIAL_APPROVE]))
+                            ->deselectRecordsAfterCompletion(),
+
+                        BulkAction::make('bulk_to_confirmed')
+                            ->label('تأكيد')
+                            ->icon('heroicon-o-check')
+                            ->requiresConfirmation()
+                            ->action(fn(\Illuminate\Database\Eloquent\Collection $records) => $records->each->update(['status' => Application::STATUS_CONFIRMATION]))
+                            ->deselectRecordsAfterCompletion(),
+
+                        BulkAction::make('bulk_to_waiting_list')
+                            ->label('قائمة الانتظار')
+                            ->icon('heroicon-o-clock')
+                            ->requiresConfirmation()
+                            ->action(fn(\Illuminate\Database\Eloquent\Collection $records) => $records->each->update([
+                                'status' => Application::STATUS_WAITING_LIST,
+                                'start_date' => null,
+                                'end_date' => null,
+                            ]))
+                            ->deselectRecordsAfterCompletion(),
+
+                        BulkAction::make('bulk_to_started_training')
+                            ->label('بدء التدريب')
+                            ->icon('heroicon-o-play')
+                            ->form([
+                                DatePicker::make('start_date')
+                                    ->label('تاريخ البدء')
+                                    ->required()
+                                    ->default(now())
+                                    ->native(false)
+                                    ->format('Y/m/d')
+                                    ->displayFormat('Y/m/d'),
+                                TextInput::make('duration')
+                                    ->label('المدة (يوم)')
+                                    ->numeric()
+                                    ->required()
+                                    ->default(30),
+                            ])
+                            ->action(function (\Illuminate\Database\Eloquent\Collection $records, array $data) {
+                                $startDate = \Carbon\Carbon::parse($data['start_date']);
+                                $duration = (int)$data['duration'];
+                                $endDate = $startDate->copy()->addDays($duration);
+
+                                $records->each->update([
+                                    'status' => Application::STATUS_STARTED_TRAINING,
+                                    'start_date' => $startDate,
+                                    'duration' => $duration,
+                                    'end_date' => $endDate,
+                                ]);
+                            })
+                            ->deselectRecordsAfterCompletion(),
+
+                        BulkAction::make('bulk_to_ended_training')
+                            ->label('إنهاء التدريب')
+                            ->icon('heroicon-o-stop')
+                            ->requiresConfirmation()
+                            ->action(fn(\Illuminate\Database\Eloquent\Collection $records) => $records->each->update(['status' => Application::STATUS_ENDED_TRAINING]))
+                            ->deselectRecordsAfterCompletion(),
+
+                        BulkAction::make('bulk_to_rejected')
+                            ->label('رفض')
+                            ->icon('heroicon-o-x-circle')
+                            ->color('danger')
+                            ->requiresConfirmation()
+                            ->action(fn(\Illuminate\Database\Eloquent\Collection $records) => $records->each->update([
+                                'status' => Application::STATUS_REJECTED,
+                                'start_date' => null,
+                                'end_date' => null,
+                            ]))
+                            ->deselectRecordsAfterCompletion(),
+
+                        BulkAction::make('bulk_to_dropped')
+                            ->label('منسحب')
+                            ->icon('heroicon-o-minus-circle')
+                            ->color('danger')
+                            ->requiresConfirmation()
+                            ->action(fn(\Illuminate\Database\Eloquent\Collection $records) => $records->each->update(['status' => Application::STATUS_DROPPED]))
+                            ->deselectRecordsAfterCompletion(),
+                    ])
+                        ->label('تغيير الحالة')
+                        ->icon('heroicon-m-ellipsis-vertical')
+                        ->color('primary')
+                        ->visible(fn() => Auth::user()?->isAdmin() || Auth::user()?->isGeneralTrainingManager()),
+
                     BulkAction::make('reject_bulk')
                         ->label('رفض المختارة')
                         ->color('danger')
