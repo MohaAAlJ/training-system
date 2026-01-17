@@ -44,9 +44,11 @@ class ApplicationsTable
                 TextColumn::make('trainee.full_name')
                     ->label('المتدرب')
                     ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->sortable(),
                 TextColumn::make('trainee.national_id')
                     ->label('رقم الهوية')
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->searchable(),
                 TextColumn::make('trainee.institution.name')
                     ->label('المؤسسة')
