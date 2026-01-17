@@ -308,7 +308,7 @@ class GTMRecentApplications extends BaseWidget
                     ->label('رفض')
                     ->modalHeading('رفض الطلب')
                     ->modalDescription('هل أنت متأكد من رفض هذا الطلب؟ سيتم نقله إلى قائمة المرفوضات.')
-                    ->visible(fn($record) => !$record->trashed() && (Auth::user()->isAdmin() || Auth::user()->isGeneralTrainingManager()))
+                    ->visible(fn($record) => !$record->trashed() && ( Auth::user()->isGeneralTrainingManager()))
                     ->action(function ($record) {
                         $record->update(['status' => Application::STATUS_REJECTED]);
                         $record->delete();

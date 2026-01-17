@@ -108,14 +108,17 @@ class ApplicationsTable
                 TextColumn::make('start_date')
                     ->label('تاريخ البدء')
                     ->date('Y-m-d')
+                    ->toggleable()
                     ->sortable(),
                 TextColumn::make('end_date')
                     ->label('تاريخ الانتهاء')
                     ->date('Y-m-d')
+                    ->toggleable()
                     ->sortable(),
                 TextColumn::make('status')
                     ->label('الحالة')
                     ->sortable()
+                    ->toggleable()
                     ->badge()
                     ->color(fn($state): string => match ((int)$state) {
                         1 => 'info',
