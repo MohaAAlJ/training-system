@@ -651,27 +651,14 @@ class ApplicationsTable
                         })
                         ->deselectRecordsAfterCompletion(),
 
-                    BulkAction::make('reject_bulk')
-                        ->label('رفض المختارة')
-                        ->color('danger')
-                        ->icon('heroicon-o-x-circle')
-                        ->requiresConfirmation()
-                        ->visible(fn() => Auth::user()?->isAdmin() || Auth::user()?->isGeneralTrainingManager())
-                        ->action(function ($records) {
-                            $records->each(fn(Application $record) => $record->update([
-                                'status' => Application::STATUS_REJECTED,
-                                'start_date' => null,
-                                'end_date' => null,
-                            ]));
-                        })
-                        ->deselectRecordsAfterCompletion(),
+
 
                     BulkAction::make('restore_rejection_bulk')
                         ->label('استعادة المرفوضة')
                         ->color('success')
                         ->icon('heroicon-o-arrow-uturn-left')
                         ->requiresConfirmation()
-                        ->visible(fn() => Auth::user()?->isAdmin() || Auth::user()?->isGeneralTrainingManager())
+                        ->visible(fn($livewire) => (Auth::user()?->isAdmin() || Auth::user()?->isGeneralTrainingManager()) && $livewire->activeTab === 'rejected')
                         ->action(function ($records) {
                             $records->each(fn(Application $record) => $record->update(['status' => Application::STATUS_NEW]));
                         })
