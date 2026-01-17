@@ -586,101 +586,70 @@ class ApplicationsTable
             ])
             ->bulkActions([
                 BulkActionGroup::make([
-                    BulkActionGroup::make([
-                        BulkAction::make('bulk_to_new')
-                            ->label('تحويل إلى جديد')
-                            ->icon('heroicon-o-sparkles')
-                            ->requiresConfirmation()
-                            ->action(fn(\Illuminate\Database\Eloquent\Collection $records) => $records->each->update(['status' => Application::STATUS_NEW]))
-                            ->deselectRecordsAfterCompletion(),
+                    BulkAction::make('change_status')
+                        ->label('تغيير الحالة')
+                        ->icon('heroicon-o-pencil-square')
+                        ->color('primary')
+                        ->visible(fn() => Auth::user()?->isAdmin() || Auth::user()?->isGeneralTrainingManager())
+                        ->form([
+                            \Filament\Forms\Components\Select::make('new_status')
+                                ->label('الحالة الجديدة')
+                                ->options([
+                                    Application::STATUS_NEW => 'جديد',
+                                    Application::STATUS_INITIAL_APPROVE => 'موافقة مبدئية',
+                                    Application::STATUS_CONFIRMATION => 'تأكيد',
+                                    Application::STATUS_WAITING_LIST => 'قائمة الانتظار',
+                                    Application::STATUS_STARTED_TRAINING => 'بدء التدريب',
+                                    Application::STATUS_ENDED_TRAINING => 'إنهاء التدريب',
+                                    Application::STATUS_REJECTED => 'رفض',
+                                    Application::STATUS_DROPPED => 'منسحب',
+                                ])
+                                ->required()
+                                ->live(),
 
-                        BulkAction::make('bulk_to_initial_approve')
-                            ->label('موافقة مبدئية')
-                            ->icon('heroicon-o-check-circle')
-                            ->requiresConfirmation()
-                            ->action(fn(\Illuminate\Database\Eloquent\Collection $records) => $records->each->update(['status' => Application::STATUS_INITIAL_APPROVE]))
-                            ->deselectRecordsAfterCompletion(),
+                            DatePicker::make('start_date')
+                                ->label('تاريخ البدء')
+                                ->required()
+                                ->default(now())
+                                ->native(false)
+                                ->format('Y/m/d')
+                                ->displayFormat('Y/m/d')
+                                ->visible(fn(Get $get) => (int)$get('new_status') === Application::STATUS_STARTED_TRAINING),
 
-                        BulkAction::make('bulk_to_confirmed')
-                            ->label('تأكيد')
-                            ->icon('heroicon-o-check')
-                            ->requiresConfirmation()
-                            ->action(fn(\Illuminate\Database\Eloquent\Collection $records) => $records->each->update(['status' => Application::STATUS_CONFIRMATION]))
-                            ->deselectRecordsAfterCompletion(),
+                            TextInput::make('duration')
+                                ->label('المدة (يوم)')
+                                ->numeric()
+                                ->required()
+                                ->default(30)
+                                ->visible(fn(Get $get) => (int)$get('new_status') === Application::STATUS_STARTED_TRAINING),
+                        ])
+                        ->action(function (\Illuminate\Database\Eloquent\Collection $records, array $data) {
+                            $status = (int)$data['new_status'];
 
-                        BulkAction::make('bulk_to_waiting_list')
-                            ->label('قائمة الانتظار')
-                            ->icon('heroicon-o-clock')
-                            ->requiresConfirmation()
-                            ->action(fn(\Illuminate\Database\Eloquent\Collection $records) => $records->each->update([
-                                'status' => Application::STATUS_WAITING_LIST,
-                                'start_date' => null,
-                                'end_date' => null,
-                            ]))
-                            ->deselectRecordsAfterCompletion(),
-
-                        BulkAction::make('bulk_to_started_training')
-                            ->label('بدء التدريب')
-                            ->icon('heroicon-o-play')
-                            ->form([
-                                DatePicker::make('start_date')
-                                    ->label('تاريخ البدء')
-                                    ->required()
-                                    ->default(now())
-                                    ->native(false)
-                                    ->format('Y/m/d')
-                                    ->displayFormat('Y/m/d'),
-                                TextInput::make('duration')
-                                    ->label('المدة (يوم)')
-                                    ->numeric()
-                                    ->required()
-                                    ->default(30),
-                            ])
-                            ->action(function (\Illuminate\Database\Eloquent\Collection $records, array $data) {
+                            if ($status === Application::STATUS_STARTED_TRAINING) {
                                 $startDate = \Carbon\Carbon::parse($data['start_date']);
                                 $duration = (int)$data['duration'];
                                 $endDate = $startDate->copy()->addDays($duration);
 
                                 $records->each->update([
-                                    'status' => Application::STATUS_STARTED_TRAINING,
+                                    'status' => $status,
                                     'start_date' => $startDate,
                                     'duration' => $duration,
                                     'end_date' => $endDate,
                                 ]);
-                            })
-                            ->deselectRecordsAfterCompletion(),
-
-                        BulkAction::make('bulk_to_ended_training')
-                            ->label('إنهاء التدريب')
-                            ->icon('heroicon-o-stop')
-                            ->requiresConfirmation()
-                            ->action(fn(\Illuminate\Database\Eloquent\Collection $records) => $records->each->update(['status' => Application::STATUS_ENDED_TRAINING]))
-                            ->deselectRecordsAfterCompletion(),
-
-                        BulkAction::make('bulk_to_rejected')
-                            ->label('رفض')
-                            ->icon('heroicon-o-x-circle')
-                            ->color('danger')
-                            ->requiresConfirmation()
-                            ->action(fn(\Illuminate\Database\Eloquent\Collection $records) => $records->each->update([
-                                'status' => Application::STATUS_REJECTED,
-                                'start_date' => null,
-                                'end_date' => null,
-                            ]))
-                            ->deselectRecordsAfterCompletion(),
-
-                        BulkAction::make('bulk_to_dropped')
-                            ->label('منسحب')
-                            ->icon('heroicon-o-minus-circle')
-                            ->color('danger')
-                            ->requiresConfirmation()
-                            ->action(fn(\Illuminate\Database\Eloquent\Collection $records) => $records->each->update(['status' => Application::STATUS_DROPPED]))
-                            ->deselectRecordsAfterCompletion(),
-                    ])
-                        ->label('تغيير الحالة')
-                        ->icon('heroicon-m-ellipsis-vertical')
-                        ->color('primary')
-                        ->visible(fn() => Auth::user()?->isAdmin() || Auth::user()?->isGeneralTrainingManager()),
+                            } elseif (in_array($status, [Application::STATUS_WAITING_LIST, Application::STATUS_REJECTED])) {
+                                $records->each->update([
+                                    'status' => $status,
+                                    'start_date' => null,
+                                    'end_date' => null,
+                                ]);
+                            } else {
+                                $records->each->update([
+                                    'status' => $status,
+                                ]);
+                            }
+                        })
+                        ->deselectRecordsAfterCompletion(),
 
                     BulkAction::make('reject_bulk')
                         ->label('رفض المختارة')
