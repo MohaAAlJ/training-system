@@ -69,7 +69,7 @@ class StyleExportFile implements ShouldQueue
                 $drawing->setHeight(180); // Height in pixels - increased
                 $drawing->setWidth(1200); // Width to span all columns - increased
                 $drawing->setCoordinates('A1');
-                $worksheet->addDrawing($drawing);
+                $worksheet->addChartOrImage($drawing);
                 $worksheet->getRowDimension(1)->setRowHeight(90);
                 $worksheet->getRowDimension(2)->setRowHeight(90);
                 $worksheet->getRowDimension(3)->setRowHeight(90);
