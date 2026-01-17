@@ -11,10 +11,11 @@ use BackedEnum;
 use UnitEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
+use Illuminate\Support\Facades\Auth;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Auth;
+use App\Filament\Resources\Applications\ApplicationResource;
 
 class WithdrawnResource extends Resource
 {
@@ -38,6 +39,11 @@ class WithdrawnResource extends Resource
         return $user && ($user->isAdmin() || $user->isGeneralTrainingManager());
     }
 
+    public static function shouldRegisterNavigation(): bool
+    {
+        return ApplicationResource::shouldShowStatusPages();
+    }
+
     public static function getNavigationBadge(): ?string
     {
         return static::getEloquentQuery()->count();
@@ -55,7 +61,7 @@ class WithdrawnResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return ApplicationsTable::configure($table);
+        return ApplicationsTable::configure($table, 'منسحب');
     }
 
     public static function getRelations(): array

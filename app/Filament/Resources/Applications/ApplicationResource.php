@@ -23,6 +23,9 @@ use Illuminate\Support\Facades\Auth;
 
 class ApplicationResource extends Resource
 {
+    // Toggle status page visibility from here
+    // Change to true to show status pages in navigation, false to hide them
+    protected static bool $showStatusPages = false;
 
     protected static ?string $model = Application::class;
     protected static ?string $slug = 'application';
@@ -35,6 +38,11 @@ class ApplicationResource extends Resource
     protected static ?string $navigationLabel = 'الطلبات';
     protected static ?int $navigationSort = 2;
     protected static string | UnitEnum | null $navigationGroup = 'إدارة المتدربين';
+
+    public static function shouldShowStatusPages(): bool
+    {
+        return static::$showStatusPages;
+    }
 
     public static function getNavigationBadge(): ?string
     {

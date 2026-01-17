@@ -6,6 +6,7 @@ use App\Filament\Resources\Applications\Tables\ApplicationsTable;
 use App\Filament\Resources\Applications\Schemas\ApplicationForm;
 use App\Filament\Resources\Applications\Schemas\ApplicationInfolist;
 use App\Filament\Resources\Applications\Status\EndedTrainingResource\Pages;
+use Illuminate\Support\Facades\Auth;
 use App\Models\Application;
 use BackedEnum;
 use UnitEnum;
@@ -14,7 +15,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Auth;
+use App\Filament\Resources\Applications\ApplicationResource;
 
 class EndedTrainingResource extends Resource
 {
@@ -38,6 +39,11 @@ class EndedTrainingResource extends Resource
         return $user && ($user->isAdmin() || $user->isGeneralTrainingManager());
     }
 
+    public static function shouldRegisterNavigation(): bool
+    {
+        return ApplicationResource::shouldShowStatusPages();
+    }
+
     public static function getNavigationBadge(): ?string
     {
         return static::getEloquentQuery()->count();
@@ -55,7 +61,7 @@ class EndedTrainingResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return ApplicationsTable::configure($table);
+        return ApplicationsTable::configure($table, 'انتهى التدريب');
     }
 
     public static function getRelations(): array

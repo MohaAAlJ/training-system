@@ -9,12 +9,13 @@ use App\Filament\Resources\Applications\Status\RejectedResource\Pages;
 use App\Models\Application;
 use BackedEnum;
 use UnitEnum;
+use Illuminate\Support\Facades\Auth;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Auth;
+use App\Filament\Resources\Applications\ApplicationResource;
 
 class RejectedResource extends Resource
 {
@@ -38,6 +39,11 @@ class RejectedResource extends Resource
         return $user && ($user->isAdmin() || $user->isGeneralTrainingManager());
     }
 
+    public static function shouldRegisterNavigation(): bool
+    {
+        return ApplicationResource::shouldShowStatusPages();
+    }
+
     public static function getNavigationBadge(): ?string
     {
         return static::getEloquentQuery()->count();
@@ -55,7 +61,7 @@ class RejectedResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return ApplicationsTable::configure($table);
+        return ApplicationsTable::configure($table, 'مرفوض');
     }
 
     public static function getRelations(): array

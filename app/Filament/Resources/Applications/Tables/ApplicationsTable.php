@@ -28,8 +28,21 @@ use Filament\Actions\ExportAction;
 
 class ApplicationsTable
 {
-    public static function configure(Table $table): Table
+    public static function configure(Table $table, ?string $statusTitle = null): Table
     {
+        $columns = [];
+
+        // Add status title column if provided
+        if ($statusTitle) {
+            $columns[] = TextColumn::make('status_title')
+                ->label('الحالة')
+                ->state($statusTitle)
+                ->sortable(false)
+                ->searchable(false)
+                ->badge()
+                ->color('primary');
+        }
+
         return $table
             ->defaultSort('updated_at', 'asc')
             ->modifyQueryUsing(fn(Builder $query) => $query->with([
@@ -40,7 +53,7 @@ class ApplicationsTable
                 'department:id,title',
                 'section:id,name_location,department_id,administrative_id',
             ]))
-            ->columns([
+            ->columns(array_merge($columns, [
                 TextColumn::make('trainee.full_name')
                     ->label('المتدرب')
                     ->searchable()
@@ -154,7 +167,7 @@ class ApplicationsTable
                     ->label('تاريخ الإنشاء')
                     ->dateTime('Y-m-d')
                     ->toggleable(isToggledHiddenByDefault: true),
-            ])
+            ]))
             ->filters([
                 SelectFilter::make('status')
                     ->label('الحالة')
