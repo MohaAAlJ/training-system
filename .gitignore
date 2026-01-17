@@ -32,6 +32,7 @@ telescope/*.sqlite
 /.idea
 /.vscode/*
 !.vscode/extensions.json
+.history
 *.log
 *.cache
 *.DS_Store
