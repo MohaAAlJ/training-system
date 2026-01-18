@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,7 +12,8 @@
             box-sizing: border-box;
         }
 
-        html, body {
+        html,
+        body {
             width: 100%;
             height: 100%;
             overflow: hidden;
@@ -68,6 +70,7 @@
                 opacity: 0;
                 transform: translateY(-30px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -88,10 +91,13 @@
         }
 
         @keyframes pulse {
-            0%, 100% {
+
+            0%,
+            100% {
                 transform: scale(1);
                 box-shadow: 0 0 0 0 rgba(30, 60, 114, 0.4);
             }
+
             50% {
                 transform: scale(1.05);
                 box-shadow: 0 0 0 10px rgba(30, 60, 114, 0);
@@ -151,6 +157,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="maintenance-container">
         <div class="maintenance-content">
@@ -159,14 +166,14 @@
             </div>
             <h1>الموقع تحت الصيانة</h1>
             <p>{{ $message }}</p>
-            
-            <form method="POST" action="{{ route('filament.Home.auth.logout') }}" target="_top" style="margin: 0;">
+
+            <form method="POST" action="{{ route('filament.home.auth.logout') }}" target="_top" style="margin: 0;">
                 @csrf
                 <button type="submit" class="logout-btn">
                     تسجيل الخروج
                 </button>
             </form>
-            
+
             <div class="footer">
                 شكراً لتفهمكم. سنعود قريباً<br>
                 <span class="system-name">نظام التدريب</span>
@@ -174,4 +181,5 @@
         </div>
     </div>
 </body>
+
 </html>
