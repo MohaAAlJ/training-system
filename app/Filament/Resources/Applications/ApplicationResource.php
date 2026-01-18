@@ -54,11 +54,6 @@ class ApplicationResource extends Resource
         return static::$showStatusPages;
     }
 
-    public static function shouldShowStatusPages(): bool
-    {
-        return static::$showStatusPages;
-    }
-
     public static function getNavigationBadge(): ?string
     {
         return (string) static::getEloquentQuery()->count();

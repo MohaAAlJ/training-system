@@ -10,15 +10,12 @@ use App\Filament\Resources\Applications\Schemas\ApplicationInfolist;
 use App\Filament\Resources\Applications\Status\NewApplicationResource\Pages;
 use App\Filament\Resources\Applications\Tables\ApplicationsTable;
 use App\Models\Application;
-use BackedEnum;
-use UnitEnum;
-use Illuminate\Support\Facades\Auth;
+use BackedEnum;use UnitEnum;use Illuminate\Support\Facades\Auth;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use App\Filament\Resources\Applications\ApplicationResource;
 
 class NewApplicationResource extends Resource
 {

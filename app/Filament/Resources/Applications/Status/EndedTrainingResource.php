@@ -11,12 +11,12 @@ use App\Filament\Resources\Applications\Status\EndedTrainingResource\Pages;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Application;
 use BackedEnum;
+use UnitEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use App\Filament\Resources\Applications\ApplicationResource;
 
 class EndedTrainingResource extends Resource
 {
@@ -24,9 +24,9 @@ class EndedTrainingResource extends Resource
 
     protected static ?string $slug = 'ended-training';
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCheckCircle;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCheckBadge;
 
-    protected static string|BackedEnum|null $activeNavigationIcon = Heroicon::CheckCircle;
+    protected static string|BackedEnum|null $activeNavigationIcon = Heroicon::CheckBadge;
 
     protected static ?string $navigationParentItem = 'الطلبات';
 
