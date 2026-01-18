@@ -6,6 +6,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\DatePicker;
 use Filament\Schemas\Schema;
+use App\Rules\PalestinianId;
 
 class TraineeForm
 {
@@ -27,11 +28,7 @@ class TraineeForm
                         'maxLength' => 'يجب أن يتكون رقم الهوية من 9 أرقام.',
                     ])
                     ->rules([
-                        function ($attribute, $value, $fail) {
-                            if (validatePalestinianId($value) !== 'valid') {
-                                $fail('رقم الهوية الوطنية غير صحيح.');
-                            }
-                        },
+                        new PalestinianId(),
                     ]),
                 TextInput::make('full_name')
                     ->label('الاسم الكامل')

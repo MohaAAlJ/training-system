@@ -27,7 +27,7 @@ class ApplicationPolicy
 
         if ($user->isSectionHead()) {
             return $Application->section_id === $user->section?->id &&
-                in_array((int)$Application->status, [
+                in_array($Application->status->value, [
                     Application::STATUS_STARTED_TRAINING,
                     Application::STATUS_ENDED_TRAINING
                 ]);
@@ -35,7 +35,7 @@ class ApplicationPolicy
 
         if ($user->isAdministrative()) {
             return $Application->administrative_id === $user->administrative?->id &&
-                in_array((int)$Application->status, [
+                in_array($Application->status->value, [
                     Application::STATUS_STARTED_TRAINING,
                     Application::STATUS_ENDED_TRAINING
                 ]);
@@ -43,7 +43,7 @@ class ApplicationPolicy
 
         if ($user->isDepartment()) {
             return $Application->department_id === $user->department?->id &&
-                in_array((int)$Application->status, [
+                in_array($Application->status->value, [
                     Application::STATUS_STARTED_TRAINING,
                     Application::STATUS_ENDED_TRAINING
                 ]);
@@ -53,7 +53,7 @@ class ApplicationPolicy
             $adminId = \App\Models\Administrative::where('medical_head_user_id', $user->id)->value('id');
             return $Application->administrative_id === $adminId &&
                 $Application->department?->is_medical === true &&
-                in_array((int)$Application->status, [
+                in_array($Application->status->value, [
                     Application::STATUS_STARTED_TRAINING,
                     Application::STATUS_ENDED_TRAINING
                 ]);
@@ -103,11 +103,11 @@ class ApplicationPolicy
     public function downloadAbsorptionPaper(User $user, Application $application): bool
     {
         return $user->isMinistry() &&
-            in_array((int)$application->status, [
+            in_array($application->status->value, [
                 Application::STATUS_INITIAL_APPROVE,
                 Application::STATUS_STARTED_TRAINING,
                 Application::STATUS_ENDED_TRAINING,
             ]) &&
-            $application->training_type === Application::TRAINING_TYPE_PRACTICE;
+            $application->training_type->value === Application::TRAINING_TYPE_PRACTICE;
     }
 }

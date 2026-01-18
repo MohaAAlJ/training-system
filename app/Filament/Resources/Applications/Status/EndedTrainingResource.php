@@ -2,36 +2,37 @@
 
 namespace App\Filament\Resources\Applications\Status;
 
-use App\Filament\Resources\Applications\Tables\ApplicationsTable;
+use App\Enums\ApplicationStatus;
+use App\Filament\Resources\Applications\ApplicationResource;
 use App\Filament\Resources\Applications\Schemas\ApplicationForm;
 use App\Filament\Resources\Applications\Schemas\ApplicationInfolist;
 use App\Filament\Resources\Applications\Status\EndedTrainingResource\Pages;
-use Illuminate\Support\Facades\Auth;
+use App\Filament\Resources\Applications\Tables\ApplicationsTable;
 use App\Models\Application;
 use BackedEnum;
-use UnitEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use App\Filament\Resources\Applications\ApplicationResource;
+use Illuminate\Support\Facades\Auth;
+use UnitEnum;
 
 class EndedTrainingResource extends Resource
 {
     protected static ?string $model = Application::class;
     protected static ?string $slug = 'ended-training';
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCheckCircle;
-    protected static string | BackedEnum | null $activeNavigationIcon = Heroicon::CheckCircle;
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-flag';
+    protected static string|BackedEnum|null $activeNavigationIcon = 'heroicon-s-flag';
 
     protected static ?string $navigationParentItem = 'الطلبات';
 
-    protected static ?string $modelLabel = 'إنتهى تدريبه';
-    protected static ?string $pluralModelLabel = 'المنتهين من التدريب';
-    protected static ?string $navigationLabel = 'إنتهى تدريبه';
+    protected static ?string $modelLabel = 'أنهى التدريب';
+    protected static ?string $pluralModelLabel = 'الخريجين';
+    protected static ?string $navigationLabel = 'أنهى التدريب';
     protected static ?int $navigationSort = 6;
-    protected static string | UnitEnum | null $navigationGroup = 'إدارة المتدربين';
+    protected static string|UnitEnum|null $navigationGroup = 'إدارة المتدربين';
 
     public static function canViewAny(): bool
     {
@@ -61,7 +62,7 @@ class EndedTrainingResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return ApplicationsTable::configure($table, 'انتهى التدريب');
+        return ApplicationsTable::configure($table, 'أنهى التدريب');
     }
 
     public static function getRelations(): array
@@ -72,7 +73,7 @@ class EndedTrainingResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListEndedTraining::route('/'),
+            'index' => Pages\ListEndedTrainings::route('/'),
             'view' => Pages\ViewEndedTraining::route('/{record}'),
             'edit' => Pages\EditEndedTraining::route('/{record}/edit'),
         ];
@@ -81,6 +82,6 @@ class EndedTrainingResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->where('status', Application::STATUS_ENDED_TRAINING);
+            ->where('status', ApplicationStatus::ENDED_TRAINING);
     }
 }

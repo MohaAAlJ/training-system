@@ -2,19 +2,23 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use App\Models\Department;
+use App\Enums\ApplicationStatus;
+use App\Enums\TrainingType;
 use App\Models\Administrative;
-use App\Models\User;
-use App\Models\Trainee;
-use App\Models\Section;
+use App\Models\College;
+use App\Models\Department;
 use App\Models\Institution;
 use App\Models\Major;
-use App\Models\College;
+use App\Models\Section;
+use App\Models\Trainee;
+use App\Models\User;
 use App\Notifications\ApplicationCreated as ApplicationCreatedNotification;
 use App\Notifications\InitialApprovalNotification;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Auth;
 
 class Application extends Model
 {
@@ -101,14 +105,14 @@ class Application extends Model
         'start_date' => 'date',
         'end_date' => 'date',
         'accepted_at' => 'datetime',
-        'status' => 'integer',
+        'status' => ApplicationStatus::class,
         'duration' => 'integer',
-        'training_type' => 'integer',
+        'training_type' => TrainingType::class,
     ];
 
     public function getTrainingTypeLabelAttribute(): string
     {
-        return self::TRAINING_TYPES[$this->training_type] ?? 'غير محدد';
+        return self::TRAINING_TYPES[$this->training_type->value] ?? 'غير محدد';
     }
 
     /**
@@ -116,51 +120,54 @@ class Application extends Model
      */
     public function getStatusMessageAttribute(): string
     {
-        return self::STATUS_MESSAGES[$this->status] ?? 'لا يمكنك تقديم طلب جديد في هذا الوقت';
+        return self::STATUS_MESSAGES[$this->status->value] ?? 'لا يمكنك تقديم طلب جديد في هذا الوقت';
     }
 
     /**
      * Static helper to get status message by status code
      * For STATUS_INITIAL_APPROVE, provide training type to get the correct message
      */
-    public static function getStatusMessage(int $status, ?int $trainingType = null): string
+    public static function getStatusMessage(int|ApplicationStatus $status, int|TrainingType|null $trainingType = null): string
     {
+        $statusCode = $status instanceof ApplicationStatus ? $status->value : $status;
+        $typeCode = $trainingType instanceof TrainingType ? $trainingType->value : $trainingType;
+
         // Special handling for STATUS_INITIAL_APPROVE with training type
-        if ($status === self::STATUS_INITIAL_APPROVE && $trainingType !== null) {
-            return self::STATUS_INITIAL_APPROVE_MESSAGES[$trainingType]
-                ?? self::STATUS_MESSAGES[$status]
+        if ($statusCode === self::STATUS_INITIAL_APPROVE && $typeCode !== null) {
+            return self::STATUS_INITIAL_APPROVE_MESSAGES[$typeCode]
+                ?? self::STATUS_MESSAGES[$statusCode]
                 ?? 'لا يمكنك تقديم طلب جديد في هذا الوقت';
         }
 
-        return self::STATUS_MESSAGES[$status] ?? 'لا يمكنك تقديم طلب جديد في هذا الوقت';
+        return self::STATUS_MESSAGES[$statusCode] ?? 'لا يمكنك تقديم طلب جديد في هذا الوقت';
     }
 
-    public function trainee()
+    public function trainee(): BelongsTo
     {
         return $this->belongsTo(Trainee::class, 'trainee_id');
     }
 
-    public function section()
+    public function section(): BelongsTo
     {
         return $this->belongsTo(Section::class, 'section_id');
     }
 
-    public function department()
+    public function department(): BelongsTo
     {
         return $this->belongsTo(Department::class, 'department_id');
     }
 
-    public function administrative()
+    public function administrative(): BelongsTo
     {
         return $this->belongsTo(Administrative::class, 'administrative_id');
     }
 
-    public function institution()
+    public function institution(): BelongsTo
     {
         return $this->belongsTo(Institution::class);
     }
 
-    public function major()
+    public function major(): BelongsTo
     {
         return $this->belongsTo(Major::class);
     }
@@ -230,7 +237,7 @@ class Application extends Model
         static::updated(function (self $application) {
             // Check if status changed
             if ($application->isDirty('status')) {
-                $newStatus = (int) $application->status;
+                $newStatus = $application->status->value;
 
                 // Notification to send
                 $notificationToSend = null;
@@ -375,5 +382,78 @@ class Application extends Model
                 }
             }
         });
+    }
+
+    public function scopeForUser($query, $user)
+    {
+        if ($user->isAdmin() || $user->isGeneralTrainingManager()) {
+            return $query;
+        }
+
+        if ($user->isCollegeSupervisor()) {
+            $collegeId = College::where('user_id', $user->id)->value('id');
+            return $query->where('training_type', TrainingType::UNIVERSITY)
+                ->whereIn('status', [
+                    ApplicationStatus::INITIAL_APPROVE,
+                    ApplicationStatus::STARTED_TRAINING,
+                    ApplicationStatus::ENDED_TRAINING
+                ])
+                ->whereHas('trainee', function ($q) use ($collegeId) {
+                    $q->where('college_id', $collegeId);
+                });
+        }
+
+        if ($user->isSectionHead()) {
+            return $query->where('section_id', $user->section?->id)
+                ->whereIn('status', [
+                    ApplicationStatus::STARTED_TRAINING,
+                    ApplicationStatus::ENDED_TRAINING
+                ]);
+        }
+
+        if ($user->isAdministrative()) {
+            return $query->where('administrative_id', $user->administrative?->id)
+                ->whereIn('status', [
+                    ApplicationStatus::STARTED_TRAINING,
+                    ApplicationStatus::ENDED_TRAINING
+                ]);
+        }
+
+        if ($user->isMedicalManager()) {
+            $adminId = Administrative::where('medical_head_user_id', $user->id)->value('id');
+            return $query->where('administrative_id', $adminId)
+                ->whereHas('department', fn($q) => $q->where('is_medical', true))
+                ->whereIn('status', [
+                    ApplicationStatus::STARTED_TRAINING,
+                    ApplicationStatus::ENDED_TRAINING
+                ]);
+        }
+
+        if ($user->isDepartment()) {
+            $query->where('department_id', $user->department?->id)
+                ->whereIn('status', [
+                    ApplicationStatus::STARTED_TRAINING,
+                    ApplicationStatus::ENDED_TRAINING
+                ]);
+
+            if ($user->department?->is_medical === true) {
+                $query->whereHas('department', function ($q) {
+                    $q->where('is_medical', true);
+                });
+            }
+
+            return $query;
+        }
+
+        if ($user->isMinistry()) {
+            return $query->where('training_type', TrainingType::PRACTICE)
+                ->whereIn('status', [
+                    ApplicationStatus::INITIAL_APPROVE,
+                    ApplicationStatus::STARTED_TRAINING,
+                    ApplicationStatus::ENDED_TRAINING
+                ]);
+        }
+
+        return $query->whereRaw('1 = 0');
     }
 }

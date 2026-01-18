@@ -93,7 +93,7 @@ class GTMRecentApplications extends BaseWidget
                 Tables\Columns\TextColumn::make('trainee.institution.name')
                     ->label('المؤسسة')
                     ->toggleable(isToggledHiddenByDefault: false)
-                    ->formatStateUsing(fn($state, $record) => $record->training_type === Application::TRAINING_TYPE_PRACTICE ? '' : $state)
+                    ->formatStateUsing(fn($state, $record) => $record->training_type->value === Application::TRAINING_TYPE_PRACTICE ? '' : $state)
                     ->visible(fn() => Auth::check() && (
                         Auth::user()->isAdmin() ||
                         Auth::user()->isGeneralTrainingManager()
@@ -101,7 +101,7 @@ class GTMRecentApplications extends BaseWidget
                 Tables\Columns\TextColumn::make('trainee.major.name')
                     ->label('التخصص')
                     ->toggleable(isToggledHiddenByDefault: false)
-                    ->formatStateUsing(fn($state, $record) => $record->training_type === Application::TRAINING_TYPE_PRACTICE ? '' : $state)
+                    ->formatStateUsing(fn($state, $record) => $record->training_type->value === Application::TRAINING_TYPE_PRACTICE ? '' : $state)
                     ->visible(fn() => Auth::check() && (
                         Auth::user()->isAdmin() ||
                         Auth::user()->isGeneralTrainingManager() ||
@@ -130,7 +130,7 @@ class GTMRecentApplications extends BaseWidget
                     ->label('الحالة')
                     ->sortable()
                     ->badge()
-                    ->color(fn($state): string => match ((int)$state) {
+                    ->color(fn($state): string => match ($state instanceof \App\Enums\ApplicationStatus ? $state->value : (int)$state) {
                         1 => 'info',
                         2 => 'primary',
                         3 => 'primary',
@@ -142,9 +142,10 @@ class GTMRecentApplications extends BaseWidget
                         default => 'gray',
                     })
                     ->formatStateUsing(fn($state): string => (function ($state) {
-                        $key = 'translation.status.' . $state;
+                        $actualState = $state instanceof \App\Enums\ApplicationStatus ? $state->value : $state;
+                        $key = 'translation.status.' . $actualState;
                         $translated = \Illuminate\Support\Facades\Lang::get($key, [], 'ar');
-                        return $translated === $key ? $state : $translated;
+                        return $translated === $key ? $actualState : $translated;
                     })($state)),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('تاريخ التقديم')
@@ -159,7 +160,7 @@ class GTMRecentApplications extends BaseWidget
                     ->label('موافقة مبدئية')
                     ->color('success')
                     ->icon('heroicon-o-check-circle')
-                    ->visible(fn($record) => Auth::user()->isGeneralTrainingManager() && $record->status == Application::STATUS_NEW)
+                    ->visible(fn($record) => Auth::user()->isGeneralTrainingManager() && $record->status->value == Application::STATUS_NEW)
                     ->requiresConfirmation()
                     ->successNotificationTitle('تمت الموافقة المبدئية بنجاح')
                     ->action(fn($record) => $record->update(['status' => Application::STATUS_INITIAL_APPROVE])),
@@ -170,7 +171,7 @@ class GTMRecentApplications extends BaseWidget
                     ->icon('heroicon-o-check-badge')
                     ->visible(
                         fn($record) =>
-                        (int)$record->status === Application::STATUS_INITIAL_APPROVE &&
+                        $record->status->value === Application::STATUS_INITIAL_APPROVE &&
                             (Auth::user()->isAdmin() || Auth::user()->isCollegeSupervisor() || Auth::user()->isMinistry())
                     )
                     ->requiresConfirmation()
@@ -184,7 +185,7 @@ class GTMRecentApplications extends BaseWidget
                     ->label('معالجة التأكيد')
                     ->color('success')
                     ->icon('heroicon-o-play')
-                    ->visible(fn($record) => Auth::user()->isGeneralTrainingManager() && $record->status == Application::STATUS_CONFIRMATION)
+                    ->visible(fn($record) => Auth::user()->isGeneralTrainingManager() && $record->status->value == Application::STATUS_CONFIRMATION)
                     ->form([
                         \Filament\Forms\Components\Select::make('new_status')
                             ->label('الحالة الجديدة')
@@ -203,14 +204,14 @@ class GTMRecentApplications extends BaseWidget
                             ->format('Y/m/d')
                             ->displayFormat('Y/m/d')
                             ->reactive()
-                            ->visible(fn($get) => (int)$get('new_status') === Application::STATUS_STARTED_TRAINING),
+                            ->visible(fn($get) => $get('new_status') && (int)$get('new_status') === Application::STATUS_STARTED_TRAINING),
                         TextInput::make('duration')
                             ->label('المدة (يوم)')
                             ->numeric()
                             ->required()
                             ->default(30)
                             ->reactive()
-                            ->visible(fn($get) => (int)$get('new_status') === Application::STATUS_STARTED_TRAINING),
+                            ->visible(fn($get) => $get('new_status') && (int)$get('new_status') === Application::STATUS_STARTED_TRAINING),
                         \Filament\Forms\Components\Placeholder::make('calculated_end_date')
                             ->label('تاريخ الانتهاء المتوقع')
                             ->content(function ($get) {
@@ -228,7 +229,7 @@ class GTMRecentApplications extends BaseWidget
                                 }
                                 return 'غير محدد';
                             })
-                            ->visible(fn($get) => (int)$get('new_status') === Application::STATUS_STARTED_TRAINING),
+                            ->visible(fn($get) => $get('new_status') && (int)$get('new_status') === Application::STATUS_STARTED_TRAINING),
                     ])
                     ->successNotificationTitle('تمت معالجة التأكيد بنجاح')
                     ->action(function ($record, array $data) {
@@ -256,7 +257,7 @@ class GTMRecentApplications extends BaseWidget
                     ->label('بدء التدريب')
                     ->color('success')
                     ->icon('heroicon-o-play-circle')
-                    ->visible(fn($record) => Auth::user()->isGeneralTrainingManager() && $record->status == Application::STATUS_WAITING_LIST)
+                    ->visible(fn($record) => Auth::user()->isGeneralTrainingManager() && $record->status->value == Application::STATUS_WAITING_LIST)
                     ->form([
                         DatePicker::make('start_date')
                             ->label('تاريخ البدء')
@@ -308,7 +309,7 @@ class GTMRecentApplications extends BaseWidget
                     ->label('رفض')
                     ->modalHeading('رفض الطلب')
                     ->modalDescription('هل أنت متأكد من رفض هذا الطلب؟ سيتم نقله إلى قائمة المرفوضات.')
-                    ->visible(fn($record) => !$record->trashed() && ( Auth::user()->isGeneralTrainingManager()))
+                    ->visible(fn($record) => !$record->trashed() && (Auth::user()->isGeneralTrainingManager()))
                     ->action(function ($record) {
                         $record->update(['status' => Application::STATUS_REJECTED]);
                         $record->delete();

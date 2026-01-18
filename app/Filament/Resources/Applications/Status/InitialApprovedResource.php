@@ -2,28 +2,29 @@
 
 namespace App\Filament\Resources\Applications\Status;
 
-use App\Filament\Resources\Applications\Tables\ApplicationsTable;
+use App\Enums\ApplicationStatus;
+use App\Filament\Resources\Applications\ApplicationResource;
 use App\Filament\Resources\Applications\Schemas\ApplicationForm;
 use App\Filament\Resources\Applications\Schemas\ApplicationInfolist;
 use App\Filament\Resources\Applications\Status\InitialApprovedResource\Pages;
+use App\Filament\Resources\Applications\Tables\ApplicationsTable;
 use App\Models\Application;
 use BackedEnum;
-use UnitEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
-use App\Filament\Resources\Applications\ApplicationResource;
+use UnitEnum;
 
 class InitialApprovedResource extends Resource
 {
     protected static ?string $model = Application::class;
     protected static ?string $slug = 'initial-approved';
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCheckCircle;
-    protected static string | BackedEnum | null $activeNavigationIcon = Heroicon::CheckCircle;
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-check-circle';
+    protected static string|BackedEnum|null $activeNavigationIcon = 'heroicon-s-check-circle';
 
     protected static ?string $navigationParentItem = 'الطلبات';
 
@@ -31,7 +32,7 @@ class InitialApprovedResource extends Resource
     protected static ?string $pluralModelLabel = 'الموافقات المبدئية';
     protected static ?string $navigationLabel = 'موافقة مبدئية';
     protected static ?int $navigationSort = 2;
-    protected static string | UnitEnum | null $navigationGroup = 'إدارة المتدربين';
+    protected static string|UnitEnum|null $navigationGroup = 'إدارة المتدربين';
 
     public static function canViewAny(): bool
     {
@@ -81,6 +82,6 @@ class InitialApprovedResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->where('status', Application::STATUS_INITIAL_APPROVE);
+            ->where('status', ApplicationStatus::INITIAL_APPROVE);
     }
 }

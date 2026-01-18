@@ -42,7 +42,8 @@ class ApplicationExporter extends Exporter
             ExportColumn::make('status')
                 ->label('الحالة')
                 ->formatStateUsing(function ($state) use ($translation) {
-                    return $translation['status'][(int)$state] ?? 'غير محدد';
+                    $actualState = $state instanceof \App\Enums\ApplicationStatus ? $state->value : (int)$state;
+                    return $translation['status'][$actualState] ?? 'غير محدد';
                 }),
             ExportColumn::make('trainee.training_hours')
                 ->label('ساعات التدريب'),
@@ -67,4 +68,3 @@ class ApplicationExporter extends Exporter
         return $body;
     }
 }
-
