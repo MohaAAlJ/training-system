@@ -147,63 +147,15 @@ class ApplicationForm
                                     ->regex('/^\d{9}$/')
                                     ->helperText('9 أرقام فقط')
                                     ->live(onBlur: true)
-                                    ->afterStateUpdated(function ($state, callable $set) {
-                                        if (empty($state) || strlen($state) < 9) {
-                                            return;
-                                        }
-
-                                        if (validatePalestinianId($state) !== 'valid') {
-                                            Notification::make()
-                                                ->title('رقم الهوية الوطنية غير صحيح')
-                                                ->danger()
-                                                ->send();
-                                            $set('national_id', null);
-                                            return;
-                                        }
-
-                                        $trainee = Trainee::where('national_id', $state)->first();
-
-                                        if ($trainee) {
-                                            $set('trainee_id', $trainee->id);
-                                            $set('full_name', $trainee->full_name);
-                                            $set('phone_number', $trainee->phone_number);
-                                            $set('street', $trainee->street);
-                                            $set('institution_id', $trainee->institution_id);
-                                            $set('college_id', $trainee->college_id);
-                                            $set('major_id', $trainee->major_id);
-                                            $set('training_hours', $trainee->training_hours);
-
-                                            if ($trainee->institution_id || $trainee->college_id || $trainee->major_id) {
-                                                $set('training_type', TrainingType::UNIVERSITY);
-                                            } else {
-                                                $set('training_type', TrainingType::PRACTICE);
-                                            }
-
-                                            if ($trainee->dob) {
-                                                $set('dob', Carbon::parse($trainee->dob)->format('Y-m-d'));
-                                            }
-
-                                            Notification::make()
-                                                ->title('تم العثور على بيانات المتدرب')
-                                                ->body('تم تعبئة الحقول تلقائياً')
-                                                ->success()
-                                                ->send();
-                                        } else {
-                                            $set('trainee_id', null);
-                                            Notification::make()
-                                                ->title('المتدرب غير موجود')
-                                                ->body('يمكنك إضافة متدرب جديد')
-                                                ->warning()
-                                                ->send();
-                                        }
-                                    })
                                     ->validationMessages([
                                         'required' => __('validation.custom.national_id.required'),
                                         'regex' => __('validation.custom.national_id.regex'),
                                         'digits' => __('validation.custom.national_id.digits'),
+                                        'unique' => 'رقم الهوية مسجل مسبقاً في النظام',
                                     ])
                                     ->rules([
                                         new PalestinianId(),
+                                        fn($context) => $context === 'create' ? 'unique:trainees,national_id' : null,
                                     ])
                                     ->required(fn($context) => $context === 'create')
                                     ->columnSpan(1),
@@ -300,8 +252,8 @@ class ApplicationForm
                                     ->options(fn() => Institution::pluck('name', 'id')->toArray())
                                     ->default(fn() => Auth::user()->isCollegeSupervisor() ? Auth::user()->college?->institution_id : null)
                                     ->formatStateUsing(fn($record) => $record?->trainee?->institution_id)
-                                    ->disabled(fn(callable $get) => request()->routeIs('*.edit') && $get('training_type') != TrainingType::UNIVERSITY->value)
-                                    ->visible(fn(callable $get) => !Auth::user()->isCollegeSupervisor() && $get('training_type') == TrainingType::UNIVERSITY->value)
+                                    ->disabled(fn(callable $get) => request()->routeIs('*.edit') && !in_array($get('training_type'), [TrainingType::UNIVERSITY, TrainingType::UNIVERSITY->value]))
+                                    ->visible(fn(callable $get) => !Auth::user()->isCollegeSupervisor() && in_array($get('training_type'), [TrainingType::UNIVERSITY, TrainingType::UNIVERSITY->value]))
                                     ->dehydrated()
                                     ->searchable()
                                     ->preload()
@@ -332,8 +284,8 @@ class ApplicationForm
                                     })
                                     ->default(fn() => Auth::user()->isCollegeSupervisor() ? Auth::user()->college?->id : null)
                                     ->formatStateUsing(fn($record) => $record?->trainee?->college_id)
-                                    ->disabled(fn(callable $get) => request()->routeIs('*.edit') && $get('training_type') != TrainingType::UNIVERSITY->value)
-                                    ->visible(fn(callable $get) => !Auth::user()->isCollegeSupervisor() && $get('training_type') == TrainingType::UNIVERSITY->value)
+                                    ->disabled(fn(callable $get) => request()->routeIs('*.edit') && !in_array($get('training_type'), [TrainingType::UNIVERSITY, TrainingType::UNIVERSITY->value]))
+                                    ->visible(fn(callable $get) => !Auth::user()->isCollegeSupervisor() && in_array($get('training_type'), [TrainingType::UNIVERSITY, TrainingType::UNIVERSITY->value]))
                                     ->dehydrated()
                                     ->searchable()
                                     ->preload()
@@ -362,8 +314,8 @@ class ApplicationForm
                                         return [];
                                     })
                                     ->formatStateUsing(fn($record) => $record?->trainee?->major_id)
-                                    ->disabled(fn($context, callable $get) => $context === 'edit' && $get('training_type') != TrainingType::UNIVERSITY->value)
-                                    ->visible(fn(callable $get) => $get('training_type') == TrainingType::UNIVERSITY->value)
+                                    ->disabled(fn($context, callable $get) => $context === 'edit' && !in_array($get('training_type'), [TrainingType::UNIVERSITY, TrainingType::UNIVERSITY->value]))
+                                    ->visible(fn(callable $get) => in_array($get('training_type'), [TrainingType::UNIVERSITY, TrainingType::UNIVERSITY->value]))
                                     ->dehydrated()
                                     ->searchable()
                                     ->preload()
@@ -463,8 +415,8 @@ class ApplicationForm
                                     ->native(false)
                                     ->displayFormat('d/m/Y')
                                     ->disabled(fn() => !Auth::user()->isAdmin())
-                                    ->visible(fn() => !Auth::user()->isCollegeSupervisor())
-                                    ->required(fn(callable $get) => Auth::user()->isAdmin() && $get('status') === ApplicationStatus::STARTED_TRAINING->value)
+                                    ->visible(fn(callable $get) => !Auth::user()->isCollegeSupervisor() && in_array($get('status'), [ApplicationStatus::STARTED_TRAINING, ApplicationStatus::STARTED_TRAINING->value]))
+                                    ->required(fn(callable $get) => Auth::user()->isAdmin() && in_array($get('status'), [ApplicationStatus::STARTED_TRAINING, ApplicationStatus::STARTED_TRAINING->value]))
                                     ->dehydrated()
                                     ->columnSpan(1),
 
@@ -474,8 +426,8 @@ class ApplicationForm
                                     ->native(false)
                                     ->displayFormat('d/m/Y')
                                     ->disabled(fn() => !Auth::user()->isAdmin())
-                                    ->visible(fn() => !Auth::user()->isCollegeSupervisor())
-                                    ->required(fn(callable $get) => Auth::user()->isAdmin() && $get('status') === ApplicationStatus::STARTED_TRAINING->value)
+                                    ->visible(fn(callable $get) => !Auth::user()->isCollegeSupervisor() && in_array($get('status'), [ApplicationStatus::STARTED_TRAINING, ApplicationStatus::STARTED_TRAINING->value]))
+                                    ->required(fn(callable $get) => Auth::user()->isAdmin() && in_array($get('status'), [ApplicationStatus::STARTED_TRAINING, ApplicationStatus::STARTED_TRAINING->value]))
                                     ->afterOrEqual('start_date')
                                     ->dehydrated()
                                     ->columnSpan(1),

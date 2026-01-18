@@ -92,7 +92,15 @@ class ApplicationPolicy
 
     public function update(User $user, Application $Application): bool
     {
-        return $user->isAdmin();
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        if ($user->isCollegeSupervisor()) {
+            return $Application->trainee->college_id === $user->college?->id;
+        }
+
+        return false;
     }
 
     public function delete(User $user, Application $Application): bool
