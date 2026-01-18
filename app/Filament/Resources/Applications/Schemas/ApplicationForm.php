@@ -70,9 +70,12 @@ class ApplicationForm
                                             ->label('رقم الهوية')
                                             ->required()
                                             ->rules([
-                                                function ($attribute, $value, $fail) {
-                                                    if (validatePalestinianId($value) !== 'valid') {
-                                                        $fail('رقم الهوية الوطنية غير صحيح.');
+                                                new class implements \Illuminate\Contracts\Validation\ValidationRule {
+                                                    public function validate(string $attribute, mixed $value, \Closure $fail): void
+                                                    {
+                                                        if (validatePalestinianId($value) !== 'valid') {
+                                                            $fail('رقم الهوية الوطنية غير صحيح.');
+                                                        }
                                                     }
                                                 },
                                             ]),
