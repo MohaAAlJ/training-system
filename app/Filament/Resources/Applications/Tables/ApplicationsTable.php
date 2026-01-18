@@ -13,6 +13,7 @@ use App\Models\Section;
 use Carbon\Carbon;
 use Filament\Forms\Components\DatePicker;
 use Filament\Schemas\Components\Fieldset;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -80,27 +81,11 @@ class ApplicationsTable
                 SelectFilter::make('status')
                     ->label('الحالة')
                     ->options(ApplicationStatus::class)
-                    ->hidden(fn() => $statusTitle !== null),
+                    ->visible(fn() => $statusTitle === null && Auth::user()->isAdmin()),
 
                 SelectFilter::make('training_type')
                     ->label('نوع التدريب')
-                    ->options(TrainingType::class),
-
-                Filter::make('national_id')
-                    ->label('رقم الهوية')
-                    ->form([
-                        TextInput::make('national_id')
-                            ->label('رقم الهوية'),
-                    ])
-                    ->query(function (Builder $query, array $data): Builder {
-                        return $query->when(
-                            $data['national_id'],
-                            fn(Builder $query, $nationalId): Builder => $query->whereHas(
-                                'trainee',
-                                fn(Builder $query) => $query->where('national_id', $nationalId)
-                            )
-                        );
-                    }),
+                    ->options(TrainingType::class)
             ])
             ->actions([
                 ViewAction::make(),
@@ -111,7 +96,7 @@ class ApplicationsTable
                         ->label('موافقة مبدئية')
                         ->icon('heroicon-o-check-circle')
                         ->color('success')
-                        ->visible(fn(Application $record) => $record->status === ApplicationStatus::NEW && Auth::user()->isGeneralTrainingManager())
+                        ->visible(fn(Application $record) => $record->status === ApplicationStatus::NEW && (Auth::user()->isGeneralTrainingManager() || Auth::user()->isMinistry()))
                         ->requiresConfirmation()
                         ->action(function (Application $record) {
                             $record->update(['status' => ApplicationStatus::INITIAL_APPROVE, 'accepted_at' => now()]);
@@ -122,7 +107,7 @@ class ApplicationsTable
                         ->label('تأكيد الطلب')
                         ->icon('heroicon-o-check-badge')
                         ->color('success')
-                        ->visible(fn(Application $record) => $record->status === ApplicationStatus::INITIAL_APPROVE && Auth::user()->isGeneralTrainingManager())
+                        ->visible(fn(Application $record) => $record->status === ApplicationStatus::INITIAL_APPROVE && (Auth::user()->isGeneralTrainingManager() || Auth::user()->isMinistry()))
                         ->requiresConfirmation()
                         ->action(function (Application $record) {
                             $record->update(['status' => ApplicationStatus::CONFIRMATION]);
@@ -134,32 +119,42 @@ class ApplicationsTable
                         ->icon('heroicon-o-cpu-chip')
                         ->color('primary')
                         ->visible(fn(Application $record) => in_array($record->status, [ApplicationStatus::CONFIRMATION, ApplicationStatus::WAITING_LIST]) && Auth::user()->isGeneralTrainingManager())
+                        ->modalSubmitAction(function (Application $record) {
+                            $isSectionInactive = ! ($record->section?->status ?? false);
+                            $isSectionFull = $record->section?->getCapacityStats()['is_full'] ?? false;
+
+                            if ($isSectionInactive || $isSectionFull) {
+                                return false;
+                            }
+
+                            return null;
+                        })
                         ->form(function (Application $record) {
                             $schema = [];
+                            $sectionStats = $record->section?->getCapacityStats();
                             $isSectionInactive = ! ($record->section?->status ?? false);
+                            $isSectionFull = $sectionStats['is_full'] ?? false;
 
-                            if ($isSectionInactive) {
-                                $schema[] = Fieldset::make('تنبيه: القسم المسجل غير نشط')
-                                    ->schema([
-                                        Placeholder::make('warning')
-                                            ->content('القسم المرتبط بالطلب حالياً غير نشط. يرجى اختيار قسم بديل.')
-                                            ->columnSpanFull(),
-                                        Select::make('administrative_id')
-                                            ->label('الإدارة العامة')
-                                            ->options(Administrative::pluck('title', 'id'))
-                                            ->reactive()
-                                            ->afterStateUpdated(fn(Set $set) => $set('department_id', null)),
-                                        Select::make('department_id')
-                                            ->label('الدائرة')
-                                            ->options(fn(Get $get) => Department::where('administrative_id', $get('administrative_id'))->pluck('title', 'id'))
-                                            ->reactive()
-                                            ->afterStateUpdated(fn(Set $set) => $set('section_id', null)),
-                                        Select::make('section_id')
-                                            ->label('القسم / الشعبة')
-                                            ->options(fn(Get $get) => Section::active()->where('department_id', $get('department_id'))->pluck('name_location', 'id'))
-                                            ->required(),
-                                    ]);
+                            if ($isSectionInactive || $isSectionFull) {
+                                $warningTitle = $isSectionInactive ? 'تنبيه: القسم المسجل غير نشط' : 'تنبيه: القسم ممتلئ بالكامل';
+                                $warningMessage = $isSectionInactive
+                                    ? 'القسم المرتبط بالطلب حالياً غير نشط.'
+                                    : "القسم المرتبط بالطلب ممتلئ (السعة: {$sectionStats['total']}).";
+
+                                $schema[] = Placeholder::make('warning')
+                                    ->label($warningTitle)
+                                    ->content($warningMessage)
+                                    ->columnSpanFull()
+                                    ->extraAttributes(['class' => 'text-danger-600 font-bold']);
+
+                                return $schema;
                             }
+
+                            $defaultStatus = match ($record->status) {
+                                ApplicationStatus::WAITING_LIST => ApplicationStatus::STARTED_TRAINING->value,
+                                ApplicationStatus::CONFIRMATION => ApplicationStatus::WAITING_LIST->value,
+                                default => ApplicationStatus::STARTED_TRAINING->value,
+                            };
 
                             $schema[] = Select::make('new_status')
                                 ->label('الحالة الجديدة')
@@ -167,7 +162,7 @@ class ApplicationsTable
                                     ApplicationStatus::STARTED_TRAINING->value => ApplicationStatus::STARTED_TRAINING->getLabel(),
                                     ApplicationStatus::WAITING_LIST->value => ApplicationStatus::WAITING_LIST->getLabel(),
                                 ])
-                                ->default($record->status === ApplicationStatus::WAITING_LIST ? ApplicationStatus::STARTED_TRAINING->value : ApplicationStatus::STARTED_TRAINING->value)
+                                ->default($defaultStatus)
                                 ->required()
                                 ->reactive();
 
@@ -175,30 +170,57 @@ class ApplicationsTable
                                 ->label('تاريخ بدء التدريب')
                                 ->required()
                                 ->visible(fn(Get $get) => $get('new_status') == ApplicationStatus::STARTED_TRAINING->value)
-                                ->default(now());
+                                ->default(now()->toDateString())
+                                ->displayFormat('Y/m/d')
+                                ->native(false)
+                                ->closeOnDateSelection()
+                                ->reactive()
+                                ->afterStateUpdated(function (Set $set, Get $get, $state) {
+                                    if ($state && $get('training_duration')) {
+                                        $set('expected_finish_date', Carbon::parse($state)->addDays($get('training_duration'))->toDateString());
+                                    }
+                                });
 
                             $schema[] = TextInput::make('training_duration')
-                                ->label('مدة التدريب (بالأشهر)')
+                                ->label('مدة التدريب (بالأيام)')
                                 ->numeric()
                                 ->required()
                                 ->visible(fn(Get $get) => $get('new_status') == ApplicationStatus::STARTED_TRAINING->value)
-                                ->default(3);
+                                ->default(30)
+                                ->reactive()
+                                ->afterStateUpdated(function (Set $set, Get $get, $state) {
+                                    if ($state && $get('start_date')) {
+                                        $set('expected_finish_date', Carbon::parse($get('start_date'))->addDays($state)->toDateString());
+                                    }
+                                });
+
+                            $schema[] = Hidden::make('expected_finish_date')
+                                ->default(Carbon::parse(now())->addDays(30)->toDateString());
+
+                            $schema[] = Placeholder::make('expected_finish_date_placeholder')
+                                ->label('تاريخ الانتهاء المتوقع')
+                                ->content(fn(Get $get) => $get('expected_finish_date') ?? 'يرجى تحديد تاريخ البدء ومدة التدريب')
+                                ->visible(fn(Get $get) => $get('new_status') == ApplicationStatus::STARTED_TRAINING->value);
 
                             return $schema;
                         })
                         ->action(function (Application $record, array $data) {
+                            if (! isset($data['new_status'])) {
+                                return;
+                            }
+
                             $updateData = ['status' => $data['new_status']];
 
                             if ($data['new_status'] == ApplicationStatus::STARTED_TRAINING->value) {
                                 $updateData['start_date'] = $data['start_date'];
-                                $updateData['end_date'] = Carbon::parse($data['start_date'])->addMonths($data['training_duration']);
+                                $updateData['end_date'] = Carbon::parse($data['start_date'])->addDays($data['training_duration']);
                             }
 
-                            if (isset($data['section_id'])) {
-                                $updateData['section_id'] = $data['section_id'];
-                                $updateData['department_id'] = $data['department_id'];
-                                $updateData['administrative_id'] = $data['administrative_id'];
-                            }
+                            // if (isset($data['section_id'])) {
+                            //     $updateData['section_id'] = $data['section_id'];
+                            //     $updateData['department_id'] = $data['department_id'];
+                            //     $updateData['administrative_id'] = $data['administrative_id'];
+                            // }
 
                             $record->update($updateData);
                             Notification::make()->title('تمت معالجة الطلب بنجاح')->success()->send();
@@ -240,6 +262,32 @@ class ApplicationsTable
                             $record->update(['status' => ApplicationStatus::NEW]);
                             Notification::make()->title('تمت استعادة الطلب إلى جديد')->success()->send();
                         }),
+
+                    Action::make('print_absorption_paper')
+                        ->label('طباعة ورقة الاستيعاب')
+                        ->icon('heroicon-o-printer')
+                        ->url(fn(Application $record) => route('applications.download-absorption', ['application' => $record, 'mode' => 'view']))
+                        ->openUrlInNewTab()
+                        ->visible(fn(Application $record) => Auth::user()->isMinistry() &&
+                            in_array($record->status, [
+                                ApplicationStatus::INITIAL_APPROVE,
+                                ApplicationStatus::STARTED_TRAINING,
+                                ApplicationStatus::ENDED_TRAINING,
+                            ]) &&
+                            $record->training_type === TrainingType::PRACTICE),
+
+                    Action::make('download_absorption_paper')
+                        ->label('تحميل ورقة الاستيعاب')
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->url(fn(Application $record) => route('applications.download-absorption', ['application' => $record, 'mode' => 'download']))
+                        ->openUrlInNewTab()
+                        ->visible(fn(Application $record) => Auth::user()->isMinistry() &&
+                            in_array($record->status, [
+                                ApplicationStatus::INITIAL_APPROVE,
+                                ApplicationStatus::STARTED_TRAINING,
+                                ApplicationStatus::ENDED_TRAINING,
+                            ]) &&
+                            $record->training_type === TrainingType::PRACTICE),
                 ])->icon('heroicon-m-ellipsis-vertical'),
             ])
             ->bulkActions([
@@ -254,26 +302,53 @@ class ApplicationsTable
                                 ->required()
                                 ->reactive(),
                             DatePicker::make('start_date')
-                                ->label('تاريخ البدء')
-                                ->visible(fn(Get $get) => $get('status') == ApplicationStatus::STARTED_TRAINING->value)
-                                ->required(fn(Get $get) => $get('status') == ApplicationStatus::STARTED_TRAINING->value),
+                                ->label('تاريخ بدء التدريب')
+                                ->visible(fn(Get $get) => in_array($get('status'), [ApplicationStatus::STARTED_TRAINING, ApplicationStatus::STARTED_TRAINING->value]))
+                                ->required(fn(Get $get) => in_array($get('status'), [ApplicationStatus::STARTED_TRAINING, ApplicationStatus::STARTED_TRAINING->value]))
+                                ->default(now()->toDateString())
+                                ->displayFormat('Y/m/d')
+                                ->native(false)
+                                ->closeOnDateSelection()
+                                ->reactive()
+                                ->afterStateUpdated(function (Set $set, Get $get, $state) {
+                                    if ($state && $get('duration')) {
+                                        $set('expected_finish_date', Carbon::parse($state)->addDays($get('duration'))->toDateString());
+                                    }
+                                }),
                             TextInput::make('duration')
-                                ->label('المدة (أشهر)')
+                                ->label('مدة التدريب (بالأيام)')
                                 ->numeric()
-                                ->visible(fn(Get $get) => $get('status') == ApplicationStatus::STARTED_TRAINING->value)
-                                ->required(fn(Get $get) => $get('status') == ApplicationStatus::STARTED_TRAINING->value)
-                                ->default(3),
+                                ->visible(fn(Get $get) => in_array($get('status'), [ApplicationStatus::STARTED_TRAINING, ApplicationStatus::STARTED_TRAINING->value]))
+                                ->required(fn(Get $get) => in_array($get('status'), [ApplicationStatus::STARTED_TRAINING, ApplicationStatus::STARTED_TRAINING->value]))
+                                ->default(30)
+                                ->reactive()
+                                ->afterStateUpdated(function (Set $set, Get $get, $state) {
+                                    if ($state && $get('start_date')) {
+                                        $set('expected_finish_date', Carbon::parse($get('start_date'))->addDays($state)->toDateString());
+                                    }
+                                }),
+                            Hidden::make('expected_finish_date')
+                                ->default(Carbon::parse(now())->addDays(30)->toDateString()),
+                            Placeholder::make('expected_finish_date_placeholder')
+                                ->label('تاريخ الانتهاء المتوقع')
+                                ->content(fn(Get $get) => $get('expected_finish_date') ?? 'يرجى تحديد تاريخ البدء ومدة التدريب')
+                                ->visible(fn(Get $get) => in_array($get('status'), [ApplicationStatus::STARTED_TRAINING, ApplicationStatus::STARTED_TRAINING->value])),
                         ])
                         ->action(function (Collection $records, array $data) {
-                            $status = ApplicationStatus::from($data['status']);
+                            $status = $data['status'];
+                            if (! $status instanceof ApplicationStatus) {
+                                $status = ApplicationStatus::from($status);
+                            }
+
                             $records->each(function (Application $record) use ($status, $data) {
                                 $updateData = ['status' => $status];
                                 if ($status === ApplicationStatus::STARTED_TRAINING) {
                                     $updateData['start_date'] = $data['start_date'];
-                                    $updateData['end_date'] = Carbon::parse($data['start_date'])->addMonths($data['duration']);
+                                    $updateData['end_date'] = Carbon::parse($data['start_date'])->addDays($data['duration']);
                                 }
                                 $record->update($updateData);
                             });
+
                             Notification::make()->title('تم تحديث الحالات بنجاح')->success()->send();
                         })
                         ->deselectRecordsAfterCompletion(),

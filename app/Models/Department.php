@@ -96,7 +96,7 @@ class Department extends Model
             'total' => $total,
             'used' => $used,
             'available' => $available,
-            'is_full' => $available <= 0
+            'is_full' => $total > 0 && $available <= 0
         ];
     }
 }
