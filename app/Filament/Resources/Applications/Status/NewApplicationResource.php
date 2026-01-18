@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources\Applications\Status;
 
 use App\Enums\ApplicationStatus;
@@ -20,6 +22,7 @@ use Illuminate\Support\Facades\Auth;
 class NewApplicationResource extends Resource
 {
     protected static ?string $model = Application::class;
+
     protected static ?string $slug = 'new-applications';
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-document-plus';
@@ -28,14 +31,18 @@ class NewApplicationResource extends Resource
     protected static ?string $navigationParentItem = 'الطلبات';
 
     protected static ?string $modelLabel = 'طلب جديد';
+
     protected static ?string $pluralModelLabel = 'الطلبات الجديدة';
+
     protected static ?string $navigationLabel = 'جديد';
+
     protected static ?int $navigationSort = 1;
     protected static string|UnitEnum|null $navigationGroup = 'إدارة المتدربين';
 
     public static function canViewAny(): bool
     {
         $user = Auth::user();
+
         return $user && ($user->isAdmin() || $user->isGeneralTrainingManager());
     }
 
@@ -46,7 +53,7 @@ class NewApplicationResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getEloquentQuery()->count();
+        return (string) static::getEloquentQuery()->count();
     }
 
     public static function form(Schema $schema): Schema

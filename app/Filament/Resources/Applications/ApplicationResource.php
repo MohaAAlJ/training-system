@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources\Applications;
 
 use App\Filament\Resources\Applications\Pages\CreateApplication;
@@ -12,20 +14,23 @@ use App\Filament\Resources\Applications\Tables\ApplicationsTable;
 use App\Models\Application;
 use App\Filament\Resources\Applications\ApplicationResource\Pages;
 use BackedEnum;
-use UnitEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
+use UnitEnum;
 
 class ApplicationResource extends Resource
 {
-    // Toggle status page visibility from here
-    // Change to true to show status pages in navigation, false to hide them
+    /**
+     * Toggle status page visibility from here.
+     * Change to true to show status pages in navigation, false to hide them
+     */
     protected static bool $showStatusPages = false;
 
     protected static ?string $model = Application::class;
+
     protected static ?string $slug = 'application';
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-clipboard-document-list';
@@ -33,8 +38,11 @@ class ApplicationResource extends Resource
 
     // Arabic labels
     protected static ?string $modelLabel = 'طلب';
+
     protected static ?string $pluralModelLabel = 'الطلبات';
+
     protected static ?string $navigationLabel = 'الطلبات';
+
     protected static ?int $navigationSort = 2;
     protected static string|UnitEnum|null $navigationGroup = 'إدارة المتدربين';
 
@@ -45,7 +53,7 @@ class ApplicationResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getEloquentQuery()->count();
+        return (string) static::getEloquentQuery()->count();
     }
 
     public static function form(Schema $schema): Schema
@@ -65,9 +73,7 @@ class ApplicationResource extends Resource
 
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
 
     public static function getPages(): array

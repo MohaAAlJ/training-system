@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources\Applications\Status;
 
 use App\Enums\ApplicationStatus;
@@ -21,6 +23,7 @@ use UnitEnum;
 class InitialApprovedResource extends Resource
 {
     protected static ?string $model = Application::class;
+
     protected static ?string $slug = 'initial-approved';
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-check-circle';
@@ -29,14 +32,18 @@ class InitialApprovedResource extends Resource
     protected static ?string $navigationParentItem = 'الطلبات';
 
     protected static ?string $modelLabel = 'موافقة مبدئية';
+
     protected static ?string $pluralModelLabel = 'الموافقات المبدئية';
+
     protected static ?string $navigationLabel = 'موافقة مبدئية';
+
     protected static ?int $navigationSort = 2;
     protected static string|UnitEnum|null $navigationGroup = 'إدارة المتدربين';
 
     public static function canViewAny(): bool
     {
         $user = Auth::user();
+
         return $user && ($user->isAdmin() || $user->isGeneralTrainingManager());
     }
 
@@ -47,7 +54,7 @@ class InitialApprovedResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getEloquentQuery()->count();
+        return (string) static::getEloquentQuery()->count();
     }
 
     public static function form(Schema $schema): Schema
