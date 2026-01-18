@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Applications\Status;
 
+use App\Enums\ApplicationStatus;
 use App\Filament\Resources\Applications\ApplicationResource;
 use App\Filament\Resources\Applications\Schemas\ApplicationForm;
 use App\Filament\Resources\Applications\Schemas\ApplicationInfolist;
@@ -12,13 +13,11 @@ use App\Filament\Resources\Applications\Tables\ApplicationsTable;
 use App\Models\Application;
 use BackedEnum;
 use UnitEnum;
-use Illuminate\Support\Facades\Auth;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use App\Filament\Resources\Applications\ApplicationResource;
+use Illuminate\Support\Facades\Auth;
 
 class NewApplicationResource extends Resource
 {
@@ -26,9 +25,8 @@ class NewApplicationResource extends Resource
 
     protected static ?string $slug = 'new-applications';
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentPlus;
-
-    protected static string|BackedEnum|null $activeNavigationIcon = Heroicon::DocumentPlus;
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-document-plus';
+    protected static string|BackedEnum|null $activeNavigationIcon = 'heroicon-s-document-plus';
 
     protected static ?string $navigationParentItem = 'الطلبات';
 
@@ -39,7 +37,6 @@ class NewApplicationResource extends Resource
     protected static ?string $navigationLabel = 'جديد';
 
     protected static ?int $navigationSort = 1;
-
     protected static string|UnitEnum|null $navigationGroup = 'إدارة المتدربين';
 
     public static function canViewAny(): bool
@@ -91,6 +88,6 @@ class NewApplicationResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->where('status', Application::STATUS_NEW);
+            ->where('status', ApplicationStatus::NEW);
     }
 }

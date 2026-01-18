@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Applications\Status;
 
+use App\Enums\ApplicationStatus;
 use App\Filament\Resources\Applications\ApplicationResource;
 use App\Filament\Resources\Applications\Schemas\ApplicationForm;
 use App\Filament\Resources\Applications\Schemas\ApplicationInfolist;
@@ -12,14 +13,12 @@ use App\Filament\Resources\Applications\Tables\ApplicationsTable;
 use App\Models\Application;
 use BackedEnum;
 use Filament\Resources\Resource;
-use Illuminate\Support\Facades\Auth;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use UnitEnum;
-use App\Filament\Resources\Applications\ApplicationResource;
 
 class StartedTrainingResource extends Resource
 {
@@ -27,20 +26,15 @@ class StartedTrainingResource extends Resource
 
     protected static ?string $slug = 'started-training';
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedAcademicCap;
-
-    protected static string|BackedEnum|null $activeNavigationIcon = Heroicon::AcademicCap;
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-play';
+    protected static string|BackedEnum|null $activeNavigationIcon = 'heroicon-s-play';
 
     protected static ?string $navigationParentItem = 'الطلبات';
 
-    protected static ?string $modelLabel = 'قيد التدريب';
-
-    protected static ?string $pluralModelLabel = 'المتدربين النشطين';
-
-    protected static ?string $navigationLabel = 'قيد التدريب';
-
+    protected static ?string $modelLabel = 'بدأ التدريب';
+    protected static ?string $pluralModelLabel = 'المتدربين حالياً';
+    protected static ?string $navigationLabel = 'بدأ التدريب';
     protected static ?int $navigationSort = 5;
-
     protected static string|UnitEnum|null $navigationGroup = 'إدارة المتدربين';
 
     public static function canViewAny(): bool
@@ -72,7 +66,7 @@ class StartedTrainingResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return ApplicationsTable::configure($table, 'بدء التدريب');
+        return ApplicationsTable::configure($table, 'بدأ التدريب');
     }
 
     public static function getRelations(): array
@@ -83,7 +77,7 @@ class StartedTrainingResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListStartedTraining::route('/'),
+            'index' => Pages\ListStartedTrainings::route('/'),
             'view' => Pages\ViewStartedTraining::route('/{record}'),
             'edit' => Pages\EditStartedTraining::route('/{record}/edit'),
         ];
@@ -92,6 +86,6 @@ class StartedTrainingResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->where('status', Application::STATUS_STARTED_TRAINING);
+            ->where('status', ApplicationStatus::STARTED_TRAINING);
     }
 }

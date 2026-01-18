@@ -2,12 +2,13 @@
 
 namespace App\Filament\Resources\Applications\Pages;
 
+use App\Enums\ApplicationStatus;
 use App\Filament\Resources\Applications\ApplicationResource;
+use App\Models\Trainee;
 use Filament\Actions\Action;
 use Filament\Resources\Pages\CreateRecord;
-use App\Models\Trainee;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class CreateApplication extends CreateRecord
 {
@@ -21,12 +22,8 @@ class CreateApplication extends CreateRecord
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         if (Auth::user()->isCollegeSupervisor() || Auth::user()->isMinistry()) {
-            $data['status'] = \App\Models\Application::STATUS_CONFIRMATION;
+            $data['status'] = ApplicationStatus::CONFIRMATION;
             $data['accepted_at'] = now();
-        }
-
-        if (empty($data['dob']) && isset($data['dob_year'])) {
-            $data['dob'] = $data['dob_year'] . '-' . str_pad($data['dob_month'] ?? 1, 2, '0', STR_PAD_LEFT) . '-' . str_pad($data['dob_day'] ?? 1, 2, '0', STR_PAD_LEFT);
         }
 
         if (empty($data['trainee_id'])) {

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Applications\Status;
 
+use App\Enums\ApplicationStatus;
 use App\Filament\Resources\Applications\ApplicationResource;
 use App\Filament\Resources\Applications\Schemas\ApplicationForm;
 use App\Filament\Resources\Applications\Schemas\ApplicationInfolist;
@@ -11,35 +12,27 @@ use App\Filament\Resources\Applications\Status\ConfirmedResource\Pages;
 use App\Filament\Resources\Applications\Tables\ApplicationsTable;
 use App\Models\Application;
 use BackedEnum;
-use UnitEnum;
-use Illuminate\Support\Facades\Auth;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use App\Filament\Resources\Applications\ApplicationResource;
+use Illuminate\Support\Facades\Auth;
+use UnitEnum;
 
 class ConfirmedResource extends Resource
 {
     protected static ?string $model = Application::class;
+    protected static ?string $slug = 'confirmed-applications';
 
-    protected static ?string $slug = 'confirmed';
-
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCheckBadge;
-
-    protected static string|BackedEnum|null $activeNavigationIcon = Heroicon::CheckBadge;
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-check-badge';
+    protected static string|BackedEnum|null $activeNavigationIcon = 'heroicon-s-check-badge';
 
     protected static ?string $navigationParentItem = 'الطلبات';
 
-    protected static ?string $modelLabel = 'تأكيد';
-
-    protected static ?string $pluralModelLabel = 'المؤكدة';
-
-    protected static ?string $navigationLabel = 'تأكيد';
-
+    protected static ?string $modelLabel = 'طلب مؤكد';
+    protected static ?string $pluralModelLabel = 'الطلبات المؤكدة';
+    protected static ?string $navigationLabel = 'مؤكد';
     protected static ?int $navigationSort = 3;
-
     protected static string|UnitEnum|null $navigationGroup = 'إدارة المتدربين';
 
     public static function canViewAny(): bool
@@ -71,7 +64,7 @@ class ConfirmedResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return ApplicationsTable::configure($table, 'تأكيد');
+        return ApplicationsTable::configure($table, 'مؤكد');
     }
 
     public static function getRelations(): array
@@ -82,15 +75,15 @@ class ConfirmedResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListConfirmed::route('/'),
-            'view' => Pages\ViewConfirmed::route('/{record}'),
-            'edit' => Pages\EditConfirmed::route('/{record}/edit'),
+            'index' => Pages\ListConfirmedApplications::route('/'),
+            'view' => Pages\ViewConfirmedApplication::route('/{record}'),
+            'edit' => Pages\EditConfirmedApplication::route('/{record}/edit'),
         ];
     }
 
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->where('status', Application::STATUS_CONFIRMATION);
+            ->where('status', ApplicationStatus::CONFIRMATION);
     }
 }

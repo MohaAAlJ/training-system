@@ -5,7 +5,7 @@ namespace App\Filament\Resources\Applications\Status\StartedTrainingResource\Pag
 use App\Filament\Resources\Applications\Status\StartedTrainingResource;
 use Filament\Resources\Pages\ListRecords;
 
-class ListStartedTraining extends ListRecords
+class ListStartedTrainings extends ListRecords
 {
     protected static string $resource = StartedTrainingResource::class;
 }

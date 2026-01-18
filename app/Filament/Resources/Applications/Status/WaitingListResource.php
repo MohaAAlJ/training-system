@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Applications\Status;
 
+use App\Enums\ApplicationStatus;
 use App\Filament\Resources\Applications\ApplicationResource;
 use App\Filament\Resources\Applications\Schemas\ApplicationForm;
 use App\Filament\Resources\Applications\Schemas\ApplicationInfolist;
@@ -13,13 +14,11 @@ use App\Models\Application;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Illuminate\Support\Facades\Auth;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use UnitEnum;
-use App\Filament\Resources\Applications\ApplicationResource;
 
 class WaitingListResource extends Resource
 {
@@ -27,20 +26,15 @@ class WaitingListResource extends Resource
 
     protected static ?string $slug = 'waiting-list';
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClock;
-
-    protected static string|BackedEnum|null $activeNavigationIcon = Heroicon::Clock;
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-clock';
+    protected static string|BackedEnum|null $activeNavigationIcon = 'heroicon-s-clock';
 
     protected static ?string $navigationParentItem = 'الطلبات';
 
-    protected static ?string $modelLabel = 'طلب في قائمة الانتظار';
-
-    protected static ?string $pluralModelLabel = 'قائمة الانتظار';
-
+    protected static ?string $modelLabel = 'قائمة الانتظار';
+    protected static ?string $pluralModelLabel = 'قوائم الانتظار';
     protected static ?string $navigationLabel = 'قائمة الانتظار';
-
-    protected static ?int $navigationSort = 2;
-
+    protected static ?int $navigationSort = 4;
     protected static string|UnitEnum|null $navigationGroup = 'إدارة المتدربين';
 
     public static function canViewAny(): bool
@@ -82,12 +76,16 @@ class WaitingListResource extends Resource
 
     public static function getPages(): array
     {
-        return [];
+        return [
+            'index' => Pages\ListWaitingLists::route('/'),
+            'view' => Pages\ViewWaitingList::route('/{record}'),
+            'edit' => Pages\EditWaitingList::route('/{record}/edit'),
+        ];
     }
 
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->where('status', Application::STATUS_WAITING_LIST);
+            ->where('status', ApplicationStatus::WAITING_LIST);
     }
 }
