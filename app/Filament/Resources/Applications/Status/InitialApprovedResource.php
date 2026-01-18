@@ -1,41 +1,50 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources\Applications\Status;
 
-use App\Filament\Resources\Applications\Tables\ApplicationsTable;
+use App\Filament\Resources\Applications\ApplicationResource;
 use App\Filament\Resources\Applications\Schemas\ApplicationForm;
 use App\Filament\Resources\Applications\Schemas\ApplicationInfolist;
 use App\Filament\Resources\Applications\Status\InitialApprovedResource\Pages;
+use App\Filament\Resources\Applications\Tables\ApplicationsTable;
 use App\Models\Application;
 use BackedEnum;
-use UnitEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
-use App\Filament\Resources\Applications\ApplicationResource;
+use UnitEnum;
 
 class InitialApprovedResource extends Resource
 {
     protected static ?string $model = Application::class;
+
     protected static ?string $slug = 'initial-approved';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCheckCircle;
-    protected static string | BackedEnum | null $activeNavigationIcon = Heroicon::CheckCircle;
+
+    protected static string|BackedEnum|null $activeNavigationIcon = Heroicon::CheckCircle;
 
     protected static ?string $navigationParentItem = 'الطلبات';
 
     protected static ?string $modelLabel = 'موافقة مبدئية';
+
     protected static ?string $pluralModelLabel = 'الموافقات المبدئية';
+
     protected static ?string $navigationLabel = 'موافقة مبدئية';
+
     protected static ?int $navigationSort = 2;
-    protected static string | UnitEnum | null $navigationGroup = 'إدارة المتدربين';
+
+    protected static string|UnitEnum|null $navigationGroup = 'إدارة المتدربين';
 
     public static function canViewAny(): bool
     {
         $user = Auth::user();
+
         return $user && ($user->isAdmin() || $user->isGeneralTrainingManager());
     }
 
@@ -46,7 +55,7 @@ class InitialApprovedResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getEloquentQuery()->count();
+        return (string) static::getEloquentQuery()->count();
     }
 
     public static function form(Schema $schema): Schema

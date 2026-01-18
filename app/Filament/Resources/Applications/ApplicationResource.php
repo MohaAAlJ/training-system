@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources\Applications;
 
 use App\Filament\Resources\Applications\Pages\CreateApplication;
@@ -10,34 +12,42 @@ use App\Filament\Resources\Applications\Schemas\ApplicationForm;
 use App\Filament\Resources\Applications\Schemas\ApplicationInfolist;
 use App\Filament\Resources\Applications\Tables\ApplicationsTable;
 use App\Models\Application;
+use App\Models\College;
 use BackedEnum;
-use UnitEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Auth;
+use UnitEnum;
 
 
 class ApplicationResource extends Resource
 {
-    // Toggle status page visibility from here
-    // Change to true to show status pages in navigation, false to hide them
+    /**
+     * Toggle status page visibility from here.
+     * Change to true to show status pages in navigation, false to hide them
+     */
     protected static bool $showStatusPages = false;
 
     protected static ?string $model = Application::class;
+
     protected static ?string $slug = 'application';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClipboard;
-    protected static string | BackedEnum | null $activeNavigationIcon = Heroicon::ClipboardDocumentList; //filled icon when active
-    // Arabic labels
+
+    protected static string|BackedEnum|null $activeNavigationIcon = Heroicon::ClipboardDocumentList;
+
     protected static ?string $modelLabel = 'طلب';
+
     protected static ?string $pluralModelLabel = 'الطلبات';
+
     protected static ?string $navigationLabel = 'الطلبات';
+
     protected static ?int $navigationSort = 2;
-    protected static string | UnitEnum | null $navigationGroup = 'إدارة المتدربين';
+
+    protected static string|UnitEnum|null $navigationGroup = 'إدارة المتدربين';
 
     public static function shouldShowStatusPages(): bool
     {
@@ -46,7 +56,7 @@ class ApplicationResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getEloquentQuery()->count();
+        return (string) static::getEloquentQuery()->count();
     }
 
     public static function form(Schema $schema): Schema
@@ -66,9 +76,7 @@ class ApplicationResource extends Resource
 
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
 
     public static function getPages(): array
@@ -91,66 +99,76 @@ class ApplicationResource extends Resource
         }
 
         if ($user->isCollegeSupervisor()) {
-            $collegeId = \App\Models\College::where('user_id', $user->id)->value('id');
-            return $query->where('training_type', Application::TRAINING_TYPE_UNIVERSITY)
+            $collegeId = College::query()
+                ->where('user_id', $user->id)
+                ->value('id');
+
+            return $query
+                ->where('training_type', Application::TRAINING_TYPE_UNIVERSITY)
                 ->whereIn('status', [
                     Application::STATUS_INITIAL_APPROVE,
                     Application::STATUS_STARTED_TRAINING,
-                    Application::STATUS_ENDED_TRAINING
+                    Application::STATUS_ENDED_TRAINING,
                 ])
-                ->whereHas('trainee', function ($q) use ($collegeId) {
+                ->whereHas('trainee', function (Builder $q) use ($collegeId): void {
                     $q->where('college_id', $collegeId);
                 });
         }
 
         if ($user->isSectionHead()) {
-            return $query->where('section_id', $user->section?->id)
+            return $query
+                ->where('section_id', $user->section?->id)
                 ->whereIn('status', [
                     Application::STATUS_STARTED_TRAINING,
-                    Application::STATUS_ENDED_TRAINING
+                    Application::STATUS_ENDED_TRAINING,
                 ]);
         }
 
         if ($user->isAdministrative()) {
-            return $query->where('administrative_id', $user->administrative?->id)
+            return $query
+                ->where('administrative_id', $user->administrative?->id)
                 ->whereIn('status', [
                     Application::STATUS_STARTED_TRAINING,
-                    Application::STATUS_ENDED_TRAINING
+                    Application::STATUS_ENDED_TRAINING,
                 ]);
         }
 
         if ($user->isMedicalManager()) {
-            $adminId = \App\Models\Administrative::where('medical_head_user_id', $user->id)->value('id');
-            return $query->where('administrative_id', $adminId)
-                ->whereHas('department', fn($q) => $q->where('is_medical', true))
+            $adminId = \App\Models\Administrative::query()
+                ->where('medical_head_user_id', $user->id)
+                ->value('id');
+
+            return $query
+                ->where('administrative_id', $adminId)
+                ->whereHas('department', fn (Builder $q): Builder => $q->where('is_medical', true))
                 ->whereIn('status', [
                     Application::STATUS_STARTED_TRAINING,
-                    Application::STATUS_ENDED_TRAINING
+                    Application::STATUS_ENDED_TRAINING,
                 ]);
         }
 
         if ($user->isDepartment()) {
-            $query->where('department_id', $user->department?->id)
+            $query
+                ->where('department_id', $user->department?->id)
                 ->whereIn('status', [
                     Application::STATUS_STARTED_TRAINING,
-                    Application::STATUS_ENDED_TRAINING
+                    Application::STATUS_ENDED_TRAINING,
                 ]);
 
             if ($user->department?->is_medical === true) {
-                $query->whereHas('department', function ($q) {
-                    $q->where('is_medical', true);
-                });
+                $query->whereHas('department', fn (Builder $q): Builder => $q->where('is_medical', true));
             }
 
             return $query;
         }
 
         if ($user->isMinistry()) {
-            return $query->where('training_type', Application::TRAINING_TYPE_PRACTICE)
+            return $query
+                ->where('training_type', Application::TRAINING_TYPE_PRACTICE)
                 ->whereIn('status', [
                     Application::STATUS_INITIAL_APPROVE,
                     Application::STATUS_STARTED_TRAINING,
-                    Application::STATUS_ENDED_TRAINING
+                    Application::STATUS_ENDED_TRAINING,
                 ]);
         }
 
