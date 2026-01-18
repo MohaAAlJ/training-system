@@ -12,12 +12,12 @@ use App\Filament\Resources\Applications\Status\NewApplicationResource\Pages;
 use App\Filament\Resources\Applications\Tables\ApplicationsTable;
 use App\Models\Application;
 use BackedEnum;
-use UnitEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
+use UnitEnum;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\Eloquent\Builder;
 
 class NewApplicationResource extends Resource
 {

@@ -6,6 +6,7 @@ namespace App\Filament\Resources\Applications\Tables;
 
 use App\Enums\ApplicationStatus;
 use App\Enums\TrainingType;
+use App\Filament\Exporters\ApplicationExporter;
 use App\Models\Administrative;
 use App\Models\Application;
 use App\Models\Department;
@@ -24,6 +25,7 @@ use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\EditAction;
+use Filament\Actions\ExportAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
@@ -75,6 +77,11 @@ class ApplicationsTable
                     ->dateTime('Y-m-d')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+            ])
+            ->headerActions([
+                ExportAction::make()
+                    ->label('تحميل Excel')
+                    ->exporter(ApplicationExporter::class),
             ])
             ->filters([
                 SelectFilter::make('status')
