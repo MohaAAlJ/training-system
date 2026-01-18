@@ -2,11 +2,12 @@
 
 namespace App\Filament\Resources\Applications\Pages;
 
+use App\Enums\TrainingType;
 use App\Filament\Resources\Applications\ApplicationResource;
+use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\RestoreAction;
-use Filament\Actions\Action;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Support\Facades\Auth;
 
@@ -17,7 +18,7 @@ class EditApplication extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            \Filament\Actions\Action::make('save')
+            Action::make('save')
                 ->label('حفظ التغييرات')
                 ->action('save')
                 ->icon('heroicon-m-check')
@@ -53,18 +54,20 @@ class EditApplication extends EditRecord
         $trainee = $this->getRecord()->trainee;
 
         if ($trainee && isset($data['training_type'])) {
-            $trainingType = (int)$data['training_type'];
+            $trainingType = $data['training_type'] instanceof TrainingType
+                ? $data['training_type']->value
+                : (int)$data['training_type'];
 
-            // If training type is TRAINING_TYPE_PRACTICE, clear educational fields
-            if ($trainingType === \App\Models\Application::TRAINING_TYPE_PRACTICE) {
+            // If training type is PRACTICE, clear educational fields
+            if ($trainingType === TrainingType::PRACTICE->value) {
                 $trainee->update([
                     'institution_id' => null,
                     'college_id' => null,
                     'major_id' => null,
                 ]);
             }
-            // If training type is TRAINING_TYPE_UNIVERSITY, update educational fields from form
-            elseif ($trainingType === \App\Models\Application::TRAINING_TYPE_UNIVERSITY) {
+            // If training type is UNIVERSITY, update educational fields from form
+            elseif ($trainingType === TrainingType::UNIVERSITY->value) {
                 $updateData = [];
 
                 if (isset($data['institution_id'])) {
