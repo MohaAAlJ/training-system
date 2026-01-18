@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources\Applications\Status;
 
 use App\Enums\ApplicationStatus;
@@ -21,6 +23,7 @@ use UnitEnum;
 class WaitingListResource extends Resource
 {
     protected static ?string $model = Application::class;
+
     protected static ?string $slug = 'waiting-list';
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-clock';
@@ -37,6 +40,7 @@ class WaitingListResource extends Resource
     public static function canViewAny(): bool
     {
         $user = Auth::user();
+
         return $user && ($user->isAdmin() || $user->isGeneralTrainingManager());
     }
 
@@ -47,7 +51,7 @@ class WaitingListResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getEloquentQuery()->count();
+        return (string) static::getEloquentQuery()->count();
     }
 
     public static function form(Schema $schema): Schema

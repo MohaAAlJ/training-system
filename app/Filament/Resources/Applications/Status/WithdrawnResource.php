@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources\Applications\Status;
 
 use App\Enums\ApplicationStatus;
@@ -31,12 +33,14 @@ class WithdrawnResource extends Resource
     protected static ?string $modelLabel = 'طلب منسحب';
     protected static ?string $pluralModelLabel = 'الطلبات المنسحبة';
     protected static ?string $navigationLabel = 'منسحب';
+
     protected static ?int $navigationSort = 8;
     protected static string|UnitEnum|null $navigationGroup = 'إدارة المتدربين';
 
     public static function canViewAny(): bool
     {
         $user = Auth::user();
+
         return $user && ($user->isAdmin() || $user->isGeneralTrainingManager());
     }
 
@@ -47,7 +51,7 @@ class WithdrawnResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getEloquentQuery()->count();
+        return (string) static::getEloquentQuery()->count();
     }
 
     public static function form(Schema $schema): Schema
