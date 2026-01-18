@@ -168,6 +168,12 @@ class TraineeForm extends Component
     // ========================================
     public function mount(?string $nationalId = null, ?int $trainingType = null)
     {
+        // Check if public form is enabled
+        $settings = app(TrainingSettings::class);
+        if (!$settings->is_public_form_enabled) {
+            return redirect()->route('training.welcome')->with('error', 'تقديم الطلبات عبر البوابة مغلق حالياً.');
+        }
+
         // Initialize form state (from ManagesFormState trait)
         $this->initializeFormState();
 
