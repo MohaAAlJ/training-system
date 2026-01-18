@@ -6,6 +6,8 @@ use App\Models\Application;
 use Filament\Actions\Exports\ExportColumn;
 use Filament\Actions\Exports\Exporter;
 use Filament\Actions\Exports\Models\Export;
+use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class ApplicationExporter extends Exporter
 {
@@ -66,5 +68,48 @@ class ApplicationExporter extends Exporter
         }
 
         return $body;
+    }
+
+    public function getFileName(Export $export): string
+    {
+        $user = Auth::user();
+        $timestamp = Carbon::now()->format('ymd_His');
+        $baseFileName = "المتدربين_{$timestamp}";
+
+        if (!$user) {
+            return $baseFileName;
+        }
+
+        // Check user role and add relevant context
+        if ($user->isAdmin()) {
+            // Admin users get the system context
+            return "{$baseFileName}";
+        } elseif ($user->isGeneralTrainingManager()) {
+            // GTM users get training context
+            return "{$baseFileName}_مدير_التدريب";
+        } elseif ($user->isDepartmentHead()) {
+            $department = $user->department;
+            if ($department) {
+                return "{$baseFileName}_{$department->title}";
+            }
+        } elseif ($user->isAdministrative()) {
+            $administrative = $user->administrative;
+            if ($administrative) {
+                return "{$baseFileName}_{$administrative->title}";
+            }
+        } elseif ($user->isSectionHead()) {
+            $section = $user->section;
+            if ($section) {
+                return "{$baseFileName}_{$section->name_location}";
+            }
+        } elseif ($user->isCollegeSupervisor()) {
+            $college = $user->college;
+            if ($college) {
+                return "{$baseFileName}_{$college->name}";
+            }
+        }
+
+        // Default for any other users
+        return $baseFileName;
     }
 }
