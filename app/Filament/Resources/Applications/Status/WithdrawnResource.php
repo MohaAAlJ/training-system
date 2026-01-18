@@ -1,41 +1,52 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources\Applications\Status;
 
-use App\Filament\Resources\Applications\Tables\ApplicationsTable;
+use App\Filament\Resources\Applications\ApplicationResource;
 use App\Filament\Resources\Applications\Schemas\ApplicationForm;
 use App\Filament\Resources\Applications\Schemas\ApplicationInfolist;
 use App\Filament\Resources\Applications\Status\WithdrawnResource\Pages;
+use App\Filament\Resources\Applications\Tables\ApplicationsTable;
 use App\Models\Application;
 use BackedEnum;
-use UnitEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\Auth;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
+use UnitEnum;
 use App\Filament\Resources\Applications\ApplicationResource;
 
 class WithdrawnResource extends Resource
 {
     protected static ?string $model = Application::class;
+
     protected static ?string $slug = 'withdrawn';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedArrowUturnLeft;
-    protected static string | BackedEnum | null $activeNavigationIcon = Heroicon::ArrowUturnLeft;
+
+    protected static string|BackedEnum|null $activeNavigationIcon = Heroicon::ArrowUturnLeft;
 
     protected static ?string $navigationParentItem = 'الطلبات';
 
     protected static ?string $modelLabel = 'منسحب';
+
     protected static ?string $pluralModelLabel = 'المنسحبين';
+
     protected static ?string $navigationLabel = 'منسحب';
+
     protected static ?int $navigationSort = 8;
-    protected static string | UnitEnum | null $navigationGroup = 'إدارة المتدربين';
+
+    protected static string|UnitEnum|null $navigationGroup = 'إدارة المتدربين';
 
     public static function canViewAny(): bool
     {
         $user = Auth::user();
+
         return $user && ($user->isAdmin() || $user->isGeneralTrainingManager());
     }
 
@@ -46,7 +57,7 @@ class WithdrawnResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getEloquentQuery()->count();
+        return (string) static::getEloquentQuery()->count();
     }
 
     public static function form(Schema $schema): Schema

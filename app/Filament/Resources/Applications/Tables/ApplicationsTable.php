@@ -1,30 +1,36 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources\Applications\Tables;
 
-use App\Models\Application;
-use App\Models\Section;
-use App\Models\Department;
 use App\Models\Administrative;
-use Filament\Schemas\Components\Utilities\Get;
-use Filament\Schemas\Components\Utilities\Set;
-
+use App\Models\Application;
+use App\Models\Department;
+use App\Models\Section;
+use Carbon\Carbon;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
+use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\EditAction;
+use Filament\Actions\ExportAction;
 use Filament\Actions\ViewAction;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\SelectFilter;
-use Filament\Tables\Filters\Filter;
-use Filament\Actions\BulkAction;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Fieldset;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Filament\Forms\Components\DatePicker;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
-use Filament\Schemas\Components\Fieldset;
-use Filament\Actions\ExportAction;
+use Illuminate\Support\Facades\Lang;
 
 class ApplicationsTable
 {
@@ -135,22 +141,26 @@ class ApplicationsTable
                     ->sortable()
                     ->toggleable()
                     ->badge()
-                    ->color(fn($state): string => match ((int)$state) {
-                        1 => 'info',
-                        2 => 'primary',
-                        3 => 'primary',
-                        4 => 'warning',
-                        5 => 'success',
-                        6 => 'gray',
-                        7 => 'danger',
-                        8 => 'danger',
-                        default => 'gray',
-                    })
-                    ->formatStateUsing(fn($state): string => (function ($state) {
-                        $key = 'translation.status.' . $state;
-                        $translated = \Illuminate\Support\Facades\Lang::get($key, [], 'ar');
-                        return $translated === $key ? $state : $translated;
-                    })($state)),
+                    ->color(
+                        fn (int|string $state): string => match ((int) $state) {
+                            1 => 'info',
+                            2 => 'primary',
+                            3 => 'primary',
+                            4 => 'warning',
+                            5 => 'success',
+                            6 => 'gray',
+                            7 => 'danger',
+                            8 => 'danger',
+                            default => 'gray',
+                        }
+                    )
+                    ->formatStateUsing(
+                        fn (int|string $state): string => Lang::get(
+                            "translation.status.{$state}",
+                            [],
+                            'ar'
+                        ) ?: $state
+                    ),
                 TextColumn::make('trainee.training_hours')
                     ->label('ساعات التدريب')
                     ->sortable()
@@ -171,22 +181,29 @@ class ApplicationsTable
             ->filters([
                 SelectFilter::make('status')
                     ->label('الحالة')
-                    ->options(fn() => array_combine(
-                        Application::STATUSES,
-                        array_map(fn($s) => \Illuminate\Support\Facades\Lang::get("translation.status.$s", [], 'ar'), Application::STATUSES)
-                    ))
+                    ->options(
+                        fn (): array => array_combine(
+                            Application::STATUSES,
+                            array_map(
+                                fn (int $s): string => Lang::get("translation.status.{$s}", [], 'ar'),
+                                Application::STATUSES
+                            )
+                        )
+                    )
                     ->visible(! Auth::user()->isGeneralTrainingManager()),
                 SelectFilter::make('training_type')
                     ->label('نوع التدريب')
                     ->options(Application::TRAINING_TYPES)
-                    ->visible(fn() => Auth::check() && (
-                        Auth::user()->isAdmin() ||
-                        Auth::user()->isDepartment() ||
-                        Auth::user()->isHOA() ||
-                        Auth::user()->isGeneralTrainingManager()
-                    )),
+                    ->visible(
+                        fn (): bool => Auth::check() && (
+                            Auth::user()->isAdmin() ||
+                            Auth::user()->isDepartment() ||
+                            Auth::user()->isHOA() ||
+                            Auth::user()->isGeneralTrainingManager()
+                        )
+                    ),
                 SelectFilter::make('department_id')
-                    ->label('القسم')
+                    ->label('الدائرة')
                     ->relationship('department', 'title')
                     ->searchable()
                     ->preload(),
@@ -203,11 +220,27 @@ class ApplicationsTable
                         DatePicker::make('start_date_to')
                             ->label('إلى'),
                     ])
-                    ->query(function (Builder $query, array $data): Builder {
-                        return $query
-                            ->when($data['start_date_from'], fn(Builder $q) => $q->whereDate('start_date', '>=', $data['start_date_from']))
-                            ->when($data['start_date_to'], fn(Builder $q) => $q->whereDate('start_date', '<=', $data['start_date_to']));
-                    }),
+                    ->query(
+                        function (Builder $query, array $data): Builder {
+                            return $query
+                                ->when(
+                                    $data['start_date_from'],
+                                    fn (Builder $q): Builder => $q->whereDate(
+                                        'start_date',
+                                        '>=',
+                                        $data['start_date_from']
+                                    )
+                                )
+                                ->when(
+                                    $data['start_date_to'],
+                                    fn (Builder $q): Builder => $q->whereDate(
+                                        'start_date',
+                                        '<=',
+                                        $data['start_date_to']
+                                    )
+                                );
+                        }
+                    ),
             ])
 
             ->headerActions([
@@ -319,27 +352,31 @@ class ApplicationsTable
                                 ->default(30)
                                 ->reactive();
 
-                            $schema[] = \Filament\Forms\Components\Placeholder::make('calculated_end_date')
+                            $schema[] = Placeholder::make('calculated_end_date')
                                 ->label('تاريخ الانتهاء المتوقع')
-                                ->content(function (Get $get) {
-                                    $startDate = $get('start_date');
-                                    $duration = $get('duration');
+                                ->content(
+                                    function (Get $get): string {
+                                        $startDate = $get('start_date');
+                                        $duration = $get('duration');
 
-                                    if ($startDate && $duration) {
-                                        try {
-                                            $start = \Carbon\Carbon::parse($startDate);
-                                            $end = $start->copy()->addDays((int)$duration);
-                                            return $end->format('Y-m-d') . ' (' . $end->translatedFormat('l، d F Y') . ')';
-                                        } catch (\Exception $e) {
-                                            return 'غير محدد';
+                                        if ($startDate && $duration) {
+                                            try {
+                                                $start = Carbon::parse($startDate);
+                                                $end = $start->copy()->addDays((int) $duration);
+
+                                                return $end->format('Y-m-d') . ' (' . $end->translatedFormat('l، d F Y') . ')';
+                                            } catch (\Exception $e) {
+                                                return 'غير محدد';
+                                            }
                                         }
+
+                                        return 'غير محدد';
                                     }
-                                    return 'غير محدد';
-                                });
+                                );
 
                             return $schema;
                         })
-                        ->action(function (Application $record, array $data) {
+                        ->action(function (Application $record, array $data): void {
                             if (isset($data['section_id'])) {
                                 $record->update([
                                     'administrative_id' => $data['administrative_id'],
@@ -349,9 +386,10 @@ class ApplicationsTable
                                 $record->refresh();
                             }
 
-                            $startDate = \Carbon\Carbon::parse($data['start_date']);
-                            $duration = (int)$data['duration'];
+                            $startDate = Carbon::parse($data['start_date']);
+                            $duration = (int) $data['duration'];
                             $endDate = $startDate->copy()->addDays($duration);
+
                             $record->update([
                                 'status' => Application::STATUS_STARTED_TRAINING,
                                 'start_date' => $startDate,
@@ -489,29 +527,33 @@ class ApplicationsTable
                             ->reactive()
                             ->visible(fn(Get $get) => (int)$get('new_status') === Application::STATUS_STARTED_TRAINING);
 
-                        $schema[] = \Filament\Forms\Components\Placeholder::make('calculated_end_date')
+                        $schema[] = Placeholder::make('calculated_end_date')
                             ->label('تاريخ الانتهاء المتوقع')
-                            ->content(function (Get $get) {
-                                $startDate = $get('start_date');
-                                $duration = $get('duration');
+                            ->content(
+                                function (Get $get): string {
+                                    $startDate = $get('start_date');
+                                    $duration = $get('duration');
 
-                                if ($startDate && $duration) {
-                                    try {
-                                        $start = \Carbon\Carbon::parse($startDate);
-                                        $end = $start->copy()->addDays((int)$duration);
-                                        return $end->format('Y-m-d') . ' (' . $end->translatedFormat('l، d F Y') . ')';
-                                    } catch (\Exception $e) {
-                                        return 'غير محدد';
+                                    if ($startDate && $duration) {
+                                        try {
+                                            $start = Carbon::parse($startDate);
+                                            $end = $start->copy()->addDays((int) $duration);
+
+                                            return $end->format('Y-m-d') . ' (' . $end->translatedFormat('l، d F Y') . ')';
+                                        } catch (\Exception $e) {
+                                            return 'غير محدد';
+                                        }
                                     }
+
+                                    return 'غير محدد';
                                 }
-                                return 'غير محدد';
-                            })
-                            ->visible(fn(Get $get) => (int)$get('new_status') === Application::STATUS_STARTED_TRAINING);
+                            )
+                            ->visible(fn (Get $get): bool => (int) $get('new_status') === Application::STATUS_STARTED_TRAINING);
 
                         return $schema;
                     })
                     ->successNotificationTitle('تمت معالجة الطلب بنجاح')
-                    ->action(function (Application $record, array $data) {
+                    ->action(function (Application $record, array $data): void {
                         if (isset($data['section_id'])) {
                             $record->update([
                                 'administrative_id' => $data['administrative_id'],
@@ -521,11 +563,11 @@ class ApplicationsTable
                             $record->refresh();
                         }
 
-                        $newStatus = (int)$data['new_status'];
+                        $newStatus = (int) $data['new_status'];
 
                         if ($newStatus === Application::STATUS_STARTED_TRAINING) {
-                            $startDate = \Carbon\Carbon::parse($data['start_date']);
-                            $duration = (int)$data['duration'];
+                            $startDate = Carbon::parse($data['start_date']);
+                            $duration = (int) $data['duration'];
                             $endDate = $startDate->copy()->addDays($duration);
 
                             $record->update([
@@ -636,12 +678,12 @@ class ApplicationsTable
                                 ->default(30)
                                 ->visible(fn(Get $get) => (int)$get('new_status') === Application::STATUS_STARTED_TRAINING),
                         ])
-                        ->action(function (\Illuminate\Database\Eloquent\Collection $records, array $data) {
-                            $status = (int)$data['new_status'];
+                        ->action(function (Collection $records, array $data): void {
+                            $status = (int) $data['new_status'];
 
                             if ($status === Application::STATUS_STARTED_TRAINING) {
-                                $startDate = \Carbon\Carbon::parse($data['start_date']);
-                                $duration = (int)$data['duration'];
+                                $startDate = Carbon::parse($data['start_date']);
+                                $duration = (int) $data['duration'];
                                 $endDate = $startDate->copy()->addDays($duration);
 
                                 $records->each->update([
@@ -650,7 +692,7 @@ class ApplicationsTable
                                     'duration' => $duration,
                                     'end_date' => $endDate,
                                 ]);
-                            } elseif (in_array($status, [Application::STATUS_WAITING_LIST, Application::STATUS_REJECTED])) {
+                            } elseif (in_array($status, [Application::STATUS_WAITING_LIST, Application::STATUS_REJECTED], true)) {
                                 $records->each->update([
                                     'status' => $status,
                                     'start_date' => null,

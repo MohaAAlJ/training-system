@@ -1,41 +1,52 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources\Applications\Status;
 
-use App\Filament\Resources\Applications\Tables\ApplicationsTable;
+use App\Filament\Resources\Applications\ApplicationResource;
 use App\Filament\Resources\Applications\Schemas\ApplicationForm;
 use App\Filament\Resources\Applications\Schemas\ApplicationInfolist;
 use App\Filament\Resources\Applications\Status\StartedTrainingResource\Pages;
+use App\Filament\Resources\Applications\Tables\ApplicationsTable;
 use App\Models\Application;
 use BackedEnum;
-use UnitEnum;
 use Filament\Resources\Resource;
 use Illuminate\Support\Facades\Auth;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
+use UnitEnum;
 use App\Filament\Resources\Applications\ApplicationResource;
 
 class StartedTrainingResource extends Resource
 {
     protected static ?string $model = Application::class;
+
     protected static ?string $slug = 'started-training';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedAcademicCap;
-    protected static string | BackedEnum | null $activeNavigationIcon = Heroicon::AcademicCap;
+
+    protected static string|BackedEnum|null $activeNavigationIcon = Heroicon::AcademicCap;
 
     protected static ?string $navigationParentItem = 'الطلبات';
 
     protected static ?string $modelLabel = 'قيد التدريب';
+
     protected static ?string $pluralModelLabel = 'المتدربين النشطين';
+
     protected static ?string $navigationLabel = 'قيد التدريب';
+
     protected static ?int $navigationSort = 5;
-    protected static string | UnitEnum | null $navigationGroup = 'إدارة المتدربين';
+
+    protected static string|UnitEnum|null $navigationGroup = 'إدارة المتدربين';
 
     public static function canViewAny(): bool
     {
         $user = Auth::user();
+
         return $user && ($user->isAdmin() || $user->isGeneralTrainingManager());
     }
 
@@ -46,7 +57,7 @@ class StartedTrainingResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getEloquentQuery()->count();
+        return (string) static::getEloquentQuery()->count();
     }
 
     public static function form(Schema $schema): Schema

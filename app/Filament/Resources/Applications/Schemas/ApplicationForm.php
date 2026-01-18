@@ -1,27 +1,30 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources\Applications\Schemas;
 
+use App\Models\Administrative;
 use App\Models\Application;
-
-use App\Models\Institution;
 use App\Models\College;
+use App\Models\Institution;
 use App\Models\Major;
 use App\Models\Section;
-use App\Models\Administrative;
+use App\Models\Trainee;
+use Carbon\Carbon;
+use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Hidden;
+use Filament\Notifications\Notification;
+use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Group;
-use Filament\Actions\Action;
-use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\Auth;
-use App\Helpers\Constants;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\Lang;
 
 class ApplicationForm
 {
@@ -35,15 +38,15 @@ class ApplicationForm
                     ->schema([
                         TextInput::make('full_name')
                             ->label('الاسم الكامل')
-                            ->formatStateUsing(fn($record) => $record?->trainee?->full_name)
-                            ->disabled(fn($context) => $context === 'edit')
-                            ->dehydrated(fn($context) => $context === 'create')
+                            ->formatStateUsing(fn ($record): ?string => $record?->trainee?->full_name)
+                            ->disabled(fn ($context): bool => $context === 'edit')
+                            ->dehydrated(fn ($context): bool => $context === 'create')
                             ->regex('/^[A-Za-z\p{Arabic}\s]+$/u')
                             ->maxLength(255)
                             ->validationMessages([
-                                'required' => __('validation.custom.full_name.required'),
-                                'regex' => __('validation.custom.full_name.regex'),
-                                'max' => __('validation.custom.full_name.max'),
+                                'required' => Lang::get('validation.custom.full_name.required'),
+                                'regex' => Lang::get('validation.custom.full_name.regex'),
+                                'max' => Lang::get('validation.custom.full_name.max'),
                             ])
                             ->required(fn($context) => $context === 'create')
                             ->suffixAction(
@@ -108,7 +111,7 @@ class ApplicationForm
                                             $livewire->data['dob'] = $data['dob'];
                                         }
 
-                                        \Filament\Notifications\Notification::make()
+                                        Notification::make()
                                             ->title('تم تحديث بيانات المتدرب بنجاح')
                                             ->success()
                                             ->send();
@@ -133,11 +136,12 @@ class ApplicationForm
 
                                 // Validate Palestinian National ID checksum
                                 if (validatePalestinianId($state) !== 'valid') {
-                                    \Filament\Notifications\Notification::make()
+                                    Notification::make()
                                         ->title('رقم الهوية الوطنية غير صحيح')
                                         ->danger()
                                         ->send();
                                     $set('national_id', null);
+
                                     return;
                                 }
 
@@ -160,29 +164,29 @@ class ApplicationForm
                                     }
 
                                     if ($trainee->dob) {
-                                        $dob = \Carbon\Carbon::parse($trainee->dob);
+                                        $dob = Carbon::parse($trainee->dob);
                                         $set('dob', $dob->format('Y-m-d'));
                                         $set('dob_day', $dob->day);
                                         $set('dob_month', $dob->format('m'));
                                         $set('dob_year', $dob->year);
                                     }
 
-                                    \Filament\Notifications\Notification::make()
+                                    Notification::make()
                                         ->title('تم العثور على بيانات المتدرب')
                                         ->success()
                                         ->send();
                                 } else {
                                     $set('trainee_id', null);
-                                    \Filament\Notifications\Notification::make()
+                                    Notification::make()
                                         ->title('المتدرب غير موجود')
                                         ->warning()
                                         ->send();
                                 }
                             })
                             ->validationMessages([
-                                'required' => __('validation.custom.national_id.required'),
-                                'regex' => __('validation.custom.national_id.regex'),
-                                'digits' => __('validation.custom.national_id.digits'),
+                                'required' => Lang::get('validation.custom.national_id.required'),
+                                'regex' => Lang::get('validation.custom.national_id.regex'),
+                                'digits' => Lang::get('validation.custom.national_id.digits'),
                             ])
                             ->required(fn($context) => $context === 'create'),
 
@@ -197,8 +201,8 @@ class ApplicationForm
                             ->maxLength(12)
                             ->helperText('مثال: 970591234567 أو 972561234567')
                             ->validationMessages([
-                                'required' => __('validation.custom.phone_number.required'),
-                                'regex' => __('validation.custom.phone_number.regex'),
+                                'required' => Lang::get('validation.custom.phone_number.required'),
+                                'regex' => Lang::get('validation.custom.phone_number.regex'),
                             ])
                             ->required(fn($context) => $context === 'create'),
 
@@ -300,7 +304,7 @@ class ApplicationForm
                             ->visible(fn($record, $context, callable $get) => ! Auth::user()->isCollegeSupervisor() && $get('training_type') != Application::TRAINING_TYPE_PRACTICE)
                             ->dehydrated()
                             ->validationMessages([
-                                'required' => __('validation.custom.institution_id.required'),
+                                'required' => Lang::get('validation.custom.institution_id.required'),
                             ])
                             ->required(fn() => Auth::user()->isAdmin())
                             ->reactive(),
@@ -330,7 +334,7 @@ class ApplicationForm
                             ->visible(fn($record, $context, callable $get) => ! Auth::user()->isCollegeSupervisor() && $get('training_type') != Application::TRAINING_TYPE_PRACTICE)
                             ->dehydrated()
                             ->validationMessages([
-                                'required' => __('validation.custom.college_id.required'),
+                                'required' => Lang::get('validation.custom.college_id.required'),
                             ])
                             ->required(fn() => Auth::user()->isAdmin())
                             ->reactive(),
@@ -361,7 +365,7 @@ class ApplicationForm
                             ->dehydrated()
                             ->searchable()
                             ->validationMessages([
-                                'required' => __('validation.custom.major_id.required'),
+                                'required' => Lang::get('validation.custom.major_id.required'),
                             ])
                             ->required(fn($context) => $context === 'create')
                             ->preload(),

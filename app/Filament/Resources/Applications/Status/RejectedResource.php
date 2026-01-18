@@ -1,11 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources\Applications\Status;
 
-use App\Filament\Resources\Applications\Tables\ApplicationsTable;
+use App\Filament\Resources\Applications\ApplicationResource;
 use App\Filament\Resources\Applications\Schemas\ApplicationForm;
 use App\Filament\Resources\Applications\Schemas\ApplicationInfolist;
 use App\Filament\Resources\Applications\Status\RejectedResource\Pages;
+use App\Filament\Resources\Applications\Tables\ApplicationsTable;
 use App\Models\Application;
 use BackedEnum;
 use UnitEnum;
@@ -20,22 +23,29 @@ use App\Filament\Resources\Applications\ApplicationResource;
 class RejectedResource extends Resource
 {
     protected static ?string $model = Application::class;
+
     protected static ?string $slug = 'rejected';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedXCircle;
-    protected static string | BackedEnum | null $activeNavigationIcon = Heroicon::XCircle;
+
+    protected static string|BackedEnum|null $activeNavigationIcon = Heroicon::XCircle;
 
     protected static ?string $navigationParentItem = 'الطلبات';
 
     protected static ?string $modelLabel = 'مرفوض';
+
     protected static ?string $pluralModelLabel = 'المرفوضة';
+
     protected static ?string $navigationLabel = 'مرفوض';
+
     protected static ?int $navigationSort = 7;
-    protected static string | UnitEnum | null $navigationGroup = 'إدارة المتدربين';
+
+    protected static string|UnitEnum|null $navigationGroup = 'إدارة المتدربين';
 
     public static function canViewAny(): bool
     {
         $user = Auth::user();
+
         return $user && ($user->isAdmin() || $user->isGeneralTrainingManager());
     }
 
@@ -46,7 +56,7 @@ class RejectedResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getEloquentQuery()->count();
+        return (string) static::getEloquentQuery()->count();
     }
 
     public static function form(Schema $schema): Schema
