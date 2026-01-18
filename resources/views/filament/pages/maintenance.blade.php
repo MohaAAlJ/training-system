@@ -21,7 +21,7 @@
 
                 <!-- Logout Button -->
                 <div class="actions">
-                    <form action="{{ route('filament.Home.auth.logout') }}" method="post">
+                    <form action="{{ route('filament.home.auth.logout') }}" method="post">
                         @csrf
                         <x-filament::button type="submit" color="gray" size="lg"
                             icon="heroicon-o-arrow-left-on-rectangle">
