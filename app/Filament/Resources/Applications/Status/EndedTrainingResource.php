@@ -8,7 +8,7 @@ use App\Filament\Resources\Applications\ApplicationResource;
 use App\Filament\Resources\Applications\Schemas\ApplicationForm;
 use App\Filament\Resources\Applications\Schemas\ApplicationInfolist;
 use App\Filament\Resources\Applications\Status\EndedTrainingResource\Pages;
-use App\Filament\Resources\Applications\Tables\ApplicationsTable;
+use Illuminate\Support\Facades\Auth;
 use App\Models\Application;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -16,8 +16,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Auth;
-use UnitEnum;
+use App\Filament\Resources\Applications\ApplicationResource;
 
 class EndedTrainingResource extends Resource
 {

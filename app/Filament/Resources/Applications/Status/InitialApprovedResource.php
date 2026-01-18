@@ -18,6 +18,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use UnitEnum;
+use App\Filament\Resources\Applications\ApplicationResource;
 
 class InitialApprovedResource extends Resource
 {

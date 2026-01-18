@@ -38,6 +38,7 @@ class ApplicationsTable
     {
         $columns = [];
 
+        // Add status title column if provided
         if ($statusTitle) {
             $columns[] = TextColumn::make('status_title')
                 ->label('الحالة')
@@ -50,17 +51,14 @@ class ApplicationsTable
 
         return $table
             ->defaultSort('updated_at', 'asc')
-            ->modifyQueryUsing(
-                fn (Builder $query): Builder => $query
-                    ->with([
-                        'trainee:id,national_id,full_name,phone_number,institution_id,college_id,major_id,training_hours,governorate_id',
-                        'trainee.institution:id,name',
-                        'trainee.major:id,name',
-                        'administrative:id,title',
-                        'department:id,title',
-                        'section:id,name_location,department_id,administrative_id,status',
-                    ])
-            )
+            ->modifyQueryUsing(fn(Builder $query) => $query->with([
+                'trainee:id,national_id,full_name,phone_number,institution_id,college_id,major_id,training_hours,governorate_id',
+                'trainee.institution:id,name',
+                'trainee.major:id,name',
+                'administrative:id,title',
+                'department:id,title',
+                'section:id,name_location,department_id,administrative_id,status',
+            ]))
             ->columns(array_merge($columns, [
                 TextColumn::make('trainee.full_name')
                     ->label('المتدرب')

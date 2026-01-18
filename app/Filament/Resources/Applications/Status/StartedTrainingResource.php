@@ -12,12 +12,14 @@ use App\Filament\Resources\Applications\Tables\ApplicationsTable;
 use App\Models\Application;
 use BackedEnum;
 use Filament\Resources\Resource;
+use Illuminate\Support\Facades\Auth;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use UnitEnum;
+use App\Filament\Resources\Applications\ApplicationResource;
 
 class StartedTrainingResource extends Resource
 {
