@@ -22,7 +22,6 @@ class StatsTable
         ->emptyStateDescription('')    // Empty description
         ->emptyStateIcon(null)         // Remove the X icon
         ->emptyStateActions([])        // Remove any buttons
-        ->paginated(false)
         ->striped();                   // Add striped styling to hide empty state better
     }
 }

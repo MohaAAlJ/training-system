@@ -36,6 +36,10 @@ class SectionResource extends Resource
     protected static ?string $navigationLabel = 'الأقسام';
     protected static ?int $navigationSort = 3;
 
+    public static function getNavigationBadge(): ?string
+    {
+        return (string) static::getEloquentQuery()->count();
+    }
 
     public static function form(Schema $schema): Schema
     {

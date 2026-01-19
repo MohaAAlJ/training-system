@@ -9,6 +9,7 @@ use App\Models\Application;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
+use Filament\Widgets\Concerns\InteractsWithPageTable;
 use Illuminate\Support\Facades\Auth;
 use Filament\Actions\ViewAction;
 use Filament\Actions\Action;
@@ -23,6 +24,12 @@ class GTMRecentApplications extends BaseWidget
     protected int | string | array $columnSpan = 'full';
 
     protected static ?string $heading = 'تحتاج إجراءات';
+
+    public function getHeading(): string | Heading
+    {
+        $count = $this->table(app(\Filament\Tables\Table::class))->getQuery()->count();
+        return 'تحتاج إجراءات (' . $count . ')';
+    }
 
     public static function canView(): bool
     {

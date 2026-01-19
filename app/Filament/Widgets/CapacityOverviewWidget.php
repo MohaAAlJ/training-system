@@ -12,6 +12,7 @@ use App\Models\Administrative;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
+use Filament\Widgets\Concerns\InteractsWithPageTable;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -21,6 +22,12 @@ class CapacityOverviewWidget extends BaseWidget
     protected int | string | array $columnSpan = 1;
 
     protected static ?string $heading = 'إحصائيات السعة الاستيعابية للأقسام';
+
+    public function getHeading(): string | Heading
+    {
+        $count = $this->table(app(\Filament\Tables\Table::class))->getQuery()->count();
+        return 'إحصائيات السعة الاستيعابية للأقسام (' . $count . ')';
+    }
 
     public static function canView(): bool
     {

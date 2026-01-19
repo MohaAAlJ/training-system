@@ -61,7 +61,6 @@ class ExternalPartnerActiveTraineesWidget extends BaseWidget
                     ->badge()
                     ->color('success')
                     ->alignCenter(),
-            ])
-            ->paginated(false);
+            ]);
     }
 }
