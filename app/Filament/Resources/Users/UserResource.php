@@ -31,6 +31,11 @@ class UserResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUsers;
     protected static string | BackedEnum | null $activeNavigationIcon = Heroicon::UserGroup; //filled icon when active
 
+    public static function getNavigationBadge(): ?string
+    {
+        return (string) static::getEloquentQuery()->count();
+    }
+
     public static function form(Schema $schema): Schema
     {
         return UserForm::configure($schema);
