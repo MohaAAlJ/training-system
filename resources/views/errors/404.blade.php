@@ -1,111 +1,39 @@
-<x-filament-panels::page class="filament-maintenance-page" x-data="{
-    logout() {
-        window.location.href = route('filament.home.auth.logout');
-    },
-    init() {
-        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            document.documentElement.classList.add('dark');
-            document.documentElement.classList.remove('light');
-        } else {
-            document.documentElement.classList.add('light');
-            document.documentElement.classList.remove('dark');
-        }
-
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-            document.documentElement.classList.toggle('dark', e.matches);
-            document.documentElement.classList.toggle('light', !e.matches);
-        });
-    }
-}" @init="init()">
-    @php
-        $maintenanceTitle = 'الموقع تحت الصيانة';
-        $maintenanceMessage = 'الموقع تحت الصيانة حالياً. سيعود قريباً.';
-
-        try {
-            $settings = app(\App\Settings\TrainingSettings::class);
-            $maintenanceTitle = $settings->maintenance_title ?: $maintenanceTitle;
-            $maintenanceMessage = $settings->maintenance_message ?: $maintenanceMessage;
-        } catch (\Throwable $e) {
-            // Fallback to defaults
-        }
-    @endphp
-
-    <div class="maintenance-page-wrapper">
-        <div class="orb orb-1"></div>
-        <div class="orb orb-2"></div>
-        <div class="orb orb-3"></div>
-        <div class="orb orb-4"></div>
-
-        <div class="maintenance-container">
-            <div class="glass-card">
-                <div class="icon-container">
-                    <div class="icon-ring"></div>
-                    <div class="icon-ring"></div>
-                    <div class="icon-ring"></div>
-                    <div class="icon-bg">
-                        <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.42 15.17L17.25 21.6a2.252 2.252 0 0 0 3.182-3.182l-5.25-5.25m-6.54-1.665a2.25 2.25 0 1 1 3.182 3.182m-6.54-1.665l6.54 6.54"></path>
-                        </svg>
-                    </div>
-                </div>
-
-                <h2 class="maintenance-heading">{{ $maintenanceTitle }}</h2>
-                <p class="maintenance-description">{{ $maintenanceMessage }}</p>
-
-                <div class="action-buttons">
-                    <button @click="logout()" type="button" class="btn btn-logout">
-                        <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-                        </svg>
-                        تسجيل الخروج
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    @push('styles')
-        <style>
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ config('app.name') }} - 404</title>
+    <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        .filament-maintenance-page {
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 50%, #fecaca 100%);
+            height: 100dvh;
             display: flex;
-            width: 100%;
-            min-height: 100vh;
-            min-height: 100dvh;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 50%, #fecaca 100%);
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
             overflow: hidden;
-            z-index: 50;
+            position: relative;
         }
 
-        html.dark .filament-maintenance-page {
-            background: linear-gradient(135deg, #0a0a0a 0%, #1a0a0a 50%, #2a0505 100%);
-        }
-
-        .filament-maintenance-page.dark {
+        body.dark {
             background: linear-gradient(135deg, #0a0a0a 0%, #1a0a0a 50%, #2a0505 100%);
         }
 
         @media (prefers-color-scheme: dark) {
-            .filament-maintenance-page:not(.light) {
+            body:not(.light) {
                 background: linear-gradient(135deg, #0a0a0a 0%, #1a0a0a 50%, #2a0505 100%);
             }
         }
 
         .orb {
-            position: fixed;
+            position: absolute;
             border-radius: 50%;
             filter: blur(100px);
             opacity: 0.5;
             animation: float 25s infinite ease-in-out;
-            pointer-events: none;
         }
 
         .orb-1 {
@@ -151,30 +79,49 @@
             75% { transform: translate(60px, 40px) scale(1.1) rotate(270deg); }
         }
 
-
-
-        .maintenance-page-wrapper {
-            position: fixed;
+        .grid-bg {
+            position: absolute;
             inset: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            height: 100%;
-            padding: 1rem;
+            background-image:
+                linear-gradient(rgba(239, 68, 68, 0.03) 1.5px, transparent 1.5px),
+                linear-gradient(90deg, rgba(239, 68, 68, 0.03) 1.5px, transparent 1.5px);
+            background-size: 80px 80px;
+            background-attachment: fixed;
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(239, 68, 68, 0.6);
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.8);
+            animation: particleFloat 15s infinite;
+        }
+
+        @keyframes particleFloat {
+            0%, 100% {
+                transform: translateY(0) translateX(0);
+                opacity: 0;
+            }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% {
+                transform: translateY(-100vh) translateX(50px);
+                opacity: 0;
+            }
+        }
+
+        .error-container {
+            position: relative;
             z-index: 10;
-            pointer-events: none;
-        }
-
-        .maintenance-page-wrapper > div:not(.maintenance-container) {
-            pointer-events: none;
-        }
-
-        .maintenance-container {
-            pointer-events: auto;
-            z-index: 20;
-            width: 100%;
-            max-width: 600px;
+            text-align: center;
+            padding: 0.75rem;
+            max-width: 720px;
+            width: 92vw;
+            margin: 0 auto;
         }
 
         .glass-card {
@@ -183,16 +130,15 @@
             backdrop-filter: blur(30px) saturate(200%);
             border: 2px solid rgba(239, 68, 68, 0.3);
             border-radius: 1.75rem;
-            padding: clamp(2rem, 5vw, 3rem) clamp(1.5rem, 5vw, 2.5rem);
+            padding: clamp(1.75rem, 3.2vw, 2.5rem) clamp(1.25rem, 3.2vw, 2.75rem);
             box-shadow:
                 0 25px 70px -20px rgba(239, 68, 68, 0.25),
                 0 0 60px rgba(239, 68, 68, 0.15),
                 inset 0 1px 0 rgba(255, 255, 255, 0.9),
                 inset 0 -1px 0 rgba(239, 68, 68, 0.1);
-            animation: fadeInScale 0.8s ease-out;
+            animation: fadeInScale 0.8s cubic-bezier(0.16, 1, 0.3, 1);
             position: relative;
             overflow: hidden;
-            pointer-events: auto;
         }
 
         .glass-card::before {
@@ -209,12 +155,6 @@
             z-index: -1;
             animation: gradientRotate 6s ease infinite;
             filter: blur(10px);
-            pointer-events: none;
-        }
-
-        @keyframes fadeInScale {
-            from { opacity: 0; transform: scale(0.9) translateY(20px); }
-            to { opacity: 1; transform: scale(1) translateY(0); }
         }
 
         @keyframes gradientRotate {
@@ -222,7 +162,7 @@
             50% { background-position: 100% 50%; }
         }
 
-        .filament-maintenance-page.dark .glass-card {
+        body.dark .glass-card {
             background: rgba(17, 24, 39, 0.95);
             border: 2px solid rgba(239, 68, 68, 0.4);
             box-shadow:
@@ -232,7 +172,7 @@
         }
 
         @media (prefers-color-scheme: dark) {
-            .filament-maintenance-page:not(.light) .glass-card {
+            body:not(.light) .glass-card {
                 background: rgba(17, 24, 39, 0.95);
                 border: 2px solid rgba(239, 68, 68, 0.4);
                 box-shadow:
@@ -240,6 +180,11 @@
                     0 0 80px rgba(239, 68, 68, 0.25),
                     inset 0 1px 0 rgba(255, 255, 255, 0.05);
             }
+        }
+
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: scale(0.9) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
         }
 
         .icon-container {
@@ -288,9 +233,9 @@
             100% { transform: translate(-50%, -50%) scale(1.2); opacity: 0; }
         }
 
-        .icon-bg {
-            width: clamp(90px, 12vw, 120px);
-            height: clamp(90px, 12vw, 120px);
+        .error-icon-bg {
+            width: clamp(82px, 11vw, 110px);
+            height: clamp(82px, 11vw, 110px);
             background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(220, 38, 38, 0.15) 100%);
             border-radius: 50%;
             display: flex;
@@ -309,13 +254,12 @@
             50% { transform: scale(1.08); box-shadow: 0 20px 60px rgba(239, 68, 68, 0.45); }
         }
 
-        .icon {
-            width: clamp(56px, 8vw, 80px);
-            height: clamp(56px, 8vw, 80px);
+        .error-icon {
+            width: clamp(48px, 7vw, 70px);
+            height: clamp(48px, 7vw, 70px);
             color: #ef4444;
             filter: drop-shadow(0 4px 20px rgba(239, 68, 68, 0.5));
             animation: iconFloat 3s ease-in-out infinite;
-            flex-shrink: 0;
         }
 
         @keyframes iconFloat {
@@ -323,7 +267,27 @@
             50% { transform: translateY(-12px) rotate(5deg); }
         }
 
-        .maintenance-heading {
+        .error-code {
+            font-size: clamp(3.25rem, 8.5vw, 5.25rem);
+            font-weight: 900;
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 40%, #991b1b 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 0.75rem 0 0.25rem;
+            line-height: 1;
+            letter-spacing: -0.05em;
+            filter: drop-shadow(0 0 40px rgba(239, 68, 68, 0.5));
+            animation: glowPulse 2s ease-in-out infinite;
+            position: relative;
+        }
+
+        @keyframes glowPulse {
+            0%, 100% { filter: drop-shadow(0 0 40px rgba(239, 68, 68, 0.5)); }
+            50% { filter: drop-shadow(0 0 60px rgba(239, 68, 68, 0.8)); }
+        }
+
+        .error-heading {
             font-size: clamp(1.25rem, 3.8vw, 1.85rem);
             font-weight: 800;
             color: #111827;
@@ -333,7 +297,7 @@
             display: inline-block;
         }
 
-        .maintenance-heading::after {
+        .error-heading::after {
             content: '';
             position: absolute;
             bottom: -8px;
@@ -351,19 +315,13 @@
             50% { box-shadow: 0 0 20px rgba(239, 68, 68, 0.8); width: 80px; }
         }
 
-        .filament-maintenance-page.dark .maintenance-heading { 
-            color: #f9fafb; 
-            text-shadow: 0 2px 20px rgba(239, 68, 68, 0.4); 
-        }
+        body.dark .error-heading { color: #f9fafb; text-shadow: 0 2px 20px rgba(239, 68, 68, 0.4); }
 
         @media (prefers-color-scheme: dark) {
-            .filament-maintenance-page:not(.light) .maintenance-heading { 
-                color: #f9fafb; 
-                text-shadow: 0 2px 20px rgba(239, 68, 68, 0.4); 
-            }
+            body:not(.light) .error-heading { color: #f9fafb; text-shadow: 0 2px 20px rgba(239, 68, 68, 0.4); }
         }
 
-        .maintenance-description {
+        .error-description {
             font-size: clamp(0.9rem, 2.4vw, 1.05rem);
             color: #6b7280;
             margin-bottom: 2rem;
@@ -373,14 +331,10 @@
             margin-right: auto;
         }
 
-        .filament-maintenance-page.dark .maintenance-description { 
-            color: #9ca3af; 
-        }
+        body.dark .error-description { color: #9ca3af; }
 
         @media (prefers-color-scheme: dark) {
-            .filament-maintenance-page:not(.light) .maintenance-description { 
-                color: #9ca3af; 
-            }
+            body:not(.light) .error-description { color: #9ca3af; }
         }
 
         .action-buttons {
@@ -389,7 +343,6 @@
             justify-content: center;
             flex-wrap: wrap;
             direction: rtl;
-            margin-top: 1.5rem;
         }
 
         .btn {
@@ -402,16 +355,10 @@
             border-radius: 9999px;
             cursor: pointer;
             text-decoration: none;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
             border: none;
             position: relative;
             overflow: hidden;
-            z-index: 20;
-        }
-
-        .btn:focus {
-            outline: 2px solid rgba(239, 68, 68, 0.5);
-            outline-offset: 2px;
         }
 
         .btn::before {
@@ -427,12 +374,9 @@
             transition: width 0.6s, height 0.6s;
         }
 
-        .btn:hover::before { 
-            width: 300px; 
-            height: 300px; 
-        }
+        .btn:hover::before { width: 300px; height: 300px; }
 
-        .btn-logout {
+        .btn-primary {
             color: white;
             background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
             box-shadow:
@@ -440,15 +384,40 @@
                 0 0 40px rgba(239, 68, 68, 0.2);
         }
 
-        .btn-logout:hover {
-            transform: translateY(-2px);
+        .btn-primary:hover {
+            transform: translateY(-4px) scale(1.02);
             box-shadow:
                 0 12px 35px rgba(239, 68, 68, 0.5),
                 0 0 50px rgba(239, 68, 68, 0.35);
         }
 
-        .btn-logout:active { 
-            transform: translateY(0);
+        .btn-primary:active { transform: translateY(-2px) scale(0.98); }
+
+        .btn-secondary {
+            color: #374151;
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid rgba(239, 68, 68, 0.25);
+            box-shadow: 0 4px 20px rgba(239, 68, 68, 0.15);
+        }
+
+        body.dark .btn-secondary {
+            color: #f9fafb;
+            background: rgba(31, 41, 55, 0.9);
+            border: 2px solid rgba(239, 68, 68, 0.4);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            body:not(.light) .btn-secondary {
+                color: #f9fafb;
+                background: rgba(31, 41, 55, 0.9);
+                border: 2px solid rgba(239, 68, 68, 0.4);
+            }
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-4px) scale(1.02);
+            border-color: rgba(239, 68, 68, 0.6);
+            box-shadow: 0 10px 30px rgba(239, 68, 68, 0.3);
         }
 
         .btn-icon {
@@ -459,22 +428,102 @@
         }
 
         @media (max-width: 768px) {
-            .filament-maintenance-page {
+            body {
                 padding: 1rem;
             }
             .orb-1, .orb-2, .orb-3, .orb-4 { opacity: 0.3; }
-            .maintenance-heading { font-size: 1.5rem; }
-            .maintenance-description { font-size: 0.95rem; margin-bottom: 1.5rem; }
+            .error-code { font-size: 5rem; }
+            .error-heading { font-size: 1.5rem; }
+            .error-description { font-size: 0.95rem; margin-bottom: 1.5rem; }
             .glass-card { padding: 2.5rem 1.5rem; border-radius: 1.5rem; }
-            .icon-bg { width: 100px; height: 100px; }
-            .icon { width: 60px; height: 60px; }
+            .error-icon-bg { width: 100px; height: 100px; }
+            .error-icon { width: 60px; height: 60px; }
             .icon-ring:nth-child(1) { width: 120px; height: 120px; }
             .icon-ring:nth-child(2) { width: 140px; height: 140px; }
             .icon-ring:nth-child(3) { width: 160px; height: 160px; }
             .action-buttons { flex-direction: column; gap: 0.75rem; }
             .btn { width: 100%; justify-content: center; padding: 1rem 1.5rem; font-size: 0.95rem; }
         }
+    </style>
+</head>
+<body class="light">
+@php
+    $notFoundTitle = 'الصفحة غير موجودة';
+    $notFoundMessage = 'عذراً، لم نتمكن من العثور على الصفحة التي تبحث عنها. ربما تم نقلها أو حذفها أو أن الرابط غير صحيح.';
 
-        </style>
-    @endpush
-</x-filament-panels::page>
+    try {
+        /** @var \App\Settings\TrainingSettings $settings */
+        $settings = app(\App\Settings\TrainingSettings::class);
+        $notFoundTitle = $settings->not_found_title ?: $notFoundTitle;
+        $notFoundMessage = $settings->not_found_message ?: $notFoundMessage;
+    } catch (\Throwable $e) {
+        // Fallback to defaults (e.g. during early boot / misconfigured DB)
+    }
+
+    $loginUrl = url('/home/login');
+    $homeUrl = url('/');
+@endphp
+
+<script>
+    (function() {
+        // Detect system theme preference
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.body.classList.add('dark');
+            document.body.classList.remove('light');
+        } else {
+            document.body.classList.add('light');
+            document.body.classList.remove('dark');
+        }
+
+        // Listen for theme changes
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+            document.body.classList.toggle('dark', e.matches);
+            document.body.classList.toggle('light', !e.matches);
+        });
+
+        for (let i = 0; i < 20; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDelay = Math.random() * 15 + 's';
+            particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+            document.body.appendChild(particle);
+        }
+    })();
+</script>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+<div class="orb orb-4"></div>
+<div class="grid-bg"></div>
+
+<div class="error-container">
+    <div class="glass-card">
+        <div class="icon-container">
+            <div class="icon-ring"></div>
+            <div class="icon-ring"></div>
+            <div class="icon-ring"></div>
+            <div class="error-icon-bg">
+                <svg class="error-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+        </div>
+
+        <h1 class="error-code">404</h1>
+        <h2 class="error-heading">{{ $notFoundTitle }}</h2>
+        <p class="error-description">{{ $notFoundMessage }}</p>
+
+        <div class="action-buttons">
+            <button onclick="history.back()" class="btn btn-secondary" type="button">
+                <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                رجوع
+            </button>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -10,8 +10,13 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\CheckboxList;
+use Filament\Forms\Components\Placeholder;
+use Filament\Actions\Action;
 use Closure;
+use Illuminate\Support\Facades\Artisan;
+use Filament\Notifications\Notification;
 
 use UnitEnum;
 
@@ -179,6 +184,13 @@ class ManageTrainingSettings extends SettingsPage
 
                                         Grid::make(1)
                                             ->schema([
+                                                TextInput::make('maintenance_title')
+                                                    ->label('عنوان الصيانة')
+                                                    ->placeholder('الموقع تحت الصيانة')
+                                                    ->maxLength(100)
+                                                    ->visible(fn($get) => $get('is_maintenance_mode'))
+                                                    ->required(),
+
                                                 Textarea::make('maintenance_message')
                                                     ->label('رسالة الصيانة')
                                                     ->placeholder('مثال: النظام قيد الصيانة حالياً. سيتم استعادة الخدمة قريباً.')
@@ -202,9 +214,83 @@ class ManageTrainingSettings extends SettingsPage
                                             ->visible(fn($get) => $get('is_maintenance_mode')),
                                     ]),
                             ]),
+
+                        Tabs\Tab::make('صفحات الأخطاء')
+                            ->icon('heroicon-o-exclamation-triangle')
+                            ->schema([
+                                Section::make('صفحة 404 (غير موجود)')
+                                    ->description('تخصيص رسالة الصفحة غير الموجودة للمستخدمين')
+                                    ->schema([
+                                        TextInput::make('not_found_title')
+                                            ->label('عنوان الصفحة')
+                                            ->maxLength(100)
+                                            ->required(),
+
+                                        Textarea::make('not_found_message')
+                                            ->label('نص الرسالة')
+                                            ->rows(4)
+                                            ->maxLength(500)
+                                            ->required(),
+                                    ]),
+                            ]),
+
+                        Tabs\Tab::make('النسخ الاحتياطية')
+                            ->icon('heroicon-o-arrow-down-tray')
+                            ->schema([
+                                Section::make('إدارة النسخ الاحتياطية')
+                                    ->description('إنشاء واستعادة النسخ الاحتياطية من قاعدة البيانات')
+                                    ->schema([
+                                        Placeholder::make('last_backup_at')
+                                            ->label('آخر نسخ احتياطي')
+                                            ->content(function (TrainingSettings $settings) {
+                                                if (!$settings->last_backup_at) {
+                                                    return 'لم يتم إنشاء نسخة احتياطية بعد.';
+                                                }
+                                                return date('Y-m-d H:i:s', strtotime($settings->last_backup_at));
+                                            })
+                                            ->columnSpanFull(),
+                                    ]),
+                            ]),
                     ])
                     ->columnSpanFull()
                     ->persistTabInQueryString(),
             ]);
+    }
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Action::make('backup')
+                ->label('إنشاء نسخة احتياطية الآن')
+                ->icon('heroicon-o-arrow-down-tray')
+                ->color('success')
+                ->action(fn() => $this->createBackup()),
+        ];
+    }
+
+    private function createBackup(): void
+    {
+        try {
+            Artisan::call('backup:run', ['--only-db' => true]);
+            
+            // Update the last backup timestamp
+            $settings = app(TrainingSettings::class);
+            $settings->last_backup_at = now()->toDateTimeString();
+            $settings->save();
+
+            Notification::make()
+                ->title('نجح')
+                ->body('تم إنشاء النسخة الاحتياطية بنجاح')
+                ->success()
+                ->send();
+
+            $this->form->fill($settings->toArray());
+        } catch (\Exception $e) {
+            Notification::make()
+                ->title('خطأ')
+                ->body('حدث خطأ أثناء إنشاء النسخة الاحتياطية: ' . $e->getMessage())
+                ->danger()
+                ->send();
+        }
     }
 }
