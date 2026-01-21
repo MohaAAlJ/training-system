@@ -14,7 +14,20 @@ use Illuminate\Support\Facades\Artisan;
 |
 */
 
+
+use Illuminate\Support\Facades\Schedule;
+
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
+
+Schedule::command('backup:run', ['--only-db' => true])
+    ->dailyAt('10:00')
+    ->runInBackground()
+    ->name('database-backup');
+
+Schedule::command('backup:clean')
+    ->dailyAt('10:15')
+    ->runInBackground()
+    ->name('backup-cleanup');
 

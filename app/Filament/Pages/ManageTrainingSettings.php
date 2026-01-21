@@ -264,33 +264,17 @@ class ManageTrainingSettings extends SettingsPage
                 ->label('إنشاء نسخة احتياطية الآن')
                 ->icon('heroicon-o-arrow-down-tray')
                 ->color('success')
-                ->action(fn() => $this->createBackup()),
+                ->action(function () {
+                    // Update the timestamp first
+                    $settings = app(TrainingSettings::class);
+                    $settings->last_backup_at = now()->toDateTimeString();
+                    $settings->save();
+
+                    // Run backup and download
+                    $exporter = new \App\Exports\BackupExport();
+                    return $exporter->export();
+                }),
         ];
     }
 
-    private function createBackup(): void
-    {
-        try {
-            Artisan::call('backup:run', ['--only-db' => true]);
-            
-            // Update the last backup timestamp
-            $settings = app(TrainingSettings::class);
-            $settings->last_backup_at = now()->toDateTimeString();
-            $settings->save();
-
-            Notification::make()
-                ->title('نجح')
-                ->body('تم إنشاء النسخة الاحتياطية بنجاح')
-                ->success()
-                ->send();
-
-            $this->form->fill($settings->toArray());
-        } catch (\Exception $e) {
-            Notification::make()
-                ->title('خطأ')
-                ->body('حدث خطأ أثناء إنشاء النسخة الاحتياطية: ' . $e->getMessage())
-                ->danger()
-                ->send();
-        }
-    }
 }
