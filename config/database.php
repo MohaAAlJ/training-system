@@ -47,7 +47,7 @@ return [
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
             'dump' => [
-                'dump_binary_path' => 'C:/laragon/bin/mysql/mysql-8.4.3-winx64/bin',
+                'dump_binary_path' => env('DB_DUMP_PATH', ''), // Empty defaults to system PATH (good for servers)
                 'use_single_transaction' => true,
                 'timeout' => 60 * 5,
             ],
