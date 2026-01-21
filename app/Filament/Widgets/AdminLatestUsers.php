@@ -18,6 +18,12 @@ class AdminLatestUsers extends BaseWidget
     protected static ?string $heading = 'سجل أحدث المستخدمين المسجلين';
     protected static bool $collapsible = false;
 
+    public function getHeading(): string
+    {
+        $totalCount = User::count();
+        return 'سجل أحدث المستخدمين المسجلين (' . $totalCount . ')';
+    }
+
     public static function canView(): bool
     {
         return !request()->routeIs('filament.home.pages.dashboard') && Auth::user()->role === User::ROLE_ADMIN;

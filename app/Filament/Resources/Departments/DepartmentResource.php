@@ -34,6 +34,10 @@ class DepartmentResource extends Resource
     protected static ?string $navigationLabel = 'الدوائر';
     protected static ?int $navigationSort = 2;
 
+    public static function getNavigationBadge(): ?string
+    {
+        return (string) static::getEloquentQuery()->count();
+    }
 
     public static function form(Schema $schema): Schema
     {

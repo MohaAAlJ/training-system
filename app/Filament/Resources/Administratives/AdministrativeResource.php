@@ -48,6 +48,11 @@ class AdministrativeResource extends Resource
     protected static ?string $navigationLabel = 'الإدارة';
     protected static ?int $navigationSort = 2;
 
+    public static function getNavigationBadge(): ?string
+    {
+        return (string) static::getEloquentQuery()->count();
+    }
+
     public static function getRelations(): array
     {
         return [

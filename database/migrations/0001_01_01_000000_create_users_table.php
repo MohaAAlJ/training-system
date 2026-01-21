@@ -41,12 +41,23 @@ return new class extends Migration
             $table->longText('payload');
             $table->integer('last_activity')->index();
         });
+        // Super Admin
         User::create([
             'user_name' => 'admin',
             'name' => 'moha Admin',
             'email' => 'Moha@admins.com',
             'password' => Hash::make('123'),
             'role' => User::ROLE_ADMIN,
+            'status' => 1,
+        ]);
+
+        // General Training Manager - role 8
+        User::create([
+            'user_name' => 'training_manager',
+            'name' => 'General Training Manager',
+            'email' => 'gtm@example.com',
+            'password' => Hash::make('123'),
+            'role' => User::ROLE_GTM,
             'status' => 1,
         ]);
     }
