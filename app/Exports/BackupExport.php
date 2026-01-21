@@ -14,8 +14,23 @@ class BackupExport
 
         // 2. Find the latest backup file
         $backupDisk = \Illuminate\Support\Facades\Storage::disk('backup');
-        $files = $backupDisk->files(env('APP_NAME', 'Laravel'));
+
+        // Backup package usually stores in a subfolder named after APP_NAME
+        // We forced the name to 'training-system' in config/backup.php to avoid Arabic character issues
+        $appName = 'training-system';
+
+        $files = $backupDisk->files($appName);
+
+        if (empty($files)) {
+             // Fallback: check root directory if no subfolder
+             $files = $backupDisk->files('/');
+        }
+
         $latestFile = collect($files)->sort()->last();
+
+        if (!$latestFile) {
+            abort(404, 'No backup file found.');
+        }
 
         // 3. Return the file for download
         return response()->download($backupDisk->path($latestFile));
