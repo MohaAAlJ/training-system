@@ -145,20 +145,20 @@ return [
             /*
              * The filename prefix used for the backup zip file.
              */
-            'filename_prefix' => '',
+            'filename_prefix' => 'backup_',
 
             /*
              * The disk names on which the backups will be stored.
              */
             'disks' => [
-                'local',
+                'backup',
             ],
         ],
 
         /*
          * The directory where the temporary files will be stored.
          */
-        'temporary_directory' => storage_path('app/backup-temp'),
+        'temporary_directory' => storage_path('app/temp'),
 
         /*
          * The password to be used for archive encryption.
