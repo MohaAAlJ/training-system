@@ -26,10 +26,10 @@ class BackupExport
 
         $latestFile = collect($files)->sort()->last();
 
-        if (!$latestFile) {
-            // This aborts nicely instead of crashing with TypeError
-            abort(404, 'No backup file was created. Please check logs.');
-        }
+        // if (!$latestFile) {
+        //     // This aborts nicely instead of crashing with TypeError
+        //     abort(404, 'No backup file was created. Please check logs.');
+        // }
 
         // 3. Return the file for download
         return response()->download($backupDisk->path($latestFile));
