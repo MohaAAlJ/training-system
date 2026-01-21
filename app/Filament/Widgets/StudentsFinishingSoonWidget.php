@@ -9,6 +9,7 @@ use App\Models\Application;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
+use Filament\Widgets\Concerns\InteractsWithPageTable;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Actions\ViewAction;
@@ -23,6 +24,12 @@ class StudentsFinishingSoonWidget extends BaseWidget
 
     protected static ?string $heading = 'متابعة المتدربين المنتهين قريباً';
     protected static bool $collapsible = false;
+
+    public function getHeading(): string | Heading
+    {
+        $count = $this->table(app(\Filament\Tables\Table::class))->getQuery()->count();
+        return 'متابعة المتدربين المنتهين قريباً (' . $count . ')';
+    }
 
     public static function canView(): bool
     {

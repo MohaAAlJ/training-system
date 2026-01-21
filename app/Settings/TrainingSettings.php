@@ -3,6 +3,7 @@
 namespace App\Settings;
 
 use Spatie\LaravelSettings\Settings;
+use DateTime;
 
 class TrainingSettings extends Settings
 {
@@ -22,8 +23,16 @@ class TrainingSettings extends Settings
 
     // Maintenance mode
     public bool $is_maintenance_mode;
+    public string $maintenance_title;
     public string $maintenance_message;
     public array $maintenance_roles;
+
+    // Error pages
+    public string $not_found_title;
+    public string $not_found_message;
+
+    // Backup settings
+    public ?string $last_backup_at;
 
     public static function group(): string
     {

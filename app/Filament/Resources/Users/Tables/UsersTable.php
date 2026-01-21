@@ -37,7 +37,10 @@ class UsersTable
                     ->onColor('success')
                     ->offColor('danger')
                     ->sortable(),
-                TextColumn::make('created_at')->label('تاريخ الإنشاء')->dateTime('Y-m-d H:i')->sortable(),
+                TextColumn::make('created_at')->label('تاريخ الإنشاء')
+                ->dateTime('Y-m-d H:i')
+                ->sortable()
+                ->toggleable( isToggledHiddenByDefault: true),
             ])
             ->filters([
                 SelectFilter::make('role')
