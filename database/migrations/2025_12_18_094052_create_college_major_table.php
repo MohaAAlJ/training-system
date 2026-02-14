@@ -12,8 +12,8 @@ return new class extends Migration {
     {
         Schema::create('college_major', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(College::class)->constrained()->cascadeOnDelete();
-            $table->foreignIdFor(Major::class)->constrained()->cascadeOnDelete();
+            $table->foreignIdFor(College::class)->constrained()->cascadeOnDelete('restrict');
+            $table->foreignIdFor(Major::class)->constrained()->cascadeOnDelete('restrict');
             $table->unique(['college_id', 'major_id']);
         });
 

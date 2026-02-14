@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\GeneralConst;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -10,23 +11,27 @@ class Administrative extends Model
 {
     use SoftDeletes, HasFactory;
 
+    // =========================================================================
+    // SETUP
+    // =========================================================================
+
     protected $table = 'administratives';
 
     protected $fillable = [
         'id',
-        'title',
+        'name',
         'user_id',
         'is_medical',
         'medical_head_user_id',
         'governorate_id',
+        'active',
     ];
 
-    protected $casts = [
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-        'deleted_at' => 'datetime',
-        'is_medical' => 'boolean',
-    ];
+    protected $casts = [];
+
+    // =========================================================================
+    // RELATIONSHIPS
+    // =========================================================================
 
     /**
      * Get the user associated with this administrative.
@@ -50,14 +55,20 @@ class Administrative extends Model
     }
 
     /**
-     * Get all Application for this administrative unit.
+     * Get all Applications for this administrative unit (through sections).
+     * Since applications no longer have administrative_id, we go through sections.
      */
     public function applications()
     {
-        return $this->hasMany(Application::class, 'administrative_id');
+        return $this->hasManyThrough(
+            Application::class,
+            Section::class,
+            'administrative_id', // Foreign key on sections table
+            'section_id',        // Foreign key on applications table
+            'id',                // Local key on administratives table
+            'id'                 // Local key on sections table
+        );
     }
-
-
 
     /**
      * Compatibility relationship for Filament forms/tables expecting `medicalHead`.
@@ -68,6 +79,22 @@ class Administrative extends Model
         return $this->belongsTo(User::class, 'medical_head_user_id');
     }
 
+    // =========================================================================
+    // SCOPES
+    // =========================================================================
+
+    /**
+     * Scope a query to only include active Administrative units.
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('active', GeneralConst::ACTIVE);
+    }
+
+    // =========================================================================
+    // ACCESSORS
+    // =========================================================================
+
     /**
      * Get title with governorate name (from Section)
      */
@@ -75,8 +102,12 @@ class Administrative extends Model
     {
         $govName = $this->governorate?->name;
 
-        return $this->title . ($govName ? " - {$govName}" : '');
+        return $this->name . ($govName ? " - {$govName}" : '');
     }
+
+    // =========================================================================
+    // HELPERS
+    // =========================================================================
 
     /**
      * Get capacity statistics for this administrative unit by summing its sections.
@@ -84,12 +115,12 @@ class Administrative extends Model
      */
     public function getCapacityStats(): array
     {
-        // Sum total capacity from all sections (excluding soft-deleted)
-        $total = (int) $this->sections()->withoutTrashed()->sum('capacity');
+        // Sum total capacity from all active sections
+        $total = (int) $this->sections()->active()->sum('capacity');
 
-        // Count all active applications in this administrative unit
-        $used = Application::where('administrative_id', $this->id)
-            ->where('status', Application::STATUS_STARTED_TRAINING)
+        // Count all active applications through sections
+        $used = $this->applications()
+            ->where('applications.status', Application::STATUS_STARTED_TRAINING)
             ->count();
 
         $available = max(0, $total - $used);
@@ -100,5 +131,19 @@ class Administrative extends Model
             'available' => $available,
             'is_full' => $total > 0 && $available <= 0
         ];
+    }
+
+    // =========================================================================
+    // BOOT & EVENTS
+    // =========================================================================
+
+    protected static function booted(): void
+    {
+        static::updated(function (Administrative $administrative) {
+            if ($administrative->wasChanged('active') && !$administrative->active) {
+                // If administrative is disabled, disable all its sections
+                $administrative->sections()->update(['active' => false]);
+            }
+        });
     }
 }

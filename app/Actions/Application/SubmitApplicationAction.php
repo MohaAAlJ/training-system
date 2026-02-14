@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Actions\Application;
 
-use App\Enums\ApplicationStatus;
-use App\Enums\TrainingType;
+// use App\Enums\ApplicationStatus;
+// use App\Enums\TrainingType;
 use App\Models\Application;
 use App\Models\Major;
 use App\Models\Section;
@@ -116,12 +116,10 @@ class SubmitApplicationAction
     {
         return Application::create([
             'trainee_id' => $trainee->id,
-            'department_id' => $data['departmentId'],
-            'administrative_id' => $data['administrativeId'],
             'section_id' => $data['sectionId'],
             'street' => $data['street'],
             'training_type' => $data['trainingType'],
-            'status' => ApplicationStatus::NEW->value,
+            'status' => Application::STATUS_NEW,
         ]);
     }
 

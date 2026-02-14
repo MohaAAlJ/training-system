@@ -14,15 +14,7 @@ use Illuminate\Support\Facades\Auth;
 class DashboardStatsOverview extends BaseWidget
 {
     protected static ?int $sort = 1;
-    protected int | string | array $columnSpan = [
-        'md' => 1, // default or smaller
-        'lg' => 1,
-    ];
-
-    public function getColumnSpan(): int | string | array
-    {
-        return 1;
-    }
+    protected int | string | array $columnSpan = 'full';
 
     public static function canView(): bool
     {
@@ -61,13 +53,13 @@ class DashboardStatsOverview extends BaseWidget
                     ->whereHas(
                         'applications',
                         fn($q) =>
-                        $q->where('training_type', Application::TRAINING_TYPE_UNIVERSITY)
+                        $q->where('training_type', Application::UNIVERSITY)
                             ->whereIn('status', [Application::STATUS_INITIAL_APPROVE, Application::STATUS_STARTED_TRAINING, Application::STATUS_ENDED_TRAINING])
                     )
                     ->count();
                 $activeTrainees = Application::whereHas('trainee', fn($q) => $q->where('college_id', $college->id))
                     ->where('status', Application::STATUS_STARTED_TRAINING)
-                    ->where('training_type', Application::TRAINING_TYPE_UNIVERSITY)
+                    ->where('training_type', Application::UNIVERSITY)
                     ->count();
 
                 $stats[] = Stat::make('إجمالي المتدربين (الكلية)', $totalTrainees)
@@ -80,7 +72,7 @@ class DashboardStatsOverview extends BaseWidget
 
                 $pendingConfirmation = Application::whereHas('trainee', fn($q) => $q->where('college_id', $college->id))
                     ->where('status', Application::STATUS_INITIAL_APPROVE)
-                    ->where('training_type', Application::TRAINING_TYPE_UNIVERSITY)
+                    ->where('training_type', Application::UNIVERSITY)
                     ->count();
 
                 $stats[] = Stat::make('طلبات بانتظار التأكيد', $pendingConfirmation)
@@ -92,10 +84,10 @@ class DashboardStatsOverview extends BaseWidget
 
         // 0.5 MINISTRY OF HEALTH (ROLE_MOH = 4)
         elseif ($role === User::ROLE_MOH) {
-            $totalApps = Application::where('training_type', Application::TRAINING_TYPE_PRACTICE)
+            $totalApps = Application::where('training_type', Application::PRACTICE)
                 ->whereIn('status', [Application::STATUS_INITIAL_APPROVE, Application::STATUS_STARTED_TRAINING, Application::STATUS_ENDED_TRAINING])
                 ->count();
-            $activeTrainees = Application::where('training_type', Application::TRAINING_TYPE_PRACTICE)
+            $activeTrainees = Application::where('training_type', Application::PRACTICE)
                 ->where('status', Application::STATUS_STARTED_TRAINING)
                 ->count();
 
@@ -106,7 +98,7 @@ class DashboardStatsOverview extends BaseWidget
                 ->color('success')
                 ->icon('heroicon-o-check-badge');
 
-            $pendingConfirmation = Application::where('training_type', Application::TRAINING_TYPE_PRACTICE)
+            $pendingConfirmation = Application::where('training_type', Application::PRACTICE)
                 ->where('status', Application::STATUS_INITIAL_APPROVE)
                 ->count();
 
@@ -119,12 +111,12 @@ class DashboardStatsOverview extends BaseWidget
         // 1. SECTION HEAD (ROLE_SECTION = 3)
         // Show Capacity for their section
         elseif ($role === User::ROLE_SECTION) {
-            $section = Section::where('user_id', $user->id)->first();
+            $section = Section::where('user_id', $user->id)->active()->first();
             if ($section) {
                 $cap = $section->getCapacityStats();
 
                 $stats[] = Stat::make('السعة الاستيعابية', $cap['total'])
-                    ->description("القسم: {$section->name_location}")
+                    ->description("القسم: {$section->name}")
                     ->icon('heroicon-o-users');
 
                 $stats[] = Stat::make('المتدربين الحاليين', $cap['used'])
@@ -137,13 +129,13 @@ class DashboardStatsOverview extends BaseWidget
         // 2. DEPARTMENT HEAD (ROLE_DEPARTMENT = 2)
         // Show capacity for each section in their department + Sum
         elseif ($role === User::ROLE_DEPARTMENT) {
-            $department = Department::where('user_id', $user->id)->first();
+            $department = Department::where('user_id', $user->id)->active()->first();
 
             if ($department) {
                 $cap = $department->getCapacityStats();
 
                 $stats[] = Stat::make('إجمالي السعة (القسم)', $cap['total'])
-                    ->description("الدائرة: {$department->title}")
+                    ->description("الدائرة: {$department->name}")
                     ->icon('heroicon-o-building-office');
 
                 $stats[] = Stat::make('إجمالي المتدربين', $cap['used'])
@@ -156,26 +148,31 @@ class DashboardStatsOverview extends BaseWidget
         // HOA (6): Capacity for everything in his Admin (loop Section via Department or direct if linked?)
         // Migration: Section has 'administrative_id'.
         // HOM (7): Capacity for Health related stuff.
+        // 3. HEAD OF ADMINISTRATION (HOA) & HEAD OF MEDICAL (HOM)
+        // HOA (6): Capacity for everything in his Admin (loop Section via Department or direct if linked?)
+        // Migration: Section has 'administrative_id'.
+        // HOM (7): Capacity for Health related stuff.
         elseif ($role === User::ROLE_HOA || $role === User::ROLE_HOM) {
             $cap = ['total' => 0, 'used' => 0, 'available' => 0];
             $adminUnitTitle = '';
             $sectionIds = [];
 
             if ($role === User::ROLE_HOA) {
-                $adminUnit = \App\Models\Administrative::where('user_id', $user->id)->first();
+                $adminUnit = \App\Models\Administrative::where('user_id', $user->id)->active()->first();
                 if ($adminUnit) {
                     $cap = $adminUnit->getCapacityStats();
-                    $adminUnitTitle = "الوحدة الإدارية: {$adminUnit->title}";
-                    $sectionIds = $adminUnit->sections->pluck('id');
+                    $adminUnitTitle = "الوحدة الإدارية: {$adminUnit->name}";
+                    $sectionIds = $adminUnit->sections()->active()->pluck('id');
                 }
             } elseif ($role === User::ROLE_HOM) {
-                $adminUnit = \App\Models\Administrative::where('medical_head_user_id', $user->id)->first();
+                $adminUnit = \App\Models\Administrative::where('medical_head_user_id', $user->id)->active()->first();
                 if ($adminUnit) {
                     // Logic to get ONLY medical section stats
                     $sections = Section::where('administrative_id', $adminUnit->id)
-                        ->whereHas('department', fn($q) => $q->where('is_medical', true))
+                        ->active()
+                        ->whereHas('department', fn($q) => $q->where('is_medical', true)->active())
                         ->withCount(['applications as active_apps_count' => function ($q) {
-                            $q->where('status', Application::STATUS_STARTED_TRAINING);
+                            $q->where('applications.status', Application::STATUS_STARTED_TRAINING);
                         }])
                         ->get();
 
@@ -188,7 +185,7 @@ class DashboardStatsOverview extends BaseWidget
                         $cap['used'] += $used;
                         $cap['available'] += $available;
                     }
-                    $adminUnitTitle = "الإدارة الطبية: {$adminUnit->title}";
+                    $adminUnitTitle = "الإدارة الطبية: {$adminUnit->name}";
                     $sectionIds = $sections->pluck('id');
                 }
             }
@@ -215,8 +212,11 @@ class DashboardStatsOverview extends BaseWidget
 
             // Aggregate capacity from all sections (Eager Load to avoid N+1)
             $capStats = ['total' => 0, 'used' => 0, 'available' => 0];
-            $sections = Section::withoutTrashed()->withCount(['applications as active_apps_count' => function ($q) {
-                $q->where('status', Application::STATUS_STARTED_TRAINING);
+            $sections = Section::active()
+                ->whereHas('administrative', fn ($q) => $q->active())
+                ->whereHas('department', fn ($q) => $q->active())
+                ->withCount(['applications as active_apps_count' => function ($q) {
+                $q->where('applications.status', Application::STATUS_STARTED_TRAINING);
             }])->get();
 
             foreach ($sections as $s) {
@@ -246,6 +246,10 @@ class DashboardStatsOverview extends BaseWidget
                 ->color('warning')
                 ->icon('heroicon-o-clock');
 
+            $stats[] = Stat::make('إجمالي المستخدمين', User::active()->count())
+                ->icon('heroicon-o-users')
+                ->color('primary');
+
 
             // $stats[] = Stat::make('إجمالي الطلبات', Application::count())
             //     ->icon('heroicon-o-document-text')
@@ -255,8 +259,11 @@ class DashboardStatsOverview extends BaseWidget
         // 5. ADMIN (ROLE_ADMIN - 1)
         elseif ($role === User::ROLE_ADMIN) {
             $capStats = ['total' => 0, 'used' => 0, 'available' => 0];
-            $sections = Section::withoutTrashed()->withCount(['applications as active_apps_count' => function ($q) {
-                $q->where('status', Application::STATUS_STARTED_TRAINING);
+            $sections = Section::active()
+                ->whereHas('administrative', fn ($q) => $q->active())
+                ->whereHas('department', fn ($q) => $q->active())
+                ->withCount(['applications as active_apps_count' => function ($q) {
+                $q->where('applications.status', Application::STATUS_STARTED_TRAINING);
             }])->get();
 
             foreach ($sections as $s) {
@@ -278,7 +285,7 @@ class DashboardStatsOverview extends BaseWidget
                 ->icon('heroicon-o-document-text')
                 ->color('warning');
 
-            $stats[] = Stat::make('إجمالي المستخدمين', User::count())
+            $stats[] = Stat::make('إجمالي المستخدمين', User::active()->count())
                 ->icon('heroicon-o-users')
                 ->color('primary');
         }

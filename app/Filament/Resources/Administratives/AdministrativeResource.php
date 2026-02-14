@@ -39,7 +39,6 @@ class AdministrativeResource extends Resource
 
     public static function table(Table $table): Table
     {
-
         return AdministrativesTable::configure($table);
     }
     // Arabic labels

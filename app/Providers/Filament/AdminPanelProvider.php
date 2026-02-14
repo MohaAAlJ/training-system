@@ -23,6 +23,8 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 use App\Filament\Auth\Login;
 use Filament\View\PanelsRenderHook;
 use Filament\Actions\Exports\Models\Export;
+use Filament\Navigation\MenuItem;
+use App\Filament\Pages\Auth\ChangePassword;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -33,7 +35,7 @@ class AdminPanelProvider extends PanelProvider
             ->favicon(asset('favicon.ico'))
             ->unsavedChangesAlerts()
             ->brandLogo(null)
-            ->brandName(new HtmlString(sprintf('<img src="%s" alt="%s" style="height:1.8rem;width:auto;display:inline-block;vertical-align:middle;margin-inline-end:.6rem;"/><span style="font-size:1.8rem;line-height:1;display:inline-block;vertical-align:middle;font-weight:600">%s</span>', asset('favicon.ico'), config('app.name'), config('app.name'))))
+            ->brandName(new HtmlString(sprintf('<img src="%s" alt="Second Logo" style="height:1.8rem;width:auto;display:inline-block;vertical-align:middle;margin-inline-end:.6rem;"/><img src="%s" alt="%s" style="height:1.8rem;width:auto;display:inline-block;vertical-align:middle;margin-inline-end:.6rem;"/><span style="font-size:1.8rem;line-height:1;display:inline-block;vertical-align:middle;font-weight:600">%s</span>', asset('images/logo.png'), asset('favicon.ico'), config('app.name'), config('app.name'))))
             ->id('home')
             ->path('home')
             ->login(Login::class)
@@ -44,18 +46,28 @@ class AdminPanelProvider extends PanelProvider
                 'success' => Color::Green,
                 'warning' => Color::Orange,
                 'danger' => Color::Red,
+                'fuchsia' => Color::Fuchsia,
+                'purple' => Color::Purple,
+                'yellow' => color::Yellow,
             ])
             ->renderHook(
                 'panels::head.end',
                 fn(): HtmlString => new HtmlString('<link rel="stylesheet" href="' . asset('css/filament/red-glow-theme-PRCS-Moha.css') . '">')
             )
+            ->renderHook(
+                PanelsRenderHook::FOOTER,
+                fn(): string => view('components.footer')->render()
+            )
             ->sidebarWidth('17rem') // Narrower sidebar
             ->databaseNotifications()
-            ->globalSearch(false) // Disable global search
+            ->globalSearch(false)
             ->navigationGroups([
                 \Filament\Navigation\NavigationGroup::make()
                     ->label('إدارة المتدربين')
                     ->collapsible(false),
+                \Filament\Navigation\NavigationGroup::make()
+                    ->label('الكليات')
+                    ->collapsed(),
             ])
             ->collapsibleNavigationGroups(true)
             ->sidebarCollapsibleOnDesktop(false)
@@ -64,12 +76,18 @@ class AdminPanelProvider extends PanelProvider
             ->pages([
                 Dashboard::class,
             ])
-
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
-                // AccountWidget::class,
+                // \App\Filament\Widgets\DashboardWidgets::class,
+            ])
+            ->userMenuItems([
+                MenuItem::make()
+                    ->label('تغيير كلمة المرور')
+                    ->url(fn(): string => ChangePassword::getUrl())
+                    ->icon('heroicon-o-key'),
             ])
             ->middleware([
+                'throttle:60,1',
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
                 StartSession::class,

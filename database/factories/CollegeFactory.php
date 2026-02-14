@@ -11,10 +11,7 @@ class CollegeFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => [
-                'ar' => 'كلية ' . $this->faker->word,
-                'en' => 'College of ' . $this->faker->word
-            ],
+            'name' => 'College of ' . $this->faker->word,
             'institution_id' => Institution::inRandomOrder()->first()?->id ?? Institution::factory(),
 
             'user_id' => User::factory(),

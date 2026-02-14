@@ -12,7 +12,7 @@ class CreateUser extends CreateRecord
 
     protected function afterCreate(): void
     {
-        $state = $this->form->getState();
+        $state = $this->form->getRawState();
         if (!empty($state['college_id']) && $this->record && $this->record->role == \App\Models\User::ROLE_COLLEGE) {
             $college = College::find($state['college_id']);
             if ($college) {

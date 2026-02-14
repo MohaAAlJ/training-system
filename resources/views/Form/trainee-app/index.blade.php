@@ -83,7 +83,7 @@
                             </label>
 
                             <label class="field">
-                                <span>رقم الهوية *</span>
+                                <span>رقم الهوية</span>
                                 <input
                                     id="national_id"
                                     name="national_id"
@@ -93,7 +93,6 @@
                                     pattern="\d{9}"
                                     inputmode="numeric"
                                     oninput="this.value = this.value.replace(/[^0-9]/g, '')"
-                                    required
                                 />
                                 <small class="note">9 أرقام</small>
                             </label>
@@ -130,7 +129,7 @@
                                 <small class="note">حروف فقط.</small>
                             </label>
                             <label class="field">
-                                <span>تاريخ الميلاد *</span>
+                                <span>تاريخ الميلاد</span>
                                 <div class="date-input-wrapper">
                                     <input
                                         id="dob"
@@ -139,7 +138,6 @@
                                         lang="ar"
                                         max="{{ \Carbon\Carbon::now()->subYears(18)->format('Y-m-d') }}"
                                         min="{{ \Carbon\Carbon::now()->subYears(60)->format('Y-m-d') }}"
-                                        required
                                     />
                                     <button type="button" id="dobCalendarBtn" class="calendar-btn" title="اختر التاريخ">
                                         📅
@@ -161,7 +159,7 @@
                                     placeholder="97x5xxxxxxxx"
                                     title="الصيغة: 9725 أو 9705 ثم 9 أو 6 ثم 7 أرقام"
                                     oninput="this.value = this.value.replace(/[^0-9]/g, '')"
-                                    required
+                                    {{-- required --}}
                                 />
                                 <small class="note">مثال: 970591234567 أو 972561234567</small>
                             </label>
@@ -175,7 +173,7 @@
                                 </select>
                             </label>
                             <label class="field">
-                                <span>عنوان/شارع *</span>
+                                <span>عنوان/شارع</span>
                                 <input
                                     id="street"
                                     name="street"
@@ -184,7 +182,6 @@
                                     pattern="^[A-Za-z\u0600-\u06FF0-9\s\-\.,#\/]+$"
                                     title="يمكن إدخال حروف وأرقام ورموز العنوان"
                                     placeholder="مثال: شارع الملك فيصل 123"
-                                    required
                                 />
                                 <small class="note">حروف، أرقام، مسافات، - . , # /</small>
                             </label>

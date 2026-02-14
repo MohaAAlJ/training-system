@@ -4,10 +4,10 @@ namespace App\Livewire\Trainee\Config;
 
 /**
  * TraineeForm Configuration
- * 
+ *
  * Centralized configuration for the TraineeForm Livewire component.
  * Separates configuration from business logic for better maintainability.
- * 
+ *
  * USAGE:
  *   $config = TraineeFormConfig::getValidationRules();
  *   $config = TraineeFormConfig::getPhoneRegex();
@@ -32,8 +32,8 @@ class TraineeFormConfig
     /**
      * Training types
      */
-    public const TRAINING_TYPE_UNIVERSITY = 1;
-    public const TRAINING_TYPE_PRACTICE = 2;
+    public const UNIVERSITY = 1;
+    public const PRACTICE = 2;
 
     /**
      * Age constraints
@@ -53,15 +53,15 @@ class TraineeFormConfig
     public static function getValidationRules(): array
     {
         return [
-            'trainingType' => 'required|integer|in:' . self::TRAINING_TYPE_UNIVERSITY . ',' . self::TRAINING_TYPE_PRACTICE,
+            'trainingType' => 'required|integer|in:' . self::UNIVERSITY . ',' . self::PRACTICE,
             'nationalId' => 'required|digits:9|regex:' . self::NATIONAL_ID_REGEX,
             'fullName' => 'required|string|regex:' . self::NAME_REGEX . '|max:100',
             'phoneNumber' => 'required|regex:' . self::PHONE_REGEX,
             'dob' => 'required|date|before_or_equal:' . now()->subYears(self::MIN_AGE)->format('Y-m-d') . '|after_or_equal:' . now()->subYears(self::MAX_AGE)->format('Y-m-d'),
             'governorateId' => 'required|exists:governorates,id',
             'street' => 'required|string|max:255',
-            'institutionId' => 'required_if:trainingType,' . self::TRAINING_TYPE_UNIVERSITY . '|exists:institutions,id',
-            'majorId' => 'required_if:trainingType,' . self::TRAINING_TYPE_UNIVERSITY . '|exists:majors,id',
+            'institutionId' => 'required_if:trainingType,' . self::UNIVERSITY . '|exists:institutions,id',
+            'majorId' => 'required_if:trainingType,' . self::UNIVERSITY . '|exists:majors,id',
             'administrativeId' => 'required|exists:administratives,id',
             'departmentId' => 'required|exists:departments,id',
             'sectionId' => 'required|exists:sections,id',

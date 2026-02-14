@@ -18,7 +18,7 @@ class SetCspHeaders
         // Set CSP header that allows Livewire and Google Fonts
         $response->headers->set(
             'Content-Security-Policy',
-            "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https:; connect-src 'self' https: blob:; img-src 'self' data: https: blob:; font-src 'self' data: https: https://fonts.gstatic.com;"
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com https://fonts.googleapis.com; img-src 'self' data: https:; font-src 'self' data: https: https://fonts.gstatic.com; connect-src 'self' https:;"
         );
 
         return $response;

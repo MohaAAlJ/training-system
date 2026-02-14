@@ -13,10 +13,10 @@ return new class extends Migration {
         Schema::create('colleges', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->boolean('is_active')->default(true);
-            $table->boolean('Can_add_Application')->default(true);
-            $table->foreignIdFor(Institution::class)->constrained()->cascadeOnDelete()->cascadeOnUpdate();
-            $table->foreignIdFor(User::class)->nullable()->constrained()->nullOnDelete();
+            $table->boolean('active')->default(App\Enums\GeneralConst::ACTIVE);
+            $table->boolean('add_application')->default(App\Enums\GeneralConst::ACTIVE);
+            $table->foreignIdFor(Institution::class)->constrained()->cascadeOnDelete('restrict');
+            $table->foreignIdFor(User::class)->nullable()->constrained()->cascadeOnDelete('restrict');
             $table->timestamps();
             $table->softDeletes();
         });

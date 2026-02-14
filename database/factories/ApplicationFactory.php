@@ -23,10 +23,10 @@ class ApplicationFactory extends Factory
     {
         return [
             'trainee_id' => Trainee::factory(),
-            'administrative_id' => Administrative::factory(),
-            'department_id' => Department::factory(),
+            // 'administrative_id' => Administrative::factory(), // Removed
+            // 'department_id' => Department::factory(), // Removed
             'section_id' => Section::factory(),
-            'training_type' => $this->faker->randomElement([Application::TRAINING_TYPE_PRACTICE, Application::TRAINING_TYPE_UNIVERSITY]),
+            'training_type' => $this->faker->randomElement([Application::PRACTICE, Application::UNIVERSITY]),
             'duration' => $this->faker->numberBetween(1, 12),
             'street' => $this->faker->streetName,
             'start_date' => $this->faker->date(),

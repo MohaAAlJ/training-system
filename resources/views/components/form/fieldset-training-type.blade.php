@@ -18,7 +18,7 @@
 
         <!-- National ID Input -->
         <label class="field">
-            <span>رقم الهوية *</span>
+            <span>رقم الهوية</span>
             <input 
                 type="text" 
                 wire:model.live="nationalId"
@@ -26,7 +26,6 @@
                 placeholder="رقم الهوية"
                 maxlength="9"
                 class="form__input @error('nationalId') form__input--error @enderror"
-                required
                 @readonly($nationalIdReadonly)
             >
             @error('nationalId')

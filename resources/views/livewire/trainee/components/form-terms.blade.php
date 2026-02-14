@@ -1,12 +1,12 @@
 <link rel="stylesheet" href="{{ asset('css/form-terms.css') }}">
 
-<!-- Terms & Conditions Section (shown only when personal details are visible) -->
-@if ($showPersonalDetails)
+<!-- Terms & Conditions Section (shown only when training details are valid) -->
+@if ($showTerms)
 <div class="terms-section">
     <label class="checkbox-field" style="display: flex; gap: 12px; align-items: flex-start; cursor: pointer;">
-        <input 
-            type="checkbox" 
-            wire:model.live="termsApproval"
+        <input
+            type="checkbox"
+            wire:model.change="termsApproval"
             class="form__checkbox"
             style="width: 20px; height: 20px; accent-color: var(--primary); margin-top: 4px;"
         >

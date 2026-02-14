@@ -17,7 +17,7 @@ class DepartmentForm
                 Section::make('البيانات الأساسية')
                     ->columns(2)
                     ->schema([
-                        TextInput::make('title')
+                        TextInput::make('name')
                             ->label('اسم الدائرة')
                             ->placeholder('مثال: دائرة الصيدلة')
                             ->required()
@@ -26,12 +26,16 @@ class DepartmentForm
                         Toggle::make('is_medical')
                             ->label('دائرة طبية')
                             ->helperText('حدد إذا كانت هذه دائرة طبية أم لا')
+                            ->onIcon('heroicon-m-check-circle')
+                            ->offIcon('heroicon-m-x-circle')
                             ->onColor('success')
                             ->offColor('danger')
                             ->default(false),
-                        Toggle::make('status')
+                        Toggle::make('active')
                             ->label('نشطة')
                             ->helperText('حدد إذا كانت الدائرة نشطة أم لا')
+                            ->onIcon('heroicon-m-check-circle')
+                            ->offIcon('heroicon-m-x-circle')
                             ->onColor('success')
                             ->offColor('danger')
                             ->default(true),
@@ -41,9 +45,27 @@ class DepartmentForm
                     ->schema([
                         Select::make('user_id')
                             ->label('رئيس الدائرة')
-                            ->helperText('اختر رئيس الدائرة (اختياري)')
-                            ->options(fn($record) => \App\Models\User::getHeadOptions(\App\Models\User::ROLE_DEPARTMENT, $record?->user_id))
-                            ->disableOptionWhen(fn($value, $record) => !\App\Models\User::where('id', $value)->free($record?->user_id)->exists())
+                            ->relationship('user', 'name', fn($query) => $query->where('role', \App\Models\User::ROLE_DEPARTMENT))
+                            ->createOptionForm([
+                                TextInput::make('name')
+                                    ->label('الاسم')
+                                    ->required(),
+                                TextInput::make('user_name')
+                                    ->label('اسم المستخدم')
+                                    ->required()
+                                    ->unique('users', 'user_name'),
+                                TextInput::make('email')
+                                    ->label('البريد الإلكتروني')
+                                    ->required()
+                                    ->email()
+                                    ->unique('users', 'email'),
+                                TextInput::make('password')
+                                    ->label('كلمة المرور')
+                                    ->password()
+                                    ->required(),
+                                \Filament\Forms\Components\Hidden::make('role')
+                                    ->default(\App\Models\User::ROLE_DEPARTMENT),
+                            ])
                             ->searchable()
                             ->preload()
                             ->nullable(),

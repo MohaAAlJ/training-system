@@ -35,10 +35,7 @@ class MajorsRelationManager extends RelationManager
                     ->label('اسم التخصص')
                     ->required()
                     ->maxLength(255),
-                \Filament\Forms\Components\TextInput::make('code')
-                    ->label('الرمز')
-                    ->required()
-                    ->maxLength(255),
+
             ]);
     }
 
@@ -59,7 +56,8 @@ class MajorsRelationManager extends RelationManager
                 TrashedFilter::make(),
             ])
             ->headerActions([
-                CreateAction::make(),
+                CreateAction::make()
+                    ->visible(fn() => auth()->user()->isAdmin()),
                 AttachAction::make()
                     ->preloadRecordSelect()
                     ->multiple(),

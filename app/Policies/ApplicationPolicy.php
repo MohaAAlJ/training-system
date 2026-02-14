@@ -27,23 +27,23 @@ class ApplicationPolicy
 
         if ($user->isSectionHead()) {
             return $Application->section_id === $user->section?->id &&
-                in_array($Application->status->value, [
+                in_array($Application->status, [
                     Application::STATUS_STARTED_TRAINING,
                     Application::STATUS_ENDED_TRAINING
                 ]);
         }
 
         if ($user->isAdministrative()) {
-            return $Application->administrative_id === $user->administrative?->id &&
-                in_array($Application->status->value, [
+            return $Application->section?->administrative_id === $user->administrative?->id &&
+                in_array($Application->status, [
                     Application::STATUS_STARTED_TRAINING,
                     Application::STATUS_ENDED_TRAINING
                 ]);
         }
 
         if ($user->isDepartment()) {
-            return $Application->department_id === $user->department?->id &&
-                in_array($Application->status->value, [
+            return $Application->section?->department_id === $user->department?->id &&
+                in_array($Application->status, [
                     Application::STATUS_STARTED_TRAINING,
                     Application::STATUS_ENDED_TRAINING
                 ]);
@@ -51,9 +51,9 @@ class ApplicationPolicy
 
         if ($user->isMedicalManager()) {
             $adminId = \App\Models\Administrative::where('medical_head_user_id', $user->id)->value('id');
-            return $Application->administrative_id === $adminId &&
-                $Application->department?->is_medical === true &&
-                in_array($Application->status->value, [
+            return $Application->section?->administrative_id === $adminId &&
+                $Application->section?->department?->is_medical === true &&
+                in_array($Application->status, [
                     Application::STATUS_STARTED_TRAINING,
                     Application::STATUS_ENDED_TRAINING
                 ]);
@@ -73,13 +73,13 @@ class ApplicationPolicy
         }
 
         if ($user->isCollegeSupervisor()) {
-            $college = $user->College;
-            if (!$college || !$college->Can_add_Application) {
+            $college = $user->college;
+            if (!$college || !$college->add_application) {
                 return false;
             }
 
             $institution = $college->institution;
-            if (!$institution || !$institution->Can_add_Application) {
+            if (!$institution || !$institution->add_application) {
                 return false;
             }
 
@@ -111,11 +111,12 @@ class ApplicationPolicy
     public function downloadAbsorptionPaper(User $user, Application $application): bool
     {
         return $user->isMinistry() &&
-            in_array($application->status->value, [
+            in_array($application->status, [
                 Application::STATUS_INITIAL_APPROVE,
+                Application::STATUS_CONFIRMATION,
                 Application::STATUS_STARTED_TRAINING,
                 Application::STATUS_ENDED_TRAINING,
             ]) &&
-            $application->training_type->value === Application::TRAINING_TYPE_PRACTICE;
+            $application->training_type === Application::PRACTICE;
     }
 }

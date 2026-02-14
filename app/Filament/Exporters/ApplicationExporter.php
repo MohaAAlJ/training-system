@@ -6,12 +6,26 @@ use App\Models\Application;
 use Filament\Actions\Exports\ExportColumn;
 use Filament\Actions\Exports\Exporter;
 use Filament\Actions\Exports\Models\Export;
+use Filament\Actions\Exports\Enums\ExportFormat;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
 class ApplicationExporter extends Exporter
 {
     protected static ?string $model = Application::class;
+
+    public static function getLabel(): string
+    {
+        return 'طلبات التدريب';
+    }
+
+    public function getFormats(): array
+    {
+        if (Auth::user()?->isAdmin()) {
+            return [ExportFormat::Xlsx, ExportFormat::Csv,];
+        }
+        return [ExportFormat::Xlsx,];
+    }
 
     public static function getColumns(): array
     {
@@ -21,6 +35,8 @@ class ApplicationExporter extends Exporter
                 ->label('رقم الطلب'),
             ExportColumn::make('trainee.full_name')
                 ->label('اسم المتدرب'),
+            ExportColumn::make('trainee.gender')
+                ->label('الجنس'),
             ExportColumn::make('trainee.national_id')
                 ->label('رقم الهوية'),
             ExportColumn::make('trainee.institution.name')
@@ -29,11 +45,11 @@ class ApplicationExporter extends Exporter
                 ->label('التخصص'),
             ExportColumn::make('training_type_label')
                 ->label('نوع التدريب'),
-            ExportColumn::make('administrative.title')
+            ExportColumn::make('section.administrative.name')
                 ->label('الإدارة'),
-            ExportColumn::make('department.title')
+            ExportColumn::make('section.department.name')
                 ->label('الدائرة'),
-            ExportColumn::make('section.name_location')
+            ExportColumn::make('section.name')
                 ->label('القسم'),
             ExportColumn::make('start_date')
                 ->label('تاريخ البدء')
@@ -44,7 +60,7 @@ class ApplicationExporter extends Exporter
             ExportColumn::make('status')
                 ->label('الحالة')
                 ->formatStateUsing(function ($state) use ($translation) {
-                    $actualState = $state instanceof \App\Enums\ApplicationStatus ? $state->value : (int)$state;
+                    $actualState = (int)$state;
                     return $translation['status'][$actualState] ?? 'غير محدد';
                 }),
             ExportColumn::make('trainee.training_hours')
@@ -54,6 +70,9 @@ class ApplicationExporter extends Exporter
                 ->formatStateUsing(fn($state) => $state ? $state->format('d/m/Y') : ''),
             ExportColumn::make('created_at')
                 ->label('تاريخ الإنشاء')
+                ->formatStateUsing(fn($state) => $state ? $state->format('d/m/Y') : ''),
+            ExportColumn::make('end_date')
+                ->label('تاريخ الانتهاء')
                 ->formatStateUsing(fn($state) => $state ? $state->format('d/m/Y') : ''),
         ];
     }
@@ -73,8 +92,9 @@ class ApplicationExporter extends Exporter
     public function getFileName(Export $export): string
     {
         $user = Auth::user();
-        $timestamp = Carbon::now()->format('ymd_His');
-        $baseFileName = "المتدربين_{$timestamp}";
+        $date = Carbon::now()->format('Y-m-d');
+        $time = Carbon::now()->format('H-i');
+        $baseFileName = "طلبات_التدريب_تاريخ_{$date}_وقت_{$time}";
 
         if (!$user) {
             return $baseFileName;
@@ -90,17 +110,17 @@ class ApplicationExporter extends Exporter
         } elseif ($user->isDepartmentHead()) {
             $department = $user->department;
             if ($department) {
-                return "{$baseFileName}_{$department->title}";
+                return "{$baseFileName}_{$department->name}";
             }
         } elseif ($user->isAdministrative()) {
             $administrative = $user->administrative;
             if ($administrative) {
-                return "{$baseFileName}_{$administrative->title}";
+                return "{$baseFileName}_{$administrative->name}";
             }
         } elseif ($user->isSectionHead()) {
             $section = $user->section;
             if ($section) {
-                return "{$baseFileName}_{$section->name_location}";
+                return "{$baseFileName}_{$section->name}";
             }
         } elseif ($user->isCollegeSupervisor()) {
             $college = $user->college;

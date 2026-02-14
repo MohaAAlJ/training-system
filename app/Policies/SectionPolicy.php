@@ -70,10 +70,10 @@ class SectionPolicy
         }
 
         // Check Medical Manager permissions
-        if ($user->isMedicalManager()) {
-            $adminId = \App\Models\Administrative::where('medical_head_user_id', $user->id)->value('id');
-            return $model->administrative_id === $adminId && $model->department?->is_medical === true;
-        }
+        // if ($user->isMedicalManager()) {
+        //     $adminId = \App\Models\Administrative::where('medical_head_user_id', $user->id)->value('id');
+        //     return $model->administrative_id === $adminId && $model->department?->is_medical === true;
+        // }
 
         return false;
     }
@@ -99,7 +99,7 @@ class SectionPolicy
     /**
      * Determine if the user can specifically toggle status.
      */
-    public function toggleStatus(User $user, Section $model): bool
+    public function toggleActive(User $user, Section $model): bool
     {
         if ($user->isAdmin()) return true;
 
@@ -111,15 +111,13 @@ class SectionPolicy
             return $this->settings->dept_head_can_enable_section;
         }
 
-        if ($user->isMedicalManager()) {
-            $adminId = \App\Models\Administrative::where('medical_head_user_id', $user->id)->value('id');
-            return $model->administrative_id === $adminId && $model->department?->is_medical === true;
-        }
+        // if ($user->isMedicalManager()) {
+        //     $adminId = \App\Models\Administrative::where('medical_head_user_id', $user->id)->value('id');
+        //     return $model->administrative_id === $adminId && $model->department?->is_medical === true;
+        // }
 
         return false;
     }
-
-
     public function delete(User $user, Section $model): bool
     {
         return $user->isAdmin();

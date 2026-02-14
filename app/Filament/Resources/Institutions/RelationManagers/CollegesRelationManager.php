@@ -10,6 +10,7 @@ use Filament\Actions\EditAction;
 use Filament\Actions\RestoreAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Actions\ViewAction;
+use Filament\Forms\Components\Hidden;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
@@ -43,17 +44,49 @@ class CollegesRelationManager extends RelationManager
                             ->columnSpanFull(),
                         \Filament\Forms\Components\Select::make('user_id')
                             ->label('مشرف الكلية')
+                            ->relationship('user', 'name')
                             ->options(fn($record) => \App\Models\User::getHeadOptions(\App\Models\User::ROLE_COLLEGE, $record?->user_id))
                             ->disableOptionWhen(fn($value, $record) => !\App\Models\User::where('id', $value)->free($record?->user_id)->exists())
                             ->searchable()
                             ->preload()
+                            ->createOptionForm([
+                                \Filament\Forms\Components\TextInput::make('name')
+                                    ->label('الاسم')
+                                    ->required(),
+                                \Filament\Forms\Components\TextInput::make('user_name')
+                                    ->label('اسم المستخدم')
+                                    ->required()
+                                    ->unique('users', 'user_name'),
+                                \Filament\Forms\Components\TextInput::make('email')
+                                    ->label('البريد الإلكتروني')
+                                    ->required()
+                                    ->email()
+                                    ->unique('users', 'email'),
+                                \Filament\Forms\Components\TextInput::make('password')
+                                    ->label('كلمة المرور')
+                                    ->password()
+                                    ->dehydrateStateUsing(fn ($state) => \Illuminate\Support\Facades\Hash::make($state))
+                                    ->required(),
+                                Hidden::make('role')
+                                    ->default(\App\Models\User::ROLE_COLLEGE)
+                                    ->required(),
+                            ])
                             ->helperText('المستخدم الذي سيقوم بإدارة شؤون هذه الكلية في النظام')
-                            ->columnSpanFull(),
-                        \Filament\Forms\Components\Toggle::make('is_active')
+                            ->columnSpanFull()
+                            ->nullable(),
+                        \Filament\Forms\Components\Toggle::make('active')
+                            ->onIcon('heroicon-m-check-circle')
+                            ->offIcon('heroicon-m-x-circle')
+                            ->onColor('success')
+                            ->offColor('danger')
                             ->label('نشط')
                             ->default(true),
-                        \Filament\Forms\Components\Toggle::make('Can_add_Application')
+                        \Filament\Forms\Components\Toggle::make('add_application')
                             ->label('السماح بإضافة طلبات')
+                            ->onIcon('heroicon-m-check-circle')
+                            ->offIcon('heroicon-m-x-circle')
+                            ->onColor('success')
+                            ->offColor('danger')
                             ->default(true),
                     ]),
             ]);
@@ -75,14 +108,14 @@ class CollegesRelationManager extends RelationManager
                     ->label('مشرف الكلية')
                     ->searchable()
                     ->placeholder('غير محدد'),
-                ToggleColumn::make('is_active')
+                ToggleColumn::make('active')
                     ->label('الحالة')
                     ->onIcon('heroicon-m-check-circle')
                     ->offIcon('heroicon-m-x-circle')
                     ->onColor('success')
                     ->offColor('danger')
                     ->sortable(),
-                ToggleColumn::make('Can_add_Application')
+                ToggleColumn::make('add_application')
                     ->label('إضافة طلبات')
                     ->onIcon('heroicon-m-check-circle')
                     ->offIcon('heroicon-m-x-circle')
@@ -96,7 +129,7 @@ class CollegesRelationManager extends RelationManager
             ])
             ->filters([
                 TrashedFilter::make(),
-                TernaryFilter::make('is_active')
+                TernaryFilter::make('active')
                     ->label('الحالة')
                     ->boolean()
                     ->trueLabel('نشط')
@@ -107,7 +140,43 @@ class CollegesRelationManager extends RelationManager
                 CreateAction::make()->visible(fn() => Auth::user()?->isAdmin() ?? false),
             ])
             ->recordActions([
-                DeleteAction::make()->visible(fn($record) => !$record->trashed() && Auth::user()?->isAdmin()),
+                DeleteAction::make()
+                    ->visible(fn($record) => !$record->trashed() && Auth::user()?->isAdmin())
+                    ->before(function ($record, \Filament\Actions\DeleteAction $action) {
+                        if ($record->majors()->exists()) {
+                            \Filament\Notifications\Notification::make()
+                                ->title('لا يمكن الأرشفة')
+                                ->body('لا يمكن أرشفة هذا السجل لوجود تخصصات مرتبطة به.')
+                                ->danger()
+                                ->send();
+                            $action->halt();
+                        }
+                        // Also check for trainees directly linked to college
+                        if ($record->trainees()->exists()) {
+                            \Filament\Notifications\Notification::make()
+                                ->title('لا يمكن الأرشفة')
+                                ->body('لا يمكن أرشفة هذا السجل لوجود متدربين مرتبطين به.')
+                                ->danger()
+                                ->send();
+                            $action->halt();
+                        }
+                    })
+                    ->action(function ($record) {
+                        try {
+                            $record->delete();
+                        } catch (\Illuminate\Database\QueryException $exception) {
+                            $errorCode = $exception->errorInfo[1] ?? 0;
+                            if ($errorCode == 1451) {
+                                \Filament\Notifications\Notification::make()
+                                    ->title('لا يمكن الحذف')
+                                    ->body('لا يمكن حذف هذا السجل نظرًا لوجود بيانات مرتبطة به.')
+                                    ->danger()
+                                    ->send();
+                                return;
+                            }
+                            throw $exception;
+                        }
+                    }),
                 RestoreAction::make()->visible(fn($record) => $record->trashed() && Auth::user()?->isAdmin()),
                 ViewAction::make()
                     ->url(fn($record) => \App\Filament\Resources\Colleges\CollegeResource::getUrl('view', ['record' => $record])),

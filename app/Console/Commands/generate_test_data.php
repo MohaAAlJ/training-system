@@ -28,8 +28,8 @@ if (!$administrative) {
 }
 
 echo "Starting to generate 10 applications\n";
-echo "Administrative: " . $administrative->title . " (ID: $administrative_id)\n";
-echo "Section: " . $section->name_location . " (ID: $section_id)\n";
+echo "Administrative: " . $administrative->name . " (ID: $administrative_id)\n";
+echo "Section: " . $section->name . " (ID: $section_id)\n";
 echo "Section Capacity: " . $section->capacity . "\n\n";
 
 try {
@@ -61,9 +61,7 @@ try {
         Application::create([
             'trainee_id' => $trainee->id,
             'section_id' => $section_id,
-            'department_id' => $section->department_id,
-            'administrative_id' => $administrative_id,
-            'training_type' => Application::TRAINING_TYPE_UNIVERSITY,
+            'training_type' => Application::UNIVERSITY,
             'status' => Application::STATUS_STARTED_TRAINING, // Status 5 counts towards capacity
             'start_date' => now(),
             'end_date' => now()->addMonths(3),

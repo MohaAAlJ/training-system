@@ -12,6 +12,7 @@ use Filament\Actions\ViewAction;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Tables\Columns\ToggleColumn;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
@@ -25,7 +26,7 @@ class DepartmentsTable
     {
         return $table
             ->columns([
-                TextColumn::make('title')
+                TextColumn::make('name')
                     ->label('اسم الدائرة')
                     ->searchable()
                     ->sortable(),
@@ -41,7 +42,7 @@ class DepartmentsTable
                     ->label('عدد الأقسام')
                     ->counts('sections')
                     ->sortable(),
-                ToggleColumn::make('status')
+                ToggleColumn::make('active')
                     ->label('الحالة')
                     ->onIcon('heroicon-m-check-circle')
                     ->offIcon('heroicon-m-x-circle')
@@ -57,16 +58,23 @@ class DepartmentsTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                SelectFilter::make('user_id')
-                    ->label('رئيس المديرية')
-                    ->relationship('user', 'name')
+                SelectFilter::make('administrative')
+                    ->label('الإدارة')
+                    ->options(fn() => \App\Models\Administrative::active()->pluck('name', 'id'))
+                    ->query(function (Builder $query, array $data) {
+                        if (!empty($data['value'])) {
+                            return $query->whereHas(
+                                'sections',
+                                fn($q) => $q
+                                    ->where('administrative_id', $data['value'])
+                                    ->whereHas('administrative', fn($aq) => $aq->active())
+                            );
+                        }
+                        return $query;
+                    })
                     ->searchable()
                     ->preload(),
-                SelectFilter::make('medical_head_user_id')
-                    ->label('رئيس الإدارة الطبية')
-                    ->relationship('medicalHead', 'name')
-                    ->searchable()
-                    ->preload(),
+
                 SelectFilter::make('is_medical')
                     ->label('نوع الإدارة')
                     ->options([
@@ -78,7 +86,34 @@ class DepartmentsTable
             ->recordActions([
                 ViewAction::make(),
                 EditAction::make(),
-                DeleteAction::make()->visible(fn($record) => !$record->trashed() && Auth::user()?->isAdmin()),
+                DeleteAction::make()
+                    ->visible(fn($record) => !$record->trashed() && Auth::user()?->isAdmin())
+                    ->before(function ($record, \Filament\Actions\DeleteAction $action) {
+                        if ($record->sections()->exists()) {
+                            \Filament\Notifications\Notification::make()
+                                ->title('لا يمكن الأرشفة')
+                                ->body('لا يمكن أرشفة هذا السجل لوجود أقسام مرتبطة به.')
+                                ->danger()
+                                ->send();
+                            $action->halt();
+                        }
+                    })
+                    ->action(function ($record) {
+                        try {
+                            $record->delete();
+                        } catch (\Illuminate\Database\QueryException $exception) {
+                            $errorCode = $exception->errorInfo[1] ?? 0;
+                            if ($errorCode == 1451) {
+                                \Filament\Notifications\Notification::make()
+                                    ->title('لا يمكن الحذف')
+                                    ->body('لا يمكن حذف هذا السجل نظرًا لوجود بيانات مرتبطة به.')
+                                    ->danger()
+                                    ->send();
+                                return;
+                            }
+                            throw $exception;
+                        }
+                    }),
                 RestoreAction::make()->visible(fn($record) => $record->trashed() && Auth::user()?->isAdmin()),
             ])
             ->toolbarActions([

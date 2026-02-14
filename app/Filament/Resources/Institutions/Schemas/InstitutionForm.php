@@ -15,11 +15,19 @@ class InstitutionForm
                     ->required()
                     ->maxLength(255)
                     ->columnSpan('full'),
-                \Filament\Forms\Components\Toggle::make('is_active')
+                \Filament\Forms\Components\Toggle::make('active')
                     ->label('نشط')
+                    ->onIcon('heroicon-m-check-circle')
+                    ->offIcon('heroicon-m-x-circle')
+                    ->onColor('success')
+                    ->offColor('danger')
                     ->default(true),
-                \Filament\Forms\Components\Toggle::make('Can_add_Application')
+                \Filament\Forms\Components\Toggle::make('add_application')
                     ->label('السماح بإضافة طلبات')
+                    ->onIcon('heroicon-m-check-circle')
+                    ->offIcon('heroicon-m-x-circle')
+                    ->onColor('success')
+                    ->offColor('danger')
                     ->default(true),
             ]);
     }

@@ -15,23 +15,26 @@ class GTMCapacityChart extends ChartWidget
     protected ?string $maxHeight = '260px';
     protected ?string $heading = 'توزيع السعة الاستيعابية';
 
+    // public static function canView(): bool
+    // {
+    //     $user = Auth::user();
+    //     if (! $user) {
+    //     return false;
+    // }
+
+    //     return in_array($user->role, [
+    //         User::ROLE_GTM,
+    //         User::ROLE_ADMIN,
+    //         User::ROLE_HOA,
+    //         User::ROLE_HOM,
+    //         User::ROLE_DEPARTMENT,
+    //         User::ROLE_SECTION,
+    //     ]);
+    // }
     public static function canView(): bool
     {
-        $user = Auth::user();
-        if (! $user) {
-            return false;
-        }
-
-        return in_array($user->role, [
-            User::ROLE_GTM,
-            User::ROLE_ADMIN,
-            User::ROLE_HOA,
-            User::ROLE_HOM,
-            User::ROLE_DEPARTMENT,
-            User::ROLE_SECTION,
-        ]);
+        return false;
     }
-
     protected function getData(): array
     {
         $user = Auth::user();

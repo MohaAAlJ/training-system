@@ -49,7 +49,8 @@ body {
     background-color: rgba(255, 255, 255, 0.6) !important;
     backdrop-filter: blur(16px) !important;
     border: 1px solid rgba(255, 255, 255, 0.4) !important;
-    box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.1),
+    box-shadow:
+        0 10px 40px -10px rgba(0, 0, 0, 0.1),
         0 0 20px rgba(239, 68, 68, 0.1) !important;
 }
 
@@ -125,13 +126,15 @@ h1,
 
 /* Topbar Glow */
 .fi-topbar {
-    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.1),
+    box-shadow:
+        0 10px 30px -10px rgba(0, 0, 0, 0.1),
         0 0 15px rgba(239, 68, 68, 0.1) !important;
     border: 1px solid rgba(239, 68, 68, 0.2) !important;
 }
 .dark .fi-topbar {
     border: 1px solid rgba(239, 68, 68, 0.1) !important;
-    box-shadow: 0 10px 40px -15px rgba(0, 0, 0, 0.5),
+    box-shadow:
+        0 10px 40px -15px rgba(0, 0, 0, 0.5),
         0 0 20px rgba(239, 68, 68, 0.15) !important;
 }
 
@@ -175,12 +178,14 @@ h1,
 
 /* Badges Glow */
 .fi-badge {
-    box-shadow: 0 0 8px rgba(0, 0, 0, 0.05),
+    box-shadow:
+        0 0 8px rgba(0, 0, 0, 0.05),
         0 0 12px var(--badge-color, rgba(239, 68, 68, 0.2)) !important;
 }
 
 .dark .fi-badge {
-    box-shadow: 0 0 8px rgba(0, 0, 0, 0.05),
+    box-shadow:
+        0 0 8px rgba(0, 0, 0, 0.05),
         0 0 12px var(--badge-color, rgba(239, 68, 68, 0.4)) !important;
 }
 
@@ -211,4 +216,262 @@ h1,
 ::-webkit-scrollbar-thumb {
     background: #ef4444;
     border-radius: 10px;
+}
+
+/* --- FOOTER STYLES --- */
+.filament-footer {
+    background: rgba(255, 255, 255, 0.9) !important;
+    backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(239, 68, 68, 0.2) !important;
+    border-radius: 0.75rem !important;
+    box-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.1),
+        0 0 15px rgba(239, 68, 68, 0.15) !important;
+    margin: 0.75rem !important;
+    width: calc(100% - 1.5rem) !important;
+    position: relative !important;
+}
+
+.dark .filament-footer {
+    background: rgba(17, 24, 39, 0.9) !important;
+    border-color: rgba(239, 68, 68, 0.15) !important;
+    box-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.3),
+        0 0 20px rgba(239, 68, 68, 0.2) !important;
+}
+
+.filament-footer-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 1rem 1.25rem;
+}
+
+.filament-footer-top {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 1.5rem;
+    align-items: center;
+    margin-bottom: 0;
+}
+
+.filament-footer-logo {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    justify-self: start; /* Pin to Right (Start in RTL) */
+}
+
+.filament-footer-logo-img {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 5px rgba(239, 68, 68, 0.3));
+    transition: transform 0.2s ease;
+}
+
+.filament-footer-logo-img:hover {
+    transform: scale(1.05);
+    filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.5));
+}
+
+.filament-footer-contact {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.filament-footer-contact-item {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    color: rgb(var(--gray-700));
+    font-size: 0.813rem;
+    transition: all 0.2s ease;
+}
+
+.dark .filament-footer-contact-item {
+    color: rgb(var(--gray-400));
+}
+
+.filament-footer-contact-item:hover {
+    color: #ef4444;
+    text-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
+}
+
+.filament-footer-contact-icon {
+    width: 14px;
+    height: 14px;
+    color: #ef4444;
+    flex-shrink: 0;
+    filter: drop-shadow(0 0 3px rgba(239, 68, 68, 0.3));
+}
+
+.filament-footer-contact-link {
+    color: inherit;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.filament-footer-contact-link:hover {
+    text-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
+}
+
+.filament-footer-social-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    justify-content: center;
+    justify-self: end; /* Pin to Left (End in RTL) */
+}
+
+.filament-footer-heading {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #ef4444;
+    margin: 0;
+    text-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+}
+
+.filament-footer-social {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.filament-footer-social-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.15);
+    border-radius: 0.5rem;
+    color: rgb(var(--gray-600));
+    transition: all 0.2s ease;
+    box-shadow: 0 0 8px rgba(239, 68, 68, 0.15);
+}
+
+.dark .filament-footer-social-link {
+    background: rgba(239, 68, 68, 0.12);
+    border-color: rgba(239, 68, 68, 0.25);
+    color: rgb(var(--gray-400));
+    box-shadow: 0 0 8px rgba(239, 68, 68, 0.25);
+}
+
+.filament-footer-social-link:hover {
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.6);
+}
+
+.filament-footer-social-link.youtube:hover {
+    background: #ff0000;
+    border-color: #ff0000;
+    box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
+}
+
+.filament-footer-social-link.whatsapp:hover {
+    background: #25d366;
+    border-color: #25d366;
+    box-shadow: 0 0 15px rgba(37, 211, 102, 0.5);
+}
+
+.filament-footer-social-icon {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+.filament-footer-bottom {
+    display: block;
+    width: 100%;
+    padding: 0;
+    margin-top: -1rem; /* Pull up to reduce gap caused by logo height */
+}
+
+.filament-footer-text-bottom {
+    font-size: 0.75rem;
+    color: rgb(var(--gray-600));
+    margin: 0;
+    text-align: center;
+    display: block;
+    text-shadow: 0 0 5px rgba(239, 68, 68, 0.1);
+}
+
+.dark .filament-footer-text-bottom {
+    color: rgb(var(--gray-500));
+    text-shadow: 0 0 5px rgba(239, 68, 68, 0.15);
+}
+
+.filament-footer-copyright-link {
+    color: #ef4444;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    text-shadow: 0 0 8px rgba(239, 68, 68, 0.3);
+}
+
+.filament-footer-copyright-link:hover {
+    text-decoration: underline;
+    text-shadow: 0 0 12px rgba(239, 68, 68, 0.6);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .filament-footer-top {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        text-align: center;
+    }
+
+    .filament-footer-logo,
+    .filament-footer-social-section {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .filament-footer-logo {
+        order: -1;
+    }
+
+    .filament-footer-social-section {
+        order: 1;
+    }
+}
+
+@media (max-width: 768px) {
+    .filament-footer-container {
+        padding: 0.75rem 1rem;
+    }
+
+    .filament-footer-top {
+        margin-bottom: 0.5rem;
+        padding-bottom: 0.5rem;
+    }
+
+    .filament-footer-logo-img {
+        width: 48px;
+        height: 48px;
+    }
+
+    .filament-footer-contact {
+        gap: 0.75rem;
+    }
+
+    .filament-footer-contact-item {
+        font-size: 0.75rem;
+    }
+
+    .filament-footer-social-link {
+        width: 28px;
+        height: 28px;
+    }
+
+    .filament-footer-social-icon {
+        width: 14px;
+        height: 14px;
+    }
 }

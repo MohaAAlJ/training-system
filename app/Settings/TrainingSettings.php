@@ -34,6 +34,33 @@ class TrainingSettings extends Settings
     // Backup settings
     public ?string $last_backup_at;
 
+    // WhatsApp settings
+    public bool $whatsapp_notifications_enabled; // Added
+    public bool $whatsapp_initial_approve;
+    public bool $whatsapp_start_training;
+    public bool $whatsapp_end_training;
+    public int $whatsapp_end_training_days;
+
+    // Role-based WhatsApp Settings
+    public bool $whatsapp_gtm_new_application;
+    public bool $whatsapp_hoa_started_training;
+    public bool $whatsapp_hom_started_training;
+    public bool $whatsapp_department_started_training;
+    public bool $whatsapp_section_started_training;
+    public bool $whatsapp_college_approved_application;
+
+    // Telegram settings
+    public ?string $telegram_bot_token;
+    public ?string $telegram_chat_ids; // Stored as comma-separated string
+    public ?string $telegram_access_code;
+    public bool $telegram_enabled;
+    public bool $telegram_new_applications; // Added
+    public bool $telegram_status_changes; // Added
+    public bool $telegram_daily_report;
+    public ?string $telegram_daily_report_time;
+    public bool $telegram_log_errors;
+    public bool $telegram_log_activities;
+
     public static function group(): string
     {
         return 'training';

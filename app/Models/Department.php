@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\GeneralConst;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -13,28 +14,24 @@ class Department extends Model
     protected $table = 'departments';
     protected $fillable = [
         'id',
-        'title',
+        'name',
         'user_id',
-        'head_of_department',
-        'medical_head_user_id',
         'is_medical',
-        'status',
-        'location',
+        'active',
     ];
     protected $casts = [
-        'status' => 'boolean',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
     ];
 
+    /**Scope */
+    public function scopeActive($query)
+    {
+        return $query->where('active', GeneralConst::ACTIVE);
+    }
+
+    /** Relations */
     public function user()
     {
         return $this->belongsTo(User::class);
-    }
-
-    public function medicalHead()
-    {
-        return $this->belongsTo(User::class, 'medical_head_user_id');
     }
 
     public function applications()
@@ -47,46 +44,17 @@ class Department extends Model
         return $this->hasMany(Section::class, 'department_id');
     }
 
-    public function headOfDepartment()
-    {
-        return $this->belongsTo(User::class, 'head_of_department');
-    }
-
-    /**
-     * Safely notify the head of department if set.
-     */
-    public function notifyHead($notification): void
-    {
-        $user = $this->headOfDepartment;
-
-        if (! $user || ! ($user->id ?? null)) {
-            return;
-        }
-
-        $user->notify($notification);
-    }
-
-    public function scopeMedical($query)
-    {
-        return $query->where('is_medical', true);
-    }
-
-    public function scopeActive($query)
-    {
-        return $query->where('status', true);
-    }
-
     /**
      * Get capacity statistics for this department by summing its sections.
      * Returns: total, used, available, is_full
      */
     public function getCapacityStats(): array
     {
-        // Sum total capacity from all sections (excluding soft-deleted)
-        $total = (int) $this->sections()->withoutTrashed()->sum('capacity');
+        // Sum total capacity from all active sections
+        $total = (int) $this->sections()->active()->sum('capacity');
 
         // Count only active (started training) applications
-        $used = Application::where('department_id', $this->id)
+        $used = Application::whereIn('section_id', $this->sections()->select('id'))
             ->where('status', Application::STATUS_STARTED_TRAINING)
             ->count();
 

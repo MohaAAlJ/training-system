@@ -15,5 +15,15 @@ class Governorate extends Model
         'name',
     ];
 
+    public function administratives()
+    {
+        return $this->hasMany(Administrative::class);
+    }
+
+    public function trainees()
+    {
+        return $this->hasMany(Trainee::class);
+    }
+
     protected $casts = [];
 }

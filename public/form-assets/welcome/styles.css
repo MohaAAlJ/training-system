@@ -3,9 +3,10 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    gap: 32px;
+    justify-content: flex-start;
+    gap: 24px;
     background-color: var(--bg);
+    padding-top: 40px;
 }
 
 [data-theme="dark"] .hero__logo {
@@ -14,35 +15,65 @@
     box-shadow: 0 0 15px var(--primary-glow);
 }
 
+/* Ensure all main elements have consistent width */
+.welcome-page .hero,
+.welcome-page .card-wrapper,
+.welcome-page ~ .site-footer {
+    width: 100%;
+    max-width: 900px;
+}
+
 .welcome-hero {
     text-align: center;
     width: 100%;
-    max-width: 850px;
+    max-width: 900px;
 }
 
 .welcome-hero .hero__text {
-    text-align: right;
+    text-align: center;
     flex: 1;
 }
 
+/* Ladder-style text hierarchy: Eyebrow (biggest) -> H1 -> Lead (smallest) */
+.welcome-hero .eyebrow {
+    font-size: clamp(1.2rem, 2.5vw, 1.8rem);
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    margin-bottom: 8px;
+    white-space: nowrap;
+}
+
 .welcome-hero .hero__text h1 {
-    font-size: clamp(2rem, 4vw, 3rem);
+    font-size: clamp(1.8rem, 3vw, 2.5rem);
     margin-bottom: 12px;
+    font-weight: 800;
+}
+
+.welcome-hero .lead {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+}
+
+/* Welcome card - bigger and aligned */
+.welcome-page .card-wrapper {
+    width: 100%;
+    max-width: 900px;
 }
 
 .welcome-card {
     text-align: center;
-    padding: 60px 40px;
+    padding: 80px 60px;
     width: 100%;
-    max-width: 600px;
+    max-width: 100%;
     margin: 0 auto;
 }
 
 .welcome-content h2 {
     color: var(--primary);
-    font-size: 2rem;
+    font-size: 2.2rem;
     font-weight: 800;
-    margin-bottom: 20px;
+    margin-bottom: 30px;
     text-shadow: 0 0 15px rgba(239, 68, 68, 0.3);
 }
 
@@ -58,7 +89,9 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 250px;
+    min-width: 300px;
+    padding: 18px 40px;
+    font-size: 1.2rem;
 }
 
 .disabled-message {
@@ -77,9 +110,25 @@
     text-shadow: 0 0 10px rgba(239, 68, 68, 0.2);
 }
 
+/* Footer alignment for welcome page */
+.welcome-page ~ .site-footer {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.welcome-page ~ .site-footer .footer-content {
+    width: 100%;
+}
+
 @media (max-width: 768px) {
+    .welcome-page {
+        padding-top: 20px;
+        gap: 16px;
+    }
+
     .welcome-hero {
         flex-direction: column;
+        padding: 20px 16px;
     }
 
     .welcome-hero .hero__text {
@@ -91,12 +140,67 @@
         order: 1;
     }
 
+    .welcome-hero .eyebrow {
+        font-size: 1.1rem;
+        white-space: normal;
+        line-height: 1.4;
+        font-weight: 800;
+    }
+
+    .welcome-hero .hero__text h1 {
+        font-size: 1.3rem;
+    }
+
+    .welcome-hero .lead {
+        font-size: 0.85rem;
+    }
+
     .welcome-card {
-        padding: 40px 24px;
+        padding: 40px 20px;
+    }
+
+    .welcome-content h2 {
+        font-size: 1.6rem;
     }
 
     .welcome-button {
         width: 100%;
         padding: 16px 24px;
+        min-width: unset;
+        font-size: 1rem;
+    }
+
+    .welcome-page ~ .site-footer .footer-content {
+        flex-direction: column;
+        gap: 12px;
+        padding: 16px;
+    }
+
+    .welcome-page ~ .site-footer .footer-address span {
+        font-size: 0.85rem;
+        white-space: normal;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .welcome-hero .eyebrow {
+        font-size: 1rem;
+    }
+
+    .welcome-hero .hero__text h1 {
+        font-size: 1.1rem;
+    }
+
+    .welcome-hero .lead {
+        font-size: 0.8rem;
+    }
+
+    .welcome-card {
+        padding: 30px 16px;
+    }
+
+    .welcome-content h2 {
+        font-size: 1.4rem;
     }
 }

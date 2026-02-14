@@ -22,13 +22,12 @@ class SectionFactory extends Factory
     public function definition(): array
     {
         return [
-            'name_location' => $this->faker->word . ' Section',
-            'status' => $this->faker->boolean,
+            'name' => $this->faker->word . ' Section',
+            'active' => $this->faker->boolean,
             'capacity' => $this->faker->numberBetween(5, 20),
             'department_id' => Department::factory(),
             'user_id' => User::factory(),
             'administrative_id' => Administrative::factory(),
-            'governorate_id' => 1, // Default or factory if we make one
         ];
     }
 }

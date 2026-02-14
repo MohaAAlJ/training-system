@@ -2,7 +2,8 @@
 
 namespace App\Filament\Resources\Applications\Pages;
 
-use App\Enums\TrainingType;
+// use App\Enums\TrainingType;
+use App\Models\Application;
 use App\Filament\Resources\Applications\ApplicationResource;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
@@ -54,12 +55,10 @@ class EditApplication extends EditRecord
         $trainee = $this->getRecord()->trainee;
 
         if ($trainee && isset($data['training_type'])) {
-            $trainingType = $data['training_type'] instanceof TrainingType
-                ? $data['training_type']->value
-                : (int)$data['training_type'];
+            $trainingType = (int)$data['training_type'];
 
             // If training type is PRACTICE, clear educational fields
-            if ($trainingType === TrainingType::PRACTICE->value) {
+            if ($trainingType === Application::PRACTICE) {
                 $trainee->update([
                     'institution_id' => null,
                     'college_id' => null,
@@ -67,7 +66,7 @@ class EditApplication extends EditRecord
                 ]);
             }
             // If training type is UNIVERSITY, update educational fields from form
-            elseif ($trainingType === TrainingType::UNIVERSITY->value) {
+            elseif ($trainingType === Application::UNIVERSITY) {
                 $updateData = [];
 
                 if (isset($data['institution_id'])) {

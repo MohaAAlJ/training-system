@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Applications\Schemas;
 
-use App\Enums\TrainingType;
+// use App\Enums\TrainingType;
+use App\Models\Application;
 use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Schema;
@@ -58,8 +59,10 @@ class ApplicationInfolist
                                     ->url(fn($state) => $state ? 'tel:' . $state : null),
                             ]),
 
-                        Grid::make(3)
+                        Grid::make(4)
                             ->schema([
+                                TextEntry::make('trainee.gender')
+                                    ->label('الجنس'),
                                 TextEntry::make('trainee.dob')
                                     ->label('تاريخ الميلاد')
                                     ->icon('heroicon-m-cake')
@@ -74,7 +77,7 @@ class ApplicationInfolist
                                     ->placeholder('غير محدد'),
 
                                 TextEntry::make('trainee.street')
-                                    ->label('المنطقة / الشارع')
+                                    ->label('العنوان')
                                     ->icon('heroicon-m-home')
                                     ->placeholder('غير محدد'),
                             ]),
@@ -88,7 +91,7 @@ class ApplicationInfolist
                                     ->badge()
                                     ->color('warning')
                                     ->placeholder('غير محدد')
-                                    ->visible(fn($record) => $record->training_type !== TrainingType::PRACTICE && Auth::check() && (
+                                    ->visible(fn($record) => $record->training_type !== Application::PRACTICE && Auth::check() && (
                                         Auth::user()->isAdmin() ||
                                         Auth::user()->isDepartment() ||
                                         Auth::user()->isHOA() ||
@@ -102,7 +105,7 @@ class ApplicationInfolist
                                     ->badge()
                                     ->color('success')
                                     ->placeholder('غير محدد')
-                                    ->visible(fn($record) => $record->training_type !== TrainingType::PRACTICE && Auth::check() && (
+                                    ->visible(fn($record) => $record->training_type !== Application::PRACTICE && Auth::check() && (
                                         Auth::user()->isAdmin() ||
                                         Auth::user()->isDepartment() ||
                                         Auth::user()->isHOA() ||
@@ -122,7 +125,7 @@ class ApplicationInfolist
                         // Training Location
                         Grid::make(3)
                             ->schema([
-                                TextEntry::make('administrative.title')
+                                TextEntry::make('section.administrative.name')
                                     ->label('الإدارة')
                                     ->icon('heroicon-m-building-office-2')
                                     ->iconColor('primary')
@@ -130,15 +133,15 @@ class ApplicationInfolist
                                     ->badge()
                                     ->color('primary'),
 
-                                TextEntry::make('department.title')
+                                TextEntry::make('section.department.name')
                                     ->label('الدائرة')
                                     ->icon('heroicon-m-rectangle-group')
                                     ->iconColor('info')
                                     ->badge()
                                     ->color('info'),
 
-                                TextEntry::make('section.name_location')
-                                    ->label('القسم / الشعبة')
+                                TextEntry::make('section.name')
+                                    ->label('القسم')
                                     ->icon('heroicon-m-squares-2x2')
                                     ->iconColor('success')
                                     ->badge()
@@ -161,12 +164,16 @@ class ApplicationInfolist
                                     ->label('نوع التدريب')
                                     ->icon('heroicon-m-academic-cap')
                                     ->badge()
+                                    ->color(fn(int $state): string => Application::getTrainingTypeColor($state))
+                                    ->formatStateUsing(fn(int $state): string => Application::getTrainingTypeLabel($state))
                                     ->size(TextSize::Medium),
 
                                 TextEntry::make('status')
                                     ->label('حالة الطلب')
                                     ->icon('heroicon-m-check-badge')
                                     ->badge()
+                                    ->color(fn(int $state): string => Application::getStatusColor($state))
+                                    ->formatStateUsing(fn(int $state): string => Application::getStatusLabel($state))
                                     ->size(TextSize::Medium),
                             ]),
 

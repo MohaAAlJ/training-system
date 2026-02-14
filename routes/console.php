@@ -2,7 +2,6 @@
 
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
-
 /*
 |--------------------------------------------------------------------------
 | Console Routes
@@ -13,8 +12,6 @@ use Illuminate\Support\Facades\Artisan;
 | simple approach to interacting with each command's IO methods.
 |
 */
-
-
 use Illuminate\Support\Facades\Schedule;
 
 Artisan::command('inspire', function () {
@@ -31,3 +28,9 @@ Schedule::command('backup:clean')
     ->runInBackground()
     ->name('backup-cleanup');
 
+// Telegram daily monitoring report
+Schedule::command('telegram:daily-report')
+    ->dailyAt(config('telegram.daily_report_time', '08:00'))
+    ->runInBackground()
+    ->name('telegram-daily-report')
+    ->when(fn () => config('telegram.enabled') && config('telegram.daily_report'));

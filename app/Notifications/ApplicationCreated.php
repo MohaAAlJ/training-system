@@ -27,11 +27,15 @@ class ApplicationCreated extends Notification
     public function toDatabase($notifiable): array
     {
         $traineeName = optional($this->application->trainee)->full_name ?? 'غير معروف';
-        $departmentName = optional($this->application->department)->title
-            ?? optional($this->application->department)->name_location
+
+        $section = $this->application->section;
+        $sectionName = optional($section)->name ?? 'غير محدد';
+
+        $departmentName = optional($section?->department)->name
+            ?? optional($section?->department)->name
             ?? 'غير محدد';
-        $sectionName = optional($this->application->section)->name_location ?? 'غير محدد';
-        $adminName = optional($this->application->administrative)->title ?? 'غير محدد';
+
+        $adminName = optional($section?->administrative)->name ?? 'غير محدد';
 
         return FilamentNotification::make()
             ->title('طلب تدريب جديد')

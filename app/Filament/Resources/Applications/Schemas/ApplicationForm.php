@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Applications\Schemas;
 
-use App\Enums\ApplicationStatus;
-use App\Enums\TrainingType;
+// use App\Enums\ApplicationStatus;
+// use App\Enums\TrainingType;
+use App\Models\Application;
 use App\Models\Administrative;
 use App\Models\College;
 use App\Models\Institution;
 use App\Models\Major;
+use App\Models\Governorate;
 use App\Models\Section;
 use App\Models\Trainee;
 use App\Rules\PalestinianId;
@@ -26,6 +28,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\Eloquent\Builder;
 use Livewire\Component;
 
 class ApplicationForm
@@ -81,6 +84,8 @@ class ApplicationForm
                                                 'institution_id' => $record->trainee->institution_id,
                                                 'college_id' => $record->trainee->college_id,
                                                 'major_id' => $record->trainee->major_id,
+                                                'governorate_id' => $record->trainee->governorate_id,
+                                                'gender' => $record->trainee->gender,
                                             ]))
                                             ->form([
                                                 Grid::make(2)->schema([
@@ -101,18 +106,25 @@ class ApplicationForm
                                                         ->required(),
 
                                                     TextInput::make('street')
-                                                        ->label('المنطقة / الشارع'),
+                                                        ->label('الشارع'),
 
                                                     DatePicker::make('dob')
                                                         ->label('تاريخ الميلاد')
                                                         ->native(false)
-                                                        ->displayFormat('d/m/Y'),
+                                                        ->displayFormat('d/m/Y')
+                                                        ->required(),
 
-                                                    Select::make('major_id')
-                                                        ->label('التخصص')
-                                                        ->options(Major::pluck('name', 'id'))
+                                                    Select::make('gender')
+                                                        ->label('الجنس')
+                                                        ->options(\App\Enums\Gender::class)
+                                                        ->required(),
+
+                                                    Select::make('governorate_id')
+                                                        ->label('المحافظة')
+                                                        ->options(Governorate::pluck('name', 'id'))
                                                         ->searchable()
-                                                        ->preload(),
+                                                        ->preload()
+                                                        ->required(),
                                                 ]),
                                             ])
                                             ->action(function ($record, array $data, Component $livewire) {
@@ -122,7 +134,8 @@ class ApplicationForm
                                                 $livewire->data['national_id'] = $data['national_id'];
                                                 $livewire->data['phone_number'] = $data['phone_number'];
                                                 $livewire->data['street'] = $data['street'];
-                                                $livewire->data['major_id'] = $data['major_id'];
+                                                $livewire->data['governorate_id'] = $data['governorate_id'];
+                                                $livewire->data['gender'] = $data['gender'];
 
                                                 if (!empty($data['dob'])) {
                                                     $livewire->data['dob'] = $data['dob'];
@@ -136,7 +149,7 @@ class ApplicationForm
                                     ),
 
                                 TextInput::make('national_id')
-                                    ->label('رقم الهوية الوطنية')
+                                    ->label('رقم الهوية')
                                     ->placeholder('123456789')
                                     ->formatStateUsing(fn($record) => $record?->trainee?->national_id)
                                     ->disabled(fn($context) => $context === 'edit')
@@ -148,7 +161,6 @@ class ApplicationForm
                                     ->helperText('9 أرقام فقط')
                                     ->live(onBlur: true)
                                     ->validationMessages([
-                                        'required' => __('validation.custom.national_id.required'),
                                         'regex' => __('validation.custom.national_id.regex'),
                                         'digits' => __('validation.custom.national_id.digits'),
                                         'unique' => 'رقم الهوية مسجل مسبقاً في النظام',
@@ -157,12 +169,21 @@ class ApplicationForm
                                         new PalestinianId(),
                                         fn($context) => $context === 'create' ? 'unique:trainees,national_id' : null,
                                     ])
-                                    ->required(fn($context) => $context === 'create')
+                                    ->required()
                                     ->columnSpan(1),
                             ]),
 
-                        Grid::make(3)
+                        Grid::make(4)
                             ->schema([
+                                Select::make('gender')
+                                    ->label('الجنس')
+                                    ->options(\App\Enums\Gender::class)
+                                    ->formatStateUsing(fn($record) => $record?->trainee?->gender)
+                                    ->disabled(fn($context) => $context === 'edit')
+                                    ->dehydrated(fn($context) => $context === 'create')
+                                    ->required()
+                                    ->columnSpan(1),
+
                                 TextInput::make('phone_number')
                                     ->label('رقم الجوال')
                                     ->placeholder('970591234567')
@@ -170,27 +191,38 @@ class ApplicationForm
                                     ->disabled(fn($context) => $context === 'edit')
                                     ->dehydrated(fn($context) => $context === 'create')
                                     ->tel()
-                                    ->regex('/^97[02]5[69]\d{7}$/')
+                                    ->regex('/^97(0|2)5\d{8}$/')
                                     ->minLength(12)
                                     ->maxLength(12)
                                     ->helperText('مثال: 970591234567 أو 972561234567')
                                     ->validationMessages([
-                                        'required' => __('validation.custom.phone_number.required'),
-                                        'regex' => __('validation.custom.phone_number.regex'),
+                                        'regex' => 'صيغة رقم الجوال غير صحيحة. استخدم 9705XXXXXXXX أو 9725XXXXXXXX',
                                     ])
-                                    ->required(fn($context) => $context === 'create')
+                                    ->required()
+                                    ->columnSpan(1),
+
+                                Select::make('governorate_id')
+                                    ->label('المحافظة')
+                                    ->placeholder('اختر المحافظة')
+                                    ->options(Governorate::pluck('name', 'id'))
+                                    ->formatStateUsing(fn($record) => $record?->trainee?->governorate_id)
+                                    ->disabled(fn($context) => $context === 'edit')
+                                    ->dehydrated(fn($context) => $context === 'create')
+                                    ->searchable()
+                                    ->preload()
+                                    ->required()
                                     ->columnSpan(1),
 
                                 TextInput::make('street')
-                                    ->label('المنطقة / الشارع')
-                                    ->placeholder('المنطقة أو الشارع')
+                                    ->label('الشارع')
+                                    ->placeholder('الشارع')
                                     ->formatStateUsing(fn($record) => $record?->trainee?->street)
                                     ->disabled(fn($context) => $context === 'edit')
                                     ->dehydrated(fn($context) => $context === 'create')
-                                    ->regex('/^[A-Za-z\p{Arabic}0-9\s\-\.,#\/]+$/u')
+                                    ->regex('/^[A-Za-z\p{Arabic}0-9\s\-\.,#\/_]+$/u')
                                     ->maxLength(255)
-                                    ->required(fn($context) => $context === 'create')
-                                    ->columnSpan(2),
+                                    ->nullable()
+                                    ->columnSpan(1),
                             ]),
 
                         DatePicker::make('dob')
@@ -201,7 +233,7 @@ class ApplicationForm
                             ->formatStateUsing(fn($record) => $record?->trainee?->dob)
                             ->disabled(fn($context) => $context === 'edit')
                             ->dehydrated(fn($context) => $context === 'create')
-                            ->required(fn($context) => $context === 'create'),
+                            ->required(),
                     ]),
 
                 // تفاصيل الطلب - Enhanced Section
@@ -218,12 +250,15 @@ class ApplicationForm
                                 Select::make('training_type')
                                     ->label('نوع التدريب')
                                     ->placeholder('اختر نوع التدريب')
-                                    ->options(TrainingType::class)
+                                    ->options([
+                                        Application::UNIVERSITY => Application::getTrainingTypeLabel(Application::UNIVERSITY),
+                                        Application::PRACTICE => Application::getTrainingTypeLabel(Application::PRACTICE),
+                                    ])
                                     ->default(function () {
                                         if (Auth::user()->isCollegeSupervisor()) {
-                                            return TrainingType::UNIVERSITY;
+                                            return Application::UNIVERSITY;
                                         }
-                                        return TrainingType::PRACTICE;
+                                        return Application::PRACTICE;
                                     })
                                     ->disabled(fn() => !Auth::user()->isAdmin())
                                     ->visible(fn() => !Auth::user()->isCollegeSupervisor())
@@ -231,6 +266,11 @@ class ApplicationForm
                                     ->live()
                                     ->required()
                                     ->columnSpan(1),
+
+                                Hidden::make('training_type')
+                                    ->default(Application::UNIVERSITY)
+                                    ->visible(fn() => Auth::user()->isCollegeSupervisor())
+                                    ->dehydrated(),
 
                                 TextInput::make('training_hours')
                                     ->label('ساعات التدريب المطلوبة')
@@ -240,6 +280,7 @@ class ApplicationForm
                                     ->numeric()
                                     ->suffix('ساعة')
                                     ->helperText('الساعات الأكاديمية المطلوبة')
+                                    ->required(fn() => Auth::user()->isCollegeSupervisor())
                                     ->columnSpan(1),
                             ]),
 
@@ -249,11 +290,11 @@ class ApplicationForm
                                 Select::make('institution_id')
                                     ->label('المؤسسة التعليمية')
                                     ->placeholder('اختر المؤسسة')
-                                    ->options(fn() => Institution::pluck('name', 'id')->toArray())
+                                    ->options(fn() => Institution::active()->pluck('name', 'id')->toArray())
                                     ->default(fn() => Auth::user()->isCollegeSupervisor() ? Auth::user()->college?->institution_id : null)
                                     ->formatStateUsing(fn($record) => $record?->trainee?->institution_id)
-                                    ->disabled(fn(callable $get) => request()->routeIs('*.edit') && !in_array($get('training_type'), [TrainingType::UNIVERSITY, TrainingType::UNIVERSITY->value]))
-                                    ->visible(fn(callable $get) => !Auth::user()->isCollegeSupervisor() && in_array($get('training_type'), [TrainingType::UNIVERSITY, TrainingType::UNIVERSITY->value]))
+                                    ->disabled(fn(callable $get) => request()->routeIs('*.edit') && (int)$get('training_type') !== Application::UNIVERSITY)
+                                    ->visible(fn(callable $get) => !Auth::user()->isCollegeSupervisor() && (int)$get('training_type') === Application::UNIVERSITY)
                                     ->dehydrated()
                                     ->searchable()
                                     ->preload()
@@ -276,7 +317,7 @@ class ApplicationForm
 
                                         $institutionId = $get('institution_id');
                                         if ($institutionId) {
-                                            return College::where('institution_id', $institutionId)
+                                            return College::active()->where('institution_id', $institutionId)
                                                 ->pluck('name', 'id')
                                                 ->toArray();
                                         }
@@ -284,8 +325,8 @@ class ApplicationForm
                                     })
                                     ->default(fn() => Auth::user()->isCollegeSupervisor() ? Auth::user()->college?->id : null)
                                     ->formatStateUsing(fn($record) => $record?->trainee?->college_id)
-                                    ->disabled(fn(callable $get) => request()->routeIs('*.edit') && !in_array($get('training_type'), [TrainingType::UNIVERSITY, TrainingType::UNIVERSITY->value]))
-                                    ->visible(fn(callable $get) => !Auth::user()->isCollegeSupervisor() && in_array($get('training_type'), [TrainingType::UNIVERSITY, TrainingType::UNIVERSITY->value]))
+                                    ->disabled(fn(callable $get) => request()->routeIs('*.edit') && (int)$get('training_type') !== Application::UNIVERSITY)
+                                    ->visible(fn(callable $get) => !Auth::user()->isCollegeSupervisor() && (int)$get('training_type') === Application::UNIVERSITY)
                                     ->dehydrated()
                                     ->searchable()
                                     ->preload()
@@ -294,6 +335,7 @@ class ApplicationForm
                                     ])
                                     ->required(fn() => Auth::user()->isAdmin())
                                     ->reactive()
+                                    ->getOptionLabelUsing(fn($value): ?string => College::find($value)?->name)
                                     ->columnSpan(1),
 
                                 Select::make('major_id')
@@ -314,48 +356,79 @@ class ApplicationForm
                                         return [];
                                     })
                                     ->formatStateUsing(fn($record) => $record?->trainee?->major_id)
-                                    ->disabled(fn($context, callable $get) => $context === 'edit' && !in_array($get('training_type'), [TrainingType::UNIVERSITY, TrainingType::UNIVERSITY->value]))
-                                    ->visible(fn(callable $get) => in_array($get('training_type'), [TrainingType::UNIVERSITY, TrainingType::UNIVERSITY->value]))
+                                    ->disabled(fn($context, callable $get) => $context === 'edit' && (int)$get('training_type') !== Application::UNIVERSITY)
+                                    ->visible(fn(callable $get) => (int)$get('training_type') === Application::UNIVERSITY)
                                     ->dehydrated()
                                     ->searchable()
                                     ->preload()
                                     ->validationMessages([
                                         'required' => __('validation.custom.major_id.required'),
                                     ])
-                                    ->required(fn($context) => $context === 'create')
+                                    ->required()
+                                    ->getOptionLabelUsing(fn($value): ?string => Major::find($value)?->name)
+                                    ->columnSpan(1),
+
+                                TextInput::make('university_number')
+                                    ->label('الرقم الجامعي')
+                                    ->placeholder('أدخل الرقم الجامعي')
+                                    ->formatStateUsing(fn($record) => $record?->university_number)
+                                    ->dehydrated()
+                                    ->maxLength(255)
+                                    ->helperText('الرقم الجامعي')
+                                    ->visible(function (callable $get) {
+                                        $trainingType = $get('training_type');
+                                        // Check against both enum instance and value
+                                        return (int)$trainingType === Application::UNIVERSITY;
+                                    })
+                                    ->required(function (callable $get) {
+                                        $trainingType = $get('training_type');
+                                        return (int)$trainingType === Application::UNIVERSITY;
+                                    })
                                     ->columnSpan(1),
                             ]),
 
                         // Training Location
                         Grid::make(3)
                             ->schema([
+
                                 Select::make('administrative_id')
                                     ->label('الإدارة')
                                     ->placeholder('اختر الإدارة')
-                                    ->relationship('administrative', 'title')
-                                    ->getOptionLabelFromRecordUsing(fn(Administrative $record) => $record->name_with_governorate)
+                                    ->options(fn() => Administrative::active()->pluck('name', 'id'))
+                                    ->formatStateUsing(fn($record) => $record?->section?->administrative_id)
                                     ->searchable()
                                     ->preload()
                                     ->reactive()
+                                    ->afterStateUpdated(function ($set) {
+                                        $set('department_id', null);
+                                        $set('section_id', null);
+                                    })
                                     ->disabled(fn() => !Auth::user()->isAdmin() && !Auth::user()->isCollegeSupervisor())
+                                    ->dehydrated(false) // Don't save - just for filtering
                                     ->required()
                                     ->columnSpan(1),
 
                                 Select::make('department_id')
+                                    ->getOptionLabelUsing(fn($value): ?string => \App\Models\Department::find($value)?->name)
                                     ->label('الدائرة')
                                     ->placeholder('اختر الدائرة')
                                     ->options(function (callable $get) {
                                         $adminId = $get('administrative_id');
                                         if (!$adminId) {
-                                            return \App\Models\Department::pluck('title', 'id');
+                                            return \App\Models\Department::active()->pluck('name', 'id');
                                         }
-                                        return \App\Models\Department::whereHas('sections', fn($q) => $q->where('administrative_id', $adminId))
-                                            ->pluck('title', 'id');
+                                        return \App\Models\Department::active()->whereHas('sections', fn($q) => $q->active()->where('administrative_id', $adminId))
+                                            ->pluck('name', 'id');
                                     })
+                                    ->formatStateUsing(fn($record) => $record?->section?->department_id)
                                     ->searchable()
                                     ->preload()
                                     ->reactive()
+                                    ->afterStateUpdated(function ($set) {
+                                        $set('section_id', null);
+                                    })
                                     ->disabled(fn(callable $get) => (!Auth::user()->isAdmin() && !Auth::user()->isCollegeSupervisor()) || !$get('administrative_id'))
+                                    ->dehydrated(false) // Don't save - just for filtering
                                     ->required()
                                     ->columnSpan(1),
 
@@ -387,10 +460,11 @@ class ApplicationForm
 
                                         return $sections->mapWithKeys(function (Section $sec) {
                                             $stats = $sec->getCapacityStats();
-                                            $label = $sec->name_location . ($stats['is_full'] ? ' (ممتلئ)' : '');
+                                            $label = $sec->name . ($stats['is_full'] ? ' (ممتلئ)' : '');
                                             return [$sec->id => $label];
                                         });
                                     })
+                                    ->getOptionLabelUsing(fn($value): ?string => Section::find($value)?->name)
                                     ->disableOptionWhen(function (string $value) {
                                         if (Auth::user()->isAdmin()) {
                                             return false;
@@ -415,8 +489,8 @@ class ApplicationForm
                                     ->native(false)
                                     ->displayFormat('d/m/Y')
                                     ->disabled(fn() => !Auth::user()->isAdmin())
-                                    ->visible(fn(callable $get) => !Auth::user()->isCollegeSupervisor() && in_array($get('status'), [ApplicationStatus::STARTED_TRAINING, ApplicationStatus::STARTED_TRAINING->value]))
-                                    ->required(fn(callable $get) => Auth::user()->isAdmin() && in_array($get('status'), [ApplicationStatus::STARTED_TRAINING, ApplicationStatus::STARTED_TRAINING->value]))
+                                    ->visible(fn(callable $get) => !Auth::user()->isCollegeSupervisor() && in_array((int)$get('status'), [Application::STATUS_STARTED_TRAINING]))
+                                    ->required(fn(callable $get) => Auth::user()->isAdmin() && in_array((int)$get('status'), [Application::STATUS_STARTED_TRAINING]))
                                     ->dehydrated()
                                     ->columnSpan(1),
 
@@ -426,8 +500,8 @@ class ApplicationForm
                                     ->native(false)
                                     ->displayFormat('d/m/Y')
                                     ->disabled(fn() => !Auth::user()->isAdmin())
-                                    ->visible(fn(callable $get) => !Auth::user()->isCollegeSupervisor() && in_array($get('status'), [ApplicationStatus::STARTED_TRAINING, ApplicationStatus::STARTED_TRAINING->value]))
-                                    ->required(fn(callable $get) => Auth::user()->isAdmin() && in_array($get('status'), [ApplicationStatus::STARTED_TRAINING, ApplicationStatus::STARTED_TRAINING->value]))
+                                    ->visible(fn(callable $get) => !Auth::user()->isCollegeSupervisor() && in_array((int)$get('status'), [Application::STATUS_STARTED_TRAINING]))
+                                    ->required(fn(callable $get) => Auth::user()->isAdmin() && in_array((int)$get('status'), [Application::STATUS_STARTED_TRAINING]))
                                     ->afterOrEqual('start_date')
                                     ->dehydrated()
                                     ->columnSpan(1),
@@ -435,11 +509,11 @@ class ApplicationForm
                                 Select::make('status')
                                     ->label('حالة الطلب')
                                     ->placeholder('اختر الحالة')
-                                    ->options(ApplicationStatus::class)
-                                    ->default(fn() => (Auth::user()->isCollegeSupervisor() || Auth::user()->isMinistry()) ? ApplicationStatus::CONFIRMATION : ApplicationStatus::NEW)
+                                    ->options(Application::getStatuses())
+                                    ->default(fn() => (Auth::user()->isCollegeSupervisor() || Auth::user()->isMinistry()) ? Application::STATUS_CONFIRMATION : Application::STATUS_NEW)
                                     ->disabled(fn() => !Auth::user()->isAdmin())
                                     ->visible(fn() => !Auth::user()->isCollegeSupervisor())
-                                    ->afterStateUpdated(fn($state, $set) => $state === ApplicationStatus::CONFIRMATION->value ? $set('accepted_at', now()) : null)
+                                    ->afterStateUpdated(fn($state, $set) => (int)$state === Application::STATUS_CONFIRMATION ? $set('accepted_at', now()) : null)
                                     ->dehydrated()
                                     ->required()
                                     ->live()

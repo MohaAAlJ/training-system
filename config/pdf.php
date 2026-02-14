@@ -1,10 +1,10 @@
 <?php
 
 return [
-    'mode'                     => '',
+    'mode'                     => 'utf-8',
     'format'                   => 'A4',
-    'default_font_size'        => '12',
-    'default_font'             => 'sans-serif',
+    'default_font_size'        => '10',
+    'default_font'             => 'notonaskh',
     'margin_left'              => 10,
     'margin_right'             => 10,
     'margin_top'               => 10,
@@ -18,7 +18,7 @@ return [
     'watermark'                => '',
     'show_watermark'           => false,
     'show_watermark_image'     => false,
-    'watermark_font'           => 'sans-serif',
+    'watermark_font'           => 'notonaskh',
     'display_mode'             => 'fullpage',
     'watermark_text_alpha'     => 0.1,
     'watermark_image_path'     => '',
@@ -30,14 +30,17 @@ return [
         'notonaskh' => [
             'R'          => 'NotoNaskhArabic-Regular.ttf',
             'B'          => 'NotoNaskhArabic-Bold.ttf',
-            'useOTL'     => 0xFF,
+            'useOTL'     => 0,
             'useKashida' => 75,
         ]
-
     ],
     'auto_language_detection'  => true,
-    'temp_dir'                 => storage_path('app'),
+    'autoScriptToLang'         => true,
+    'autoLangToFont'           => true,
+    'autoArabic'               => true, // CRITICAL: Enable Arabic
+    'temp_dir'                 => storage_path('app/mpdf'),
     'pdfa'                     => false,
     'pdfaauto'                 => false,
     'use_active_forms'         => false,
+    'allow_local_file_access'  => true,
 ];

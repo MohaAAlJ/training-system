@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\GeneralConst;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -11,13 +12,19 @@ class College extends Model
     use HasFactory, SoftDeletes;
 
     protected $table = 'colleges';
-    protected $fillable = ['id', 'name', 'institution_id', 'user_id', 'is_active', 'Can_add_Application'];
+    protected $fillable = ['id', 'name', 'institution_id', 'user_id', 'active', 'add_application'];
 
     protected $casts = [
-        'is_active' => 'boolean',
-        'Can_add_Application' => 'boolean',
+
     ];
 
+    /**Scope */
+    public function scopeActive($query)
+    {
+        return $query->where('active', GeneralConst::ACTIVE);
+    }
+
+    /** Relations */
     public function institution()
     {
         return $this->belongsTo(Institution::class);

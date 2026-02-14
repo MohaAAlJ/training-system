@@ -23,9 +23,9 @@ class InitialApprovalNotification extends Notification
     public function toDatabase($notifiable): array
     {
         $traineeName = optional($this->application->trainee)->full_name ?? 'غير معروف';
-        $trainingType = $this->application->training_type === Application::TRAINING_TYPE_UNIVERSITY ? 'تدريب جامعي' : 'مزاولة مهنة';
-        $adminName = optional($this->application->administrative)->title ?? 'غير محدد';
-        $sectionName = optional($this->application->section)->name_location ?? 'غير محدد';
+        $trainingType = Application::getTrainingTypeLabel($this->application->training_type);
+        $adminName = optional($this->application->section->administrative)->name ?? 'غير محدد';
+        $sectionName = optional($this->application->section)->name ?? 'غير محدد';
 
         return FilamentNotification::make()
             ->title('موافقة مبدئية - بانتظار تأكيدك')
@@ -33,7 +33,7 @@ class InitialApprovalNotification extends Notification
             ->icon('heroicon-o-check-circle')
             ->iconColor('info')
             ->actions([
-                \Filament\Notifications\Actions\Action::make('view')
+                \Filament\Actions\Action::make('view')
                     ->label('عرض الطلب')
                     ->button()
                     ->url(\App\Filament\Resources\Applications\ApplicationResource::getUrl('view', ['record' => $this->application])),

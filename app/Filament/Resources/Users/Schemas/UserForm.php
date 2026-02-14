@@ -4,7 +4,6 @@ namespace App\Filament\Resources\Users\Schemas;
 
 use App\Models\User;
 
-use App\Helpers\Constants;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -21,7 +20,7 @@ class UserForm
                 TextInput::make('user_name')
                     ->label('اسم المستخدم')
                     ->required()
-                    ->unique(ignoreRecord: true)
+                    ->unique('users', 'user_name', ignorable: fn($record) => $record instanceof User ? $record : null)
                     ->maxLength(255),
 
                 TextInput::make('name')
@@ -34,16 +33,24 @@ class UserForm
                     ->email()
                     ->required()
                     ->maxLength(255)
-                    ->unique(ignoreRecord: true)
+                    ->unique('users', 'email', ignorable: fn($record) => $record instanceof User ? $record : null)
                     ->validationMessages([
                         'unique' => 'البريد الإلكتروني هذا مسجل مسبقاً في النظام.',
                     ]),
 
-
+                TextInput::make('phone_number')
+                    ->label('رقم الهاتف')
+                    ->regex('/^97(0|2)5\d{8}$/')
+                    ->validationMessages([
+                        'regex' => 'صيغة رقم الجوال غير صحيحة. استخدم 9705XXXXXXXX أو 9725XXXXXXXX',
+                    ])
+                    ->nullable()
+                    ->maxLength(255),
 
                 TextInput::make('password')
                     ->label('كلمة المرور')
                     ->password()
+                    ->dehydrateStateUsing(fn ($state) => \Illuminate\Support\Facades\Hash::make($state))
                     ->dehydrated(fn($state) => filled($state))
                     ->required(fn(string $context): bool => $context === 'create')
                     ->maxLength(255),
@@ -85,11 +92,13 @@ class UserForm
                     ->searchable()
                     ->columnSpanFull(),
 
-                Toggle::make('status')
-                    ->label('نشطة')
-                    ->helperText('حدد إذا كانت الدائرة نشطة أم لا')
-                    ->onColor('success')
-                    ->offColor('danger')
+                Toggle::make('active')
+                     ->onColor('success')
+                     ->offColor('danger')
+                     ->onIcon('heroicon-m-check-circle')
+                     ->offIcon('heroicon-m-x-circle')
+                     ->helperText('حدد إذا كان المستخدم نشطاً أم لا')
+                    ->label('نشط')
                     ->default(true),
 
             ]);

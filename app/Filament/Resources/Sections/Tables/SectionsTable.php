@@ -11,12 +11,11 @@ use Filament\Actions\RestoreBulkAction;
 use Filament\Actions\ViewAction;
 use Illuminate\Support\Facades\Auth;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\Builder;
 
 class SectionsTable
 {
@@ -24,18 +23,20 @@ class SectionsTable
     {
         return $table
             ->columns([
-                TextColumn::make('name_location')
-                    ->label('اسم القسم والموقع')
+                TextColumn::make('name')
+                    ->label('اسم القسم')
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('administrative.title')
+                TextColumn::make('administrative.name')
                     ->label('الإدارة')
                     ->searchable()
-                    ->sortable(),
-                TextColumn::make('department.title')
+                    ->sortable()
+                    ->toggleable(),
+                TextColumn::make('department.name')
                     ->label('الدائرة')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(),
                 TextColumn::make('user.name')
                     ->label('المسؤول')
                     ->searchable(),
@@ -53,9 +54,12 @@ class SectionsTable
                             ->count();
                     })
                     ->badge()
-                    ->color('primary'),
-                ToggleColumn::make('status')
+                    ->color('primary')
+                    ->toggleable()
+                    ->sortable(),
+                ToggleColumn::make('active')
                     ->label('الحالة')
+                    ->sortable()
                     ->onIcon('heroicon-m-check-circle')
                     ->offIcon('heroicon-m-x-circle')
                     ->onColor('success')
@@ -78,7 +82,7 @@ class SectionsTable
                             return $settings->dept_head_can_enable_section;
                         }
 
-                        if ($user->isMedicalManager()) return true;
+                        if ($user->isMedicalManager()) return False;
 
                         return false;
                     }),
@@ -91,29 +95,89 @@ class SectionsTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                SelectFilter::make('status')
+                SelectFilter::make('active')
                     ->label('الحالة')
                     ->options([
                         '1' => 'نشط',
                         '0' => 'غير نشط',
                     ]),
-                SelectFilter::make('administrative_id')
-                    ->label('الدائرة')
-                    ->relationship('administrative', 'title')
-                    ->searchable()
-                    ->preload(),
-                SelectFilter::make('user_id')
-                    ->label('المسؤول')
-                    ->relationship('user', 'name')
-                    ->searchable()
-                    ->preload(),
-                TrashedFilter::make(),
+                \Filament\Tables\Filters\Filter::make('sections_filter')
+                    ->form([
+                        \Filament\Forms\Components\Select::make('administrative_id')
+                            ->label('الإدارة')
+                            ->relationship('administrative', 'name', fn ($query) => $query->active())
+                            ->searchable()
+                            ->preload()
+                            ->reactive(),
+                        \Filament\Forms\Components\Select::make('department_id')
+                            ->label('الدائرة')
+                            ->options(function ($get) {
+                                $adminId = $get('administrative_id');
+                                if (!$adminId) {
+                                    return \App\Models\Department::active()->pluck('name', 'id');
+                                }
+                                return \App\Models\Section::where('administrative_id', $adminId)
+                                    ->active()
+                                    ->whereHas('administrative', fn ($q) => $q->active())
+                                    ->whereHas('department', fn ($q) => $q->active())
+                                    ->with('department')
+                                    ->get()
+                                    ->pluck('department.name', 'department.id')
+                                    ->filter();
+                            })
+                            ->searchable()
+                            ->preload(),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['administrative_id'],
+                                fn (Builder $query, $value): Builder => $query->where('administrative_id', $value),
+                            )
+                            ->when(
+                                $data['department_id'],
+                                fn (Builder $query, $value): Builder => $query->where('department_id', $value),
+                            );
+                    }),
+                // SelectFilter::make('user_id')
+                //     ->label('المسؤول')
+                //     ->relationship('user', 'name')
+                //     ->searchable()
+                //     ->preload(),
+                // TrashedFilter::make(),
             ])
             ->recordActions([
                 ViewAction::make(),
                 EditAction::make()
                     ->visible(fn($record) => Auth::user()->can('editDetails', $record)),
-                DeleteAction::make()->visible(fn($record) => !$record->trashed() && Auth::user()?->isAdmin()),
+                DeleteAction::make()
+                    ->visible(fn($record) => !$record->trashed() && Auth::user()?->isAdmin())
+                    ->before(function ($record, \Filament\Actions\DeleteAction $action) {
+                        if ($record->applications()->exists()) {
+                            \Filament\Notifications\Notification::make()
+                                ->title('لا يمكن الأرشفة')
+                                ->body('لا يمكن أرشفة هذا السجل لوجود طلبات تدريب مرتبطة به.')
+                                ->danger()
+                                ->send();
+                            $action->halt();
+                        }
+                    })
+                    ->action(function ($record) {
+                        try {
+                            $record->delete();
+                        } catch (\Illuminate\Database\QueryException $exception) {
+                            $errorCode = $exception->errorInfo[1] ?? 0;
+                            if ($errorCode == 1451) {
+                                \Filament\Notifications\Notification::make()
+                                    ->title('لا يمكن الحذف')
+                                    ->body('لا يمكن حذف هذا السجل نظرًا لوجود بيانات مرتبطة به.')
+                                    ->danger()
+                                    ->send();
+                                return;
+                            }
+                            throw $exception;
+                        }
+                    }),
                 RestoreAction::make()->visible(fn($record) => $record->trashed() && Auth::user()?->isAdmin()),
             ])
             ->toolbarActions([

@@ -16,9 +16,7 @@ class ViewApplication extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
-            EditAction::make(),
-            DeleteAction::make()->visible(fn() => Auth::user()?->isAdmin() ?? false),
-            ForceDeleteAction::make()->visible(fn() => Auth::user()?->isAdmin() ?? false),
+            EditAction::make()->visible(fn() => Auth::user()->isAdmin()),
         ];
     }
 }

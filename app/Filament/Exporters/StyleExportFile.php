@@ -54,9 +54,10 @@ class StyleExportFile implements ShouldQueue
             $highestColumnIndex = Coordinate::columnIndexFromString($highestColumn);
             $lastColumnLetter = Coordinate::stringFromColumnIndex($highestColumnIndex);
 
-            // 2. Insert header image and rows at top
-            $worksheet->insertNewRowBefore(1, 5);
-            $highestRow += 5;
+            // 2. Insert 4 rows at top for image (rows 1-3) and title (row 4)
+            // Original Filament headers will become row 5, data starts at row 6
+            $worksheet->insertNewRowBefore(1, 4);
+            $highestRow += 4;
 
             // Add header image to row 1 - merge cells across all columns
             $headerImagePath = public_path('images/file_header.jpeg');
@@ -66,13 +67,13 @@ class StyleExportFile implements ShouldQueue
 
                 $drawing = new Drawing();
                 $drawing->setPath($headerImagePath);
-                $drawing->setHeight(180); // Height in pixels - increased
-                $drawing->setWidth(1200); // Width to span all columns - increased
+                $drawing->setHeight(120); // Height in pixels
+                $drawing->setWidth(1000); // Width to span columns
                 $drawing->setCoordinates('A1');
                 $worksheet->getDrawingCollection()->append($drawing);
-                $worksheet->getRowDimension(1)->setRowHeight(90);
-                $worksheet->getRowDimension(2)->setRowHeight(90);
-                $worksheet->getRowDimension(3)->setRowHeight(90);
+                $worksheet->getRowDimension(1)->setRowHeight(40);
+                $worksheet->getRowDimension(2)->setRowHeight(40);
+                $worksheet->getRowDimension(3)->setRowHeight(40);
             }
 
             // Merge cells for title (row 4)
@@ -104,7 +105,7 @@ class StyleExportFile implements ShouldQueue
             ]);
             $worksheet->getRowDimension(4)->setRowHeight(40);
 
-            // 3. Style header row (now row 5) - light red, bold white text
+            // 3. Style header row (now row 5 - original Filament headers) - light red, bold white text
             $worksheet->getStyle('A5:' . $lastColumnLetter . '5')->applyFromArray([
                 'font' => [
                     'bold' => true,
@@ -129,7 +130,7 @@ class StyleExportFile implements ShouldQueue
             ]);
             $worksheet->getRowDimension(5)->setRowHeight(30);
 
-            // 4. Style data rows - thick borders and right alignment
+            // 4. Style data rows (starting from row 6) - thick borders and right alignment
             if ($highestRow >= 6) {
                 $dataRange = 'A6:' . $lastColumnLetter . $highestRow;
                 $worksheet->getStyle($dataRange)->applyFromArray([

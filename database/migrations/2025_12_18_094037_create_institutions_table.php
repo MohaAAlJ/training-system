@@ -4,6 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use App\Models\Institution;
+use Illuminate\Validation\Rules\Enum;
 
 return new class extends Migration {
     public function up(): void
@@ -11,10 +12,10 @@ return new class extends Migration {
         Schema::create('institutions', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->timestamps();
+            $table->boolean('active')->default(App\Enums\GeneralConst::ACTIVE);
+            $table->boolean('add_application')->default(App\Enums\GeneralConst::ACTIVE);
             $table->softDeletes();
-            $table->boolean('is_active')->default(true);
-            $table->boolean('Can_add_Application')->default(true);
+            $table->timestamps();
 
         });
 

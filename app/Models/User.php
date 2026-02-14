@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\GeneralConst;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -13,28 +14,15 @@ use App\Models\Department;
 use App\Models\Section;
 use App\Models\College;
 use App\Models\Administrative;
+use Lab404\Impersonate\Models\Impersonate;
 
 class User extends Authenticatable implements FilamentUser
 {
-    use HasFactory, Notifiable, SoftDeletes;
+    use HasFactory, Notifiable, SoftDeletes, Impersonate;
 
-    protected $fillable = ['id', 'user_name', 'name', 'email', 'password', 'role', 'status'];
-    protected $hidden = ['password', 'remember_token'];
-    protected $casts = [
-        'role' => 'integer',
-        'status' => 'boolean',
-        'password' => 'hashed',
-    ];
-
-    /**
-     * Status constants
-     */
-    public const STATUS_ACTIVE = true;
-    public const STATUS_INACTIVE = false;
-
-    /**
-     * Role constants
-     */
+    // =========================================================================
+    // CONSTANTS: ROLES
+    // =========================================================================
     public const ROLE_ADMIN = 1;
     public const ROLE_DEPARTMENT = 2;
     public const ROLE_SECTION = 3;
@@ -46,49 +34,59 @@ class User extends Authenticatable implements FilamentUser
 
     public const ROLE_LABELS = [
         self::ROLE_ADMIN => 'مدير النظام',
-        self::ROLE_DEPARTMENT => 'إداري',
-        self::ROLE_SECTION => 'رئيس قسم',
+        self::ROLE_DEPARTMENT => 'مدير الدائرة',
+        self::ROLE_SECTION => 'مسؤول قسم',
         self::ROLE_MOH => 'وزارة الصحة',
         self::ROLE_COLLEGE => 'مشرف كلية',
-        self::ROLE_HOA => 'رئيس الإدارة',
-        self::ROLE_HOM => 'رئيس الطب',
-        self::ROLE_GTM => 'مدير التدريب العام',
+        self::ROLE_HOA => 'المدير الإداري',
+        self::ROLE_HOM => 'المدير الطبي',
+        self::ROLE_GTM => 'مدير التدريب',
     ];
 
-    /*
-    public const STATUS_NEW = 1;
-    public const STATUS_INITIAL_APPROVE = 2;
-    public const STATUS_CONFIRMATION = 3;
-    public const STATUS_WAITING_LIST = 4;
-    public const STATUS_STRATED_TRAINING = 5;
-    public const STATUS_ENDED_TRAINING = 6;
-    public const STATUS_REJECTED = 7;
-    public const STATUS_DROPPED = 8;
-    public const STATUS_UNKNOWN = 9;
-*/
+    // =========================================================================
+    // SETUP
+    // =========================================================================
+
+    protected $fillable = [
+        'id',
+        'user_name',
+        'name',
+        'email',
+        'phone_number',
+        'password',
+        'role',
+        'active'
+    ];
+
+    protected $hidden = [
+        'password',
+        'remember_token'
+    ];
+
+    protected $casts = [];
+
+    // =========================================================================
+    // RELATIONSHIPS
+    // =========================================================================
+
     public function department(): HasOne
     {
-        return $this->hasOne(Department::class, 'user_id');
+        return $this->hasOne(Department::class);
     }
 
     public function section(): HasOne
     {
-        return $this->hasOne(Section::class, 'user_id');
+        return $this->hasOne(Section::class);
     }
 
     public function college(): HasOne
     {
-        return $this->hasOne(College::class, 'user_id');
+        return $this->hasOne(College::class);
     }
 
     public function administrative(): HasOne
     {
-        return $this->hasOne(Administrative::class, 'user_id');
-    }
-
-    public function trainees()
-    {
-        return $this->college?->trainees();
+        return $this->hasOne(Administrative::class);
     }
 
     /**
@@ -99,6 +97,57 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasOne(Administrative::class, 'medical_head_user_id');
     }
 
+    public function trainees()
+    {
+        return $this->college?->trainees();
+    }
+
+    // =========================================================================
+    // ACCESSORS
+    // =========================================================================
+
+    public function getRoleLabelAttribute(): string
+    {
+        return self::ROLE_LABELS[$this->role] ?? 'غير محدد';
+    }
+
+    // =========================================================================
+    // SCOPES
+    // =========================================================================
+
+    /**
+     * Scope a query to only include active users.
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('active', GeneralConst::ACTIVE);
+    }
+
+    /**
+     * Scope a query to only include users who are not assigned as heads.
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param int|null $currentUserId The ID of the user currently assigned to the record being edited.
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeFree($query, $currentUserId = null)
+    {
+        return $query->where(function ($q) use ($currentUserId) {
+            $q->whereDoesntHave('department')
+                ->whereDoesntHave('section')
+                ->whereDoesntHave('college')
+                ->whereDoesntHave('administrative')
+                ->whereDoesntHave('administrativeMedicalHead');
+
+            if ($currentUserId) {
+                $q->orWhere('id', $currentUserId);
+            }
+        });
+    }
+
+    // =========================================================================
+    // HELPERS: ROLES
+    // =========================================================================
 
     public function isAdmin(): bool
     {
@@ -150,9 +199,13 @@ class User extends Authenticatable implements FilamentUser
         return $this->role === self::ROLE_GTM;
     }
 
+    // =========================================================================
+    // FILAMENT / PANEL ACCESS
+    // =========================================================================
+
     public function canAccessPanel(Panel $panel): bool
     {
-        return $this->status === true;
+        return $this->active == GeneralConst::ACTIVE;
     }
 
     /**
@@ -170,35 +223,12 @@ class User extends Authenticatable implements FilamentUser
      */
     public function canBeImpersonated(): bool
     {
-        return $this->status === true && !$this->isAdmin();
+        return $this->active == true && !$this->isAdmin();
     }
 
-    public function getRoleLabelAttribute(): string
-    {
-        return self::ROLE_LABELS[$this->role] ?? 'غير محدد';
-    }
-
-    /**
-     * Scope a query to only include users who are not assigned as heads.
-     *
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @param int|null $currentUserId The ID of the user currently assigned to the record being edited.
-     * @return \Illuminate\Database\Eloquent\Builder
-     */
-    public function scopeFree($query, $currentUserId = null)
-    {
-        return $query->where(function ($q) use ($currentUserId) {
-            $q->whereDoesntHave('department')
-                ->whereDoesntHave('section')
-                ->whereDoesntHave('college')
-                ->whereDoesntHave('administrative')
-                ->whereDoesntHave('administrativeMedicalHead');
-
-            if ($currentUserId) {
-                $q->orWhere('id', $currentUserId);
-            }
-        });
-    }
+    // =========================================================================
+    // STATIC HELPERS
+    // =========================================================================
 
     /**
      * Get ordered options for head selection.
@@ -246,5 +276,32 @@ class User extends Authenticatable implements FilamentUser
         }
 
         return $options;
+    }
+
+    // =========================================================================
+    // BOOT & EVENTS
+    // =========================================================================
+
+    protected static function booted()
+    {
+        parent::booted();
+
+        static::created(function (self $user) {
+            // try {
+            //     app(\App\Services\Telegram\TelegramMonitorService::class)->handleUserCreated($user);
+            // } catch (\Throwable $e) {}
+        });
+
+        static::updated(function (self $user) {
+            // try {
+            //     app(\App\Services\Telegram\TelegramMonitorService::class)->handleUserUpdated($user);
+            // } catch (\Throwable $e) {}
+        });
+
+        static::deleted(function (self $user) {
+            // try {
+            //     app(\App\Services\Telegram\TelegramMonitorService::class)->handleUserDeleted($user);
+            // } catch (\Throwable $e) {}
+        });
     }
 }

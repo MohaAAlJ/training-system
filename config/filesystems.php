@@ -40,7 +40,7 @@ return [
 
         'backup' => [
             'driver' => 'local',
-            'root' => storage_path('app/backup'),
+            'root' => storage_path('app/private/backups'),
             'throw' => false,
         ],
 

@@ -26,18 +26,19 @@ class TraineeStartedNotification extends Notification
     public function toDatabase($notifiable): array
     {
         $traineeName = optional($this->application->trainee)->full_name ?? 'غير معروف';
-        $sectionName = optional($this->application->section)->name_location ?? 'غير محدد';
+        $sectionName = optional($this->application->section)->name ?? 'غير محدد';
+        $startDate = $this->application->start_date ? \Carbon\Carbon::parse($this->application->start_date)->format('Y-m-d') : 'غير محدد';
 
         return FilamentNotification::make()
             ->title('بدء تدريب متدرب')
-            ->body("المتدرب {$traineeName} سيبدأ التدريب في القسم {$sectionName} التابع لك.")
+            ->body("المتدرب {$traineeName} سيبدأ التدريب في القسم {$sectionName} بتاريخ {$startDate}.")
             ->icon('heroicon-o-play')
             ->iconColor('success')
             ->actions([
                 Action::make('view')
                     ->label('عرض الطلب')
                     ->button()
-                    ->url(ApplicationResource::getUrl('view', ['record' => $this->application])),
+                    ->url(\App\Filament\Resources\Applications\ApplicationResource::getUrl('view', ['record' => $this->application], panel: 'home')),
             ])
             ->getDatabaseMessage();
     }

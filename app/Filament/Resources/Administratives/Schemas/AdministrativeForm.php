@@ -17,15 +17,33 @@ class AdministrativeForm
                 Section::make('البيانات الأساسية')
                     ->columns(2)
                     ->schema([
-                        TextInput::make('title')
+                        TextInput::make('name')
                             ->label('اسم الدائرة')
                             ->placeholder('مثال: الإدارة العامة للرعاية الأولية')
                             ->required()
                             ->maxLength(255)
-                            ->columnSpanFull(),
+                            ->columnSpan(1),
+                        \Filament\Forms\Components\Placeholder::make('active')
+                            ->label('الحالة')
+                            ->content(fn($record) => new \Illuminate\Support\HtmlString(\Illuminate\Support\Facades\Blade::render(
+                                '<x-filament::badge color="' . ($record && $record->active ? 'success' : 'danger') . '">' .
+                                    ($record && $record->active ? 'نشط' : 'غير نشط') .
+                                    '</x-filament::badge>'
+                            )))
+                            ->visible(fn($context) => $context === 'edit')
+                            ->columnSpan(1),
+                        Select::make('governorate_id')
+                            ->label('المحافظة')
+                            ->relationship('governorate', 'name')
+                            ->searchable()
+                            ->preload()
+                            ->required()
+                            ->columnSpan(1),
                         Toggle::make('is_medical')
                             ->label('إدارة طبية')
                             ->helperText('حدد إذا كانت هذه إدارة طبية أم لا')
+                            ->onIcon('heroicon-m-check-circle')
+                            ->offIcon('heroicon-m-x-circle')
                             ->onColor('success')
                             ->offColor('danger')
                             ->live(),
@@ -35,17 +53,53 @@ class AdministrativeForm
                     ->schema([
                         Select::make('user_id')
                             ->label('رئيس الإدارة')
-                            ->helperText('اختر رئيس الإدارة')
-                            ->options(fn($record) => \App\Models\User::getHeadOptions(\App\Models\User::ROLE_HOA, $record?->user_id))
-                            ->disableOptionWhen(fn($value, $record) => !\App\Models\User::where('id', $value)->free($record?->user_id)->exists())
+                            ->relationship('user', 'name', fn($query) => $query->where('role', \App\Models\User::ROLE_HOA))
+                            ->createOptionForm([
+                                TextInput::make('name')
+                                    ->label('الاسم')
+                                    ->required(),
+                                TextInput::make('user_name')
+                                    ->label('اسم المستخدم')
+                                    ->required()
+                                    ->unique('users', 'user_name'),
+                                TextInput::make('email')
+                                    ->label('البريد الإلكتروني')
+                                    ->required()
+                                    ->email()
+                                    ->unique('users', 'email'),
+                                TextInput::make('password')
+                                    ->label('كلمة المرور')
+                                    ->password()
+                                    ->required(),
+                                \Filament\Forms\Components\Hidden::make('role')
+                                    ->default(\App\Models\User::ROLE_HOA),
+                            ])
                             ->searchable()
                             ->preload()
-                            ->required(),
+                            ->nullable(),
                         Select::make('medical_head_user_id')
                             ->label('رئيس الإدارة الطبية')
-                            ->helperText('اختر رئيس الإدارة الطبية')
-                            ->options(fn($record) => \App\Models\User::getHeadOptions(\App\Models\User::ROLE_HOM, $record?->medical_head_user_id))
-                            ->disableOptionWhen(fn($value, $record) => !\App\Models\User::where('id', $value)->free($record?->medical_head_user_id)->exists())
+                            ->relationship('medicalHead', 'name', fn($query) => $query->where('role', \App\Models\User::ROLE_HOM))
+                            ->createOptionForm([
+                                TextInput::make('name')
+                                    ->label('الاسم')
+                                    ->required(),
+                                TextInput::make('user_name')
+                                    ->label('اسم المستخدم')
+                                    ->required()
+                                    ->unique('users', 'user_name'),
+                                TextInput::make('email')
+                                    ->label('البريد الإلكتروني')
+                                    ->required()
+                                    ->email()
+                                    ->unique('users', 'email'),
+                                TextInput::make('password')
+                                    ->label('كلمة المرور')
+                                    ->password()
+                                    ->required(),
+                                \Filament\Forms\Components\Hidden::make('role')
+                                    ->default(\App\Models\User::ROLE_HOM),
+                            ])
                             ->searchable()
                             ->preload()
                             ->visible(fn($get) => $get('is_medical'))

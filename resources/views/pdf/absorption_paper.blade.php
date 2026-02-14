@@ -2,300 +2,298 @@
 <html dir="rtl" lang="ar">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>طلب التحاق تدريب</title>
     <style>
         @page {
-            margin: 8mm 12mm;
-            header: page-header;
-            footer: page-footer;
+            margin-top: 8mm;
+            margin-bottom: 35mm;
+            margin-left: 8mm;
+            margin-right: 8mm;
+            footer: html_myFooter;
+        }
+
+        .page-border {
+            position: fixed;
+            top: -3mm;
+            bottom: -30mm;
+            left: -3mm;
+            right: -3mm;
+            border: 2pt solid #000;
+            z-index: -1;
         }
 
         body {
+            font-family: 'notonaskh', sans-serif;
             direction: rtl;
             text-align: right;
-            font-size: 11.5pt;
-            line-height: 1.6;
+            font-size: 13pt;
+            line-height: 1.4;
             color: #000;
-        }
-
-        .page-container {
-            border: 4px solid #000;
+            margin: 0;
             padding: 0;
-            min-height: 260mm;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        td {
-            padding: 5px;
-            vertical-align: middle;
         }
 
         .header-section {
-            border-bottom: 2px solid #000;
-            padding: 12px 20px;
-        }
-
-        .header-table td {
-            vertical-align: top;
-            padding: 5px;
-        }
-
-        .header-right {
-            text-align: right;
-            font-size: 10.5pt;
-            width: 40%;
-            line-height: 1.5;
-            font-weight: 600;
-            color: #000080;
-        }
-
-        .header-center {
+            width: 100%;
             text-align: center;
-            width: 20%;
+            margin-bottom: 10px;
         }
 
-        .header-left {
-            text-align: left;
-            font-size: 9.5pt;
-            width: 40%;
-            direction: ltr;
-            line-height: 1.5;
-            font-weight: 600;
-            color: #000080;
-        }
-
-        .logo {
-            width: 100px;
-            height: auto;
+        .header-section img {
+            width: 100%;
+            max-width: 100%;
         }
 
         .main-title {
             text-align: center;
             font-weight: bold;
-            font-size: 13pt;
-            margin: 0;
-            padding: 12px 20px;
-            border-top: 2px solid #000;
-            border-bottom: 2px solid #000;
+            font-size: 16pt;
+            padding: 8px 15px;
+            border-top: 2.2pt solid #000;
+            border-bottom: 2.2pt solid #000;
             background: #f5f5f5;
+            margin-bottom: 12px;
         }
 
         .content-area {
-            padding: 20px 25px;
+            padding: 0;
         }
 
         .section-title {
             text-align: center;
             font-weight: bold;
-            font-size: 12.5pt;
-            margin: 20px 0;
-            padding-bottom: 8px;
-            border-bottom: 1px solid #ccc;
+            font-size: 15pt;
+            margin-bottom: 10px;
+            padding-bottom: 6px;
+            border-bottom: 1.2pt solid #ccc;
         }
 
         .addressee-box {
-            border-right: 4px solid #000;
-            padding-right: 15px;
-            margin: 20px 0;
-            min-height: 80px;
+            border-right: 6px solid #000;
+            padding-right: 20px;
+            margin: 10px 0;
+            line-height: 1.5;
+            font-size: 13pt;
         }
 
         .greeting {
-            margin: 15px 0;
+            margin: 8px 0;
             font-weight: bold;
+            font-size: 14pt;
         }
 
         .field-row {
-            margin-bottom: 12px;
-            line-height: 2;
+            margin-bottom: 8px;
+            line-height: 1.6;
+            font-size: 13pt;
         }
 
         .field-label {
             font-weight: 600;
-            margin-left: 5px;
         }
 
         .field-value {
             border-bottom: 1px dotted #000;
             display: inline-block;
-            min-width: 120px;
+            min-width: 100px;
             text-align: center;
-            padding: 0 8px;
+            padding: 0 6px;
             font-weight: 600;
         }
-        
+
         .field-value-long {
-             min-width: 250px;
+            min-width: 200px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+
+        td {
+            padding: 3px;
+            vertical-align: middle;
         }
 
         .approval-section {
             text-align: center;
-            margin: 25px 0;
-            padding: 15px;
+            margin: 12px 0;
+            padding: 10px;
             background: #fafafa;
             border: 1px solid #ddd;
         }
 
-        .approval-option {
-            display: inline-block;
-            margin: 0 40px;
-            font-size: 12pt;
-        }
-
         .checkbox {
             display: inline-block;
-            width: 16px;
-            height: 16px;
+            width: 14px;
+            height: 14px;
             border: 2px solid #000;
             margin-left: 8px;
             vertical-align: middle;
         }
 
         .notice-box {
-            margin-top: 20px;
-            padding: 15px;
+            margin: 10px 0;
+            padding: 12px;
             background: #fafafa;
-            border: 1px solid #ddd;
-            line-height: 1.8;
+            border: 1.2pt solid #ddd;
+            line-height: 1.5;
+            font-size: 12.5pt;
         }
 
         .notice-box ul {
-            margin: 10px 0 0 25px;
+            margin: 8px 0 0 20px;
             padding: 0;
         }
 
         .notice-box li {
-            margin-bottom: 8px;
+            margin-bottom: 5px;
         }
 
         .signature-area {
-            margin-top: 40px;
-            padding-top: 20px;
+            margin-top: 15px;
         }
 
         .signature-table td {
             text-align: center;
-            padding: 15px;
+            padding: 5px;
+            vertical-align: top;
         }
 
         .signature-line {
             border-bottom: 1px solid #000;
             display: inline-block;
-            min-width: 180px;
-            margin-right: 10px;
+            min-width: 150px;
+            margin-top: 15px;
+        }
+
+        .stamp-container {
+            height: 10px;
+            text-align: center;
+        }
+
+        .stamp-container img {
+            width: 3mm;
+            height: auto;
         }
 
         .footer-section {
+            width: 100%;
             text-align: center;
-            font-size: 9pt;
-            padding: 8px 20px;
-            border-top: 2px solid #000;
-            margin-top: auto;
-            font-weight: 600;
+            line-height: 0;
+            margin: 0;
+            padding: 0;
+        }
+
+        .footer-section img {
+            width: 100%;
+            max-width: 100%;
+            display: block;
+            margin: 0;
         }
     </style>
 </head>
 
 <body>
-    <div class="page-container">
-        <!-- Header -->
-        <div class="header-section" style="padding: 0; border: none;">
-            <img src="{{ public_path('images/file_header.jpeg') }}" style="width: 100%; height: auto;">
+    <div class="page-border">&nbsp;</div>
+
+    <htmlpagefooter name="myFooter">
+        <div class="footer-section" style="margin-left: -3mm; margin-right: -3mm;">
+            <img src="{{ public_path('images/footer.jpeg') }}" alt="Footer">
+        </div>
+    </htmlpagefooter>
+
+    <!-- Header -->
+    <div class="header-section">
+        <img src="{{ public_path('images/file_header.jpeg') }}" alt="Header">
+    </div>
+
+    <!-- Main Title -->
+    <div class="main-title">
+        طلب التحاق تدريب امتياز في مستشفيات/مراكز جمعية الهلال الأحمر الفلسطيني
+    </div>
+
+    <!-- Content -->
+    <div class="content-area">
+        <div class="section-title">لإستخدام الإدارة</div>
+
+        <div class="addressee-box">
+            السيد/ة عميد كلية تنمية القدرات الجامعية المحترم<br>
+            مسؤول ملف التدريب وتعليم الطوارئ المحترم
         </div>
 
-        <!-- Main Title -->
-        <div class="main-title">
-            طلب التحاق تدريب امتياز في مستشفيات/مراكز جمعية الهلال الأحمر الفلسطيني
+        <div class="greeting">
+            تحية طيبة وبعد،،،
         </div>
 
-        <!-- Content -->
-        <div class="content-area">
-            <div class="section-title">لإستخدام الإدارة</div>
+        <div class="field-row">
+            <span class="field-label">أنا الطالب/ة: </span>
+            <span class="field-value field-value-long">{{ $application->trainee->full_name ?? '' }}</span>
+            <span class="field-label">التخصص: </span>
+            <span class="field-value">{{ $application->section->department->name ?? '' }}</span>
+        </div>
 
-            <div class="addressee-box">
-                السيد/ة عميد كلية تنمية القدرات الجامعية المحترم<br>
-                مسؤول ملف التدريب وتعليم الطوارئ المحترم
-            </div>
+        <div class="field-row">
+            <span class="field-label">أرجو التكرم بالموافقة على طلبي بالتدريب في قسم: </span>
+            <span class="field-value field-value-long">{{ $application->section->name ?? '' }}</span>
+        </div>
 
-            <div class="greeting">
-                تحية طيبة وبعد،،،
-            </div>
+        <table>
+            <tr>
+                <td width="50%">
+                    <span class="field-label">عنوان السكن: </span>
+                    <span class="field-value" style="min-width: 150px;">
+                        {{ $application->trainee->governorate?->name ?? '' }} -
+                        {{ $application->trainee->street ?? '' }}
+                    </span>
+                </td>
+                <td width="50%">
+                    <span class="field-label">رقم الجوال: </span>
+                    <span class="field-value">{{ $application->trainee->phone_number ?? '' }}</span>
+                </td>
+            </tr>
+        </table>
 
-            <div class="field-row">
-                <span class="field-label">أنا الطالب/ة: </span>
-                <span class="field-value field-value-long">{{ $application->trainee->full_name ?? '' }}</span>
-                
-                <span class="field-label">التخصص: </span>
-                <span class="field-value">{{ $application->department->title ?? '' }}</span>
-            </div>
+        <div class="field-row">
+            <span class="field-label">عدد ساعات التدريب: </span>
+            <span class="field-value">{{ $application->trainee->training_hours ?? '' }} ساعة</span>
+        </div>
 
-            <div class="field-row">
-                <span class="field-label">أرجو التكرم بالموافقة على طلبي بالتدريب في قسم: </span>
-                <span class="field-value field-value-long">{{ $application->section->name_location ?? '' }}</span>
-            </div>
+        <div class="approval-section">
+            <span class="checkbox"></span>
+            <strong>مع الموافقة</strong>
+        </div>
 
-            <table style="margin: 15px 0;">
+        <div class="notice-box">
+            نحيطكم علما بانه لا مانع لدينا نحو استيعاب المتدرب المذكور اعلاه ضمن برنامج التدريب في
+            {{ $application->section->name ?? '' }}, وذلك ضمن المعايير التالية:
+            <ul>
+                <li>الإلتزام بتدريب المتدرب تحت إشراف المشرف المكلف من طرفكم.</li>
+                <li>الإلتزام بمتابعة دوام المتدرب.</li>
+            </ul>
+        </div>
+
+        <div class="signature-area">
+            <table class="signature-table">
                 <tr>
                     <td width="50%">
-                        <span class="field-label">عنوان السكن: </span>
-                        <span class="field-value" style="min-width: 180px;">
-                            {{ $application->trainee->governorate?->name ?? '' }} - {{ $application->trainee->street ?? '' }}
-                        </span>
+                        <strong>التوقيع:</strong>
+                        <div class="signature-line"></div>
                     </td>
                     <td width="50%">
-                        <span class="field-label">رقم الجوال: </span>
-                        <span class="field-value">{{ $application->trainee->phone_number ?? '' }}</span>
+                        <strong>الختم:</strong>
+                        <div class="stamp-container">
+                            <img src="{{ public_path('images/stamp.jpeg') }}" alt="Stamp" width="60"
+                                style="width: 35mm; height: auto;">
+                        </div>
+                        <div class="signature-line"></div>
                     </td>
                 </tr>
             </table>
-            
-            <div class="field-row">
-                 <span class="field-label">عدد ساعات التدريب: </span>
-                 <span class="field-value">{{ $application->trainee->training_hours ?? '' }} ساعة</span>
-            </div>
-
-            <div class="approval-section">
-                <div class="approval-option">
-                    <span class="checkbox"></span>
-                    <strong>مع الموافقة</strong>
-                </div>
-            </div>
-
-            <div class="notice-box">
-                نحيطكم علما بانه لا مانع لدينا نحو استيعاب المتدرب المذكور اعلاه ضمن برنامج التدريب في  {{ $application->section->name_location ?? '' }}, وذلك ضمن المعايير التالية:
-                <ul>
-                    <li>الإلتزام بتدريب المتدرب تحت إشراف المشرف المكلف من طرفكم.</li>
-                    <li>الإلتزام بمتابعة دوام المتدرب.</li>
-                </ul>
-            </div>
-
-            <div class="signature-area">
-                <table class="signature-table">
-                    <tr>
-                        <td>
-                            <strong>التوقيع:</strong>
-                            <span class="signature-line"></span>
-                        </td>
-                        <td>
-                            <strong>الختم:</strong>
-                            <span class="signature-line"></span>
-                        </td>
-                    </tr>
-                </table>
-            </div>
-        </div>
-
-        <!-- Footer -->
-        <div class="footer-section">
-            جمعية الهلال الأحمر الفلسطيني - مدينة الأمل - خانيونس
         </div>
     </div>
-
 </body>
+
 </html>

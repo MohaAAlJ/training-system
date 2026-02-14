@@ -22,14 +22,15 @@ class StudentsFinishingSoonWidget extends BaseWidget
     protected static ?int $sort = 2;
     protected int | string | array $columnSpan = 1;
 
-    protected static ?string $heading = 'متابعة المتدربين المنتهين قريباً';
-    protected static bool $collapsible = false;
+    public static ?string $heading = 'متابعة المتدربين المنتهين قريباً';
 
-    public function getHeading(): string | Heading
+    public function getHeading(): string | \Illuminate\Contracts\Support\Htmlable | null
     {
-        $count = $this->table(app(\Filament\Tables\Table::class))->getQuery()->count();
-        return 'متابعة المتدربين المنتهين قريباً (' . $count . ')';
+        return '';
     }
+
+
+
 
     public static function canView(): bool
     {
@@ -51,12 +52,13 @@ class StudentsFinishingSoonWidget extends BaseWidget
     public function table(Table $table): Table
     {
         return $table
+            ->heading(null)
             ->query(
                 Application::query()
                     ->where('status', Application::STATUS_STARTED_TRAINING)
                     ->where('end_date', '>=', Carbon::today())
-                    ->where('end_date', '>=', Carbon::today())
-                    ->with(['trainee', 'section', 'department'])
+                    ->whereHas('section', fn($q) => $q->active())
+                    ->with(['trainee', 'section.department', 'section.administrative'])
             )
             ->modifyQueryUsing(function (Builder $query) {
                 $user = Auth::user();
@@ -66,21 +68,25 @@ class StudentsFinishingSoonWidget extends BaseWidget
                 }
 
                 if ($user->isMedicalManager()) { // ROLE_HOM
-                    return $query->whereHas('department', function ($q) {
+                    return $query->whereHas('section.department', function ($q) {
                         $q->where('is_medical', true);
                     });
                 }
 
                 if ($user->isHOA()) { // ROLE_HOA
                     if ($user->administrative) {
-                        return $query->where('administrative_id', $user->administrative->id);
+                        return $query->whereHas('section', function ($q) use ($user) {
+                            $q->where('administrative_id', $user->administrative->id);
+                        });
                     }
                     return $query->whereRaw('0 = 1');
                 }
 
                 if ($user->isDepartmentHead()) { // ROLE_DEPARTMENT
                     if ($user->department) {
-                        return $query->where('department_id', $user->department->id);
+                        return $query->whereHas('section', function ($q) use ($user) {
+                            $q->where('department_id', $user->department->id);
+                        });
                     }
                     return $query->whereRaw('0 = 1');
                 }
@@ -98,8 +104,9 @@ class StudentsFinishingSoonWidget extends BaseWidget
                 Tables\Columns\TextColumn::make('trainee.full_name')
                     ->label('اسم المتدرب')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('section.name_location')
+                Tables\Columns\TextColumn::make('section.name')
                     ->label('القسم')
+                    ->formatStateUsing(fn(Application $record) => $record->section?->administrative?->name . ' - ' . $record->section?->name)
                     ->sortable(),
                 Tables\Columns\TextColumn::make('end_date')
                     ->label('تاريخ الانتهاء')
@@ -115,6 +122,9 @@ class StudentsFinishingSoonWidget extends BaseWidget
                     ->badge()
                     ->color(fn($state) => $state === 'ينتهي اليوم' ? 'danger' : 'warning'),
             ])
+            ->recordUrl(
+                fn (Application $record): string => \App\Filament\Resources\Applications\ApplicationResource::getUrl('view', ['record' => $record]),
+            )
             ->filters([
                 Tables\Filters\SelectFilter::make('days_range')
                     ->label('الفترة الزمنية')

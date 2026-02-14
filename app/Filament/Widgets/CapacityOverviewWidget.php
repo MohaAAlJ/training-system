@@ -21,13 +21,14 @@ class CapacityOverviewWidget extends BaseWidget
     protected static ?int $sort = 2;
     protected int | string | array $columnSpan = 1;
 
-    protected static ?string $heading = 'إحصائيات السعة الاستيعابية للأقسام';
+    public static ?string $heading = 'إحصائيات السعة الاستيعابية للأقسام';
 
-    public function getHeading(): string | Heading
+    public function getHeading(): string | \Illuminate\Contracts\Support\Htmlable | null
     {
-        $count = $this->table(app(\Filament\Tables\Table::class))->getQuery()->count();
-        return 'إحصائيات السعة الاستيعابية للأقسام (' . $count . ')';
+        return '';
     }
+
+
 
     public static function canView(): bool
     {
@@ -48,11 +49,13 @@ class CapacityOverviewWidget extends BaseWidget
     public function table(Table $table): Table
     {
         return $table
+            ->heading(null)
             ->query(
                 Section::query()
+                    ->active()
                     ->with(['administrative', 'department'])
                     ->withCount(['applications as active_Trainee_count' => function (Builder $query) {
-                        $query->where('status', Application::STATUS_STARTED_TRAINING);
+                        $query->where('applications.status', Application::STATUS_STARTED_TRAINING);
                     }])
             )
             ->modifyQueryUsing(function (Builder $query) {
@@ -102,17 +105,17 @@ class CapacityOverviewWidget extends BaseWidget
                 }
             })
             ->columns([
-                Tables\Columns\TextColumn::make('name_location')
+                Tables\Columns\TextColumn::make('name')
                     ->label('القسم')
+                    ->description(fn(Section $record) => $record->administrative?->name ?? '-')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('administrative.title')
+                Tables\Columns\TextColumn::make('administrative.name')
                     ->label('الإدارة')
                     ->searchable()
-                    ->sortable()
-                    ->visible(fn() => Auth::user()->isGeneralTrainingManager() || Auth::user()->isAdmin() || Auth::user()->isMedicalManager()),
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('capacity')
-                    ->label('السعة الكلية')
+                    ->label('السعة')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('active_Trainee_count')
                     ->label('مشغول')
@@ -121,8 +124,12 @@ class CapacityOverviewWidget extends BaseWidget
                     ->label('متاح')
                     ->state(function (Section $record) {
                         return max(0, $record->capacity - $record->active_Trainee_count);
-                    }),
+                    })
+                    ->sortable(),
             ])
-            ->defaultSort('name_location');
+            ->recordUrl(
+                fn (Section $record): string => \App\Filament\Resources\Sections\SectionResource::getUrl('view', ['record' => $record]),
+            )
+            ->defaultSort('name');
     }
 }

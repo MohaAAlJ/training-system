@@ -9,7 +9,7 @@
         <!-- Training Type Selection -->
         <label class="field">
             <span>نوع التدريب *</span>
-            <select wire:model.live="trainingType" class="form__input" required :disabled="$wire.isValidating">
+            <select wire:model.live="trainingType" class="form__input" required :disabled="$wire.isValidating" tabindex="1">
                 <option value="">-- اختر نوع التدريب --</option>
                 @foreach ($trainingTypes as $type)
                     <option value="{{ $type['id'] }}">{{ $type['name'] }}</option>
@@ -21,17 +21,18 @@
         <!-- National ID Input -->
         <label class="field">
             <span>رقم الهوية *</span>
-            <input 
-                type="text" 
+            <input
+                type="text"
                 wire:model.blur="nationalId"
                 wire:blur="validatePalestinianIdOnBlur"
                 pattern="[0-9]*"
                 placeholder="رقم الهوية"
                 maxlength="9"
                 class="form__input @error('nationalId') form__input--error @enderror"
-                required
                 @readonly($nationalIdReadonly)
                 :disabled="$wire.isValidating || $wire.nationalIdReadonly"
+                required
+                tabindex="2"
             >
             <small class="note">رقم الهوية (9 أرقام)</small>
         </label>
@@ -39,16 +40,16 @@
         <!-- Date of Birth -->
         <label class="field">
             <span>تاريخ الميلاد *</span>
-            <input 
-                type="date" 
+            <input
+                type="date"
                 wire:model.blur="dob"
                 class="form__input @error('dob') form__input--error @enderror"
-                required
-                required
                 @readonly($dobReadonly)
                 @disabled($isValidating || $dobReadonly)
                 min="{{ now()->subYears(App\Livewire\Trainee\Config\TraineeFormConfig::MAX_AGE)->format('Y-m-d') }}"
                 max="{{ now()->subYears(App\Livewire\Trainee\Config\TraineeFormConfig::MIN_AGE)->format('Y-m-d') }}"
+                required
+                tabindex="3"
             >
             @error('dob')
                 <small class="error-message">{{ $message }}</small>

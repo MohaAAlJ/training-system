@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Application;
 
-use App\Enums\ApplicationStatus;
-use App\Enums\TrainingType;
+// use App\Enums\ApplicationStatus;
 use App\Models\Application;
 use App\Models\Trainee;
 use App\Settings\TrainingSettings;
@@ -63,7 +62,7 @@ class ApplicationStatusService
         }
 
         // Check database
-        $trainee = Trainee::where('national_id', $nationalId)->first();
+        $trainee = Trainee::where('national_id', '=', $nationalId)->first();
 
         if (!$trainee) {
             return [
@@ -95,48 +94,74 @@ class ApplicationStatusService
         }
 
         // Check for existing applications
-        $trainingTypeEnum = TrainingType::from($trainingType);
-        $canReapply = $this->canReapply($trainingTypeEnum);
+        $canReapply = $this->canReapply($trainingType);
 
-        $query = Application::where('trainee_id', $trainee->id)
-            ->where('training_type', $trainingType)
-            ->whereNull('deleted_at');
+        Log::info("Check Eligibility: ID={$trainee->id}, Type={$trainingType}, CanReapply=" . ($canReapply ? 'Y' : 'N'));
 
-        if ($canReapply) {
-            // Block if there's an active application (not ended)
-            $blockingApplication = $query
-                ->where('status', '!=', ApplicationStatus::ENDED_TRAINING->value)
-                ->first();
-        } else {
-            // Block any existing application
-            $blockingApplication = $query->first();
-        }
 
-        // Prepare result
-        if ($blockingApplication) {
-            Log::info('Blocking application found', [
-                'applicationId' => $blockingApplication->id,
-                'status' => $blockingApplication->status,
-            ]);
+        // 1. GLOBAL CHECK: Block if there's any ACTIVE application (not terminal) regardless of type
+        // This prevents having two concurrent applications
+        $activeBlockingApp = Application::where('trainee_id', $trainee->id)
+            ->whereNull('deleted_at')
+            ->whereNotIn('status', [
+                Application::STATUS_ENDED_TRAINING,
+                Application::STATUS_REJECTED,
+                Application::STATUS_DROPPED,
+            ])
+            ->first();
 
-            $result = [
+        if ($activeBlockingApp) {
+            $message = Application::getStatusMessage($activeBlockingApp->status, $activeBlockingApp->training_type);
+
+            return [
                 'can_apply' => false,
-                'blocking_application' => $blockingApplication,
-                'message' => ApplicationStatus::from($blockingApplication->status)
-                    ->message($trainingType),
-            ];
-        } else {
-            Log::debug('No blocking application found', [
-                'traineeId' => $trainee->id,
-                'trainingType' => $trainingType,
-            ]);
-
-            $result = [
-                'can_apply' => true,
-                'blocking_application' => null,
-                'message' => '',
+                'has_application' => true,
+                'blocking_application' => $activeBlockingApp,
+                // Pass null to message logic if it's a generic block to get generic or specific message
+                'message' => $message,
             ];
         }
+
+        // 2. TYPED CHECK: Check re-application policy for TERMINAL applications of the SAME type
+        // If we reached here, the trainee has NO active applications (only ended/rejected ones)
+        if (!$canReapply) {
+            // If re-application is NOT allowed, block if there is an existing application of SAME TYPE
+            // (We only check same type because finishing Uni shouldn't block Practice if active list is clear)
+            $terminalBlockingApp = Application::where('trainee_id', $trainee->id)
+                ->where('training_type', $trainingType)
+                ->whereNull('deleted_at')
+                ->first();
+
+            if ($terminalBlockingApp) {
+                // Determine message based on status (likely Ended or Rejected)
+                $message = Application::getStatusMessage($terminalBlockingApp->status, $trainingType);
+
+                return [
+                    'can_apply' => false,
+                    'has_application' => true, // It is an application, just a historical one blocking new entry
+                    'blocking_application' => $terminalBlockingApp,
+                    'message' => $message,
+                ];
+            }
+        }
+
+
+
+        // No blocking application found
+        $blockingApplication = null;
+
+        Log::debug('No blocking application found', [
+            'traineeId' => $trainee->id,
+            'trainingType' => $trainingType,
+        ]);
+
+        $result = [
+            'can_apply' => true,
+            'has_application' => false,
+            'blocking_application' => null,
+            'message' => '',
+            'trainee_data' => $this->getTraineeDataForPrefill($nationalId),
+        ];
 
         // Cache the result
         Cache::put($cacheKey, $result, now()->addMinutes(self::CACHE_TTL_MINUTES));
@@ -149,7 +174,7 @@ class ApplicationStatusService
      */
     public function getTraineeDataForPrefill(string $nationalId): ?array
     {
-        $trainee = Trainee::where('national_id', $nationalId)->first();
+        $trainee = Trainee::where('national_id', '=', $nationalId)->first();
 
         return $trainee ? $trainee->toArray() : null;
     }
@@ -157,11 +182,12 @@ class ApplicationStatusService
     /**
      * Determine if re-application is allowed for training type
      */
-    private function canReapply(TrainingType $trainingType): bool
+    private function canReapply(int $trainingType): bool
     {
         return match ($trainingType) {
-            TrainingType::UNIVERSITY => (bool) $this->settings->can_university_reapply,
-            TrainingType::PRACTICE => (bool) $this->settings->can_practice_reapply,
+            Application::UNIVERSITY => (bool) $this->settings->can_university_reapply,
+            Application::PRACTICE => (bool) $this->settings->can_practice_reapply,
+            default => false,
         };
     }
 
@@ -170,7 +196,7 @@ class ApplicationStatusService
      */
     private function getCacheKey(string $nationalId, int $trainingType, string $dob): string
     {
-        $canReapply = $this->canReapply(TrainingType::from($trainingType));
+        $canReapply = $this->canReapply($trainingType);
 
         return "app_status:{$nationalId}:{$trainingType}:{$dob}:" . ($canReapply ? '1' : '0');
     }

@@ -20,13 +20,10 @@ class DepartmentFactory extends Factory
     {
         $arabicFaker = fake('ar_SA');
         return [
-            'title' => 'قسم ' . $arabicFaker->realText(15),
-            'user_id' => User::factory(),
-            'head_of_department' => User::factory(),
-            'medical_head_user_id' => $this->faker->boolean ? User::factory() : null,
+            'name' => 'قسم ' . $arabicFaker->realText(15),
+            'user_id' => User::factory()->department(),
             'is_medical' => $this->faker->boolean,
-            'status' => true,
-            'location' => $this->faker->address,
+            'active' => true,
         ];
     }
 }

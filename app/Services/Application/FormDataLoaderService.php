@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Application;
 
-use App\Enums\TrainingType;
+use App\Models\Application;
 use App\Models\Administrative;
 use App\Models\College;
 use App\Models\Department;
@@ -47,15 +47,15 @@ class FormDataLoaderService
 
             if ($this->settings->enable_training_type_university) {
                 $types[] = [
-                    'id' => TrainingType::UNIVERSITY->value,
-                    'name' => TrainingType::UNIVERSITY->label(),
+                    'id' => Application::UNIVERSITY,
+                    'name' => Application::getTrainingTypeLabel(Application::UNIVERSITY),
                 ];
             }
 
             if ($this->settings->enable_training_type_practice) {
                 $types[] = [
-                    'id' => TrainingType::PRACTICE->value,
-                    'name' => TrainingType::PRACTICE->label(),
+                    'id' => Application::PRACTICE,
+                    'name' => Application::getTrainingTypeLabel(Application::PRACTICE),
                 ];
             }
 
@@ -78,7 +78,7 @@ class FormDataLoaderService
             return Governorate::select('id', 'name')
                 ->orderBy('name')
                 ->get()
-                ->map(fn ($gov) => ['id' => $gov->id, 'name' => $gov->name]);
+                ->map(fn($gov) => ['id' => $gov->id, 'name' => $gov->name]);
         } catch (Exception $e) {
             Log::error('Failed to load governorates', ['error' => $e->getMessage()]);
 
@@ -94,11 +94,11 @@ class FormDataLoaderService
     public function loadInstitutions(): Collection
     {
         try {
-            return Institution::where('is_active', true)
+            return Institution::active()
                 ->select('id', 'name')
                 ->orderBy('name')
                 ->get()
-                ->map(fn ($inst) => ['id' => $inst->id, 'name' => $inst->name]);
+                ->map(fn($inst) => ['id' => $inst->id, 'name' => $inst->name]);
         } catch (Exception $e) {
             Log::error('Failed to load institutions', ['error' => $e->getMessage()]);
 
@@ -114,10 +114,10 @@ class FormDataLoaderService
     public function loadAdministratives(?int $trainingType = null): Collection
     {
         try {
-            $query = Administrative::query();
+            $query = Administrative::query()->active();
 
             // Filter by medical if practice training
-            if ($trainingType === TrainingType::PRACTICE->value) {
+            if ($trainingType === Application::PRACTICE) {
                 $query->where('is_medical', true);
             }
 
@@ -125,7 +125,7 @@ class FormDataLoaderService
                 ->select('id', 'title as name')
                 ->orderBy('id')
                 ->get()
-                ->map(fn ($admin) => ['id' => $admin->id, 'name' => $admin->name]);
+                ->map(fn($admin) => ['id' => $admin->id, 'name' => $admin->name]);
         } catch (Exception $e) {
             Log::error('Failed to load administratives', ['error' => $e->getMessage()]);
 
@@ -141,11 +141,11 @@ class FormDataLoaderService
     public function loadAllMajors(): Collection
     {
         try {
-            return Major::with(['colleges'])
+            return Major::with(['colleges' => fn($q) => $q->active()])
                 ->select('id', 'name')
                 ->orderBy('name')
                 ->get()
-                ->map(fn ($major) => [
+                ->map(fn($major) => [
                     'id' => $major->id,
                     'name' => $major->name,
                     'collegeIds' => $major->colleges->pluck('id')->toArray(),
@@ -166,10 +166,10 @@ class FormDataLoaderService
     public function loadAllDepartments(?int $trainingType = null): Collection
     {
         try {
-            $query = Department::query();
+            $query = Department::query()->active();
 
             // Filter by medical if practice training
-            if ($trainingType === TrainingType::PRACTICE->value) {
+            if ($trainingType === Application::PRACTICE) {
                 $query->where('is_medical', true);
             }
 
@@ -177,7 +177,7 @@ class FormDataLoaderService
                 ->select('id', 'title as name')
                 ->orderBy('id')
                 ->get()
-                ->map(fn ($dept) => [
+                ->map(fn($dept) => [
                     'id' => $dept->id,
                     'name' => $dept->name,
                 ]);
@@ -197,21 +197,22 @@ class FormDataLoaderService
     {
         try {
             $sections = Section::with(['department', 'administrative'])
-                ->select('id', 'name_location', 'department_id', 'administrative_id', 'capacity')
+                ->active()
+                ->select('id', 'name', 'department_id', 'administrative_id', 'capacity')
                 ->orderBy('id')
                 ->get();
 
             // Filter by medical if practice training
-            if ($trainingType === TrainingType::PRACTICE->value) {
-                $sections = $sections->filter(fn ($sec) => $sec->department?->is_medical);
+            if ($trainingType === Application::PRACTICE) {
+                $sections = $sections->filter(fn($sec) => $sec->department?->is_medical);
             }
 
-            return $sections->map(function ($section) {
+            return $sections->map(function (Section $section) {
                 $stats = $section->getCapacityStats();
 
                 return [
                     'id' => $section->id,
-                    'name' => $section->name_location,
+                    'name' => $section->name,
                     'departmentId' => $section->department_id,
                     'administrativeId' => $section->administrative_id,
                     'isFull' => $stats['is_full'] ?? false,
@@ -232,7 +233,7 @@ class FormDataLoaderService
     public function filterMajorsByInstitution(Collection $allMajors, int $institutionId): Collection
     {
         return $allMajors
-            ->filter(fn ($m) => in_array($institutionId, $m['institutionIds'] ?? []))
+            ->filter(fn($m) => in_array($institutionId, $m['institutionIds'] ?? []))
             ->values();
     }
 
@@ -247,13 +248,13 @@ class FormDataLoaderService
         int $administrativeId
     ): Collection {
         $deptIds = $allSections
-            ->filter(fn ($s) => $s['administrativeId'] == $administrativeId)
+            ->filter(fn($s) => $s['administrativeId'] == $administrativeId)
             ->pluck('departmentId')
             ->unique()
             ->toArray();
 
         return $allDepartments
-            ->filter(fn ($d) => in_array($d['id'], $deptIds))
+            ->filter(fn($d) => in_array($d['id'], $deptIds))
             ->values();
     }
 
@@ -268,9 +269,10 @@ class FormDataLoaderService
         int $departmentId
     ): Collection {
         return $allSections
-            ->filter(fn ($s) =>
+            ->filter(
+                fn($s) =>
                 $s['administrativeId'] == $administrativeId &&
-                $s['departmentId'] == $departmentId
+                    $s['departmentId'] == $departmentId
             )
             ->values();
     }

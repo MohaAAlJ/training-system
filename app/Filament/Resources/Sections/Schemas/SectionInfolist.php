@@ -13,41 +13,80 @@ class SectionInfolist
         return $schema
             ->components([
                 Section::make('معلومات القسم')
+                    ->description('التفاصيل الأساسية للقسم')
+                    ->icon('heroicon-o-rectangle-group')
                     ->schema([
-                        TextEntry::make('name_location')
-                            ->label('اسم القسم والموقع'),
-                        TextEntry::make('administrative.title')
-                            ->label('الإدارة'),
-                        TextEntry::make('department.title')
-                            ->label('الدائرة'),
-                        TextEntry::make('user.name')
-                            ->label('المسؤول'),
-                        TextEntry::make('capacity')
-                            ->label('السعة الكلية'),
-                        TextEntry::make('status')
-                            ->label('الحالة')
+                        TextEntry::make('name')
+                            ->label('اسم القسم')
+                            ->icon('heroicon-o-tag')
+                            ->copyable()
+                            ->weight('bold')
+                            ->size('lg')
+                            ->color('primary'),
+
+                        TextEntry::make('administrative.name')
+                            ->label('الإدارة')
+                            ->icon('heroicon-o-building-office')
+                            ->copyable()
                             ->badge()
-                            ->color(fn(string $state): string => match ($state) {
-                                'active' => 'success',
-                                'inactive' => 'danger',
-                                default => 'gray',
-                            })
-                            ->formatStateUsing(fn(string $state): string => match ($state) {
-                                'active' => 'نشط',
-                                'inactive' => 'غير نشط',
-                                default => $state,
-                            }),
-                    ])->columns(2),
+                            ->color('info')
+                            ->placeholder('غير محدد'),
+
+                        TextEntry::make('department.name')
+                            ->label('الدائرة')
+                            ->icon('heroicon-o-building-office-2')
+                            ->copyable()
+                            ->badge()
+                            ->color('purple')
+                            ->placeholder('غير محدد'),
+
+                        TextEntry::make('user.name')
+                            ->label('المسؤول عن القسم')
+                            ->icon('heroicon-o-user-circle')
+                            ->copyable()
+                            ->badge()
+                            ->color('fuchsia')
+                            ->placeholder('غير محدد'),
+
+                        TextEntry::make('capacity')
+                            ->label('السعة الكلية')
+                            ->icon('heroicon-o-users')
+                            ->badge()
+                            ->color('warning')
+                            ->suffix(' متدرب')
+                            ->numeric(),
+
+                        TextEntry::make('active')
+                            ->label('حالة القسم')
+                            ->badge()
+                            ->icon(fn(int $state) => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
+                            ->size('lg')
+                            ->color(fn(int $state): string => \App\Enums\GeneralConst::getStatusColor($state))
+                            ->formatStateUsing(fn(int $state): string => \App\Enums\GeneralConst::getStatusLabel($state)),
+                    ])
+                    ->columns(2),
 
                 Section::make('معلومات النظام')
+                    ->description('تواريخ الإنشاء والتحديث')
+                    ->icon('heroicon-o-clock')
                     ->schema([
                         TextEntry::make('created_at')
                             ->label('تاريخ الإنشاء')
-                            ->dateTime('Y-m-d H:i'),
+                            ->icon('heroicon-o-calendar')
+                            ->dateTime('d/m/Y - h:i A')
+                            ->since()
+                            ->badge()
+                            ->color('success'),
+
                         TextEntry::make('updated_at')
                             ->label('آخر تحديث')
-                            ->dateTime('Y-m-d H:i'),
-                    ])->columns(2)
+                            ->icon('heroicon-o-arrow-path')
+                            ->dateTime('d/m/Y - h:i A')
+                            ->since()
+                            ->badge()
+                            ->color('warning'),
+                    ])
+                    ->columns(2)
                     ->collapsed(),
             ]);
     }

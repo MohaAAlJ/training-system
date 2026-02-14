@@ -27,14 +27,22 @@
 
 * {
     box-sizing: border-box;
-    transition: background-color 0.3s ease, border-color 0.3s ease,
-        color 0.3s ease, box-shadow 0.3s ease;
+    transition:
+        background-color 0.3s ease,
+        border-color 0.3s ease,
+        color 0.3s ease,
+        box-shadow 0.3s ease;
 }
 
 body {
     margin: 0;
     padding: 60px 20px;
-    font-family: "Outfit", "Inter", "Segoe UI", system-ui, -apple-system,
+    font-family:
+        "Outfit",
+        "Inter",
+        "Segoe UI",
+        system-ui,
+        -apple-system,
         sans-serif;
     background-color: var(--bg);
     color: var(--text-main);
@@ -43,11 +51,14 @@ body {
     justify-content: center;
     align-items: flex-start;
     line-height: 1.6;
-    /* Page border as requested */
+    /* Prevent layout shift when scrollbar appears */
+    scrollbar-gutter: stable both-edges;
+    overflow-y: scroll;
 }
 
 [data-theme="dark"] body {
-    background-image: radial-gradient(
+    background-image:
+        radial-gradient(
             circle at 15% 25%,
             rgba(239, 68, 68, 0.05) 0%,
             transparent 50%
@@ -73,11 +84,15 @@ body {
 
 main.page {
     width: min(1000px, 100%);
+    max-width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
     display: flex;
     flex-direction: column;
     gap: 24px;
     z-index: 1;
     padding: 0 20px;
+    box-sizing: border-box;
 }
 
 /* --- HERO SECTION --- */
@@ -91,7 +106,14 @@ main.page {
     align-items: center;
     justify-content: space-between;
     gap: 24px;
-    box-shadow: var(--shadow-main), 0 0 20px var(--primary-glow);
+    box-shadow:
+        var(--shadow-main),
+        0 0 20px var(--primary-glow);
+}
+
+.hero__text {
+    text-align: center;
+    flex: 1;
 }
 
 .hero__text h1 {
@@ -111,10 +133,10 @@ main.page {
 
 .eyebrow {
     color: var(--primary);
-    text-transform: uppercase;
-    font-weight: 700;
-    font-size: 0.85rem;
-    letter-spacing: 0.15em;
+    font-weight: 800;
+    font-size: clamp(1.2rem, 2.5vw, 1.8rem);
+    letter-spacing: 0.02em;
+    white-space: nowrap;
 }
 
 .hero__brand {
@@ -388,7 +410,9 @@ select option {
 
 .glow-button:hover:not(:disabled) {
     transform: translateY(-3px) scale(1.02);
-    box-shadow: 0 0 30px var(--primary), 0 0 50px var(--primary-glow);
+    box-shadow:
+        0 0 30px var(--primary),
+        0 0 50px var(--primary-glow);
 }
 
 .glow-button:disabled {
@@ -478,4 +502,103 @@ select option {
     transform: none !important;
     box-shadow: none !important;
     border-color: var(--border-color) !important;
+}
+
+/* --- MOBILE RESPONSIVE --- */
+@media (max-width: 768px) {
+    body {
+        padding: 20px 10px;
+    }
+
+    .hero {
+        flex-direction: column;
+        text-align: center;
+        padding: 24px 16px;
+        gap: 16px;
+    }
+
+    .hero__text {
+        order: 2;
+        text-align: center;
+    }
+
+    .hero__brand {
+        order: 1;
+    }
+
+    .eyebrow {
+        font-size: 1.1rem;
+        white-space: normal;
+        line-height: 1.4;
+        font-weight: 800;
+    }
+
+    .hero__text h1 {
+        font-size: 1.3rem;
+    }
+
+    .hero__text .lead,
+    .hero__text p:not(.eyebrow) {
+        font-size: 0.85rem;
+    }
+
+    .hero__logo {
+        width: 60px;
+        height: 60px;
+    }
+
+    .hero__brand-name {
+        font-size: 0.9rem;
+    }
+
+    .card {
+        padding: 20px 16px;
+    }
+
+    main.page {
+        padding: 0 10px;
+    }
+
+    .theme-switch {
+        top: 15px;
+        inset-inline-start: 15px;
+    }
+
+    .theme-switch button {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+    }
+
+    .site-footer .footer-content {
+        flex-direction: column;
+        gap: 12px;
+        padding: 16px;
+    }
+
+    .footer-address span {
+        font-size: 0.85rem;
+        white-space: normal;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .eyebrow {
+        font-size: 1rem;
+    }
+
+    .hero__text h1 {
+        font-size: 1.1rem;
+    }
+
+    .hero__text .lead,
+    .hero__text p:not(.eyebrow) {
+        font-size: 0.8rem;
+    }
+
+    .hero__logo {
+        width: 50px;
+        height: 50px;
+    }
 }

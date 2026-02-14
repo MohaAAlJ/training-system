@@ -20,7 +20,7 @@ class SystemUserSeeder extends Seeder
                 'user_name' => 'admin_sys',
                 'password' => $password,
                 'role' => User::ROLE_ADMIN,
-                'status' => true,
+                'active' => true,
             ]
         );
 
@@ -32,7 +32,7 @@ class SystemUserSeeder extends Seeder
                 'user_name' => 'moh_user',
                 'password' => $password,
                 'role' => User::ROLE_MOH,
-                'status' => true,
+                'active' => true,
             ]
         );
 
@@ -44,7 +44,7 @@ class SystemUserSeeder extends Seeder
                 'user_name' => 'gtm_user',
                 'password' => $password,
                 'role' => User::ROLE_GTM,
-                'status' => true,
+                'active' => true,
             ]
         );
     }

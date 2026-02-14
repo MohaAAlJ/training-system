@@ -17,19 +17,19 @@ return new class extends Migration
     {
         Schema::create('trainees', function (Blueprint $table) {
             $table->id();
-            $table->string('national_id')->unique();
+            $table->string('national_id')->nullable()->unique();
             $table->string('full_name');
-            $table->string('phone_number');
-            $table->date('dob');
-            $table->foreignIdFor(Governorate::class)->nullable()->constrained()->nullOnDelete();
+            $table->string('phone_number')->nullable();
+            $table->date('dob')->nullable();
+            $table->tinyInteger('gender')->nullable();
+            $table->foreignIdFor(Governorate::class)->nullable()->constrained()->onDelete('restrict');
             $table->string('street')->nullable();
-
             // الربط الأكاديمي
-            $table->foreignIdFor(Institution::class)->nullable()->constrained()->nullOnDelete();
-            $table->foreignIdFor(College::class)->nullable()->constrained()->nullOnDelete();
-            $table->foreignIdFor(Major::class)->nullable()->constrained()->nullOnDelete();
+            $table->foreignIdFor(Institution::class)->nullable()->constrained()->onDelete('restrict');
+            $table->foreignIdFor(College::class)->nullable()->constrained()->onDelete('restrict');
+            $table->foreignIdFor(Major::class)->nullable()->constrained()->onDelete('restrict');
+            $table->string('university_number')->nullable();
             $table->integer('training_hours')->nullable();
-
             $table->timestamps();
             $table->softDeletes();
         });

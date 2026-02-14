@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Applications\Status;
 
-use App\Enums\ApplicationStatus;
+// use App\Enums\ApplicationStatus;
 use App\Filament\Resources\Applications\ApplicationResource;
 use App\Filament\Resources\Applications\Schemas\ApplicationForm;
 use App\Filament\Resources\Applications\Schemas\ApplicationInfolist;
@@ -85,6 +85,6 @@ class StartedTrainingResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->where('status', ApplicationStatus::STARTED_TRAINING);
+            ->where('status', Application::STATUS_STARTED_TRAINING);
     }
 }

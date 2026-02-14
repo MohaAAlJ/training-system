@@ -17,50 +17,54 @@ class ExternalPartnerActiveTraineesWidget extends BaseWidget
     protected static ?int $sort = 2;
     protected int | string | array $columnSpan = 1;
 
-    protected static ?string $heading = 'المتدربين الحاليين حسب أماكن التدريب';
+    public static ?string $heading = 'المتدربين الحاليين حسب أماكن التدريب';
+
+    public function getHeading(): string | \Illuminate\Contracts\Support\Htmlable | null
+    {
+        return '';
+    }
 
     public static function canView(): bool
     {
-        $user = Auth::user();
-        if (!$user) return false;
-
-        return in_array($user->role, [
-            User::ROLE_MOH,
-            User::ROLE_COLLEGE,
-        ]);
+        return false;
     }
 
     public function table(Table $table): Table
     {
         return $table
+            ->heading(null)
             ->query(
                 Administrative::query()
+                    ->active()
                     ->withCount(['applications as active_Trainee_count' => function ($query) {
                         $user = Auth::user();
-                        $query->where('status', Application::STATUS_STARTED_TRAINING);
+                        $query->where('applications.status', Application::STATUS_STARTED_TRAINING);
 
                         if ($user->isCollegeSupervisor()) {
                             $collegeId = $user->college?->id;
-                            $query->where('training_type', Application::TRAINING_TYPE_UNIVERSITY)
+                            $query->where('applications.training_type', Application::UNIVERSITY)
                                 ->whereHas('trainee', function ($q) use ($collegeId) {
                                     $q->where('college_id', $collegeId);
                                 });
                         }
 
                         if ($user->isMinistry()) {
-                            $query->where('training_type', Application::TRAINING_TYPE_PRACTICE);
+                            $query->where('applications.training_type', Application::PRACTICE);
                         }
                     }])
                     ->having('active_Trainee_count', '>', 0)
             )
             ->columns([
-                Tables\Columns\TextColumn::make('title')
+                Tables\Columns\TextColumn::make('name')
                     ->label('مكان التدريب'),
                 Tables\Columns\TextColumn::make('active_Trainee_count')
                     ->label('عدد المتدربين الحاليين')
                     ->badge()
                     ->color('success')
                     ->alignCenter(),
-            ]);
+            ])
+            ->recordUrl(
+                fn (Administrative $record): string => \App\Filament\Resources\Administratives\AdministrativeResource::getUrl('view', ['record' => $record]),
+            );
     }
 }

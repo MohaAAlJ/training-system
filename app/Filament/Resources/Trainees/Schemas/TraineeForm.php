@@ -7,6 +7,8 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\DatePicker;
 use Filament\Schemas\Schema;
 use App\Rules\PalestinianId;
+use App\Models\Governorate;
+use Illuminate\Support\Facades\Auth;
 
 class TraineeForm
 {
@@ -41,9 +43,19 @@ class TraineeForm
                 DatePicker::make('dob')
                     ->label('تاريخ الميلاد')
                     ->required(),
+                Select::make('gender')
+                    ->label('الجنس')
+                    ->options(\App\Enums\Gender::class)
+                    ->required(),
                 TextInput::make('street')
-                    ->label('المنطقة / الشارع')
+                    ->label('المنطقة')
                     ->maxLength(255),
+                Select::make('governorate_id')
+                    ->label('المحافظة')
+                    ->options(Governorate::pluck('name', 'id'))
+                    ->searchable()
+                    ->preload()
+                    ->required(),
                 Select::make('institution_id')
                     ->label('المؤسسة التعليمية')
                     ->relationship('institution', 'name')
@@ -58,6 +70,11 @@ class TraineeForm
                     ->searchable()
                     ->preload()
                     ->required(),
+                TextInput::make('training_hours')
+                    ->label('ساعات التدريب المطلوبة')
+                    ->numeric()
+                    ->required()
+                    ->visible(fn() => Auth::user()->isCollegeSupervisor()),
             ]);
     }
 }

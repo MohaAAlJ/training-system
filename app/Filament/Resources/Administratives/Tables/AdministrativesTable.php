@@ -22,7 +22,7 @@ class AdministrativesTable
     {
         return $table
             ->columns([
-                TextColumn::make('title')
+                TextColumn::make('name')
                     ->label('اسم الإدارة')
                     ->searchable()
                     ->sortable(),
@@ -39,6 +39,12 @@ class AdministrativesTable
                     ->searchable()
                     ->sortable()
                     ->placeholder('-'),
+                TextColumn::make('active')
+                    ->label('الحالة')
+                    ->badge()
+                    ->color(fn($state): string => \App\Enums\GeneralConst::getStatusColor((int) $state))
+                    ->formatStateUsing(fn($state): string => \App\Enums\GeneralConst::getStatusLabel((int) $state))
+                    ->sortable(),
 
                 TextColumn::make('created_at')
                     ->label('تاريخ الإنشاء')
@@ -47,16 +53,16 @@ class AdministrativesTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                SelectFilter::make('user_id')
-                    ->label('رئيس الإدارة')
-                    ->relationship('user', 'name')
-                    ->searchable()
-                    ->preload(),
-                SelectFilter::make('medical_head_user_id')
-                    ->label('رئيس الإدارة الطبية')
-                    ->relationship('medicalHead', 'name')
-                    ->searchable()
-                    ->preload(),
+                // SelectFilter::make('user_id')
+                //     ->label('رئيس الإدارة')
+                //     ->relationship('user', 'name')
+                //     ->searchable()
+                //     ->preload(),
+                // SelectFilter::make('medical_head_user_id')
+                //     ->label('رئيس الإدارة الطبية')
+                //     ->relationship('medicalHead', 'name')
+                //     ->searchable()
+                //     ->preload(),
                 SelectFilter::make('is_medical')
                     ->label('نوع الإدارة')
                     ->options([
@@ -68,7 +74,34 @@ class AdministrativesTable
             ->recordActions([
                 ViewAction::make(),
                 EditAction::make(),
-                DeleteAction::make()->visible(fn($record) => !$record->trashed() && Auth::user()?->isAdmin()),
+                DeleteAction::make()
+                    ->visible(fn($record) => !$record->trashed() && Auth::user()?->isAdmin())
+                    ->before(function ($record, \Filament\Actions\DeleteAction $action) {
+                        if ($record->sections()->exists()) {
+                            \Filament\Notifications\Notification::make()
+                                ->title('لا يمكن الأرشفة')
+                                ->body('لا يمكن أرشفة هذا السجل لوجود أقسام مرتبطة به.')
+                                ->danger()
+                                ->send();
+                            $action->halt();
+                        }
+                    })
+                    ->action(function ($record) {
+                        try {
+                            $record->delete();
+                        } catch (\Illuminate\Database\QueryException $exception) {
+                            $errorCode = $exception->errorInfo[1] ?? 0;
+                            if ($errorCode == 1451) {
+                                \Filament\Notifications\Notification::make()
+                                    ->title('لا يمكن الحذف')
+                                    ->body('لا يمكن حذف هذا السجل نظرًا لوجود بيانات مرتبطة به.')
+                                    ->danger()
+                                    ->send();
+                                return;
+                            }
+                            throw $exception;
+                        }
+                    }),
                 RestoreAction::make()->visible(fn($record) => $record->trashed() && Auth::user()?->isAdmin()),
             ])
             ->toolbarActions([

@@ -23,14 +23,14 @@ class InstitutionsTable
                     ->label('الاسم')
                     ->searchable()
                     ->sortable(),
-                \Filament\Tables\Columns\ToggleColumn::make('is_active')
+                \Filament\Tables\Columns\ToggleColumn::make('active')
                     ->label('الحالة')
                     ->onIcon('heroicon-m-check-circle')
                     ->offIcon('heroicon-m-x-circle')
                     ->onColor('success')
                     ->offColor('danger')
                     ->sortable(),
-                \Filament\Tables\Columns\ToggleColumn::make('Can_add_Application')
+                \Filament\Tables\Columns\ToggleColumn::make('add_application')
                     ->label('إضافة طلبات')
                     ->onIcon('heroicon-m-check-circle')
                     ->offIcon('heroicon-m-x-circle')
@@ -54,7 +54,7 @@ class InstitutionsTable
             ])
             ->filters([
                 TrashedFilter::make(),
-                \Filament\Tables\Filters\TernaryFilter::make('is_active')
+                \Filament\Tables\Filters\TernaryFilter::make('active')
                     ->label('الحالة')
                     ->boolean()
                     ->trueLabel('نشط')
@@ -64,7 +64,34 @@ class InstitutionsTable
             ->recordActions([
                 ViewAction::make(),
                 EditAction::make(),
-                DeleteAction::make()->visible(fn($record) => !$record->trashed() && Auth::user()?->isAdmin()),
+                DeleteAction::make()
+                    ->visible(fn($record) => !$record->trashed() && Auth::user()?->isAdmin())
+                    ->before(function ($record, \Filament\Actions\DeleteAction $action) {
+                        if ($record->colleges()->exists()) {
+                            \Filament\Notifications\Notification::make()
+                                ->title('لا يمكن الأرشفة')
+                                ->body('لا يمكن أرشفة هذا السجل لوجود كليات مرتبطة به.')
+                                ->danger()
+                                ->send();
+                            $action->halt();
+                        }
+                    })
+                    ->action(function ($record) {
+                        try {
+                            $record->delete();
+                        } catch (\Illuminate\Database\QueryException $exception) {
+                            $errorCode = $exception->errorInfo[1] ?? 0;
+                            if ($errorCode == 1451) {
+                                \Filament\Notifications\Notification::make()
+                                    ->title('لا يمكن الحذف')
+                                    ->body('لا يمكن حذف هذا السجل نظرًا لوجود بيانات مرتبطة به.')
+                                    ->danger()
+                                    ->send();
+                                return;
+                            }
+                            throw $exception;
+                        }
+                    }),
                 RestoreAction::make()->visible(fn($record) => $record->trashed() && Auth::user()?->isAdmin()),
             ])
             ->toolbarActions([

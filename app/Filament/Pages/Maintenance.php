@@ -13,7 +13,7 @@ class Maintenance extends Page
 
     protected static bool $shouldRegisterNavigation = false;
 
-    protected static string $layout = 'filament-panels::components.layout.simple';
+    protected static string $layout = 'components.layouts.empty';
 
     public string $maintenanceMessage = '';
 

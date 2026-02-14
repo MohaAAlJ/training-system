@@ -24,24 +24,36 @@ class TraineesTable
                 TextColumn::make('national_id')
                     ->label('رقم الهوية')
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable(),
                 TextColumn::make('full_name')
                     ->label('الاسم الكامل')
                     ->sortable()
                     ->searchable(),
+                TextColumn::make('gender')
+                    ->label('الجنس')
+                    ->badge()
+                    ->sortable(),
                 TextColumn::make('phone_number')
                     ->label('رقم الهاتف')
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable(),
                 TextColumn::make('dob')
                     ->label('تاريخ الميلاد')
                     ->date('Y-m-d')
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(),
+                TextColumn::make('governorate.name')
+                    ->label('المحافظة')
+                    ->sortable()
+                    ->toggleable(),
                 TextColumn::make('street')
-                    ->label('المنطقة / الشارع')
+                    ->label('الشارع')
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('institution.name')
                     ->label('المؤسسة التعليمية')
                     ->sortable()
+                    ->toggleable()
                     ->visible(fn() => Auth::check() && (
                         Auth::user()->isAdmin() ||
                         Auth::user()->isDepartment() ||
@@ -51,6 +63,7 @@ class TraineesTable
                 TextColumn::make('major.name')
                     ->label('التخصص')
                     ->sortable()
+                    ->toggleable()
                     ->visible(fn() => Auth::check() && (
                         Auth::user()->isAdmin() ||
                         Auth::user()->isDepartment() ||
@@ -60,7 +73,8 @@ class TraineesTable
                 TextColumn::make('applications_count')
                     ->label('عدد الطلبات')
                     ->badge()
-                    ->color('primary'),
+                    ->color('primary')
+                    ->toggleable(),
                 TextColumn::make('created_at')
                     ->label('تاريخ الإنشاء')
                     ->dateTime('Y-m-d H:i')
@@ -73,6 +87,11 @@ class TraineesTable
                     ->relationship('institution', 'name')
                     ->searchable()
                     ->preload(),
+                SelectFilter::make('governorate_id')
+                    ->label('المحافظة')
+                    ->relationship('governorate', 'name')
+                    ->searchable()
+                    ->preload(),
                 SelectFilter::make('major_id')
                     ->label('التخصص')
                     ->relationship('major', 'name')
@@ -83,7 +102,34 @@ class TraineesTable
             ->recordActions([
                 ViewAction::make(),
                 EditAction::make(),
-                DeleteAction::make()->visible(fn($record) => !$record->trashed() && (Auth::user()?->isAdmin() || Auth::user()?->isGeneralTrainingManager())),
+                DeleteAction::make()
+                    ->visible(fn($record) => !$record->trashed() && (Auth::user()?->isAdmin() || Auth::user()?->isGeneralTrainingManager()))
+                    ->before(function ($record, \Filament\Actions\DeleteAction $action) {
+                        if ($record->applications()->exists()) {
+                            \Filament\Notifications\Notification::make()
+                                ->title('لا يمكن الأرشفة')
+                                ->body('لا يمكن أرشفة هذا السجل لوجود طلبات تدريب مرتبطة به.')
+                                ->danger()
+                                ->send();
+                            $action->halt();
+                        }
+                    })
+                    ->action(function ($record) {
+                        try {
+                            $record->delete();
+                        } catch (\Illuminate\Database\QueryException $exception) {
+                            $errorCode = $exception->errorInfo[1] ?? 0;
+                            if ($errorCode == 1451) {
+                                \Filament\Notifications\Notification::make()
+                                    ->title('لا يمكن الحذف')
+                                    ->body('لا يمكن حذف هذا السجل نظرًا لوجود بيانات مرتبطة به.')
+                                    ->danger()
+                                    ->send();
+                                return;
+                            }
+                            throw $exception;
+                        }
+                    }),
                 RestoreAction::make()->visible(fn($record) => $record->trashed() && (Auth::user()?->isAdmin() || Auth::user()?->isGeneralTrainingManager())),
             ])
             ->toolbarActions([

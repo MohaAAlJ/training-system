@@ -54,24 +54,52 @@ class CollegeResource extends Resource
                             ->maxLength(255)
                             ->columnSpanFull(),
                         \Filament\Forms\Components\Select::make('institution_id')
-                            ->label('الجامعة / المؤسسة')
+                            ->label('المؤسسة التعليمية')
                             ->relationship('institution', 'name')
                             ->searchable()
                             ->preload()
                             ->required(),
                         \Filament\Forms\Components\Select::make('user_id')
                             ->label('مشرف الكلية')
-                            ->options(fn($record) => \App\Models\User::getHeadOptions(\App\Models\User::ROLE_COLLEGE, $record?->user_id))
-                            ->disableOptionWhen(fn($value, $record) => !\App\Models\User::where('id', $value)->free($record?->user_id)->exists())
+                            ->relationship('user', 'name', fn($query) => $query->where('role', \App\Models\User::ROLE_COLLEGE))
+                            ->createOptionForm([
+                                \Filament\Forms\Components\TextInput::make('name')
+                                    ->label('الاسم')
+                                    ->required(),
+                                \Filament\Forms\Components\TextInput::make('user_name')
+                                    ->label('اسم المستخدم')
+                                    ->required()
+                                    ->unique('users', 'user_name'),
+                                \Filament\Forms\Components\TextInput::make('email')
+                                    ->label('البريد الإلكتروني')
+                                    ->required()
+                                    ->email()
+                                    ->unique('users', 'email'),
+                                \Filament\Forms\Components\TextInput::make('password')
+                                    ->label('كلمة المرور')
+                                    ->password()
+                                    ->required(),
+                                \Filament\Forms\Components\Hidden::make('role')
+                                    ->default(\App\Models\User::ROLE_COLLEGE),
+                            ])
                             ->searchable()
                             ->preload()
                             ->helperText('المستخدم الذي سيقوم بإدارة شؤون هذه الكلية في النظام')
-                            ->columnSpanFull(),
-                        \Filament\Forms\Components\Toggle::make('is_active')
+                            ->columnSpanFull()
+                            ->nullable(),
+                        \Filament\Forms\Components\Toggle::make('active')
                             ->label('نشط')
+                            ->onIcon('heroicon-m-check-circle')
+                            ->offIcon('heroicon-m-x-circle')
+                            ->onColor('success')
+                            ->offColor('danger')
                             ->default(true),
-                        \Filament\Forms\Components\Toggle::make('Can_add_Application')
+                        \Filament\Forms\Components\Toggle::make('add_application')
                             ->label('السماح بإضافة طلبات')
+                            ->onIcon('heroicon-m-check-circle')
+                            ->offIcon('heroicon-m-x-circle')
+                            ->onColor('success')
+                            ->offColor('danger')
                             ->default(true),
                     ]),
             ]);
@@ -90,6 +118,11 @@ class CollegeResource extends Resource
                         \Filament\Infolists\Components\TextEntry::make('user.name')
                             ->label('مشرف الكلية')
                             ->placeholder('لم يتم التعيين'),
+                        \Filament\Infolists\Components\TextEntry::make('active')
+                            ->label('الحالة')
+                            ->badge()
+                            ->color(fn(int $state): string => \App\Enums\GeneralConst::getStatusColor($state))
+                            ->formatStateUsing(fn(int $state): string => \App\Enums\GeneralConst::getStatusLabel($state)),
                     ])->columns(3),
             ]);
     }

@@ -3,6 +3,7 @@
 namespace App\Filament\Widgets;
 
 use App\Models\User;
+// use App\Enums\TrainingType;
 
 use App\Helpers\Constants;
 use App\Models\Application;
@@ -23,13 +24,15 @@ class GTMRecentApplications extends BaseWidget
     protected static ?int $sort = 4;
     protected int | string | array $columnSpan = 'full';
 
-    protected static ?string $heading = 'تحتاج إجراءات';
+    public static ?string $heading = 'تحتاج إجراءات';
 
-    public function getHeading(): string | Heading
+    public function getHeading(): string | \Illuminate\Contracts\Support\Htmlable | null
     {
-        $count = $this->table(app(\Filament\Tables\Table::class))->getQuery()->count();
-        return 'تحتاج إجراءات (' . $count . ')';
+        return '';
     }
+
+
+
 
     public static function canView(): bool
     {
@@ -48,6 +51,7 @@ class GTMRecentApplications extends BaseWidget
     public function table(Table $table): Table
     {
         return $table
+            ->heading(null)
             ->query(
                 Application::query()
                     ->whereIn('status', [
@@ -75,7 +79,7 @@ class GTMRecentApplications extends BaseWidget
                     $collegeId = $user->College?->id;
                     // College Supervisors MUST see Initial Approve (2) to confirm
                     return $query->where('status', Application::STATUS_INITIAL_APPROVE)
-                        ->where('training_type', Application::TRAINING_TYPE_UNIVERSITY)
+                        ->where('training_type', Application::UNIVERSITY)
                         ->whereHas('trainee', function ($q) use ($collegeId) {
                             $q->where('college_id', $collegeId);
                         });
@@ -84,7 +88,7 @@ class GTMRecentApplications extends BaseWidget
                 if ($user->isMinistry()) {
                     // MOH MUST see Initial Approve (2) to confirm
                     return $query->where('status', Application::STATUS_INITIAL_APPROVE)
-                        ->where('training_type', Application::TRAINING_TYPE_PRACTICE);
+                        ->where('training_type', Application::PRACTICE);
                 }
 
                 return $query;
@@ -96,60 +100,56 @@ class GTMRecentApplications extends BaseWidget
                     ->sortable(),
                 Tables\Columns\TextColumn::make('trainee.national_id')
                     ->label('رقم الهوية')
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('trainee.institution.name')
                     ->label('المؤسسة')
                     ->toggleable(isToggledHiddenByDefault: false)
-                    ->formatStateUsing(fn($state, $record) => $record->training_type->value === Application::TRAINING_TYPE_PRACTICE ? '' : $state)
+                    ->formatStateUsing(fn($state, $record) => $record->training_type === Application::PRACTICE ? '' : $state)
                     ->visible(fn() => Auth::check() && (
                         Auth::user()->isAdmin() ||
                         Auth::user()->isGeneralTrainingManager()
-                    )),
+                    ))
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('trainee.major.name')
                     ->label('التخصص')
                     ->toggleable(isToggledHiddenByDefault: false)
-                    ->formatStateUsing(fn($state, $record) => $record->training_type->value === Application::TRAINING_TYPE_PRACTICE ? '' : $state)
+                    ->formatStateUsing(fn($state, $record) => $record->training_type === Application::PRACTICE ? '' : $state)
                     ->visible(fn() => Auth::check() && (
                         Auth::user()->isAdmin() ||
                         Auth::user()->isGeneralTrainingManager() ||
                         Auth::user()->isCollegeSupervisor()
-                    )),
-                Tables\Columns\TextColumn::make('training_type_label')
+                    ))
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('training_type')
                     ->label('نوع التدريب')
                     ->badge()
-                    ->color(fn($state) => match ($state) {
-                        'تدريب جامعي' => 'info',
-                        'مزاولة مهنة' => 'success',
-                        default => 'gray',
-                    })
+                    ->formatStateUsing(fn($state) => Application::getTrainingTypeLabel((int)$state))
+                    ->color(fn($state) => Application::getTrainingTypeColor((int)$state))
                     ->toggleable()
-                    ->visible(fn() => !Auth::user()->isMinistry()),
-                Tables\Columns\TextColumn::make('administrative.title')
+                    ->visible(fn() => !Auth::user()->isMinistry())
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('section.administrative.name')
                     ->label('الإدارة')
-                    ->toggleable(),
-                Tables\Columns\TextColumn::make('department.title')
+                    ->toggleable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('section.department.name')
                     ->label('الدائرة')
-                    ->toggleable(),
-                Tables\Columns\TextColumn::make('section.name_location')
+                    ->toggleable()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('section.name')
                     ->label('القسم')
+                    ->description(fn($record) => $record->section?->administrative?->name ?? '-')
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('status')
                     ->label('الحالة')
                     ->sortable()
                     ->badge()
-                    ->color(fn($state): string => match ($state instanceof \App\Enums\ApplicationStatus ? $state->value : (int)$state) {
-                        1 => 'info',
-                        2 => 'primary',
-                        3 => 'primary',
-                        4 => 'warning',
-                        5 => 'success',
-                        6 => 'gray',
-                        7 => 'danger',
-                        8 => 'danger',
-                        default => 'gray',
-                    })
+                    ->color(fn($state): string => Application::getStatusColor((int)$state))
                     ->formatStateUsing(fn($state): string => (function ($state) {
-                        $actualState = $state instanceof \App\Enums\ApplicationStatus ? $state->value : $state;
+                        $actualState = $state;
                         $key = 'translation.status.' . $actualState;
                         $translated = \Illuminate\Support\Facades\Lang::get($key, [], 'ar');
                         return $translated === $key ? $actualState : $translated;
@@ -160,14 +160,18 @@ class GTMRecentApplications extends BaseWidget
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->recordUrl(
+                fn (Application $record): string => \App\Filament\Resources\Applications\ApplicationResource::getUrl('view', ['record' => $record]),
+            )
             ->actions([
-                ViewAction::make(),
+                ViewAction::make()
+                    ->form(fn($form) => \App\Filament\Resources\Applications\Schemas\ApplicationForm::configure($form)),
 
                 Action::make('initial_approve')
                     ->label('موافقة مبدئية')
                     ->color('success')
                     ->icon('heroicon-o-check-circle')
-                    ->visible(fn($record) => Auth::user()->isGeneralTrainingManager() && $record->status->value == Application::STATUS_NEW)
+                    ->visible(fn($record) => Auth::user()->isGeneralTrainingManager() && $record->status == Application::STATUS_NEW)
                     ->requiresConfirmation()
                     ->successNotificationTitle('تمت الموافقة المبدئية بنجاح')
                     ->action(fn($record) => $record->update(['status' => Application::STATUS_INITIAL_APPROVE])),
@@ -178,7 +182,7 @@ class GTMRecentApplications extends BaseWidget
                     ->icon('heroicon-o-check-badge')
                     ->visible(
                         fn($record) =>
-                        $record->status->value === Application::STATUS_INITIAL_APPROVE &&
+                        $record->status === Application::STATUS_INITIAL_APPROVE &&
                             (Auth::user()->isAdmin() || Auth::user()->isCollegeSupervisor() || Auth::user()->isMinistry())
                     )
                     ->requiresConfirmation()
@@ -192,7 +196,7 @@ class GTMRecentApplications extends BaseWidget
                     ->label('معالجة التأكيد')
                     ->color('success')
                     ->icon('heroicon-o-play')
-                    ->visible(fn($record) => Auth::user()->isGeneralTrainingManager() && $record->status->value == Application::STATUS_CONFIRMATION)
+                    ->visible(fn($record) => Auth::user()->isGeneralTrainingManager() && $record->status == Application::STATUS_CONFIRMATION)
                     ->form([
                         \Filament\Forms\Components\Select::make('new_status')
                             ->label('الحالة الجديدة')
@@ -264,7 +268,7 @@ class GTMRecentApplications extends BaseWidget
                     ->label('بدء التدريب')
                     ->color('success')
                     ->icon('heroicon-o-play-circle')
-                    ->visible(fn($record) => Auth::user()->isGeneralTrainingManager() && $record->status->value == Application::STATUS_WAITING_LIST)
+                    ->visible(fn($record) => Auth::user()->isGeneralTrainingManager() && $record->status == Application::STATUS_WAITING_LIST)
                     ->form([
                         DatePicker::make('start_date')
                             ->label('تاريخ البدء')

@@ -71,7 +71,7 @@ class CollegeSupervisorSeeder extends Seeder
                         'user_name' => \Illuminate\Support\Str::slug($target['user_name'], '_'),
                         'password' => $password,
                         'role' => User::ROLE_COLLEGE,
-                        'status' => true,
+                        'active' => true,
                     ]
                 );
 

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\GeneralConst;
 use App\Models\Application;
 
 use Illuminate\Database\Eloquent\Model;
@@ -16,16 +17,14 @@ class Section extends Model
     protected $table = 'sections';
     protected $fillable = [
         'id',
-        'name_location',
-        'status',
+        'name',
         'capacity',
         'department_id',
+        'active',
         'user_id',
         'administrative_id',
-        'governorate_id',
     ];
     protected $casts = [
-        'status' => 'boolean',
     ];
 
     protected static function booted(): void
@@ -45,13 +44,14 @@ class Section extends Model
         });
     }
 
-    /**
-     * Scope a query to only include active Section.
-     */
-    public function scopeActive(Builder $query): void
+
+    /**Scope */
+    public function scopeActive($query)
     {
-        $query->where('status', true);
+        return $query->where('active', GeneralConst::ACTIVE);
     }
+
+    /** Relations */
 
     public function user()
     {
@@ -60,24 +60,17 @@ class Section extends Model
 
     public function department()
     {
-        return $this->belongsTo(Department::class, 'department_id');
+        return $this->belongsTo(Department::class);
     }
 
     public function administrative()
     {
-        return $this->belongsTo(Administrative::class, 'administrative_id');
+        return $this->belongsTo(Administrative::class);
     }
-
-    public function governorate()
-    {
-        return $this->belongsTo(Governorate::class, 'governorate_id');
-    }
-
     public function applications()
     {
-        return $this->hasMany(Application::class, 'section_id');
+        return $this->hasMany(Application::class);
     }
-
     /**
      * Get capacity statistics for this section.
      * Returns: total, used, available, is_full

@@ -10,8 +10,8 @@
         <!-- Full Name -->
         <label class="field">
             <span>الاسم الكامل *</span>
-            <input 
-                type="text" 
+            <input
+                type="text"
                 wire:model="fullName"
                 wire:blur="validateField('fullName')"
                 placeholder="الاسم الكامل"
@@ -20,6 +20,7 @@
                 @readonly($fullNameReadonly)
                 :disabled="$wire.fullNameReadonly"
                 @input="$el.value = $el.value.replace(/[^a-zA-Zء-ي\s]/g, '')"
+                tabindex="4"
             >
             @error('fullName')
                 <small class="error-message">{{ $message }}</small>
@@ -27,19 +28,36 @@
                 <small class="note">الاسم الكامل</small>
             @enderror
         </label>
+        </label>
 
+        <!-- Gender -->
+        <label class="field">
+            <span>الجنس *</span>
+            <select wire:model.live="gender" class="form__input" required tabindex="5">
+                <option value="">-- اختر --</option>
+                @foreach (\App\Enums\Gender::cases() as $gender)
+                    <option value="{{ $gender->value }}">{{ $gender->getLabel() }}</option>
+                @endforeach
+            </select>
+            @error('gender')
+                <small class="error-message">{{ $message }}</small>
+            @else
+                <small class="note">الجنس</small>
+            @enderror
+        </label>
 
 
         <!-- Phone Number -->
         <label class="field">
             <span>رقم الجوال *</span>
-            <input 
-                type="tel" 
+            <input
+                type="tel"
                 wire:model="phoneNumber"
                 wire:blur="validateField('phoneNumber')"
                 placeholder="9705XXXXXXXX"
                 class="form__input @error('phoneNumber') form__input--error @enderror"
                 required
+                tabindex="6"
             >
             @error('phoneNumber')
                 <small class="error-message">{{ $message }}</small>
@@ -51,7 +69,7 @@
         <!-- Governorate -->
         <label class="field">
             <span>المحافظة *</span>
-            <select wire:model.live="governorateId" class="form__input" required>
+            <select wire:model.live="governorateId" class="form__input" required tabindex="7">
                 <option value="">-- اختر --</option>
                 @foreach ($governorates as $gov)
                     <option value="{{ $gov['id'] }}">{{ $gov['name'] }}</option>
@@ -62,15 +80,15 @@
 
         <!-- Street Address -->
         <label class="field">
-            <span>عنوان/شارع *</span>
-            <input 
-                type="text" 
+            <span>عنوان</span>
+            <input
+                type="text"
                 wire:model.live="street"
                 placeholder="عنوان السكن"
                 class="form__input"
-                required
+                tabindex="8"
             >
-            <small class="note">عنوان/شارع</small>
+            <small class="note">عنوان</small>
         </label>
     </div>
 </fieldset>

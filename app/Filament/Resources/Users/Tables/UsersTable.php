@@ -26,11 +26,12 @@ class UsersTable
     {
         return $table
             ->columns([
-                TextColumn::make('id')->label('ID')->sortable(),
-                TextColumn::make('user_name')->label('اسم المستخدم')->searchable()->sortable(),
-                TextColumn::make('name')->label('الاسم')->searchable()->sortable(),
-                TextColumn::make('email')->label('البريد الإلكتروني')->searchable()->sortable(),
-                \Filament\Tables\Columns\ToggleColumn::make('status')
+                TextColumn::make('id')->label('ID')->sortable()->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('user_name')->label('اسم المستخدم')->searchable()->sortable()->toggleable(),
+                TextColumn::make('name')->label('الاسم')->searchable()->sortable()->toggleable(),
+                TextColumn::make('email')->label('البريد الإلكتروني')->searchable()->sortable()->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('phone_number')->label('رقم الهاتف')->searchable()->sortable()->toggleable(isToggledHiddenByDefault: true),
+                \Filament\Tables\Columns\ToggleColumn::make('active')
                     ->label('الحالة')
                     ->onIcon('heroicon-m-check-circle')
                     ->offIcon('heroicon-m-x-circle')
@@ -38,9 +39,9 @@ class UsersTable
                     ->offColor('danger')
                     ->sortable(),
                 TextColumn::make('created_at')->label('تاريخ الإنشاء')
-                ->dateTime('Y-m-d H:i')
-                ->sortable()
-                ->toggleable( isToggledHiddenByDefault: true),
+                    ->dateTime('Y-m-d H:i')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 SelectFilter::make('role')
@@ -51,9 +52,27 @@ class UsersTable
             ->recordActions([
                 ViewAction::make(),
                 EditAction::make(),
-                Impersonate::make()->visible(fn($record) => Auth::user()?->canImpersonate() && $record->canBeImpersonated())
+                Impersonate::make()
+                    ->visible(fn($record) => Auth::user()?->isAdmin() && !$record->isAdmin())
                     ->redirectTo('/home'),
-                DeleteAction::make()->visible(fn($record) => !$record->trashed() && Auth::user()?->isAdmin()),
+                DeleteAction::make()
+                    ->visible(fn($record) => !$record->trashed() && Auth::user()?->isAdmin())
+                    ->action(function ($record) {
+                        try {
+                            $record->delete();
+                        } catch (\Illuminate\Database\QueryException $exception) {
+                            $errorCode = $exception->errorInfo[1] ?? 0;
+                            if ($errorCode == 1451) {
+                                \Filament\Notifications\Notification::make()
+                                    ->title('لا يمكن الحذف')
+                                    ->body('لا يمكن حذف هذا السجل نظرًا لوجود بيانات مرتبطة به.')
+                                    ->danger()
+                                    ->send();
+                                return;
+                            }
+                            throw $exception;
+                        }
+                    }),
                 RestoreAction::make()->visible(fn($record) => $record->trashed() && Auth::user()?->isAdmin()),
             ])
             ->toolbarActions([

@@ -18,40 +18,43 @@ class Trainee extends Model
         'full_name',
         'phone_number',
         'dob',
+        'gender',
         'governorate_id',
         'street',
         'institution_id',
         'major_id',
+        'university_number',
         'training_hours',
     ];
     protected $casts = [
         'dob' => 'date',
+        'gender' => \App\Enums\Gender::class,
     ];
 
     protected $dates = ['dob'];
 
     public function governorate()
     {
-        return $this->belongsTo(Governorate::class, 'governorate_id');
+        return $this->belongsTo(Governorate::class);
     }
 
     public function institution()
     {
-        return $this->belongsTo(Institution::class, 'institution_id');
+        return $this->belongsTo(Institution::class);
     }
 
     public function major()
     {
-        return $this->belongsTo(Major::class, 'major_id');
+        return $this->belongsTo(Major::class);
     }
 
     public function college()
     {
-        return $this->belongsTo(College::class, 'college_id');
+        return $this->belongsTo(College::class);
     }
 
     public function applications()
     {
-        return $this->hasMany(Application::class, 'trainee_id');
+        return $this->hasMany(Application::class);
     }
 }

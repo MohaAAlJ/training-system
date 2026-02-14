@@ -15,13 +15,12 @@ class AdminLatestUsers extends BaseWidget
     protected static ?int $sort = 3;
     protected int | string | array $columnSpan = 'full';
 
-    protected static ?string $heading = 'سجل أحدث المستخدمين المسجلين';
-    protected static bool $collapsible = false;
+    public static ?string $heading = 'سجل أحدث المستخدمين المسجلين';
 
-    public function getHeading(): string
+
+    public function getHeading(): string | \Illuminate\Contracts\Support\Htmlable | null
     {
-        $totalCount = User::count();
-        return 'سجل أحدث المستخدمين المسجلين (' . $totalCount . ')';
+        return '';
     }
 
     public static function canView(): bool
@@ -32,8 +31,10 @@ class AdminLatestUsers extends BaseWidget
     public function table(Table $table): Table
     {
         return $table
+            ->heading(null)
             ->query(
                 User::query()
+                    ->active()
                     ->latest('created_at')
                     ->limit(5)
             )
@@ -51,6 +52,9 @@ class AdminLatestUsers extends BaseWidget
                     ->dateTime()
                     ->date('d/m/Y'),
 
-            ]);
+            ])
+            ->recordUrl(
+                fn (User $record): string => \App\Filament\Resources\Users\UserResource::getUrl('view', ['record' => $record]),
+            );
     }
 }

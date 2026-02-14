@@ -10,6 +10,7 @@ use App\Models\Institution;
 use App\Models\Major;
 use App\Models\Trainee;
 use App\Models\Governorate;
+// use App\Enums\TrainingType;
 // use App\Helpers\Constants;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -70,7 +71,7 @@ class ApplicationFormController extends Controller
 
     public function institution()
     {
-        $data = Institution::where('is_active', true)->select('id', 'name')->get()
+        $data = Institution::active()->select('id', 'name')->get()
             ->map(fn($inst) => [
                 'id' => $inst->id,
                 'name' => $inst->name,
@@ -89,12 +90,12 @@ class ApplicationFormController extends Controller
         if ($institutionId) {
             $majors = Major::whereHas('colleges', function ($q) use ($institutionId) {
                 $q->where('colleges.institution_id', $institutionId)
-                    ->where('colleges.is_active', true);
+                    ->where('colleges.active', true);
             })->select('majors.id', 'majors.name')->get();
         } else {
             // Only show majors that have at least one active college
             $majors = Major::whereHas('colleges', function ($q) {
-                $q->where('colleges.is_active', true);
+                $q->where('colleges.active', true);
             })->select('majors.id', 'majors.name')->get();
         }
 
@@ -123,7 +124,7 @@ class ApplicationFormController extends Controller
         }
 
         $colleges = $major->colleges()
-            ->where('colleges.is_active', true)
+            ->where('colleges.active', true)
             ->select('colleges.id', 'colleges.name', 'colleges.institution_id')
             ->get()
             ->map(fn($c) => [
@@ -139,16 +140,22 @@ class ApplicationFormController extends Controller
     {
         $trainingType = $request->query('training_type');
 
-        $query = Administrative::query();
+        // Only show active administratives
+        $query = Administrative::query()->active();
 
-        if ($trainingType == Application::TRAINING_TYPE_PRACTICE) {
+        if ($trainingType == Application::PRACTICE) {
             $query->where('is_medical', true);
         }
+
+        // Only show administratives that have at least one active section
+        $query->whereHas('sections', function ($q) {
+            $q->active();
+        });
 
         $data = $query->get()
             ->map(fn($adm) => [
                 'id' => $adm->id,
-                'name' => $adm->name_with_governorate,
+                'name' => $adm->name, // Use 'name' column from administratives table
             ])
             ->values();
 
@@ -162,22 +169,23 @@ class ApplicationFormController extends Controller
 
         $query = Department::query()->active();
 
-        if ($trainingType == Application::TRAINING_TYPE_PRACTICE) {
+        if ($trainingType == Application::PRACTICE) {
             $query->where('is_medical', true);
         }
 
         if ($administrativeId) {
-            // Filter departments that have sections in this administrative unit
+            // Filter departments that have ACTIVE sections in this administrative unit
             $query->whereHas('sections', function ($q) use ($administrativeId) {
-                $q->where('administrative_id', $administrativeId);
+                $q->where('administrative_id', $administrativeId)
+                    ->active();
             });
         }
 
-        $data = $query->select('id', 'title')->get()
+        $data = $query->select('id', 'name')->get()
             ->map(function ($dept) {
                 return [
                     'id' => $dept->id,
-                    'name' => $dept->title,
+                    'name' => $dept->name,
                 ];
             })
             ->values();
@@ -193,9 +201,7 @@ class ApplicationFormController extends Controller
 
         $query = Section::query();
 
-        if ($trainingType == Application::TRAINING_TYPE_PRACTICE) {
-            // Ensure we only get sections that belong to medical departments
-            // This is redundant if department_id is filtered, but good for safety
+        if ($trainingType == Application::PRACTICE) {
             $query->whereHas('department', function ($q) {
                 $q->where('is_medical', true);
             });
@@ -209,25 +215,30 @@ class ApplicationFormController extends Controller
             $query->where('administrative_id', $administrativeId);
         }
 
-        $showFull = $this->settings->hide_full_sections;
-        if (!$showFull) {
-            $sections = $query->active()->get()->reject(function ($sec) {
-                return $sec->getCapacityStats()['is_full'] ?? false;
-            });
-        } else {
-            $sections = $query->active()->get();
-        }
+        // Always get active sections
+        $sections = $query->active()->get();
 
-        $data = $sections->map(function ($sec) {
+        // Check if we should hide full sections
+        $hideFull = $this->settings->hide_full_sections;
+
+        $data = $sections->map(function ($sec) use ($hideFull) {
             $stats = $sec->getCapacityStats();
             $isFull = $stats['is_full'] ?? false;
 
+            // If setting is to hide full sections AND it is full, return null (to be filtered out)
+            if ($hideFull && $isFull) {
+                return null;
+            }
+
             return [
                 'id' => $sec->id,
-                'name' => $sec->name_location . ($isFull ? ' (ممتلئ)' : ''),
+                'name' => $sec->name . ($isFull ? ' (ممتلئ)' : ''),
                 'is_full' => $isFull,
+                'disabled' => $isFull, // Frontend can use this to disable the option
             ];
-        })->values();
+        })
+            ->filter() // Remove nulls (hidden sections)
+            ->values();
 
         return response()->json($data);
     }
@@ -237,11 +248,11 @@ class ApplicationFormController extends Controller
         $data = [];
 
         if ($this->settings->enable_training_type_university) {
-            $data[] = ['id' => Application::TRAINING_TYPE_UNIVERSITY, 'name' => Application::TRAINING_TYPES[Application::TRAINING_TYPE_UNIVERSITY]];
+            $data[] = ['id' => Application::UNIVERSITY, 'name' => Application::getTrainingTypeLabel(Application::UNIVERSITY)];
         }
 
         if ($this->settings->enable_training_type_practice) {
-            $data[] = ['id' => Application::TRAINING_TYPE_PRACTICE, 'name' => Application::TRAINING_TYPES[Application::TRAINING_TYPE_PRACTICE]];
+            $data[] = ['id' => Application::PRACTICE, 'name' => Application::getTrainingTypeLabel(Application::PRACTICE)];
         }
 
         return response()->json($data);
@@ -312,7 +323,7 @@ class ApplicationFormController extends Controller
         }
 
         // Check settings
-        $canReapply = ($trainingType == Application::TRAINING_TYPE_UNIVERSITY)
+        $canReapply = ($trainingType == Application::UNIVERSITY)
             ? $this->settings->can_university_reapply
             : $this->settings->can_practice_reapply;
 
@@ -349,7 +360,7 @@ class ApplicationFormController extends Controller
      */
     private function getApplicationStatusMessage(Application $application): string
     {
-        return Application::getStatusMessage($application->status);
+        return Application::getStatusMessage($application->status, $application->training_type);
     }
 
     /**
@@ -366,8 +377,8 @@ class ApplicationFormController extends Controller
     private function isValidTrainingType(int $trainingType): bool
     {
         return in_array($trainingType, [
-            Application::TRAINING_TYPE_UNIVERSITY,
-            Application::TRAINING_TYPE_PRACTICE
+            Application::UNIVERSITY,
+            Application::PRACTICE
         ]);
     }
 
@@ -408,14 +419,14 @@ class ApplicationFormController extends Controller
             'phone_number' => ['required', 'regex:/^97[02]5[69]\d{7}$/'],
             'governorate_id' => ['required', 'integer', 'exists:governorates,id'],
             'street' => ['required', 'string', 'max:255', 'regex:/^[\p{Arabic}A-Za-z0-9\s\-\.,#\/]+$/u'],
-            'institution_id' => ['required_if:training_type,' . Application::TRAINING_TYPE_UNIVERSITY, 'nullable', 'integer', 'exists:institutions,id'],
+            'institution_id' => ['required_if:training_type,' . Application::UNIVERSITY, 'nullable', 'integer', 'exists:institutions,id'],
             'college_id' => ['nullable', 'integer', 'exists:colleges,id'],
-            'major_id' => ['required_if:training_type,' . Application::TRAINING_TYPE_UNIVERSITY, 'nullable', 'integer', 'exists:majors,id'],
+            'major_id' => ['required_if:training_type,' . Application::UNIVERSITY, 'nullable', 'integer', 'exists:majors,id'],
             'training_hours' => ['required', 'integer', 'min:1', 'max:1000'],
             'administrative_id' => ['required', 'integer', 'exists:administratives,id'],
             'department_id' => ['required', 'integer', 'exists:departments,id'],
             'section_id' => ['required', 'integer', 'exists:sections,id'],
-            'training_type' => ['required', 'integer', 'in:' . implode(',', array_keys(Application::TRAINING_TYPES))],
+            'training_type' => ['required', 'integer', 'in:' . implode(',', [Application::UNIVERSITY, Application::PRACTICE])],
             'letter_file' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
             'terms_approval' => ['required', 'accepted'],
         ]);
@@ -471,8 +482,6 @@ class ApplicationFormController extends Controller
                 // Step 2: Create application record linked to the trainee (without letter path first)
                 $application = Application::create([
                     'trainee_id' => $trainee->id,
-                    'department_id' => $validated['department_id'],
-                    'administrative_id' => $administrativeId,
                     'section_id' => $validated['section_id'],
                     'street' => $validated['street'],
                     'training_type' => $validated['training_type'],

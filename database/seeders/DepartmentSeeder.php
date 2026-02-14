@@ -36,7 +36,7 @@ class DepartmentSeeder extends Seeder
 
         // Assign heads to existing departments
         foreach ($departmentHeads as $deptTitle => $headData) {
-            $dept = Department::where('title', $deptTitle)->first();
+            $dept = Department::where('name', $deptTitle)->first();
             if ($dept && $headData['hod_email']) {
                 $hod = User::firstOrCreate(
                     ['email' => $headData['hod_email']],
@@ -45,7 +45,7 @@ class DepartmentSeeder extends Seeder
                         'user_name' => \Illuminate\Support\Str::slug($headData['hod_email'], '_'),
                         'password' => $password,
                         'role' => UserConstants::ROLE_DEPARTMENT,
-                        'status' => true,
+                        'active' => true,
                     ]
                 );
                 $dept->update(['user_id' => $hod->id]);

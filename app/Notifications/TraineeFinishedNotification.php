@@ -26,7 +26,7 @@ class TraineeFinishedNotification extends Notification
     public function toDatabase($notifiable): array
     {
         $traineeName = optional($this->application->trainee)->full_name ?? 'غير معروف';
-        $sectionName = optional($this->application->section)->name_location ?? 'غير محدد';
+        $sectionName = optional($this->application->section)->name ?? 'غير محدد';
 
         return FilamentNotification::make()
             ->title('انتهاء تدريب متدرب')

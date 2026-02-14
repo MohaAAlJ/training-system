@@ -7,11 +7,11 @@ use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Actions\ForceDeleteAction;
-use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreAction;
 use Filament\Actions\RestoreBulkAction;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
@@ -20,7 +20,6 @@ use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
@@ -28,58 +27,93 @@ use Filament\Tables\Filters\TrashedFilter;
 class SectionsRelationManager extends RelationManager
 {
     protected static string $relationship = 'sections';
+    protected static ?string $title = 'الأقسام';
 
     public function form(Schema $schema): Schema
     {
         return $schema
             ->components([
-                TextInput::make('name_location')
-                    ->label('اسم القسم والموقع')
+                TextInput::make('name')
+                    ->label('اسم القسم')
                     ->required()
                     ->maxLength(255)
                     ->columnSpanFull(),
+                Hidden::make('administrative_id')
+                    ->default($this->getOwnerRecord()->id),
                 Select::make('department_id')
-                    ->label('القسم')
-                    ->relationship('department', 'title')
+                    ->label('الدائرة')
+                    ->relationship('department', 'name', fn($query) => $query->active())
                     ->searchable()
-                    ->preload()
-                    ->required(),
+                    ->required()
+                    ->preload(),
                 Select::make('user_id')
                     ->label('المسؤول')
-                    ->relationship('user', 'name')
+                    // Filter: Role SECTION and 'free' user (or current user)
+                    ->relationship('user', 'name', modifyQueryUsing: fn (Builder $query, ?\App\Models\Section $record) => $query
+                        ->where('role', \App\Models\User::ROLE_SECTION)
+                        ->free($record?->user_id)
+                    )
                     ->searchable()
                     ->preload()
-                    ->required(),
-                TextInput::make('Capacity')
+                    ->createOptionForm([
+                        TextInput::make('name')
+                            ->label('الاسم')
+                            ->required(),
+                        TextInput::make('user_name')
+                            ->label('اسم المستخدم')
+                            ->required()
+                            ->unique('users', 'user_name'),
+                        TextInput::make('email')
+                            ->label('البريد الإلكتروني')
+                            ->required()
+                            ->email()
+                            ->unique('users', 'email'),
+                        TextInput::make('password')
+                            ->label('كلمة المرور')
+                            ->password()
+                            ->dehydrateStateUsing(fn ($state) => \Illuminate\Support\Facades\Hash::make($state))
+                            ->required(),
+                        Hidden::make('role')
+                            ->default(\App\Models\User::ROLE_SECTION)
+                            ->required(),
+                        Toggle::make('active')
+                            ->label('الحالة')
+                            ->onIcon('heroicon-m-check-circle')
+                            ->offIcon('heroicon-m-x-circle')
+                            ->onColor('success')
+                            ->offColor('danger')
+                            ->default(true),
+                    ]),
+                TextInput::make('capacity')
                     ->label('السعة الكلية')
                     ->numeric()
                     ->minValue(1)
                     ->default(10)
                     ->required(),
-                Select::make('status')
+                Toggle::make('active')
                     ->label('الحالة')
-                    ->options([
-                        'active' => 'نشط',
-                        'inactive' => 'غير نشط',
-                    ])
-                    ->default('active')
-                    ->required(),
+                    ->onIcon('heroicon-m-check-circle')
+                    ->offIcon('heroicon-m-x-circle')
+                    ->onColor('success')
+                    ->offColor('danger')
+                    ->default(true)
+                    ->disabled(fn($record) => !Auth::user()->can('toggleActive', $record ?? new \App\Models\Section()))
             ]);
     }
 
     public function table(Table $table): Table
     {
         return $table
-            ->recordTitleAttribute('name_location')
+            ->recordTitleAttribute('name')
             ->columns([
-                TextColumn::make('name_location')
-                    ->label('اسم القسم والموقع')
+                TextColumn::make('name')
+                    ->label('اسم القسم')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('user.name')
                     ->label('المسؤول')
                     ->searchable(),
-                TextColumn::make('Capacity')
+                TextColumn::make('capacity')
                     ->label('السعة')
                     ->sortable(),
                 TextColumn::make('registered_count')
@@ -94,7 +128,7 @@ class SectionsRelationManager extends RelationManager
                     })
                     ->badge()
                     ->color('primary'),
-                ToggleColumn::make('status')
+                ToggleColumn::make('active')
                     ->label('الحالة')
                     ->disabled(static fn() => ! Auth::user()?->isAdmin() ?? false)
                     ->onIcon('heroicon-m-check-circle')
@@ -118,11 +152,11 @@ class SectionsRelationManager extends RelationManager
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                SelectFilter::make('status')
+                SelectFilter::make('active')
                     ->label('الحالة')
                     ->options([
-                        'active' => 'نشط',
-                        'inactive' => 'غير نشط',
+                        1 => 'نشط',
+                        0 => 'غير نشط',
                     ]),
                 SelectFilter::make('user_id')
                     ->label('المسؤول')
@@ -132,7 +166,9 @@ class SectionsRelationManager extends RelationManager
                 TrashedFilter::make(),
             ])
             ->headerActions([
-                CreateAction::make()->visible(static fn() => Auth::user()?->isAdmin() ?? false),
+                CreateAction::make()
+                    ->label('إضافة قسم')
+                    ->visible(static fn() => Auth::user()?->isAdmin() ?? false),
             ])
             ->recordActions([
                 EditAction::make()->visible(static fn() => Auth::user()?->isAdmin() ?? false),

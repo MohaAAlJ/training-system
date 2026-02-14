@@ -87,14 +87,14 @@ class TraineeResource extends Resource
 
         if ($user->isMinistry()) {
             return $query->whereHas('applications', function ($q) {
-                $q->where('training_type', Application::TRAINING_TYPE_PRACTICE)
+                $q->where('training_type', Application::PRACTICE)
                     ->whereIn('status', [
                         Application::STATUS_INITIAL_APPROVE,
                         Application::STATUS_STARTED_TRAINING,
                         Application::STATUS_ENDED_TRAINING
                     ]);
             })->withCount(['applications' => function ($q) {
-                $q->where('training_type', Application::TRAINING_TYPE_PRACTICE)
+                $q->where('training_type', Application::PRACTICE)
                     ->whereIn('status', [
                         Application::STATUS_INITIAL_APPROVE,
                         Application::STATUS_STARTED_TRAINING,
@@ -107,16 +107,20 @@ class TraineeResource extends Resource
             $collegeId = \App\Models\College::where('user_id', $user->id)->value('id');
             return $query->where('college_id', $collegeId)
                 ->whereHas('applications', function ($q) {
-                    $q->where('training_type', Application::TRAINING_TYPE_UNIVERSITY)
+                    $q->where('training_type', Application::UNIVERSITY)
                         ->whereIn('status', [
                             Application::STATUS_INITIAL_APPROVE,
+                            Application::STATUS_CONFIRMATION,
+                            Application::STATUS_WAITING_LIST,
                             Application::STATUS_STARTED_TRAINING,
                             Application::STATUS_ENDED_TRAINING
                         ]);
                 })->withCount(['applications' => function ($q) {
-                    $q->where('training_type', Application::TRAINING_TYPE_UNIVERSITY)
+                    $q->where('training_type', Application::UNIVERSITY)
                         ->whereIn('status', [
                             Application::STATUS_INITIAL_APPROVE,
+                            Application::STATUS_CONFIRMATION,
+                            Application::STATUS_WAITING_LIST,
                             Application::STATUS_STARTED_TRAINING,
                             Application::STATUS_ENDED_TRAINING
                         ]);
@@ -127,12 +131,14 @@ class TraineeResource extends Resource
             return $query->whereHas('applications', function ($q) use ($user) {
                 $q->where('section_id', $user->section?->id)
                     ->whereIn('status', [
+                        Application::STATUS_WAITING_LIST,
                         Application::STATUS_STARTED_TRAINING,
                         Application::STATUS_ENDED_TRAINING
                     ]);
             })->withCount(['applications' => function ($q) use ($user) {
                 $q->where('section_id', $user->section?->id)
                     ->whereIn('status', [
+                        Application::STATUS_WAITING_LIST,
                         Application::STATUS_STARTED_TRAINING,
                         Application::STATUS_ENDED_TRAINING
                     ]);
@@ -141,14 +147,16 @@ class TraineeResource extends Resource
 
         if ($user->isDepartmentHead()) {
             return $query->whereHas('applications', function ($q) use ($user) {
-                $q->where('department_id', $user->department?->id)
+                $q->whereHas('section', fn($sq) => $sq->where('department_id', $user->department?->id))
                     ->whereIn('status', [
+                        Application::STATUS_WAITING_LIST,
                         Application::STATUS_STARTED_TRAINING,
                         Application::STATUS_ENDED_TRAINING
                     ]);
             })->withCount(['applications' => function ($q) use ($user) {
-                $q->where('department_id', $user->department?->id)
+                $q->whereHas('section', fn($sq) => $sq->where('department_id', $user->department?->id))
                     ->whereIn('status', [
+                        Application::STATUS_WAITING_LIST,
                         Application::STATUS_STARTED_TRAINING,
                         Application::STATUS_ENDED_TRAINING
                     ]);
@@ -157,14 +165,16 @@ class TraineeResource extends Resource
 
         if ($user->isAdministrative()) {
             return $query->whereHas('applications', function ($q) use ($user) {
-                $q->where('administrative_id', $user->administrative?->id)
+                $q->whereHas('section', fn($sq) => $sq->where('administrative_id', $user->administrative?->id))
                     ->whereIn('status', [
+                        Application::STATUS_WAITING_LIST,
                         Application::STATUS_STARTED_TRAINING,
                         Application::STATUS_ENDED_TRAINING
                     ]);
             })->withCount(['applications' => function ($q) use ($user) {
-                $q->where('administrative_id', $user->administrative?->id)
+                $q->whereHas('section', fn($sq) => $sq->where('administrative_id', $user->administrative?->id))
                     ->whereIn('status', [
+                        Application::STATUS_WAITING_LIST,
                         Application::STATUS_STARTED_TRAINING,
                         Application::STATUS_ENDED_TRAINING
                     ]);
@@ -174,16 +184,26 @@ class TraineeResource extends Resource
         if ($user->isMedicalManager()) {
             $adminId = \App\Models\Administrative::where('medical_head_user_id', $user->id)->value('id');
             return $query->whereHas('applications', function ($q) use ($adminId) {
-                $q->where('administrative_id', $adminId)
-                    ->whereHas('department', fn($dept) => $dept->where('is_medical', true))
+                $q->whereHas(
+                    'section',
+                    fn($sq) =>
+                    $sq->where('administrative_id', $adminId)
+                        ->whereHas('department', fn($dept) => $dept->where('is_medical', true))
+                )
                     ->whereIn('status', [
+                        Application::STATUS_WAITING_LIST,
                         Application::STATUS_STARTED_TRAINING,
                         Application::STATUS_ENDED_TRAINING
                     ]);
             })->withCount(['applications' => function ($q) use ($adminId) {
-                $q->where('administrative_id', $adminId)
-                    ->whereHas('department', fn($dept) => $dept->where('is_medical', true))
+                $q->whereHas(
+                    'section',
+                    fn($sq) =>
+                    $sq->where('administrative_id', $adminId)
+                        ->whereHas('department', fn($dept) => $dept->where('is_medical', true))
+                )
                     ->whereIn('status', [
+                        Application::STATUS_WAITING_LIST,
                         Application::STATUS_STARTED_TRAINING,
                         Application::STATUS_ENDED_TRAINING
                     ]);

@@ -25,12 +25,11 @@
 
         <!-- Date of Birth -->
         <label class="field">
-            <span>تاريخ الميلاد *</span>
+            <span>تاريخ الميلاد</span>
             <input 
                 type="date" 
                 wire:model.live="dob"
                 class="form__input @error('dob') form__input--error @enderror"
-                required
                 @readonly($dobReadonly)
             >
             @error('dob')
@@ -42,13 +41,12 @@
 
         <!-- Phone Number -->
         <label class="field">
-            <span>رقم الجوال *</span>
+            <span>رقم الجوال</span>
             <input 
                 type="tel" 
                 wire:model.live="phoneNumber"
                 placeholder="9705XXXXXXXX"
                 class="form__input @error('phoneNumber') form__input--error @enderror"
-                required
             >
             @error('phoneNumber')
                 <small class="error-message">{{ $message }}</small>
@@ -71,13 +69,12 @@
 
         <!-- Street Address -->
         <label class="field">
-            <span>عنوان/شارع *</span>
+            <span>عنوان/شارع</span>
             <input 
                 type="text" 
                 wire:model.live="street"
                 placeholder="عنوان السكن"
                 class="form__input"
-                required
             >
             <small class="note">عنوان/شارع</small>
         </label>

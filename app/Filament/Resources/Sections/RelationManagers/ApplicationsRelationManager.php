@@ -47,6 +47,10 @@ class ApplicationsRelationManager extends RelationManager
             ->modifyQueryUsing(fn(Builder $query) => $query
                 ->withoutGlobalScopes([
                     SoftDeletingScope::class,
-                ]));
+                ]))
+            ->headerActions([
+                CreateAction::make()
+                    ->visible(fn() => auth()->user()->isAdmin()),
+            ]);
     }
 }

@@ -25,7 +25,7 @@ class ApplicationConfirmedNotification extends Notification
     public function toDatabase($notifiable): array
     {
         $traineeName = optional($this->application->trainee)->full_name ?? 'غير معروف';
-        $sectionName = optional($this->application->section)->name_location ?? 'غير محدد';
+        $sectionName = optional($this->application->section)->name ?? 'غير محدد';
         $instName = optional($this->application->trainee?->institution)->name ?? 'غير محدد';
 
         return FilamentNotification::make()

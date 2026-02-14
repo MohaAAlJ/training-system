@@ -36,7 +36,7 @@ class TraineePolicy
 
         if ($user->isAdministrative()) {
             return $trainee->applications()
-                ->where('administrative_id', $user->administrative?->id)
+                ->whereHas('section', fn($q) => $q->where('administrative_id', $user->administrative?->id))
                 ->whereIn('status', [
                     Application::STATUS_STARTED_TRAINING,
                     Application::STATUS_ENDED_TRAINING
@@ -46,7 +46,7 @@ class TraineePolicy
 
         if ($user->isDepartment()) {
             return $trainee->applications()
-                ->where('department_id', $user->department?->id)
+                ->whereHas('section', fn($q) => $q->where('department_id', $user->department?->id))
                 ->whereIn('status', [
                     Application::STATUS_STARTED_TRAINING,
                     Application::STATUS_ENDED_TRAINING
@@ -57,8 +57,10 @@ class TraineePolicy
         if ($user->isMedicalManager()) {
             $adminId = \App\Models\Administrative::where('medical_head_user_id', $user->id)->value('id');
             return $trainee->applications()
-                ->where('administrative_id', $adminId)
-                ->whereHas('department', fn($q) => $q->where('is_medical', true))
+                ->whereHas('section', fn($q) =>
+                    $q->where('administrative_id', $adminId)
+                      ->whereHas('department', fn($dq) => $dq->where('is_medical', true))
+                )
                 ->whereIn('status', [
                     Application::STATUS_STARTED_TRAINING,
                     Application::STATUS_ENDED_TRAINING
@@ -71,7 +73,7 @@ class TraineePolicy
 
     public function create(User $user): bool
     {
-        return $user->isAdmin() || $user->isCollegeSupervisor();
+        return $user->isAdmin();
     }
 
     public function update(User $user, Trainee $trainee): bool

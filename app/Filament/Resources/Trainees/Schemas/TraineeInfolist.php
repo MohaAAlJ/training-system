@@ -13,21 +13,60 @@ class TraineeInfolist
     {
         return $schema
             ->components([
-                Section::make('معلومات المتدرب')
+                Section::make('المعلومات الشخصية')
+                    ->description('البيانات الأساسية للمتدرب')
+                    ->icon('heroicon-o-user')
                     ->schema([
                         TextEntry::make('national_id')
-                            ->label('رقم الهوية'),
+                            ->label('رقم الهوية')
+                            ->icon('heroicon-o-identification')
+                            ->copyable()
+                            ->badge()
+                            ->color('primary')
+                            ->weight('bold'),
+
                         TextEntry::make('full_name')
-                            ->label('الاسم الكامل'),
+                            ->label('الاسم الكامل')
+                            ->icon('heroicon-o-user-circle')
+                            ->copyable()
+                            ->weight('bold')
+                            ->size('lg')
+                            ->color('info'),
+
                         TextEntry::make('phone_number')
-                            ->label('رقم الهاتف'),
+                            ->label('رقم الهاتف')
+                            ->icon('heroicon-o-phone')
+                            ->copyable()
+                            ->url(fn($record) => $record->phone_number ? "tel:{$record->phone_number}" : null)
+                            ->badge()
+                            ->color('success'),
+
                         TextEntry::make('dob')
                             ->label('تاريخ الميلاد')
-                            ->date('Y-m-d'),
+                            ->icon('heroicon-o-calendar')
+                            ->date('d/m/Y')
+                            ->badge()
+                            ->color('gray'),
+
+                        TextEntry::make('gender')
+                            ->label('الجنس')
+                            ->icon('heroicon-o-user')
+                            ->badge()
+                            ->color(fn($state) => $state === 'ذكر' ? 'info' : 'fuchsia'),
+
                         TextEntry::make('street')
-                            ->label('المنطقة / الشارع'),
+                            ->label('المنطقة')
+                            ->icon('heroicon-o-map-pin')
+                            ->copyable()
+                            ->badge()
+                            ->color('warning'),
+
                         TextEntry::make('institution.name')
                             ->label('المؤسسة التعليمية')
+                            ->icon('heroicon-o-building-library')
+                            ->copyable()
+                            ->badge()
+                            ->color('purple')
                             ->visible(fn() => Auth::check() && (
                                 Auth::user()->isAdmin() ||
                                 Auth::user()->isDepartment() ||
@@ -35,8 +74,13 @@ class TraineeInfolist
                                 Auth::user()->isGeneralTrainingManager()
                             ))
                             ->formatStateUsing(fn($state) => is_array($state) ? ($state['ar'] ?? $state['en'] ?? reset($state)) : $state),
+
                         TextEntry::make('major.name')
                             ->label('التخصص')
+                            ->icon('heroicon-o-academic-cap')
+                            ->copyable()
+                            ->badge()
+                            ->color('indigo')
                             ->visible(fn() => Auth::check() && (
                                 Auth::user()->isAdmin() ||
                                 Auth::user()->isDepartment() ||
@@ -45,17 +89,30 @@ class TraineeInfolist
                                 Auth::user()->isCollegeSupervisor()
                             ))
                             ->formatStateUsing(fn($state) => is_array($state) ? ($state['ar'] ?? $state['en'] ?? reset($state)) : $state),
-                    ])->columns(2),
+                    ])
+                    ->columns(2),
 
                 Section::make('معلومات النظام')
+                    ->description('تواريخ الإنشاء والتحديث')
+                    ->icon('heroicon-o-clock')
                     ->schema([
                         TextEntry::make('created_at')
                             ->label('تاريخ الإنشاء')
-                            ->dateTime('Y-m-d H:i'),
+                            ->icon('heroicon-o-calendar')
+                            ->dateTime('d/m/Y - h:i A')
+                            ->since()
+                            ->badge()
+                            ->color('success'),
+
                         TextEntry::make('updated_at')
                             ->label('آخر تحديث')
-                            ->dateTime('Y-m-d H:i'),
-                    ])->columns(2)
+                            ->icon('heroicon-o-arrow-path')
+                            ->dateTime('d/m/Y - h:i A')
+                            ->since()
+                            ->badge()
+                            ->color('warning'),
+                    ])
+                    ->columns(2)
                     ->collapsed(),
             ]);
     }

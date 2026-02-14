@@ -12,17 +12,24 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // Backup database daily at 10:00 AM
-        $schedule->command('backup:run', ['--only-db' => true])
+        // Backup database daily at 10:00 AM using custom PHP-based backup (no mysqldump required)
+        $schedule->command('app:database-backup')
             ->dailyAt('10:00')
             ->runInBackground()
             ->name('database-backup');
 
-        // Clean old backups daily at 10:15 AM
-        $schedule->command('backup:clean')
-            ->dailyAt('10:15')
+        // Clean old backups every 10 days (delete files older than 10 days)
+        $schedule->command('app:clean-old-backups')
+            ->everyTenDays()
+            ->at('10:15')
             ->runInBackground()
             ->name('backup-cleanup');
+
+        // Automatically end training for expired applications
+        $schedule->command('app:end-training')->dailyAt('00:01');
+
+        // Send WhatsApp reminders X days before end
+        $schedule->command('app:check-training-end-dates')->dailyAt('09:00');
     }
 
     /**

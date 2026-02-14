@@ -13,22 +13,22 @@ class Major extends Model
     /** @use HasFactory<\Database\Factories\MajorFactory> */
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['id', 'name', 'code'];
+    protected $fillable = ['id', 'name'];
 
     /** Relations */
 
     public function institutions(): BelongsToMany
     {
-        return $this->belongsToMany(Institution::class, 'institution_major');
+        return $this->belongsToMany(Institution::class);
     }
 
     public function colleges(): BelongsToMany
     {
-        return $this->belongsToMany(College::class, 'college_major');
+        return $this->belongsToMany(College::class);
     }
 
     public function trainees(): HasMany
     {
-        return $this->hasMany(Trainee::class, 'major_id');
+        return $this->hasMany(Trainee::class);
     }
 }

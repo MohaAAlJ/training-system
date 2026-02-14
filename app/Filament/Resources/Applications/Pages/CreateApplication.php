@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\Applications\Pages;
 
-use App\Enums\ApplicationStatus;
+// use App\Enums\ApplicationStatus;
 use App\Filament\Resources\Applications\ApplicationResource;
 use App\Models\Trainee;
 use Filament\Actions\Action;
@@ -22,8 +22,12 @@ class CreateApplication extends CreateRecord
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         if (Auth::user()->isCollegeSupervisor() || Auth::user()->isMinistry()) {
-            $data['status'] = ApplicationStatus::CONFIRMATION;
+            $data['status'] = \App\Models\Application::STATUS_CONFIRMATION;
             $data['accepted_at'] = now();
+
+            if (Auth::user()->isCollegeSupervisor()) {
+                $data['training_type'] = \App\Models\Application::UNIVERSITY;
+            }
         }
 
         if (empty($data['trainee_id'])) {
@@ -48,6 +52,7 @@ class CreateApplication extends CreateRecord
                     'address' => $data['address'] ?? null,
                     'street' => $data['street'] ?? null,
                     'dob' => $data['dob'] ?? null,
+                    'gender' => $data['gender'] ?? null,
                     'college_id' => $collegeId,
                     'institution_id' => $institutionId,
                     'major_id' => $data['major_id'] ?? null,
@@ -73,6 +78,7 @@ class CreateApplication extends CreateRecord
                         'phone_number' => $data['phone_number'] ?? $trainee->phone_number,
                         'street' => $data['street'] ?? $trainee->street,
                         'dob' => $data['dob'] ?? $trainee->dob,
+                        'gender' => $data['gender'] ?? $trainee->gender,
                         'institution_id' => $data['institution_id'] ?? $trainee->institution_id,
                         'college_id' => $data['college_id'] ?? $trainee->college_id,
                         'major_id' => $data['major_id'] ?? $trainee->major_id,

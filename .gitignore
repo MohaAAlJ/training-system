@@ -42,7 +42,7 @@ Thumbs.db
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-
+error.log*
 # Composer lock backup issues
 composer.lock.backup
 
@@ -71,3 +71,11 @@ dump.rdb
 
 # Local mail storage
 /storage/mail/*
+
+.htaccess
+
+# WhatsApp Bot Session & Auth
+whatsapp-server/node_modules/
+whatsapp-server/.wwebjs_auth/
+whatsapp-server/.wwebjs_cache/
+

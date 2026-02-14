@@ -23,7 +23,7 @@
     @livewireStyles
 </head>
 
-<body style="margin: 0; padding: 0;">
+<body>
     {{ $slot }}
 
     <!-- Livewire Scripts -->
