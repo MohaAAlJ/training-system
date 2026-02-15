@@ -11,13 +11,13 @@ return [
     */
 
     // Bot Token (Updated)
-    'bot_token' => env('TELEGRAM_BOT_TOKEN', '8412771611:AAE3L0uWofoUBhrujiT-0Bop44xdDaDNpMA'),
+    'bot_token' => env('TELEGRAM_BOT_TOKEN', ''),
 
     // Comma-separated list of chat IDs
-    'chat_ids' => array_filter(explode(',', env('TELEGRAM_CHAT_IDS', '1866777435'))),
+    'chat_ids' => array_filter(explode(',', env('TELEGRAM_CHAT_IDS', ''))),
 
     // Bot Access Code (Security)
-    'access_code' => env('TELEGRAM_ACCESS_CODE', 'qYAaeDwwBtrD02Ec'), // Default simplified for dev
+    'access_code' => env('TELEGRAM_ACCESS_CODE', ''), // Default simplified for dev
 
     // Master switch for all Telegram notifications
     'enabled' => env('TELEGRAM_ENABLED', false),
