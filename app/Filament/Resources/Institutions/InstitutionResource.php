@@ -24,7 +24,7 @@ class InstitutionResource extends Resource
     protected static ?string $modelLabel = 'المؤسسات التعليمية';
     protected static ?string $pluralModelLabel = 'المؤسسات التعليمية';
     protected static ?string $navigationLabel = 'المؤسسات التعليمية';
-    protected static string | \UnitEnum | null $navigationGroup = 'الكليات';
+    // protected static string | \UnitEnum | null $navigationGroup = 'الكليات';
     protected static ?int $navigationSort = 7;
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedAcademicCap;
     protected static string | BackedEnum | null $activeNavigationIcon = Heroicon::AcademicCap;
@@ -50,6 +50,7 @@ class InstitutionResource extends Resource
     {
         return [
             RelationManagers\CollegesRelationManager::class,
+            RelationManagers\ApplicationsRelationManager::class,
         ];
     }
 

@@ -11,6 +11,7 @@ class SectionInfolist
     public static function configure(Schema $schema): Schema
     {
         return $schema
+            ->columns(1)
             ->components([
                 Section::make('معلومات القسم')
                     ->description('التفاصيل الأساسية للقسم')
@@ -32,7 +33,7 @@ class SectionInfolist
                             ->color('info')
                             ->placeholder('غير محدد'),
 
-                        TextEntry::make('department.name')
+                        TextEntry::make('departments.name')
                             ->label('الدائرة')
                             ->icon('heroicon-o-building-office-2')
                             ->copyable()
@@ -53,8 +54,7 @@ class SectionInfolist
                             ->icon('heroicon-o-users')
                             ->badge()
                             ->color('warning')
-                            ->suffix(' متدرب')
-                            ->numeric(),
+                            ->suffix(' متدرب'),
 
                         TextEntry::make('active')
                             ->label('حالة القسم')

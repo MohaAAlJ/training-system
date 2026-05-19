@@ -38,7 +38,7 @@ class TraineeStartedNotification extends Notification
                 Action::make('view')
                     ->label('عرض الطلب')
                     ->button()
-                    ->url(\App\Filament\Resources\Applications\ApplicationResource::getUrl('view', ['record' => $this->application], panel: 'home')),
+                    ->url(ApplicationResource::getUrl('view', ['record' => $this->application->id], panel: 'home')),
             ])
             ->getDatabaseMessage();
     }

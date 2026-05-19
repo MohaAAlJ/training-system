@@ -3,6 +3,8 @@
 namespace App\Filament\Widgets;
 
 use App\Models\Administrative;
+use App\Models\Application;
+use App\Models\Department;
 use App\Models\User;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -19,7 +21,7 @@ class AdministrativeCapacityOverview extends BaseWidget
     public static function canView(): bool
     {
         $user = Auth::user();
-        return $user && ($user->isAdmin() || $user->isGeneralTrainingManager());
+        return $user && ($user->isAdmin() || $user->isTrainingManagerLike() || $user->isMonitor());
     }
 
     public function table(Table $table): Table
@@ -27,49 +29,72 @@ class AdministrativeCapacityOverview extends BaseWidget
         return $table
             ->query(
                 Administrative::query()
-                    ->active() // Only active admin units
-                    ->with(['sections' => fn($q) => $q->active()])
+                    ->active()
+                    ->when(Auth::user()?->isAssistantTrainingManager(), function ($q) {
+                        $managedDepartmentIds = Auth::user()->managedDepartmentIds();
+                        if (empty($managedDepartmentIds)) {
+                            return $q->whereRaw('0 = 1');
+                        }
+                        return $q->whereHas('sections.departments', fn($d) => $d->whereIn('departments.id', $managedDepartmentIds)->visible());
+                    })
+                    ->withSum(['sections as total_capacity' => fn($q) => $q->active()
+                        ->when(Auth::user()?->isAssistantTrainingManager(), fn($sectionQuery) => $sectionQuery->whereHas('departments', fn($d) => $d->whereIn('departments.id', Auth::user()->managedDepartmentIds())->visible()))
+                    ], 'capacity')
+                    ->addSelect([
+                        'used_capacity' => Application::query()
+                            ->selectRaw('COUNT(*)')
+                            ->join('sections', 'applications.section_id', '=', 'sections.id')
+                            ->whereColumn('sections.administrative_id', 'administratives.id')
+                            ->where('applications.status', Application::STATUS_STARTED_TRAINING)
+                            ->when(Auth::user()?->isAssistantTrainingManager(), fn($applicationQuery) => $applicationQuery->whereExists(
+                                Department::query()
+                                    ->join('department_section', 'departments.id', '=', 'department_section.department_id')
+                                    ->whereColumn('department_section.section_id', 'applications.section_id')
+                                    ->whereIn('departments.id', Auth::user()->managedDepartmentIds())
+                                    ->where('departments.visible', true)
+                                    ->selectRaw('1')
+                                    ->toBase()
+                            ))
+                            ->whereNull('applications.deleted_at'),
+                    ])
             )
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->label('الإدارة')
                     ->searchable()
                     ->sortable(),
+
                 Tables\Columns\TextColumn::make('capacity_stats')
                     ->label('الاستيعاب')
-                    ->state(function (Administrative $record) {
-                        $stats = $record->getCapacityStats();
-                        return $stats['used'] . ' / ' . $stats['total'];
-                    }),
+                    ->state(fn(Administrative $record) =>
+                        (int) ($record->used_capacity ?? 0) . ' / ' . (int) ($record->total_capacity ?? 0)
+                    ),
+
                 Tables\Columns\TextColumn::make('saturation')
                     ->label('نسبة الإشغال')
                     ->badge()
-                    ->color(function (Administrative $record) {
-                        $stats = $record->getCapacityStats();
-                        $percentage = $stats['total'] > 0 ? ($stats['used'] / $stats['total']) * 100 : 0;
-                        if ($percentage >= 90) return 'danger';
-                        if ($percentage >= 75) return 'warning';
-                        return 'success';
+                    ->state(function (Administrative $record): float {
+                        $total = (int) ($record->total_capacity ?? 0);
+                        $used = (int) ($record->used_capacity ?? 0);
+                        return $total > 0 ? ($used / $total) * 100 : 0.0;
                     })
-                    ->state(function (Administrative $record) {
-                        $stats = $record->getCapacityStats();
-                        $percentage = $stats['total'] > 0 ? ($stats['used'] / $stats['total']) * 100 : 0;
-                        return number_format($percentage, 1) . '%';
+                    ->formatStateUsing(fn(float $state) => number_format($state, 1) . '%')
+                    ->color(function (float $state): string {
+                        if ($state >= 90) return 'danger';
+                        if ($state >= 75) return 'warning';
+                        return 'success';
                     }),
+
                 Tables\Columns\TextColumn::make('available')
                     ->label('المتاح')
-                    ->state(function (Administrative $record) {
-                        $stats = $record->getCapacityStats();
-                        return $stats['available'];
-                    })
-                    ->color(fn($state) => $state <= 0 ? 'danger' : 'success')
-                    ->sortable(query: function (Builder $query, string $direction) {
-                        // Approximate sort by raw capacity sum if needed, but computed sort is complex.
-                        // For now we disable direct DB sort on this computed column or use a simple join if crucial.
-                        // Leaving simplified for MVP.
-                        return $query;
-                    }),
+                    ->state(fn(Administrative $record): int =>
+                        max(0, (int) ($record->total_capacity ?? 0) - (int) ($record->used_capacity ?? 0))
+                    )
+                    ->color(fn(int $state): string => $state <= 0 ? 'danger' : 'success')
+                    ->sortable(query: fn(Builder $query, string $direction): Builder =>
+                        $query->orderByRaw("GREATEST(COALESCE(total_capacity, 0) - COALESCE(used_capacity, 0), 0) {$direction}")
+                    ),
             ])
-            ->paginated(false); // Show all active admin units (usually < 20)
+            ->paginated(false);
     }
 }

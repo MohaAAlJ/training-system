@@ -52,7 +52,7 @@ try {
             'phone_number' => $phone_number,
             'governorate_id' => 1,
             'street' => 'Test Street ' . $i,
-            'dob' => now()->subYears(random_int(20, 35))->format('Y-m-d'),
+            'dob' => now()->subYears(random_int(18, 35))->format('Y-m-d'),
             'institution_id' => 1,
             'college_id' => 1,
             'major_id' => 1,

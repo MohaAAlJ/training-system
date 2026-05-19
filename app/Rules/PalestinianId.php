@@ -18,7 +18,7 @@ class PalestinianId implements ValidationRule
             return;
         }
 
-        if (validatePalestinianId($value) !== 'valid') {
+        if (!validatePalestinianId($value)) {
             $fail('رقم الهوية الوطنية غير صحيح.');
         }
     }

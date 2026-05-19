@@ -7,13 +7,11 @@ use App\Models\User;
 use App\Models\College;
 use App\Models\Institution;
 
-use Illuminate\Support\Facades\Hash;
-
 class CollegeSupervisorSeeder extends Seeder
 {
     public function run(): void
     {
-        $password = Hash::make('123');
+        $password = '123';
 
         // قائمة لتحديد مشرفين لكليات محددة في جامعات محددة للتنويع
         $targets = [

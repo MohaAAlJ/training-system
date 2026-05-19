@@ -23,15 +23,37 @@ class AdminLatestUsers extends BaseWidget
         return '';
     }
 
+    public function isCollapsed(): bool
+    {
+        return $this->isEmpty();
+    }
+
+    protected function isEmpty(): bool
+    {
+        return $this->getTableQuery()->doesntExist();
+    }
+
     public static function canView(): bool
     {
-        return !request()->routeIs('filament.home.pages.dashboard') && Auth::user()->role === User::ROLE_ADMIN;
+        // Hide from the dashboard (auto-discovery); only show on Stats page
+        if (request()->routeIs('filament.home.pages.dashboard')) {
+            return false;
+        }
+
+        // Explicitly hide from General Manager (Monitor)
+        if (Auth::user()?->isMonitor()) {
+            return false;
+        }
+        return Auth::user()->role === User::ROLE_ADMIN;
     }
 
     public function table(Table $table): Table
     {
         return $table
             ->heading(null)
+            ->emptyStateHeading('')
+            ->emptyStateDescription('')
+            ->emptyStateIcon(null)
             ->query(
                 User::query()
                     ->active()
@@ -54,7 +76,7 @@ class AdminLatestUsers extends BaseWidget
 
             ])
             ->recordUrl(
-                fn (User $record): string => \App\Filament\Resources\Users\UserResource::getUrl('view', ['record' => $record]),
+                fn(User $record): string => \App\Filament\Resources\Users\UserResource::getUrl('view', ['record' => $record]),
             );
     }
 }

@@ -37,17 +37,29 @@ class UsersTable
                     ->offIcon('heroicon-m-x-circle')
                     ->onColor('success')
                     ->offColor('danger')
-                    ->sortable(),
+                    ->sortable()
+                    ->disabled(fn () => !auth()->user()?->isAdmin()),
                 TextColumn::make('created_at')->label('تاريخ الإنشاء')
                     ->dateTime('Y-m-d H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('last_login_at')->label('آخر تسجيل دخول')
+                    ->dateTime('Y-m-d H:i')
+                    ->visible(fn() => Auth::user()?->isAdmin() || Auth::user()?->isGeneralTrainingManager())    
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: false),
             ])
             ->filters([
                 SelectFilter::make('role')
                     ->label('الدور')
-                    ->options(User::ROLE_LABELS),
-                TrashedFilter::make(),
+                    ->options(User::ROLE_LABELS)
+                    ->indicateUsing(function (array $data): ?string {
+                        if (! $data['value']) {
+                            return null;
+                        }
+                        return 'الدور: ' . (User::ROLE_LABELS[$data['value']] ?? $data['value']);
+                    }),
+                TrashedFilter::make()->visible(fn() => Auth::user()?->isAdmin() ?? false),
             ])
             ->recordActions([
                 ViewAction::make(),

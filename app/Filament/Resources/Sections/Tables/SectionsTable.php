@@ -32,27 +32,22 @@ class SectionsTable
                     ->searchable()
                     ->sortable()
                     ->toggleable(),
-                TextColumn::make('department.name')
-                    ->label('الدائرة')
+                TextColumn::make('departments.name')
+                    ->label('الدوائر')
+                    ->badge()
                     ->searchable()
-                    ->sortable()
                     ->toggleable(),
                 TextColumn::make('user.name')
                     ->label('المسؤول')
                     ->searchable(),
                 TextColumn::make('capacity')
                     ->label('السعة')
+                    ->formatStateUsing(fn($state) => toEnglishNumbers($state))
                     ->sortable(),
                 TextColumn::make('registered_count')
                     ->label('المسجلين')
-                    ->state(function ($record) {
-                        return \App\Models\Application::where('section_id', $record->id)
-                            ->whereIn('status', [
-                                \App\Models\Application::STATUS_STARTED_TRAINING,
-                                \App\Models\Application::STATUS_ENDED_TRAINING,
-                            ])
-                            ->count();
-                    })
+                    ->numeric()
+                    ->formatStateUsing(fn($state) => toEnglishNumbers($state))
                     ->badge()
                     ->color('primary')
                     ->toggleable()
@@ -70,7 +65,7 @@ class SectionsTable
 
                         if ($user->isAdmin()) return true;
 
-                        if ($user->isGeneralTrainingManager()) return false;
+                        if ($user->isTrainingManagerLike()) return false;
 
                         $settings = app(\App\Settings\TrainingSettings::class);
 
@@ -100,30 +95,30 @@ class SectionsTable
                     ->options([
                         '1' => 'نشط',
                         '0' => 'غير نشط',
-                    ]),
+                    ])
+                    ->indicateUsing(function (array $data): ?string {
+                        if ($data['value'] === null) return null;
+                        return $data['value'] == '1' ? 'الحالة: نشط' : 'الحالة: غير نشط';
+                    }),
                 \Filament\Tables\Filters\Filter::make('sections_filter')
                     ->form([
                         \Filament\Forms\Components\Select::make('administrative_id')
                             ->label('الإدارة')
-                            ->relationship('administrative', 'name', fn ($query) => $query->active())
+                            ->relationship('administrative', 'name', fn($query) => $query->active())
                             ->searchable()
                             ->preload()
                             ->reactive(),
                         \Filament\Forms\Components\Select::make('department_id')
                             ->label('الدائرة')
+                            ->multiple()
                             ->options(function ($get) {
                                 $adminId = $get('administrative_id');
                                 if (!$adminId) {
-                                    return \App\Models\Department::active()->pluck('name', 'id');
+                                    return \App\Models\Department::active()->visible()->pluck('name', 'id');
                                 }
-                                return \App\Models\Section::where('administrative_id', $adminId)
-                                    ->active()
-                                    ->whereHas('administrative', fn ($q) => $q->active())
-                                    ->whereHas('department', fn ($q) => $q->active())
-                                    ->with('department')
-                                    ->get()
-                                    ->pluck('department.name', 'department.id')
-                                    ->filter();
+                                return \App\Models\Department::whereHas('sections', function ($q) use ($adminId) {
+                                    $q->where('administrative_id', $adminId)->active();
+                                })->active()->visible()->pluck('name', 'id');
                             })
                             ->searchable()
                             ->preload(),
@@ -132,19 +127,31 @@ class SectionsTable
                         return $query
                             ->when(
                                 $data['administrative_id'],
-                                fn (Builder $query, $value): Builder => $query->where('administrative_id', $value),
+                                fn(Builder $query, $value): Builder => $query->where('administrative_id', $value),
                             )
                             ->when(
-                                $data['department_id'],
-                                fn (Builder $query, $value): Builder => $query->where('department_id', $value),
+                                ! empty($data['department_id']),
+                                fn(Builder $query): Builder => $query->whereHas('departments', fn($q) => $q->whereIn('departments.id', (array) $data['department_id'])->visible()),
                             );
+                    })
+                    ->indicateUsing(function (array $data): array {
+                        $indicators = [];
+                        if ($data['administrative_id'] ?? null) {
+                            $indicators[] = \Filament\Tables\Filters\Indicator::make('الإدارة: ' . \App\Models\Administrative::find($data['administrative_id'])?->name)
+                                ->removeField('administrative_id');
+                        }
+                        foreach ((array) ($data['department_id'] ?? []) as $deptId) {
+                            $indicators[] = \Filament\Tables\Filters\Indicator::make('الدائرة: ' . \App\Models\Department::find($deptId)?->name)
+                                ->removeField('department_id');
+                        }
+                        return $indicators;
                     }),
                 // SelectFilter::make('user_id')
                 //     ->label('المسؤول')
                 //     ->relationship('user', 'name')
                 //     ->searchable()
                 //     ->preload(),
-                // TrashedFilter::make(),
+                TrashedFilter::make()->visible(fn() => Auth::user()?->isAdmin() ?? false),
             ])
             ->recordActions([
                 ViewAction::make(),
@@ -152,7 +159,7 @@ class SectionsTable
                     ->visible(fn($record) => Auth::user()->can('editDetails', $record)),
                 DeleteAction::make()
                     ->visible(fn($record) => !$record->trashed() && Auth::user()?->isAdmin())
-                    ->before(function ($record, \Filament\Actions\DeleteAction $action) {
+                    ->before(function ($record, DeleteAction $action) {
                         if ($record->applications()->exists()) {
                             \Filament\Notifications\Notification::make()
                                 ->title('لا يمكن الأرشفة')

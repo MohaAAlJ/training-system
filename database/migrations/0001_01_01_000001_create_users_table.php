@@ -4,7 +4,6 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use App\Models\User;
-use Illuminate\Support\Facades\Hash;
 
 return new class extends Migration
 {
@@ -47,7 +46,7 @@ return new class extends Migration
             'user_name' => 'admin',
             'name' => 'moha Admin',
             'email' => 'Moha@admins.com',
-            'password' => Hash::make('Training@2026'),
+            'password' => 'Training@2026',
             'role' => User::ROLE_ADMIN,
             'active' => 1,
         ]);
@@ -57,7 +56,7 @@ return new class extends Migration
             'user_name' => 'gtm',
             'name' => 'General Training Manager',
             'email' => 'gtm@example.com',
-            'password' => Hash::make('Training@2026'),
+            'password' => 'Training@2026',
             'role' => User::ROLE_GTM,
             'active' => 1,
         ]);

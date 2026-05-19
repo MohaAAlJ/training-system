@@ -1,8 +1,8 @@
 <link rel="stylesheet" href="{{ asset('css/fieldset-personal-details.css') }}">
 
 <!-- FIELDSET 2: Personal Details (shown conditionally) -->
-@if ($showPersonalDetails)
-<fieldset class="fieldset" wire:transition>
+@if ($this->showPersonalDetails)
+<fieldset class="fieldset" wire:key="fieldset-personal">
     <legend>
         <span class="legend-icon">👤</span>البيانات الشخصية
     </legend>
@@ -52,6 +52,10 @@
             <span>رقم الجوال *</span>
             <input
                 type="tel"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                maxlength="12"
                 wire:model="phoneNumber"
                 wire:blur="validateField('phoneNumber')"
                 placeholder="9705XXXXXXXX"

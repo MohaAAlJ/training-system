@@ -25,17 +25,17 @@ if (!function_exists('validatePalestinianId')) {
      * 6. Valid if sum % 10 === 0
      * 
      * @param string|null $id The Palestinian National ID to validate
-     * @return string "valid" if ID passes validation, "failed" if invalid
+     * @return bool
      * 
      * @example
-     * validatePalestinianId('410010284') // Returns "valid"
-     * validatePalestinianId('123456789') // Returns "failed"
+     * validatePalestinianId('410010284') // Returns true
+     * validatePalestinianId('123456789') // Returns false
      */
-    function validatePalestinianId(?string $id): string
+    function validatePalestinianId(?string $id): bool
     {
         // Handle null or empty input
         if (empty($id)) {
-            return 'failed';
+            return false;
         }
 
         // Remove any whitespace
@@ -43,12 +43,22 @@ if (!function_exists('validatePalestinianId')) {
 
         // Check if exactly 9 digits
         if (!preg_match('/^\d{9}$/', $id)) {
-            return 'failed';
+            return false;
+        }
+
+        // Reject nonsense common numbers like 9 repeating digits, 8 repeating digits, or sequential ones.
+        if (
+            preg_match('/^(\d)\1{8}$/', $id) || // e.g. 000000000
+            preg_match('/^(\d)\1{7}/', $id) ||  // e.g. 111111118
+            preg_match('/^(01234567|12345678)/', $id) ||
+            preg_match('/^(98765432|87654321)/', $id)
+        ) {
+            return false;
         }
 
         // Weights for each position (1-indexed)
         $weights = [1, 2, 1, 2, 1, 2, 1, 2, 1];
-        
+
         $sum = 0;
 
         // Process each digit
@@ -66,11 +76,20 @@ if (!function_exists('validatePalestinianId')) {
         }
 
         // Valid if sum is divisible by 10
-        return ($sum % 10 === 0) ? 'valid' : 'failed';
+        return ($sum % 10 === 0);
     }
 }
 
-
-
-
-
+if (!function_exists('toEnglishNumbers')) {
+    /**
+     * Convert Arabic numerals to English numerals.
+     */
+    function toEnglishNumbers($value): string
+    {
+        return str_replace(
+            ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'],
+            ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
+            (string) $value
+        );
+    }
+}

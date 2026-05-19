@@ -232,7 +232,7 @@
             <span class="field-label">أنا الطالب/ة: </span>
             <span class="field-value field-value-long">{{ $application->trainee->full_name ?? '' }}</span>
             <span class="field-label">التخصص: </span>
-            <span class="field-value">{{ $application->section->department->name ?? '' }}</span>
+            <span class="field-value">{{ $application->section->departments->first()?->name ?? '' }}</span>
         </div>
 
         <div class="field-row">
@@ -258,7 +258,7 @@
 
         <div class="field-row">
             <span class="field-label">عدد ساعات التدريب: </span>
-            <span class="field-value">{{ $application->trainee->training_hours ?? '' }} ساعة</span>
+            <span class="field-value">{{ $application->training_hours ?? '' }} ساعة</span>
         </div>
 
         <div class="approval-section">

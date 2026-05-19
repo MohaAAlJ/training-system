@@ -2,15 +2,16 @@
 
 namespace App\Filament\Resources\Users\Schemas;
 
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Section;
 use Filament\Infolists\Components\TextEntry;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 
 class UserInfolist
 {
     public static function configure(Schema $schema): Schema
     {
         return $schema
+            ->columns(1)
             ->components([
                 Section::make('المعلومات الشخصية')
                     ->description('البيانات الأساسية للمستخدم')
@@ -60,6 +61,7 @@ class UserInfolist
                             ->color(fn($record) => match ($record->role) {
                                 \App\Models\User::ROLE_ADMIN => 'danger',
                                 \App\Models\User::ROLE_GTM => 'warning',
+                                \App\Models\User::ROLE_ASSISTANT_TRAINING_MANAGER => 'warning',
                                 \App\Models\User::ROLE_HOA => 'info',
                                 \App\Models\User::ROLE_HOM => 'success',
                                 \App\Models\User::ROLE_DEPARTMENT => 'purple',
@@ -83,6 +85,16 @@ class UserInfolist
                             ->color('fuchsia')
                             ->visible(fn($record) => $record->role === \App\Models\User::ROLE_COLLEGE && $record->college_id)
                             ->placeholder('غير محدد'),
+
+                        TextEntry::make('managedDepartments.name')
+                            ->label('الدوائر المُدارة')
+                            ->icon('heroicon-o-building-office-2')
+                            ->badge()
+                            ->color('warning')
+                            ->separator(',')
+                            ->visible(fn($record) => $record->role === \App\Models\User::ROLE_ASSISTANT_TRAINING_MANAGER)
+                            ->placeholder('غير محدد')
+                            ->columnSpanFull(),
                     ])
                     ->columns(2),
 

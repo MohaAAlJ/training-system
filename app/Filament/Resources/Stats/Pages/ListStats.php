@@ -30,6 +30,7 @@ class ListStats extends Page
     {
         return [
             // \App\Filament\Widgets\ExternalPartnerActiveTraineesWidget::class,
+            \App\Filament\Widgets\DepartmentTraineeCountWidget::class,
             \App\Filament\Widgets\GTMRecentApplications::class,
             \App\Filament\Widgets\CapacityOverviewWidget::class,
             \App\Filament\Widgets\StudentsFinishingSoonWidget::class,
@@ -49,6 +50,10 @@ class ListStats extends Page
         $sections = [];
         foreach ($widgets as $widget) {
             $widgetClass = is_string($widget) ? $widget : $widget->widget;
+
+            if (method_exists($widgetClass, 'canView') && !$widgetClass::canView()) {
+                continue;
+            }
 
             $heading = $widgetClass::$heading ?? '';
 

@@ -3,6 +3,7 @@
 namespace App\Filament\Exporters;
 
 use App\Models\Application;
+use App\Enums\Gender;
 use Filament\Actions\Exports\ExportColumn;
 use Filament\Actions\Exports\Exporter;
 use Filament\Actions\Exports\Models\Export;
@@ -36,18 +37,19 @@ class ApplicationExporter extends Exporter
             ExportColumn::make('trainee.full_name')
                 ->label('اسم المتدرب'),
             ExportColumn::make('trainee.gender')
-                ->label('الجنس'),
+                ->label('الجنس')
+                ->formatStateUsing(fn($state) => $state instanceof Gender ? $state->getLabel() : ''),
             ExportColumn::make('trainee.national_id')
                 ->label('رقم الهوية'),
-            ExportColumn::make('trainee.institution.name')
+            ExportColumn::make('institution.name')
                 ->label('المؤسسة'),
-            ExportColumn::make('trainee.major.name')
+            ExportColumn::make('major.name')
                 ->label('التخصص'),
             ExportColumn::make('training_type_label')
                 ->label('نوع التدريب'),
             ExportColumn::make('section.administrative.name')
                 ->label('الإدارة'),
-            ExportColumn::make('section.department.name')
+            ExportColumn::make('section.departments.name')
                 ->label('الدائرة'),
             ExportColumn::make('section.name')
                 ->label('القسم'),
@@ -63,16 +65,13 @@ class ApplicationExporter extends Exporter
                     $actualState = (int)$state;
                     return $translation['status'][$actualState] ?? 'غير محدد';
                 }),
-            ExportColumn::make('trainee.training_hours')
+            ExportColumn::make('training_hours')
                 ->label('ساعات التدريب'),
             ExportColumn::make('accepted_at')
                 ->label('تاريخ القبول')
                 ->formatStateUsing(fn($state) => $state ? $state->format('d/m/Y') : ''),
             ExportColumn::make('created_at')
                 ->label('تاريخ الإنشاء')
-                ->formatStateUsing(fn($state) => $state ? $state->format('d/m/Y') : ''),
-            ExportColumn::make('end_date')
-                ->label('تاريخ الانتهاء')
                 ->formatStateUsing(fn($state) => $state ? $state->format('d/m/Y') : ''),
         ];
     }
@@ -104,7 +103,7 @@ class ApplicationExporter extends Exporter
         if ($user->isAdmin()) {
             // Admin users get the system context
             return "{$baseFileName}";
-        } elseif ($user->isGeneralTrainingManager()) {
+        } elseif ($user->isTrainingManagerLike()) {
             // GTM users get training context
             return "{$baseFileName}_مدير_التدريب";
         } elseif ($user->isDepartmentHead()) {

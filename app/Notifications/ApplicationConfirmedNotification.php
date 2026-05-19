@@ -26,7 +26,7 @@ class ApplicationConfirmedNotification extends Notification
     {
         $traineeName = optional($this->application->trainee)->full_name ?? 'غير معروف';
         $sectionName = optional($this->application->section)->name ?? 'غير محدد';
-        $instName = optional($this->application->trainee?->institution)->name ?? 'غير محدد';
+        $instName = optional($this->application->institution)->name ?? 'غير محدد';
 
         return FilamentNotification::make()
             ->title('تم تأكيد طلب التدريب')
@@ -37,7 +37,7 @@ class ApplicationConfirmedNotification extends Notification
                 Action::make('view')
                     ->label('عرض الطلب')
                     ->button()
-                    ->url(ApplicationResource::getUrl('view', ['record' => $this->application])),
+                    ->url(ApplicationResource::getUrl('view', ['record' => $this->application->id])),
             ])
             ->getDatabaseMessage();
     }

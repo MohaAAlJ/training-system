@@ -48,7 +48,22 @@ class DepartmentsTable
                     ->offIcon('heroicon-m-x-circle')
                     ->onColor('success')
                     ->offColor('danger')
+                    ->visible(function () {
+                        $user = Auth::user();
+                        if (!$user) return false;
+                        if ($user->isAdmin()) return true;
+                        return !$user->isMonitor();
+                    })
                     ->sortable(),
+                ToggleColumn::make('visible')
+                    ->label('الظهور للمستخدمين')
+                    ->visible(fn() => Auth::user()?->isAdmin() ?? false)
+                    ->onIcon('heroicon-m-eye')
+                    ->offIcon('heroicon-m-eye-slash')
+                    ->onColor('success')
+                    ->offColor('danger')
+                    ->sortable()
+                    ->toggleable(),
 
 
                 TextColumn::make('created_at')
@@ -73,15 +88,25 @@ class DepartmentsTable
                         return $query;
                     })
                     ->searchable()
-                    ->preload(),
+                    ->preload()
+                    ->indicateUsing(function (array $data): ?string {
+                        if (! $data['value']) {
+                            return null;
+                        }
+                        return 'الإدارة: ' . \App\Models\Administrative::find($data['value'])?->name;
+                    }),
 
                 SelectFilter::make('is_medical')
                     ->label('نوع الإدارة')
                     ->options([
                         true => 'إدارة طبية',
                         false => 'إدارة عامة',
-                    ]),
-                TrashedFilter::make(),
+                    ])
+                    ->indicateUsing(function (array $data): ?string {
+                        if ($data['value'] === null) return null;
+                        return $data['value'] ? 'نوع الإدارة: طبية' : 'نوع الإدارة: عامة';
+                    }),
+                TrashedFilter::make()->visible(fn() => Auth::user()?->isAdmin() ?? false),
             ])
             ->recordActions([
                 ViewAction::make(),

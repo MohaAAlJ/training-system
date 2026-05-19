@@ -12,7 +12,6 @@ use App\Filament\Resources\Departments\Schemas\DepartmentInfolist;
 use App\Filament\Resources\Departments\Tables\DepartmentsTable;
 use App\Models\Department;
 use BackedEnum;
-use UnitEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -28,7 +27,6 @@ class DepartmentResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingOffice2;
     protected static string | BackedEnum | null $activeNavigationIcon = Heroicon::BuildingOffice2; //filled icon when active
-    // Arabic labels
     protected static ?string $modelLabel = 'الدوائر';
     protected static ?string $pluralModelLabel = 'الدوائر';
     protected static ?string $navigationLabel = 'الدوائر';
@@ -76,8 +74,34 @@ class DepartmentResource extends Resource
         $query = parent::getEloquentQuery();
         $user = Auth::user();
 
-        if ($user->isAdmin()) {
+        if (!$user->isAdmin()) {
+            $query->active()->visible();
+        }
+
+        if ($user->isAdmin() || $user->isGeneralTrainingManager() || $user->isMonitor()) {
             return $query;
+        }
+
+        if ($user->isAssistantTrainingManager()) {
+            return $query->whereIn('id', $user->managedDepartmentIds());
+        }
+
+        if ($user->isCollegeSupervisor()) {
+            return $query;
+        }
+
+        if ($user->isDepartment()) {
+            if ($user->department()->active()->doesntExist()) {
+                return $query->whereRaw('1 = 0');
+            }
+            return $query->where('id', $user->department->id);
+        }
+
+        if ($user->isMinistry()) {
+            if ($user->mohDepartment()->active()->doesntExist()) {
+                return $query->whereRaw('1 = 0');
+            }
+            return $query->where('id', $user->mohDepartment->id);
         }
 
         return $query->whereRaw('1 = 0');

@@ -38,14 +38,14 @@ class TraineeFormConfig
     /**
      * Age constraints
      */
-    public const MIN_AGE = 20;
+    public const MIN_AGE = 18;
     public const MAX_AGE = 60;
 
     /**
      * Training hours constraints
      */
     public const MIN_TRAINING_HOURS = 50;
-    public const MAX_TRAINING_HOURS = 1000;
+    public const MAX_TRAINING_HOURS = 999;
 
     /**
      * Get all validation rules
@@ -53,20 +53,28 @@ class TraineeFormConfig
     public static function getValidationRules(): array
     {
         return [
-            'trainingType' => 'required|integer|in:' . self::UNIVERSITY . ',' . self::PRACTICE,
-            'nationalId' => 'required|digits:9|regex:' . self::NATIONAL_ID_REGEX,
-            'fullName' => 'required|string|regex:' . self::NAME_REGEX . '|max:100',
-            'phoneNumber' => 'required|regex:' . self::PHONE_REGEX,
-            'dob' => 'required|date|before_or_equal:' . now()->subYears(self::MIN_AGE)->format('Y-m-d') . '|after_or_equal:' . now()->subYears(self::MAX_AGE)->format('Y-m-d'),
-            'governorateId' => 'required|exists:governorates,id',
-            'street' => 'required|string|max:255',
-            'institutionId' => 'required_if:trainingType,' . self::UNIVERSITY . '|exists:institutions,id',
-            'majorId' => 'required_if:trainingType,' . self::UNIVERSITY . '|exists:majors,id',
-            'administrativeId' => 'required|exists:administratives,id',
-            'departmentId' => 'required|exists:departments,id',
-            'sectionId' => 'required|exists:sections,id',
-            'trainingHours' => 'required|integer|min:' . self::MIN_TRAINING_HOURS . '|max:' . self::MAX_TRAINING_HOURS,
-            'termsApproval' => 'required|accepted',
+            'trainingType' => ['required', 'integer', \Illuminate\Validation\Rule::in([self::UNIVERSITY, self::PRACTICE])],
+            'nationalId' => ['required', 'digits:9', 'regex:' . self::NATIONAL_ID_REGEX],
+            'fullName' => ['required', 'string', 'min:6', 'max:255', 'regex:' . self::NAME_REGEX],
+            'gender' => ['required', \Illuminate\Validation\Rule::enum(\App\Enums\Gender::class)],
+            'phoneNumber' => ['required', 'regex:' . self::PHONE_REGEX],
+            'dob' => [
+                'required',
+                'date',
+                'before_or_equal:' . now()->subYears(self::MIN_AGE)->format('Y-m-d'),
+                'after_or_equal:' . now()->subYears(self::MAX_AGE)->format('Y-m-d')
+            ],
+            'governorateId' => ['required', 'exists:governorates,id'],
+            'street' => ['nullable', 'string', 'max:255'],
+            'institutionId' => ['required_if:trainingType,' . self::UNIVERSITY, 'exists:institutions,id'],
+            'majorId' => ['required_if:trainingType,' . self::UNIVERSITY, 'exists:majors,id'],
+            'universityNumber' => ['required_if:trainingType,' . self::UNIVERSITY, 'numeric', 'digits_between:1,10'],
+            'administrativeId' => ['required', 'exists:administratives,id'],
+            'departmentId' => ['required', 'exists:departments,id'],
+            'sectionId' => ['required', 'exists:sections,id'],
+            'trainingHours' => ['required', 'integer', 'min:' . self::MIN_TRAINING_HOURS, 'max:' . self::MAX_TRAINING_HOURS],
+            'letterFile' => ['nullable', 'file', 'max:' . (self::MAX_FILE_SIZE_MB * 1024), 'mimes:' . implode(',', self::ALLOWED_FILE_TYPES)],
+            'termsApproval' => ['required', 'accepted'],
         ];
     }
 
@@ -81,16 +89,18 @@ class TraineeFormConfig
             'nationalId.digits' => 'رقم الهوية يجب أن يتكون من 9 أرقام.',
             'nationalId.regex' => 'صيغة رقم الهوية غير صحيحة.',
             'fullName.required' => 'الاسم الكامل مطلوب.',
+            'fullName.min' => 'الاسم الكامل يجب أن يكون 6 حروف على الأقل.',
             'fullName.regex' => 'الاسم يجب أن يحتوي على حروف ومسافات فقط.',
+            'gender.required' => 'الجنس مطلوب.',
             'phoneNumber.required' => 'رقم الجوال مطلوب.',
             'phoneNumber.regex' => 'صيغة رقم الجوال غير صحيحة. استخدم 9705XXXXXXXX أو 9725XXXXXXXX',
             'dob.required' => 'تاريخ الميلاد مطلوب.',
             'dob.before_or_equal' => 'يجب أن يكون عمرك ' . self::MIN_AGE . ' سنة على الأقل.',
             'dob.after_or_equal' => 'يجب أن يكون عمرك ' . self::MAX_AGE . ' سنة كحد أقصى.',
             'governorateId.required' => 'المحافظة مطلوبة.',
-            'street.required' => 'العنوان مطلوب.',
             'institutionId.required_if' => 'اختر المؤسسة التعليمية.',
             'majorId.required_if' => 'اختر التخصص.',
+            'universityNumber.required_if' => 'رقم الطالب الجامعي مطلوب.',
             'administrativeId.required' => 'مكان التدريب مطلوب.',
             'departmentId.required' => 'القسم مطلوب.',
             'sectionId.required' => 'التخصص مطلوب.',

@@ -97,10 +97,6 @@ class TraineeSeeder extends Seeder
                     'dob' => $t['dob'],
                     'street' => $t['address'],
                     'governorate_id' => $t['gov_id'],
-                    'institution_id' => $inst_id,
-                    'college_id' => $col_id,
-                    'major_id' => $major_id,
-                    'training_hours' => 100,
                 ]
             );
         }

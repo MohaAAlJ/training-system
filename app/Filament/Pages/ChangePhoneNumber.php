@@ -17,9 +17,10 @@ class ChangePhoneNumber extends Page implements HasForms
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-phone';
     protected static ?string $navigationLabel = 'تغيير رقم الهاتف';
-    protected static ?string $title = 'تغيير رقم الهاتف';
+    protected static ?string $title = '';
     protected static ?string $slug = 'change-phone-number';
-    protected static ?int $navigationSort = 100;
+    protected static ?int $navigationSort = 3;
+    protected static string|\UnitEnum|null $navigationGroup = 'الإعدادات';
 
     protected string $view = 'filament.pages.change-phone-number';
 
@@ -36,8 +37,8 @@ class ChangePhoneNumber extends Page implements HasForms
     {
         return $schema
             ->components([
-                \Filament\Schemas\Components\Section::make('معلومات الاتصال')
-                    ->description('قم بتحديث رقم هاتفك المسجل في النظام')
+                \Filament\Schemas\Components\Section::make('قم بتحديث رقم هاتفك في النظام')
+                    ->description()
                     ->icon('heroicon-o-phone')
                     ->schema([
                         TextInput::make('phone_number')

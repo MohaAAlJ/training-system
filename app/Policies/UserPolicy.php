@@ -8,12 +8,12 @@ class UserPolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->isAdmin();
+        return $user->isAdmin() || $user->isGeneralTrainingManager();
     }
 
     public function view(User $user, User $model): bool
     {
-        return $user->isAdmin();
+        return $user->isAdmin() || $user->isGeneralTrainingManager();
     }
 
     public function create(User $user): bool

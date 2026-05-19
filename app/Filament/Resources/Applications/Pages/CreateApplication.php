@@ -4,9 +4,12 @@ namespace App\Filament\Resources\Applications\Pages;
 
 // use App\Enums\ApplicationStatus;
 use App\Filament\Resources\Applications\ApplicationResource;
+use App\Models\Application;
 use App\Models\Trainee;
 use Filament\Actions\Action;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -22,11 +25,11 @@ class CreateApplication extends CreateRecord
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         if (Auth::user()->isCollegeSupervisor() || Auth::user()->isMinistry()) {
-            $data['status'] = \App\Models\Application::STATUS_CONFIRMATION;
+            $data['status'] = Application::STATUS_CONFIRMATION;
             $data['accepted_at'] = now();
 
             if (Auth::user()->isCollegeSupervisor()) {
-                $data['training_type'] = \App\Models\Application::UNIVERSITY;
+                $data['training_type'] = Application::UNIVERSITY;
             }
         }
 
@@ -41,6 +44,9 @@ class CreateApplication extends CreateRecord
                     if ($collegeObj) {
                         $collegeId = $collegeId ?: $collegeObj->id;
                         $institutionId = $institutionId ?: $collegeObj->institution_id;
+
+                        $data['college_id'] = $collegeId;
+                        $data['institution_id'] = $institutionId;
                     }
                 }
 
@@ -53,10 +59,6 @@ class CreateApplication extends CreateRecord
                     'street' => $data['street'] ?? null,
                     'dob' => $data['dob'] ?? null,
                     'gender' => $data['gender'] ?? null,
-                    'college_id' => $collegeId,
-                    'institution_id' => $institutionId,
-                    'major_id' => $data['major_id'] ?? null,
-                    'training_hours' => $data['training_hours'] ?? null,
                 ];
 
                 $trainee = Trainee::create($traineeData);
@@ -79,10 +81,6 @@ class CreateApplication extends CreateRecord
                         'street' => $data['street'] ?? $trainee->street,
                         'dob' => $data['dob'] ?? $trainee->dob,
                         'gender' => $data['gender'] ?? $trainee->gender,
-                        'institution_id' => $data['institution_id'] ?? $trainee->institution_id,
-                        'college_id' => $data['college_id'] ?? $trainee->college_id,
-                        'major_id' => $data['major_id'] ?? $trainee->major_id,
-                        'training_hours' => $data['training_hours'] ?? $trainee->training_hours,
                     ]);
                 }
                 DB::commit();
@@ -100,17 +98,47 @@ class CreateApplication extends CreateRecord
             $data['governorate_id'],
             $data['address'],
             $data['street'],
-            $data['dob'],
-            $data['college_id'],
-            $data['institution_id'],
-            $data['major_id'],
-            $data['training_hours'],
             $data['dob_year'],
             $data['dob_month'],
             $data['dob_day']
         );
 
         return $data;
+    }
+
+    protected function handleRecordCreation(array $data): Model
+    {
+        $user = Auth::user();
+
+        if ($user->isCollegeSupervisor()) {
+            $traineeId = $data['trainee_id'] ?? null;
+            $supervisorCollegeId = $user->college?->id;
+
+            if ($traineeId) {
+                $upgradable = Application::where('trainee_id', $traineeId)
+                    ->whereIn('status', [
+                        Application::STATUS_NEW,
+                        Application::STATUS_INITIAL_APPROVE,
+                    ])->first();
+
+                if ($upgradable) {
+                    if ($upgradable->college_id !== null && $upgradable->college_id !== $supervisorCollegeId) {
+                        Notification::make()
+                            ->title('خطأ')
+                            ->body('هذا المتدرب لديه طلب تدريب مسجل من كلية أخرى.')
+                            ->danger()
+                            ->send();
+
+                        $this->halt();
+                    }
+
+                    $upgradable->update($data);
+                    return $upgradable;
+                }
+            }
+        }
+
+        return parent::handleRecordCreation($data);
     }
 
     protected function getHeaderActions(): array

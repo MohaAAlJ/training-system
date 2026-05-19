@@ -16,12 +16,16 @@ class TraineePolicy
 
     public function view(User $user, Trainee $trainee): bool
     {
-        if ($user->isAdmin() || $user->isMinistry() || $user->isGeneralTrainingManager()) {
+        if ($user->isAdmin() || $user->isMinistry() || $user->isGeneralTrainingManager() || $user->isMonitor()) {
             return true;
         }
 
+        if ($user->isAssistantTrainingManager()) {
+            return $trainee->applications()->forUser($user)->exists();
+        }
+
         if ($user->isCollegeSupervisor()) {
-            return $trainee->college_id === $user->college?->id;
+            return $trainee->applications()->where('college_id', $user->college?->id)->exists();
         }
 
         if ($user->isSectionHead()) {
@@ -46,7 +50,7 @@ class TraineePolicy
 
         if ($user->isDepartment()) {
             return $trainee->applications()
-                ->whereHas('section', fn($q) => $q->where('department_id', $user->department?->id))
+                ->whereHas('section', fn($q) => $q->whereHas('departments', fn($d) => $d->where('departments.id', $user->department?->id)->visible()))
                 ->whereIn('status', [
                     Application::STATUS_STARTED_TRAINING,
                     Application::STATUS_ENDED_TRAINING
@@ -57,9 +61,11 @@ class TraineePolicy
         if ($user->isMedicalManager()) {
             $adminId = \App\Models\Administrative::where('medical_head_user_id', $user->id)->value('id');
             return $trainee->applications()
-                ->whereHas('section', fn($q) =>
+                ->whereHas(
+                    'section',
+                    fn($q) =>
                     $q->where('administrative_id', $adminId)
-                      ->whereHas('department', fn($dq) => $dq->where('is_medical', true))
+                        ->whereHas('departments', fn($dq) => $dq->where('is_medical', true)->visible())
                 )
                 ->whereIn('status', [
                     Application::STATUS_STARTED_TRAINING,
@@ -78,11 +84,36 @@ class TraineePolicy
 
     public function update(User $user, Trainee $trainee): bool
     {
-        return $user->isAdmin();
+        if ($user->isAdmin() || $user->isGeneralTrainingManager()) {
+            return true;
+        }
+
+        if ($user->isAssistantTrainingManager()) {
+            return $trainee->applications()->forUser($user)->exists();
+        }
+
+        if ($user->isCollegeSupervisor()) {
+            return $trainee->applications()->where('college_id', $user->college?->id)->exists();
+        }
+
+        if ($user->isMinistry()) {
+            if ($user->mohDepartment) {
+                if ($user->mohDepartment()->active()->doesntExist()) {
+                    return false;
+                }
+                return $trainee->applications()
+                    ->where('training_type', Application::PRACTICE)
+                    ->whereHas('section', fn($sq) => $sq->whereHas('departments', fn($d) => $d->where('departments.id', $user->mohDepartment->id)->visible()))
+                    ->exists();
+            }
+            return true;
+        }
+
+        return false;
     }
 
     public function delete(User $user, Trainee $trainee): bool
     {
-        return $user->isAdmin() || $user->isGeneralTrainingManager();
+        return $user->isAdmin();
     }
 }

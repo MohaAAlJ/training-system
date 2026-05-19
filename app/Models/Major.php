@@ -27,8 +27,15 @@ class Major extends Model
         return $this->belongsToMany(College::class);
     }
 
-    public function trainees(): HasMany
+    public function trainees(): \Illuminate\Database\Eloquent\Relations\HasManyThrough
     {
-        return $this->hasMany(Trainee::class);
+        return $this->hasManyThrough(
+            Trainee::class,
+            Application::class,
+            'major_id', // Foreign key on applications table...
+            'id', // Foreign key on trainees table...
+            'id', // Local key on majors table...
+            'trainee_id' // Local key on applications table...
+        );
     }
 }

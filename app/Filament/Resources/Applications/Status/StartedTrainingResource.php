@@ -40,7 +40,7 @@ class StartedTrainingResource extends Resource
     {
         $user = Auth::user();
 
-        return $user && ($user->isAdmin() || $user->isGeneralTrainingManager());
+        return $user && ($user->isAdmin() || $user->isTrainingManagerLike());
     }
 
     public static function shouldRegisterNavigation(): bool
@@ -85,6 +85,7 @@ class StartedTrainingResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
+            ->forUser(Auth::user())
             ->where('status', Application::STATUS_STARTED_TRAINING);
     }
 }

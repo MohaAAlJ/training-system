@@ -19,11 +19,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
-class Application extends Model
+
+class Application extends Model implements HasMedia
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, InteractsWithMedia;
 
     // =========================================================================
     // CONSTANTS: TRAINING TYPES
@@ -43,6 +45,28 @@ class Application extends Model
     public const STATUS_REJECTED = 7;
     public const STATUS_DROPPED = 8;
     public const STATUS_UNKNOWN = 9;
+    public const STATUS_CANCELLED = 10;
+
+    // =========================================================================
+    // CONSTANTS: TRAINING DAYS (BITMASK)
+    // =========================================================================
+    public const DAY_SUNDAY = 0;
+    public const DAY_MONDAY = 1;
+    public const DAY_TUESDAY = 2;
+    public const DAY_WEDNESDAY = 3;
+    public const DAY_THURSDAY = 4;
+    public const DAY_FRIDAY = 5;
+    public const DAY_SATURDAY = 6;
+
+    public const ALL_DAYS = [
+        self::DAY_SUNDAY => 'الأحد',
+        self::DAY_MONDAY => 'الاثنين',
+        self::DAY_TUESDAY => 'الثلاثاء',
+        self::DAY_WEDNESDAY => 'الأربعاء',
+        self::DAY_THURSDAY => 'الخميس',
+        self::DAY_FRIDAY => 'الجمعة',
+        self::DAY_SATURDAY => 'السبت',
+    ];
 
     public const STATUSES = [
         self::STATUS_NEW,
@@ -54,6 +78,7 @@ class Application extends Model
         self::STATUS_REJECTED,
         self::STATUS_DROPPED,
         self::STATUS_UNKNOWN,
+        self::STATUS_CANCELLED,
     ];
 
     // =========================================================================
@@ -65,6 +90,15 @@ class Application extends Model
         return match ($type) {
             self::UNIVERSITY => 'تدريب جامعي',
             self::PRACTICE => 'تدريب إمتياز',
+            default => 'غير محدد',
+        };
+    }
+
+    public static function getTrainingTypeLongLabel(int $type): string
+    {
+        return match ($type) {
+            self::UNIVERSITY => 'تدريب جامعي (يتطلب تأكيد جامعي)',
+            self::PRACTICE => 'تدريب إمتياز (يتطلب تأكيد وزارة الصحة)',
             default => 'غير محدد',
         };
     }
@@ -90,6 +124,7 @@ class Application extends Model
             self::STATUS_REJECTED => self::getStatusLabel(self::STATUS_REJECTED),
             self::STATUS_DROPPED => self::getStatusLabel(self::STATUS_DROPPED),
             self::STATUS_UNKNOWN => self::getStatusLabel(self::STATUS_UNKNOWN),
+            self::STATUS_CANCELLED => self::getStatusLabel(self::STATUS_CANCELLED),
         ];
     }
 
@@ -105,6 +140,7 @@ class Application extends Model
             self::STATUS_REJECTED => 'رفض',
             self::STATUS_DROPPED => 'منسحب',
             self::STATUS_UNKNOWN => 'غير معروف',
+            self::STATUS_CANCELLED => 'ملغى التدريب',
             default => 'غير محدد',
         };
     }
@@ -117,7 +153,7 @@ class Application extends Model
             self::STATUS_WAITING_LIST => 'warning',
             self::STATUS_STARTED_TRAINING => 'success',
             self::STATUS_ENDED_TRAINING => 'gray',
-            self::STATUS_REJECTED, self::STATUS_DROPPED => 'danger',
+            self::STATUS_REJECTED, self::STATUS_DROPPED, self::STATUS_CANCELLED => 'danger',
             default => 'gray',
         };
     }
@@ -137,6 +173,7 @@ class Application extends Model
             self::STATUS_ENDED_TRAINING => 'لديك طلب تدريب منتهي',
             self::STATUS_REJECTED => 'نعتذر، لقد تم رفض طلبك السابق ولا يمكنك تقديم طلب جديد حالياً وفقاً للسياسات المعمول بها.',
             self::STATUS_DROPPED => 'لديك طلب منسحب',
+            self::STATUS_CANCELLED => 'تم إلغاء طلب التدريب',
             self::STATUS_UNKNOWN => 'لا يمكنك تقديم طلب جديد في هذا الوقت',
             default => 'حالة غير معروفة',
         };
@@ -148,9 +185,7 @@ class Application extends Model
     protected $table = 'applications';
 
     protected $fillable = [
-        'uuid',
         'training_type',
-        'duration',
         'section_id',
         'start_date',
         'end_date',
@@ -161,6 +196,11 @@ class Application extends Model
         'accepted_at',
         'street',
         'university_number',
+        'institution_id',
+        'college_id',
+        'major_id',
+        'training_hours',
+        'days_note',
     ];
 
     protected $casts = [
@@ -168,8 +208,8 @@ class Application extends Model
         'end_date' => 'date',
         'accepted_at' => 'datetime',
         'status' => 'integer',
-        'duration' => 'integer',
         'training_type' => 'integer',
+        'days_note' => 'array',
     ];
 
     // =========================================================================
@@ -186,6 +226,30 @@ class Application extends Model
         return self::getStatusMessage($this->status, $this->training_type);
     }
 
+    public function calculateEndDate(?int $customDailyHours = null, ?array $customDays = null, $customStartDate = null, ?int $customTrainingHours = null): ?string
+    {
+        $startDate = $customStartDate ?? $this->start_date;
+        $trainingHours = $customTrainingHours ?? $this->training_hours;
+
+        if (!$startDate || !$trainingHours) {
+            return $this->end_date?->format('Y-m-d');
+        }
+
+        // Use provided values or fall back to stored values or defaults
+        $dailyHours  = $customDailyHours ?? ($this->days_note['daily_hours'] ?? 8);
+        $days        = $customDays ?? ($this->days_note['training_days'] ?? array_keys(self::ALL_DAYS));
+        $daysPerWeek = count($days) ?: 7;
+
+        // Formula used in Filament Resource for consistency:
+        $sessionsNeeded    = (int) ceil($trainingHours / $dailyHours);
+        $calendarDaysToAdd = (int) round(($sessionsNeeded / $daysPerWeek) * 7);
+        $daysToJump        = max(0, $calendarDaysToAdd - 1);
+
+        return \Carbon\Carbon::parse($startDate)
+            ->addDays($daysToJump)
+            ->format('Y-m-d');
+    }
+
     // =========================================================================
     // RELATIONSHIPS
     // =========================================================================
@@ -200,16 +264,38 @@ class Application extends Model
         return $this->belongsTo(Section::class);
     }
 
+    public function institution(): BelongsTo
+    {
+        return $this->belongsTo(Institution::class);
+    }
+
+    public function college(): BelongsTo
+    {
+        return $this->belongsTo(College::class);
+    }
+
+    public function major(): BelongsTo
+    {
+        return $this->belongsTo(Major::class);
+    }
+
+    // =========================================================================
+    // MEDIA COLLECTIONS
+    // =========================================================================
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('trainee_application_files')
+            ->singleFile()
+            ->useDisk('local');
+    }
+
     // =========================================================================
     // BOOT & EVENTS
     // =========================================================================
     protected static function booted()
     {
         parent::booted();
-
-        static::creating(function ($model) {
-            $model->uuid = (string) Str::uuid();
-        });
 
         static::created(function (self $application) {
             // 1. Telegram Notification
@@ -227,8 +313,10 @@ class Application extends Model
             // Check if status changed FROM Started Training TO something else
             if ($application->isDirty('status')) {
                 if ($application->getOriginal('status') == self::STATUS_STARTED_TRAINING) {
-                    $application->start_date = null;
-                    $application->end_date = null;
+                    if (!in_array($application->status, [self::STATUS_ENDED_TRAINING, self::STATUS_CANCELLED])) {
+                        $application->start_date = null;
+                        $application->end_date = null;
+                    }
                 }
             }
         });
@@ -270,93 +358,148 @@ class Application extends Model
         });
     }
 
+
     // =========================================================================
     // SCOPES
     // =========================================================================
 
+    public function scopeForManagedDepartments($query, $managedDepartmentIds)
+    {
+        if (empty($managedDepartmentIds)) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        return $query->whereIn('applications.section_id', function ($subquery) use ($managedDepartmentIds) {
+            $subquery->select('sections.id')
+                ->from('sections')
+                ->join('department_section', 'sections.id', '=', 'department_section.section_id')
+                ->join('departments', 'department_section.department_id', '=', 'departments.id')
+                ->whereIn('department_section.department_id', $managedDepartmentIds)
+                ->where('departments.visible', true)
+                ->distinct();
+        });
+    }
+
     public function scopeForUser($query, $user)
     {
-        if ($user->isAdmin() || $user->isGeneralTrainingManager()) {
+        // Keep invisible departments hidden for non-admin, non-MOH users.
+        if (! $user->isAdmin() && ! $user->isMinistry()) {
+            $query = $query->whereHas('section', function ($q) {
+                $q->whereHas('departments', fn($d) => $d->where('visible', true));
+            });
+        }
+
+        // 1. Admins & Monitors see everything (except MOH departments for non-MOH)
+        if ($user->isAdmin() || $user->isGeneralTrainingManager() || $user->isMonitor()) {
             return $query;
         }
 
+        if ($user->isAssistantTrainingManager()) {
+            return $query->forManagedDepartments($user->managedDepartmentIds());
+        }
+
+        // 2. Define reusable status lists
+        $verifiedStatuses = [
+            self::STATUS_INITIAL_APPROVE,
+            self::STATUS_CONFIRMATION,
+            self::STATUS_WAITING_LIST,
+            self::STATUS_STARTED_TRAINING,
+            self::STATUS_ENDED_TRAINING
+        ];
+
+        $activeStatuses = [
+            self::STATUS_WAITING_LIST,
+            self::STATUS_STARTED_TRAINING,
+            self::STATUS_ENDED_TRAINING
+        ];
+
+        // 3. Role-based filtering
         if ($user->isCollegeSupervisor()) {
-            $collegeId = College::where('user_id', $user->id)->value('id');
+            $college = College::where('user_id', $user->id)->first();
+            if (!$college || $user->college()->active()->doesntExist()) {
+                return $query->whereRaw('1 = 0');
+            }
             return $query->where('training_type', self::UNIVERSITY)
-                ->whereIn('status', [
-                    self::STATUS_INITIAL_APPROVE,
-                    self::STATUS_CONFIRMATION,
-                    self::STATUS_WAITING_LIST,
-                    self::STATUS_STARTED_TRAINING,
-                    self::STATUS_ENDED_TRAINING
-                ])
-                ->whereHas('trainee', function ($q) use ($collegeId) {
-                    $q->where('college_id', $collegeId);
-                });
+                ->where('college_id', $college->id);
         }
 
         if ($user->isSectionHead()) {
-            return $query->where('section_id', $user->section?->id)
-                ->whereIn('status', [
-                    self::STATUS_WAITING_LIST,
-                    self::STATUS_STARTED_TRAINING,
-                    self::STATUS_ENDED_TRAINING
-                ]);
+            if ($user->section()->active()->doesntExist()) {
+                return $query->whereRaw('1 = 0');
+            }
+            return $query->where('section_id', $user->section->id)
+                ->whereIn('status', $activeStatuses);
         }
 
         if ($user->isAdministrative()) {
-            // Filter by applications whose section belongs to this administrative
-            return $query->whereHas('section', fn($q) => $q->where('administrative_id', $user->administrative?->id))
-                ->whereIn('status', [
-                    self::STATUS_WAITING_LIST,
-                    self::STATUS_STARTED_TRAINING,
-                    self::STATUS_ENDED_TRAINING
-                ]);
+            if ($user->administrative()->active()->doesntExist()) {
+                return $query->whereRaw('1 = 0');
+            }
+            return $query->whereHas('section', fn($q) => $q->where('administrative_id', $user->administrative->id))
+                ->whereIn('status', $activeStatuses);
         }
 
         if ($user->isMedicalManager()) {
-            $adminId = Administrative::where('medical_head_user_id', $user->id)->value('id');
-            return $query->whereHas(
-                'section',
-                fn($q) =>
-                $q->where('administrative_id', $adminId)
-                    ->whereHas('department', fn($d) => $d->where('is_medical', true))
-            )
-                ->whereIn('status', [
-                    self::STATUS_WAITING_LIST,
-                    self::STATUS_STARTED_TRAINING,
-                    self::STATUS_ENDED_TRAINING
-                ]);
+            $admin = Administrative::where('medical_head_user_id', $user->id)->active()->first();
+            if (!$admin) {
+                return $query->whereRaw('1 = 0');
+            }
+            return $query->whereHas('section', function ($q) use ($admin) {
+                $q->where('administrative_id', $admin->id)
+                    ->whereHas('departments', fn($d) => $d->where('is_medical', true)->visible());
+            })->whereIn('status', $activeStatuses);
         }
 
         if ($user->isDepartment()) {
-            // Filter by applications whose section belongs to this department
-            $query->whereHas('section', fn($q) => $q->where('department_id', $user->department?->id))
-                ->whereIn('status', [
-                    self::STATUS_WAITING_LIST,
-                    self::STATUS_STARTED_TRAINING,
-                    self::STATUS_ENDED_TRAINING
-                ]);
+            if ($user->department()->active()->doesntExist()) {
+                return $query->whereRaw('1 = 0');
+            }
+            return $query->whereHas('section', function ($q) use ($user) {
+                $q->whereHas('departments', fn($d) => $d->where('departments.id', $user->department->id)->visible());
+            })->whereIn('status', $activeStatuses);
+        }
 
-            if ($user->department?->is_medical === true) {
-                // Redundant check if we are already filtering by department_id, but keeping logic
-                // If department itself is medical, all its sections are generally considered part of it.
+        if ($user->isMinistry()) {
+            $mohStatuses = [
+                self::STATUS_NEW,
+                self::STATUS_INITIAL_APPROVE,
+                self::STATUS_CONFIRMATION,
+                self::STATUS_WAITING_LIST,
+                self::STATUS_STARTED_TRAINING,
+                self::STATUS_ENDED_TRAINING,
+                self::STATUS_REJECTED,
+            ];
+
+            $query = $query->where('training_type', self::PRACTICE)
+                ->whereIn('status', $mohStatuses);
+
+            // Linked MOH: restrict to their department; unlinked: see all PRACTICE
+            if ($user->mohDepartment && $user->mohDepartment()->active()->exists()) {
+                $query->whereHas('section', function ($q) use ($user) {
+                    $q->whereHas('departments', fn($d) => $d->where('departments.id', $user->mohDepartment->id)->visible());
+                });
+            } else {
+                // Unlinked MOH: see all PRACTICE with visible departments only
+                $query->whereHas('section', function ($q) {
+                    $q->whereHas('departments', fn($d) => $d->visible());
+                });
             }
 
             return $query;
         }
 
-        if ($user->isMinistry()) {
-            return $query->where('training_type', self::PRACTICE)
-                ->whereIn('status', [
-                    self::STATUS_INITIAL_APPROVE,
-                    self::STATUS_CONFIRMATION,
-                    self::STATUS_STARTED_TRAINING,
-                    self::STATUS_ENDED_TRAINING
-                ]);
-        }
-
         return $query->whereRaw('1 = 0');
+    }
+
+    public function departmentIds(): array
+    {
+        $departments = $this->section?->relationLoaded('departments')
+            ? $this->section->departments
+            : $this->section?->departments()->get(['departments.id']);
+
+        return $departments
+            ? $departments->pluck('id')->map(fn($id) => (int) $id)->all()
+            : [];
     }
     // =========================================================================
     // PRIVATE HELPERS FOR NOTIFICATIONS
@@ -373,6 +516,7 @@ class Application extends Model
 
         // 2. ROLE_GTM
         $recipients = $recipients->merge(User::where('role', User::ROLE_GTM)->active()->get());
+        $recipients = self::mergeScopedTrainingManagers($recipients, $application);
 
         // Note: HOS, HOD, HOA, HOM are EXCLUDED from Creation notification as per request.
 
@@ -416,8 +560,10 @@ class Application extends Model
         $notification = new ApplicationConfirmedNotification($application);
         // Confirmed -> Only Admin & GTM
         $recipients = User::whereIn('role', [User::ROLE_GTM, User::ROLE_ADMIN])->active()->get();
+        $recipients = self::mergeScopedTrainingManagers($recipients, $application);
 
         foreach ($recipients as $user) {
+            /** @var \App\Models\User $user */
             try {
                 $user->notify($notification);
             } catch (\Throwable $e) {
@@ -440,17 +586,17 @@ class Application extends Model
         if ($application->training_type === self::PRACTICE) {
             $recipients = User::where('role', User::ROLE_MOH)->active()->get();
         } elseif ($application->training_type === self::UNIVERSITY) {
-            $trainee = $application->trainee;
-            if ($trainee && $trainee->college_id) {
+            if ($application->college_id) {
                 $recipients = User::where('role', User::ROLE_COLLEGE)
                     ->active()
-                    ->whereHas('college', fn($q) => $q->where('id', $trainee->college_id))
+                    ->whereHas('college', fn($q) => $q->where('id', $application->college_id))
                     ->get();
             }
         }
 
         // Also add Admin/GTM if they should receive "all of them"
         $recipients = $recipients->merge(User::whereIn('role', [User::ROLE_ADMIN, User::ROLE_GTM])->active()->get());
+        $recipients = self::mergeScopedTrainingManagers($recipients, $application);
 
         $recipients = $recipients->unique('id')->values();
 
@@ -470,10 +616,11 @@ class Application extends Model
         // 1. Admin & GTM (Receive ALL)
         $recipients = $recipients->merge(User::where('role', User::ROLE_ADMIN)->active()->get());
         $recipients = $recipients->merge(User::where('role', User::ROLE_GTM)->active()->get());
+        $recipients = self::mergeScopedTrainingManagers($recipients, $application);
 
         // 2. Local Management Chain (HOS, HOD, HOA, HOM)
         $section = $application->section;
-        $department = $section?->department;
+        $departments = $section?->departments;
         $administrative = $section?->administrative;
 
         // Head of Section (HOS)
@@ -482,10 +629,14 @@ class Application extends Model
             if ($user) $recipients->push($user);
         }
 
-        // Head of Department (HOD)
-        if ($department && $department->user_id) {
-            $user = User::where('id', $department->user_id)->active()->first();
-            if ($user) $recipients->push($user);
+        // Head of Department (HOD) - Notify ALL heads
+        if ($departments) {
+            foreach ($departments as $department) {
+                if ($department->user_id) {
+                    $user = User::where('id', $department->user_id)->active()->first();
+                    if ($user) $recipients->push($user);
+                }
+            }
         }
 
         // Head of Administrative (HOA)
@@ -495,7 +646,7 @@ class Application extends Model
         }
 
         // Medical Manager (HOM)
-        if ($department && $department->is_medical && $administrative && $administrative->medical_head_user_id) {
+        if ($departments && $departments->contains('is_medical', true) && $administrative && $administrative->medical_head_user_id) {
             $user = User::where('id', $administrative->medical_head_user_id)->active()->first();
             if ($user) $recipients->push($user);
         }
@@ -504,12 +655,11 @@ class Application extends Model
         if ($application->training_type === self::PRACTICE) {
             $recipients = $recipients->merge(User::where('role', User::ROLE_MOH)->active()->get());
         } elseif ($application->training_type === self::UNIVERSITY) {
-            $trainee = $application->trainee;
-            if ($trainee && $trainee->college_id) {
+            if ($application->college_id) {
                 $recipients = $recipients->merge(
                     User::where('role', User::ROLE_COLLEGE)
                         ->active()
-                        ->whereHas('college', fn($q) => $q->where('id', $trainee->college_id))
+                        ->whereHas('college', fn($q) => $q->where('id', $application->college_id))
                         ->get()
                 );
             }
@@ -524,5 +674,21 @@ class Application extends Model
                 Log::error('Failed to notify command chain user ' . $user->id . ': ' . $e->getMessage());
             }
         }
+    }
+
+    private static function mergeScopedTrainingManagers($recipients, self $application)
+    {
+        $departmentIds = $application->departmentIds();
+
+        if (empty($departmentIds)) {
+            return $recipients;
+        }
+
+        return $recipients->merge(
+            User::where('role', User::ROLE_ASSISTANT_TRAINING_MANAGER)
+                ->active()
+                ->whereHas('managedDepartments', fn($query) => $query->whereIn('departments.id', $departmentIds))
+                ->get()
+        );
     }
 }

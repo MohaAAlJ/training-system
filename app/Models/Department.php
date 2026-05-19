@@ -5,6 +5,8 @@ namespace App\Models;
 use App\Enums\GeneralConst;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Department extends Model
@@ -16,16 +18,34 @@ class Department extends Model
         'id',
         'name',
         'user_id',
+        'moh_dept_user_id',
+        'assistant_training_manager_id',
         'is_medical',
         'active',
+        'visible',
     ];
     protected $casts = [
+        'visible' => 'boolean',
     ];
+
+
 
     /**Scope */
     public function scopeActive($query)
     {
         return $query->where('active', GeneralConst::ACTIVE);
+    }
+
+    public function scopeVisible($query)
+    {
+        return $query->where('visible', true);
+    }
+
+    public function scopeAssignableToAssistantTrainingManager($query)
+    {
+        return $query
+            ->active()
+            ->visible();
     }
 
     /** Relations */
@@ -34,37 +54,57 @@ class Department extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function mohUser()
+    {
+        return $this->belongsTo(User::class, 'moh_dept_user_id');
+    }
+
     public function applications()
     {
-        return $this->hasMany(Application::class, 'department_id');
+        return $this->belongsToMany(Application::class, 'department_section', 'department_id', 'section_id', 'id', 'section_id');
     }
 
     public function sections()
     {
-        return $this->hasMany(Section::class, 'department_id');
+        return $this->belongsToMany(Section::class, 'department_section');
     }
 
+    public function assistantTrainingManager(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'assistant_training_manager_id');
+    }
+
+    // =========================================================================
+    // CAPACITY METHODS
+    // =========================================================================
+
     /**
-     * Get capacity statistics for this department by summing its sections.
-     * Returns: total, used, available, is_full
+     * Get capacity statistics for this department.
+     *
+     * @return array{total: int, used: int, available: int, is_full: bool}
      */
     public function getCapacityStats(): array
     {
-        // Sum total capacity from all active sections
-        $total = (int) $this->sections()->active()->sum('capacity');
+        return Section::getStatsFromQuery($this->sections()->active());
+    }
 
-        // Count only active (started training) applications
-        $used = Application::whereIn('section_id', $this->sections()->select('id'))
-            ->where('status', Application::STATUS_STARTED_TRAINING)
-            ->count();
+    /**
+     * Check if at full capacity (cannot accept new applications).
+     *
+     * @return bool
+     */
+    public function isFull(): bool
+    {
+        return $this->getCapacityStats()['is_full'];
+    }
 
-        $available = max(0, $total - $used);
-
-        return [
-            'total' => $total,
-            'used' => $used,
-            'available' => $available,
-            'is_full' => $total > 0 && $available <= 0
-        ];
+    /**
+     * Check if has available capacity (can accept new applications).
+     *
+     * @return bool
+     */
+    public function isAvailable(): bool
+    {
+        return !$this->isFull();
     }
 }

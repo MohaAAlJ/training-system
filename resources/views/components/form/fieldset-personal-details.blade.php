@@ -8,8 +8,8 @@
         <!-- Full Name -->
         <label class="field">
             <span>الاسم الكامل *</span>
-            <input 
-                type="text" 
+            <input
+                type="text"
                 wire:model.live="fullName"
                 placeholder="الاسم الكامل"
                 class="form__input @error('fullName') form__input--error @enderror"
@@ -26,8 +26,8 @@
         <!-- Date of Birth -->
         <label class="field">
             <span>تاريخ الميلاد</span>
-            <input 
-                type="date" 
+            <input
+                type="date"
                 wire:model.live="dob"
                 class="form__input @error('dob') form__input--error @enderror"
                 @readonly($dobReadonly)
@@ -35,15 +35,15 @@
             @error('dob')
                 <small class="error-message">{{ $message }}</small>
             @else
-                <small class="note">يجب أن تكون 20 سنة أو أكثر</small>
+                <small class="note">يجب أن تكون 18 سنة أو أكثر</small>
             @enderror
         </label>
 
         <!-- Phone Number -->
         <label class="field">
             <span>رقم الجوال</span>
-            <input 
-                type="tel" 
+            <input
+                type="tel"
                 wire:model.live="phoneNumber"
                 placeholder="9705XXXXXXXX"
                 class="form__input @error('phoneNumber') form__input--error @enderror"
@@ -70,8 +70,8 @@
         <!-- Street Address -->
         <label class="field">
             <span>عنوان/شارع</span>
-            <input 
-                type="text" 
+            <input
+                type="text"
                 wire:model.live="street"
                 placeholder="عنوان السكن"
                 class="form__input"

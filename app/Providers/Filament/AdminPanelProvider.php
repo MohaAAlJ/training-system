@@ -2,29 +2,26 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Auth\Login;
+use App\Filament\Pages\Auth\ChangePassword;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\MenuItem;
 use Filament\Pages\Dashboard;
 use Filament\Panel;
-use Filament\Support\Contracts\Collapsible;
-use Illuminate\Support\HtmlString;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
-use Filament\Widgets\AccountWidget;
-use Filament\Widgets\FilamentInfoWidget;
+use Filament\View\PanelsRenderHook;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\HtmlString;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
-use App\Filament\Auth\Login;
-use Filament\View\PanelsRenderHook;
-use Filament\Actions\Exports\Models\Export;
-use Filament\Navigation\MenuItem;
-use App\Filament\Pages\Auth\ChangePassword;
+use App\Settings\TrainingSettings;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -58,6 +55,21 @@ class AdminPanelProvider extends PanelProvider
                 PanelsRenderHook::FOOTER,
                 fn(): string => view('components.footer')->render()
             )
+            ->renderHook(
+                PanelsRenderHook::BODY_END,
+                fn(): HtmlString => new HtmlString('<script>
+                    document.addEventListener("livewire:init", function () {
+                        Livewire.hook("commit", function ({ component, commit, respond, succeed, fail }) {
+                            fail(function ({ status, preventDefault }) {
+                                if (status === 419) {
+                                    preventDefault();
+                                    window.location.replace("/session-expired");
+                                }
+                            });
+                        });
+                    });
+                </script>')
+            )
             ->sidebarWidth('17rem') // Narrower sidebar
             ->databaseNotifications()
             ->globalSearch(false)
@@ -67,6 +79,9 @@ class AdminPanelProvider extends PanelProvider
                     ->collapsible(false),
                 \Filament\Navigation\NavigationGroup::make()
                     ->label('الكليات')
+                    ->collapsed(),
+                \Filament\Navigation\NavigationGroup::make()
+                    ->label('الإعدادات')
                     ->collapsed(),
             ])
             ->collapsibleNavigationGroups(true)
@@ -80,11 +95,15 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([
                 // \App\Filament\Widgets\DashboardWidgets::class,
             ])
+            ->plugins([
+                //
+            ])
             ->userMenuItems([
                 MenuItem::make()
                     ->label('تغيير كلمة المرور')
                     ->url(fn(): string => ChangePassword::getUrl())
-                    ->icon('heroicon-o-key'),
+                    ->icon('heroicon-o-key')
+                    ->visible(fn() => app(TrainingSettings::class)->enable_change_password ?? false),
             ])
             ->middleware([
                 'throttle:60,1',

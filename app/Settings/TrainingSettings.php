@@ -20,6 +20,9 @@ class TrainingSettings extends Settings
     public bool $enable_training_type_university;
     public bool $can_university_reapply;
     public bool $can_practice_reapply;
+    public bool $enable_change_password = false;
+    public bool $ai_search_enabled = false;
+    public array $ai_search_allowed_roles = [];
 
     // Maintenance mode
     public bool $is_maintenance_mode;

@@ -36,7 +36,7 @@ class InitialApprovalNotification extends Notification
                 \Filament\Actions\Action::make('view')
                     ->label('عرض الطلب')
                     ->button()
-                    ->url(\App\Filament\Resources\Applications\ApplicationResource::getUrl('view', ['record' => $this->application])),
+                    ->url(\App\Filament\Resources\Applications\ApplicationResource::getUrl('view', ['record' => $this->application->id])),
             ])
             ->getDatabaseMessage();
     }

@@ -80,34 +80,24 @@ class TraineeResource extends Resource
         $query = parent::getEloquentQuery();
         $user = Auth::user();
 
+        if ($user->isAdmin() || $user->isGeneralTrainingManager() || $user->isMonitor()) {
+            return $query->withCount('applications')->latest();
+        }
 
-        if ($user->isAdmin() || $user->isGeneralTrainingManager()) {
-            return $query->withCount('applications');
+        if ($user->isAssistantTrainingManager()) {
+            return $query->whereHas('applications', fn($q) => $q->forUser($user))
+                ->withCount(['applications' => fn($q) => $q->forUser($user)])
+                ->latest();
         }
 
         if ($user->isMinistry()) {
-            return $query->whereHas('applications', function ($q) {
-                $q->where('training_type', Application::PRACTICE)
-                    ->whereIn('status', [
-                        Application::STATUS_INITIAL_APPROVE,
-                        Application::STATUS_STARTED_TRAINING,
-                        Application::STATUS_ENDED_TRAINING
-                    ]);
-            })->withCount(['applications' => function ($q) {
-                $q->where('training_type', Application::PRACTICE)
-                    ->whereIn('status', [
-                        Application::STATUS_INITIAL_APPROVE,
-                        Application::STATUS_STARTED_TRAINING,
-                        Application::STATUS_ENDED_TRAINING
-                    ]);
-            }]);
-        }
-
-        if ($user->isCollegeSupervisor()) {
-            $collegeId = \App\Models\College::where('user_id', $user->id)->value('id');
-            return $query->where('college_id', $collegeId)
-                ->whereHas('applications', function ($q) {
-                    $q->where('training_type', Application::UNIVERSITY)
+            if ($user->mohDepartment) {
+                if ($user->mohDepartment()->active()->doesntExist()) {
+                    return $query->whereRaw('1 = 0');
+                }
+                return $query->whereHas('applications', function ($q) use ($user) {
+                    $q->where('training_type', Application::PRACTICE)
+                        ->whereHas('section', fn($sq) => $sq->whereHas('departments', fn($d) => $d->where('departments.id', $user->mohDepartment->id)->visible()))
                         ->whereIn('status', [
                             Application::STATUS_INITIAL_APPROVE,
                             Application::STATUS_CONFIRMATION,
@@ -115,8 +105,9 @@ class TraineeResource extends Resource
                             Application::STATUS_STARTED_TRAINING,
                             Application::STATUS_ENDED_TRAINING
                         ]);
-                })->withCount(['applications' => function ($q) {
-                    $q->where('training_type', Application::UNIVERSITY)
+                })->withCount(['applications' => function ($q) use ($user) {
+                    $q->where('training_type', Application::PRACTICE)
+                        ->whereHas('section', fn($sq) => $sq->whereHas('departments', fn($d) => $d->where('departments.id', $user->mohDepartment->id)->visible()))
                         ->whereIn('status', [
                             Application::STATUS_INITIAL_APPROVE,
                             Application::STATUS_CONFIRMATION,
@@ -125,89 +116,152 @@ class TraineeResource extends Resource
                             Application::STATUS_ENDED_TRAINING
                         ]);
                 }]);
+            }
+
+            return $query->whereHas('applications', function ($q) {
+                $q->where('training_type', Application::PRACTICE)
+                    ->whereIn('status', [
+                        Application::STATUS_INITIAL_APPROVE,
+                        Application::STATUS_CONFIRMATION,
+                        Application::STATUS_WAITING_LIST,
+                        Application::STATUS_STARTED_TRAINING,
+                        Application::STATUS_ENDED_TRAINING
+                    ]);
+            })->withCount(['applications' => function ($q) {
+                $q->where('training_type', Application::PRACTICE)
+                    ->whereIn('status', [
+                        Application::STATUS_INITIAL_APPROVE,
+                        Application::STATUS_CONFIRMATION,
+                        Application::STATUS_WAITING_LIST,
+                        Application::STATUS_STARTED_TRAINING,
+                        Application::STATUS_ENDED_TRAINING
+                    ]);
+            }])->latest();
         }
 
+        if ($user->isCollegeSupervisor()) {
+            $college = \App\Models\College::where('user_id', $user->id)->first();
+            if (!$college || $user->college()->active()->doesntExist()) {
+                return $query->whereRaw('1 = 0');
+            }
+            return $query->whereHas('applications', function ($q) use ($college) {
+                $q->where('college_id', $college->id)
+                    ->where('training_type', Application::UNIVERSITY)
+                    ->whereIn('status', [
+                        Application::STATUS_INITIAL_APPROVE,
+                        Application::STATUS_CONFIRMATION,
+                        Application::STATUS_WAITING_LIST,
+                        Application::STATUS_STARTED_TRAINING,
+                        Application::STATUS_ENDED_TRAINING
+                    ]);
+            })->withCount(['applications' => function ($q) use ($college) {
+                $q->where('college_id', $college->id)
+                    ->where('training_type', Application::UNIVERSITY)
+                    ->whereIn('status', [
+                        Application::STATUS_INITIAL_APPROVE,
+                        Application::STATUS_CONFIRMATION,
+                        Application::STATUS_WAITING_LIST,
+                        Application::STATUS_STARTED_TRAINING,
+                        Application::STATUS_ENDED_TRAINING
+                    ]);
+            }])->latest();
+        }
+
+        // Section Head: Filter by section
         if ($user->isSectionHead()) {
+            if ($user->section()->active()->doesntExist()) {
+                return $query->whereRaw('1 = 0');
+            }
             return $query->whereHas('applications', function ($q) use ($user) {
-                $q->where('section_id', $user->section?->id)
+                $q->where('section_id', $user->section->id)
                     ->whereIn('status', [
                         Application::STATUS_WAITING_LIST,
                         Application::STATUS_STARTED_TRAINING,
                         Application::STATUS_ENDED_TRAINING
                     ]);
             })->withCount(['applications' => function ($q) use ($user) {
-                $q->where('section_id', $user->section?->id)
+                $q->where('section_id', $user->section->id)
                     ->whereIn('status', [
                         Application::STATUS_WAITING_LIST,
                         Application::STATUS_STARTED_TRAINING,
                         Application::STATUS_ENDED_TRAINING
                     ]);
-            }]);
+            }])->latest();
         }
 
+        // Department Head: Filter by department
         if ($user->isDepartmentHead()) {
+            if ($user->department()->active()->doesntExist()) {
+                return $query->whereRaw('1 = 0');
+            }
             return $query->whereHas('applications', function ($q) use ($user) {
-                $q->whereHas('section', fn($sq) => $sq->where('department_id', $user->department?->id))
+                $q->whereHas('section', fn($sq) => $sq->whereHas('departments', fn($d) => $d->where('departments.id', $user->department->id)->visible()))
                     ->whereIn('status', [
                         Application::STATUS_WAITING_LIST,
                         Application::STATUS_STARTED_TRAINING,
                         Application::STATUS_ENDED_TRAINING
                     ]);
             })->withCount(['applications' => function ($q) use ($user) {
-                $q->whereHas('section', fn($sq) => $sq->where('department_id', $user->department?->id))
+                $q->whereHas('section', fn($sq) => $sq->whereHas('departments', fn($d) => $d->where('departments.id', $user->department->id)->visible()))
                     ->whereIn('status', [
                         Application::STATUS_WAITING_LIST,
                         Application::STATUS_STARTED_TRAINING,
                         Application::STATUS_ENDED_TRAINING
                     ]);
-            }]);
+            }])->latest();
         }
 
         if ($user->isAdministrative()) {
+            if ($user->administrative()->active()->doesntExist()) {
+                return $query->whereRaw('1 = 0');
+            }
             return $query->whereHas('applications', function ($q) use ($user) {
-                $q->whereHas('section', fn($sq) => $sq->where('administrative_id', $user->administrative?->id))
+                $q->whereHas('section', fn($sq) => $sq->where('administrative_id', $user->administrative->id))
                     ->whereIn('status', [
                         Application::STATUS_WAITING_LIST,
                         Application::STATUS_STARTED_TRAINING,
                         Application::STATUS_ENDED_TRAINING
                     ]);
             })->withCount(['applications' => function ($q) use ($user) {
-                $q->whereHas('section', fn($sq) => $sq->where('administrative_id', $user->administrative?->id))
+                $q->whereHas('section', fn($sq) => $sq->where('administrative_id', $user->administrative->id))
                     ->whereIn('status', [
                         Application::STATUS_WAITING_LIST,
                         Application::STATUS_STARTED_TRAINING,
                         Application::STATUS_ENDED_TRAINING
                     ]);
-            }]);
+            }])->latest();
         }
 
         if ($user->isMedicalManager()) {
-            $adminId = \App\Models\Administrative::where('medical_head_user_id', $user->id)->value('id');
-            return $query->whereHas('applications', function ($q) use ($adminId) {
+            $admin = \App\Models\Administrative::where('medical_head_user_id', $user->id)->active()->first();
+            if (!$admin) {
+                return $query->whereRaw('1 = 0');
+            }
+            return $query->whereHas('applications', function ($q) use ($admin) {
                 $q->whereHas(
                     'section',
                     fn($sq) =>
-                    $sq->where('administrative_id', $adminId)
-                        ->whereHas('department', fn($dept) => $dept->where('is_medical', true))
+                    $sq->where('administrative_id', $admin->id)
+                        ->whereHas('departments', fn($dept) => $dept->where('is_medical', true)->visible())
                 )
                     ->whereIn('status', [
                         Application::STATUS_WAITING_LIST,
                         Application::STATUS_STARTED_TRAINING,
                         Application::STATUS_ENDED_TRAINING
                     ]);
-            })->withCount(['applications' => function ($q) use ($adminId) {
+            })->withCount(['applications' => function ($q) use ($admin) {
                 $q->whereHas(
                     'section',
                     fn($sq) =>
-                    $sq->where('administrative_id', $adminId)
-                        ->whereHas('department', fn($dept) => $dept->where('is_medical', true))
+                    $sq->where('administrative_id', $admin->id)
+                        ->whereHas('departments', fn($dept) => $dept->where('is_medical', true)->visible())
                 )
                     ->whereIn('status', [
                         Application::STATUS_WAITING_LIST,
                         Application::STATUS_STARTED_TRAINING,
                         Application::STATUS_ENDED_TRAINING
                     ]);
-            }]);
+            }])->latest();
         }
 
         return $query->whereRaw('1 = 0');

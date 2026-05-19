@@ -20,6 +20,8 @@ class Administrative extends Model
     protected $fillable = [
         'id',
         'name',
+        'moh_facility_id',
+        'address',
         'user_id',
         'is_medical',
         'medical_head_user_id',
@@ -28,6 +30,8 @@ class Administrative extends Model
     ];
 
     protected $casts = [];
+
+
 
     // =========================================================================
     // RELATIONSHIPS
@@ -106,31 +110,37 @@ class Administrative extends Model
     }
 
     // =========================================================================
-    // HELPERS
+    // CAPACITY METHODS
     // =========================================================================
 
     /**
-     * Get capacity statistics for this administrative unit by summing its sections.
-     * Returns: total, used, available, is_full
+     * Get capacity statistics for this administrative unit.
+     *
+     * @return array{total: int, used: int, available: int, is_full: bool}
      */
     public function getCapacityStats(): array
     {
-        // Sum total capacity from all active sections
-        $total = (int) $this->sections()->active()->sum('capacity');
+        return Section::getStatsFromQuery($this->sections()->active());
+    }
 
-        // Count all active applications through sections
-        $used = $this->applications()
-            ->where('applications.status', Application::STATUS_STARTED_TRAINING)
-            ->count();
+    /**
+     * Check if at full capacity (cannot accept new applications).
+     *
+     * @return bool
+     */
+    public function isFull(): bool
+    {
+        return $this->getCapacityStats()['is_full'];
+    }
 
-        $available = max(0, $total - $used);
-
-        return [
-            'total' => $total,
-            'used' => $used,
-            'available' => $available,
-            'is_full' => $total > 0 && $available <= 0
-        ];
+    /**
+     * Check if has available capacity (can accept new applications).
+     *
+     * @return bool
+     */
+    public function isAvailable(): bool
+    {
+        return !$this->isFull();
     }
 
     // =========================================================================

@@ -34,6 +34,7 @@ class AppServiceProvider extends ServiceProvider
     {
         Event::listen(Login::class, function ($event) {
             Session::put('login_time', now());
+            $event->user->update(['last_login_at' => now()]);
         });
 
         Gate::policy(Department::class, DepartmentPolicy::class);
@@ -57,4 +58,3 @@ class AppServiceProvider extends ServiceProvider
         });
     }
 }
-

@@ -6,13 +6,11 @@ use Illuminate\Database\Seeder;
 use App\Models\Department;
 use App\Models\User;
 use App\Models\User as UserConstants;
-use Illuminate\Support\Facades\Hash;
-
 class DepartmentSeeder extends Seeder
 {
     public function run(): void
     {
-        $password = Hash::make('123');
+        $password = '123';
 
         // Map department titles to their heads (matching the migration departments)
         $departmentHeads = [

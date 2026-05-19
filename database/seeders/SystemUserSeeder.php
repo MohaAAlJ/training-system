@@ -4,13 +4,11 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\User;
-use Illuminate\Support\Facades\Hash;
-
 class SystemUserSeeder extends Seeder
 {
     public function run(): void
     {
-        $password = Hash::make('123');
+        $password = '123';
 
         // 1. System Admin
         User::firstOrCreate(

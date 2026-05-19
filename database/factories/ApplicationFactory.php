@@ -27,7 +27,6 @@ class ApplicationFactory extends Factory
             // 'department_id' => Department::factory(), // Removed
             'section_id' => Section::factory(),
             'training_type' => $this->faker->randomElement([Application::PRACTICE, Application::UNIVERSITY]),
-            'duration' => $this->faker->numberBetween(1, 12),
             'street' => $this->faker->streetName,
             'start_date' => $this->faker->date(),
             'end_date' => $this->faker->date(),

@@ -12,7 +12,6 @@ use App\Filament\Resources\Applications\Schemas\ApplicationForm;
 use App\Filament\Resources\Applications\Schemas\ApplicationInfolist;
 use App\Filament\Resources\Applications\Tables\ApplicationsTable;
 use App\Models\Application;
-use App\Filament\Resources\Applications\ApplicationResource\Pages;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -74,6 +73,11 @@ class ApplicationResource extends Resource
     public static function getRelations(): array
     {
         return [];
+    }
+
+    public static function getRecordRouteKeyName(): string
+    {
+        return 'id';
     }
 
     public static function getPages(): array

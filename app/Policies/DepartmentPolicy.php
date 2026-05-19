@@ -32,8 +32,3 @@ class DepartmentPolicy
         return $user->isAdmin();
     }
 }
-
-
-
-
-

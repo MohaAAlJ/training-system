@@ -39,7 +39,6 @@ class ApplicationSeeder extends Seeder
 
                     'training_type' => $type,
                     'status' => $status,
-                    'duration' => 100,
                     'start_date' => $start,
                     'end_date' => $end,
                     'tags' => $tags,

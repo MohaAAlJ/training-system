@@ -1,130 +1,248 @@
 <link rel="stylesheet" href="{{ asset('css/fieldset-training-details.css') }}">
 
 <!-- FIELDSET 3: Training Details (shown conditionally) -->
-@if ($showTrainingDetails)
-    <fieldset class="fieldset" wire:transition>
+@if ($this->showTrainingDetails)
+    @php
+        $administrativeGroups = collect($governorates)
+            ->map(function (array $governorate) use ($administratives) {
+                $items = collect($administratives)
+                    ->filter(fn (array $admin) => (int) ($admin['governorate_id'] ?? 0) === (int) $governorate['id'])
+                    ->sortBy('name')
+                    ->values();
+
+                return [
+                    'id' => $governorate['id'],
+                    'name' => $governorate['name'],
+                    'items' => $items,
+                ];
+            })
+            ->filter(fn (array $group) => $group['items']->isNotEmpty())
+            ->values();
+
+        $selectedAdministrative = collect($administratives)
+            ->first(fn (array $admin) => (int) $admin['id'] === (int) $administrativeId);
+    @endphp
+
+    <fieldset class="fieldset" wire:key="fieldset-training">
         <legend>
             <span class="legend-icon">📚</span>بيانات التدريب
         </legend>
-        <div class="grid three"
-             x-data="{
-                adminId: @entangle('administrativeId'),
-                deptId: @entangle('departmentId'),
-                sectId: @entangle('sectionId'),
-                instId: @entangle('institutionId'),
-                majId: @entangle('majorId'),
-
-                allAdmins: {{ json_encode($administratives) }},
-                allDepts: {{ json_encode($allDepartments) }},
-                allSections: {{ json_encode($allSections) }},
-                allInstitutions: {{ json_encode($institutions) }},
-                allMajors: {{ json_encode($allMajors) }},
-
-                get availableDepartments() {
-                    if (!this.adminId) return [];
-                    const validDeptIds = new Set(
-                        this.allSections
-                            .filter(s => s.administrativeId == this.adminId)
-                            .map(s => s.departmentId)
-                    );
-                    return this.allDepts.filter(d => validDeptIds.has(d.id));
-                },
-                get availableSections() {
-                    if (!this.adminId || !this.deptId) return [];
-                    return this.allSections.filter(s =>
-                        s.administrativeId == this.adminId &&
-                        s.departmentId == this.deptId
-                    );
-                },
-                get availableMajors() {
-                    if (!this.instId) return [];
-                    const selectedInstId = Number(this.instId);
-                    // Filter majors that belong to the selected institution
-                    // Using loose comparison since IDs might be strings or numbers
-                    return this.allMajors.filter(major => {
-                        if (!major.institutionIds || !Array.isArray(major.institutionIds)) return false;
-                        return major.institutionIds.some(id => Number(id) === selectedInstId);
-                    });
-                }
-             }"
-        >
+        <div class="grid three">
             <!-- University-specific fields -->
             @if ($isUniversity)
                 <label class="field">
                     <span>مؤسسة تعليمية *</span>
-                    <select x-model="instId" @change="majId = null" class="form__input" required tabindex="9">
+                    <select wire:model.live="institutionId" class="form__input" required tabindex="9">
                         <option value="">-- اختر --</option>
-                        <template x-for="inst in allInstitutions" :key="inst.id">
-                            <option :value="inst.id" x-text="inst.name"></option>
-                        </template>
+                        @foreach($institutions as $inst)
+                            <option value="{{ $inst['id'] }}">{{ $inst['name'] }}</option>
+                        @endforeach
                     </select>
                     <small class="note">اختر المؤسسة التعليمية</small>
                 </label>
 
                 <label class="field">
                     <span>التخصص الجامعي *</span>
-                    <select x-model="majId" class="form__input" required :disabled="availableMajors.length === 0" tabindex="10">
+                    <select wire:model.live="majorId" class="form__input" required @disabled(empty($majors)) tabindex="10">
                         <option value="">-- اختر --</option>
-                        <template x-for="major in availableMajors" :key="major.id">
-                            <option :value="major.id" x-text="major.name"></option>
-                        </template>
+                        @foreach($majors as $major)
+                            <option value="{{ $major['id'] }}">{{ $major['name'] }}</option>
+                        @endforeach
                     </select>
-                    <small class="note" x-show="availableMajors.length > 0">اختر التخصص</small>
+                    @if(!empty($majors))
+                        <small class="note">اختر التخصص</small>
+                    @endif
                     <small class="note note--warning">إذا لم تجد تخصصك الجامعي راجع كليتك، أو راسلنا عبر الواتساب</small>
                 </label>
 
-
                 <label class="field">
                     <span>الرقم الجامعي *</span>
-                    <input type="text" wire:model.blur="universityNumber" placeholder="أدخل رقمك الجامعي" class="form__input"
+                    <input type="text" inputmode="numeric" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, '')" wire:model.blur="universityNumber" placeholder="أدخل رقمك الجامعي" class="form__input"
                         required tabindex="11">
-                    <small class="note">الرقم الجامعي (مطلوب للطلاب)</small>
+                    <small class="note">الرقم الجامعي</small>
                 </label>
             @endif
 
-
             <!-- Administrative Location -->
-            <label class="field">
+            <div class="field admin-accordion-field"
+                x-data="{
+                    open: false,
+                    panelStyle: '',
+                    expandedGovernorateId: @js($selectedAdministrative['governorate_id'] ?? ($administrativeGroups->first()['id'] ?? null)),
+                    toggleOpen() {
+                        if (this.open) {
+                            this.closePanel();
+                            return;
+                        }
+
+                        this.open = true;
+                        this.$nextTick(() => this.updatePanelPosition());
+                    },
+                    closePanel() {
+                        this.open = false;
+                    },
+                    updatePanelPosition() {
+                        if (!this.open || !this.$refs.trigger) {
+                            return;
+                        }
+
+                        const rect = this.$refs.trigger.getBoundingClientRect();
+                        const gap = 8;
+                        const viewportPadding = 12;
+                        const availableBelow = window.innerHeight - rect.bottom - gap - viewportPadding;
+                        const maxHeight = Math.max(220, availableBelow);
+
+                        this.panelStyle = [
+                            'position: fixed',
+                            'top: ' + Math.round(rect.bottom + gap) + 'px',
+                            'left: ' + Math.round(rect.left) + 'px',
+                            'width: ' + Math.round(rect.width) + 'px',
+                            'max-height: ' + Math.round(maxHeight) + 'px',
+                        ].join('; ');
+                    },
+                    handleWindowClick(event) {
+                        if (!this.open) {
+                            return;
+                        }
+
+                        if (this.$refs.trigger?.contains(event.target) || this.$refs.panel?.contains(event.target)) {
+                            return;
+                        }
+
+                        this.closePanel();
+                    },
+                    toggleGovernorate(id) {
+                        this.expandedGovernorateId = this.expandedGovernorateId === id ? null : id;
+                    },
+                    chooseAdministrative(id, governorateId) {
+                        this.expandedGovernorateId = governorateId;
+                        this.closePanel();
+                        $wire.set('administrativeId', id);
+                    }
+                }"
+                @click.window="handleWindowClick($event)"
+                @keydown.escape.window="closePanel()"
+                @resize.window="if (open) updatePanelPosition()"
+                @scroll.window="if (open) updatePanelPosition()">
                 <span>مكان التدريب *</span>
-                <select x-model="adminId" @change="deptId = null; sectId = null;" class="form__input" required :disabled="allAdmins.length === 0" tabindex="12">
-                    <option value="">-- اختر --</option>
-                    <template x-for="admin in allAdmins" :key="admin.id">
-                        <option :value="admin.id" x-text="admin.name"></option>
-                    </template>
-                </select>
-                <small class="note" x-show="allAdmins.length > 0">اختر مكان التدريب</small>
-                <small class="note note--warning" x-show="allAdmins.length === 0">جاري تحميل البيانات...</small>
-            </label>
+
+                <button type="button"
+                    x-ref="trigger"
+                    class="form__input admin-accordion-trigger"
+                    :class="{ 'admin-accordion-trigger--open': open }"
+                    @click="toggleOpen()"
+                    @disabled(empty($administratives))
+                    :aria-expanded="open ? 'true' : 'false'"
+                    aria-haspopup="listbox"
+                    tabindex="12">
+                    <span class="admin-accordion-trigger__text">
+                        @if($selectedAdministrative)
+                            <span class="admin-accordion-trigger__label">{{ $selectedAdministrative['name'] }}</span>
+                            <span class="admin-accordion-trigger__meta">{{ $selectedAdministrative['governorate_name'] ?? '' }}</span>
+                        @else
+                            <span class="admin-accordion-trigger__placeholder">-- اختر مكان التدريب --</span>
+                        @endif
+                    </span>
+                    <span class="admin-accordion-trigger__icon" :class="{ 'admin-accordion-trigger__icon--open': open }" aria-hidden="true">
+                        <svg viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z" clip-rule="evenodd" />
+                        </svg>
+                    </span>
+                </button>
+
+                <template x-teleport="body">
+                    <div x-show="open" x-cloak x-ref="panel" class="admin-accordion-panel" :style="panelStyle" role="listbox">
+                        @foreach($administrativeGroups as $group)
+                            <div class="admin-accordion-group">
+                                <button type="button"
+                                    class="admin-accordion-group__toggle"
+                                    :class="{ 'admin-accordion-group__toggle--open': expandedGovernorateId === {{ $group['id'] }} }"
+                                    @click="toggleGovernorate({{ $group['id'] }})"
+                                    :aria-expanded="expandedGovernorateId === {{ $group['id'] }} ? 'true' : 'false'">
+                                    <span>{{ $group['name'] }}</span>
+                                    <span class="admin-accordion-group__count">{{ $group['items']->count() }}</span>
+                                </button>
+
+                                <div x-show="expandedGovernorateId === {{ $group['id'] }}" class="admin-accordion-group__items">
+                                    @foreach($group['items'] as $admin)
+                                        <button type="button"
+                                            @class([
+                                                'admin-accordion-item',
+                                                'admin-accordion-item--selected' => (int) $administrativeId === (int) $admin['id'],
+                                            ])
+                                            @click="chooseAdministrative({{ $admin['id'] }}, {{ $group['id'] }})">
+                                            <span class="admin-accordion-item__main">
+                                                <span class="admin-accordion-item__name">{{ $admin['name'] }}</span>
+                                                @if(!empty($admin['address']))
+                                                    <span class="admin-accordion-item__address">{{ $admin['address'] }}</span>
+                                                @endif
+                                            </span>
+                                            @if((int) $administrativeId === (int) $admin['id'])
+                                                <span class="admin-accordion-item__check" aria-hidden="true">
+                                                    <svg viewBox="0 0 20 20" fill="currentColor">
+                                                        <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clip-rule="evenodd" />
+                                                    </svg>
+                                                </span>
+                                            @endif
+                                        </button>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </template>
+
+                @if($selectedAdministrative)
+                    <small class="note">{{ $selectedAdministrative['governorate_name'] ?? '' }}</small>
+                    @if(!empty($selectedAdministrative['address']))
+                        <small class="note admin-address-note">{{ $selectedAdministrative['address'] }}</small>
+                    @endif
+                @elseif(!empty($administratives))
+                    <small class="note">اختر مكان التدريب</small>
+                @else
+                    <small class="note note--warning">جاري تحميل البيانات...</small>
+                @endif
+            </div>
 
             <!-- Department -->
             <label class="field">
                 <span>القسم *</span>
-                <select x-model="deptId" @change="sectId = null" class="form__input" required :disabled="availableDepartments.length === 0" tabindex="13">
+                <select wire:model.live="departmentId" class="form__input" required @disabled(empty($departments))
+                    tabindex="13">
                     <option value="">-- اختر --</option>
-                    <template x-for="dept in availableDepartments" :key="dept.id">
-                        <option :value="dept.id" x-text="dept.name"></option>
-                    </template>
+                    @foreach($departments as $dept)
+                        <option value="{{ $dept['id'] }}">{{ $dept['name'] }}</option>
+                    @endforeach
                 </select>
-                <small class="note" x-show="availableDepartments.length > 0">اختر القسم</small>
-                <small class="note note--warning" x-show="adminId && availableDepartments.length === 0">لا توجد أقسام متاحة</small>
+                @if(!empty($departments))
+                    <small class="note">اختر القسم</small>
+                @elseif($administrativeId)
+                    <small class="note note--warning">لا توجد أقسام متاحة</small>
+                @endif
             </label>
 
             <!-- Section/Specialization -->
             <label class="field">
                 <span>تخصص التدريب *</span>
-                <select x-model="sectId" class="form__input" required :disabled="availableSections.length === 0" tabindex="14">
+                <select wire:model.live="sectionId" class="form__input" required @disabled(empty($sections)) tabindex="14">
                     <option value="">-- اختر --</option>
-                    <template x-for="sec in availableSections" :key="sec.id">
-                        <option :value="sec.id" :disabled="sec.isFull" x-text="sec.name + (sec.isFull ? ' (ممتلئ)' : '')"></option>
-                    </template>
+                    @foreach($sections as $sec)
+                        <option value="{{ $sec['id'] }}" @disabled($sec['isFull'] ?? false)>
+                            {{ $sec['name'] }} {{ ($sec['isFull'] ?? false) ? '(ممتلئ)' : '' }}
+                        </option>
+                    @endforeach
                 </select>
-                <small class="note" x-show="availableSections.length > 0">اختر التخصص</small>
-                <small class="note note--warning" x-show="deptId && availableSections.length === 0">لا توجد تخصصات متاحة</small>
+                @if(!empty($sections))
+                    <small class="note">اختر التخصص</small>
+                @elseif($departmentId)
+                    <small class="note note--warning">لا توجد تخصصات متاحة</small>
+                @endif
             </label>
+
             <!-- Training Hours -->
             <label class="field">
                 <span>عدد ساعات التدريب *</span>
-                <input type="number" wire:model.blur="trainingHours" placeholder="50 - 1000 ساعة" min="50" max="1000"
+                <input type="text" inputmode="numeric" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, '')" maxlength="3" wire:model.blur="trainingHours" placeholder="50 - 1000 ساعة"
                     class="form__input" required tabindex="15">
                 <small class="note">عدد ساعات التدريب بين 50 و 1000</small>
             </label>

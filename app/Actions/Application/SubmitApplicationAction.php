@@ -47,12 +47,10 @@ class SubmitApplicationAction
      */
     public function execute(array $data, ?UploadedFile $letterFile = null): Application
     {
-        // Validate section capacity one final time
-        $section = Section::find($data['sectionId']);
-        if ($section && ($section->getCapacityStats()['is_full'] ?? false)) {
-            if (!$this->settings->hide_full_sections) {
-                throw new Exception('نعتذر، هذا القسم ممتلئ حالياً. يرجى اختيار قسم آخر.');
-            }
+        // Verify section capacity before submitting
+        $section = Section::find($data['section_id']);
+        if ($section && $section->isFull()) {
+            throw new \Exception('القسم المحدد ممتلئ ولا يمكن قبول طلبات جديدة.');
         }
 
         // Use database transaction to ensure data integrity
@@ -101,10 +99,6 @@ class SubmitApplicationAction
                 'dob' => $data['dob'],
                 'governorate_id' => $data['governorateId'],
                 'street' => $data['street'],
-                'institution_id' => $data['institutionId'] ?: null,
-                'college_id' => $data['collegeId'] ?: null,
-                'major_id' => $data['majorId'] ?: null,
-                'training_hours' => $data['trainingHours'],
             ]
         );
     }
@@ -119,6 +113,10 @@ class SubmitApplicationAction
             'section_id' => $data['sectionId'],
             'street' => $data['street'],
             'training_type' => $data['trainingType'],
+            'institution_id' => $data['institutionId'] ?: null,
+            'college_id' => $data['collegeId'] ?: null,
+            'major_id' => $data['majorId'] ?: null,
+            'training_hours' => $data['trainingHours'],
             'status' => Application::STATUS_NEW,
         ]);
     }

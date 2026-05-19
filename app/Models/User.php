@@ -6,6 +6,7 @@ use App\Enums\GeneralConst;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -15,10 +16,14 @@ use App\Models\Section;
 use App\Models\College;
 use App\Models\Administrative;
 use Lab404\Impersonate\Models\Impersonate;
+use Filament\Models\Contracts\HasAvatar;
+use Illuminate\Support\Facades\Storage;
 
-class User extends Authenticatable implements FilamentUser
+use Laravel\Sanctum\HasApiTokens;
+
+class User extends Authenticatable implements FilamentUser, HasAvatar
 {
-    use HasFactory, Notifiable, SoftDeletes, Impersonate;
+    use HasApiTokens, HasFactory, Notifiable, SoftDeletes, Impersonate;
 
     // =========================================================================
     // CONSTANTS: ROLES
@@ -31,7 +36,8 @@ class User extends Authenticatable implements FilamentUser
     public const ROLE_HOA = 6;
     public const ROLE_HOM = 7;
     public const ROLE_GTM = 8;
-
+    public const ROLE_MONITOR = 9;
+    public const ROLE_ASSISTANT_TRAINING_MANAGER = 10;
     public const ROLE_LABELS = [
         self::ROLE_ADMIN => 'مدير النظام',
         self::ROLE_DEPARTMENT => 'مدير الدائرة',
@@ -41,6 +47,8 @@ class User extends Authenticatable implements FilamentUser
         self::ROLE_HOA => 'المدير الإداري',
         self::ROLE_HOM => 'المدير الطبي',
         self::ROLE_GTM => 'مدير التدريب',
+        self::ROLE_MONITOR => 'المشرف العام',
+        self::ROLE_ASSISTANT_TRAINING_MANAGER => 'مساعد مدير التدريب',
     ];
 
     // =========================================================================
@@ -55,7 +63,9 @@ class User extends Authenticatable implements FilamentUser
         'phone_number',
         'password',
         'role',
-        'active'
+        'active',
+        'avatar_url',
+        'last_login_at',
     ];
 
     protected $hidden = [
@@ -63,7 +73,16 @@ class User extends Authenticatable implements FilamentUser
         'remember_token'
     ];
 
-    protected $casts = [];
+    protected $casts = [
+        'password' => 'hashed',
+        'last_login_at' => 'datetime',
+    ];
+
+    public function getFilamentAvatarUrl(): ?string
+    {
+        $avatarColumn = config('filament-edit-profile.avatar_column', 'avatar_url');
+        return $this->$avatarColumn ? Storage::url($this->$avatarColumn) : null;
+    }
 
     // =========================================================================
     // RELATIONSHIPS
@@ -72,6 +91,11 @@ class User extends Authenticatable implements FilamentUser
     public function department(): HasOne
     {
         return $this->hasOne(Department::class);
+    }
+
+    public function mohDepartment(): HasOne
+    {
+        return $this->hasOne(Department::class, 'moh_dept_user_id');
     }
 
     public function section(): HasOne
@@ -97,9 +121,32 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasOne(Administrative::class, 'medical_head_user_id');
     }
 
+    public function managedDepartments(): HasMany
+    {
+        return $this->hasMany(Department::class, 'assistant_training_manager_id');
+    }
+
     public function trainees()
     {
         return $this->college?->trainees();
+    }
+
+    public function receivedMessages(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Mailbox::class, 'mailbox_user')
+            ->withPivot('read_at', 'is_deleted')
+            ->wherePivot('is_deleted', false)
+            ->withTimestamps();
+    }
+
+    public function sentMessages(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Mailbox::class, 'sender_id');
+    }
+
+    public function unreadMessagesCount(): int
+    {
+        return $this->receivedMessages()->wherePivotNull('read_at')->count();
     }
 
     // =========================================================================
@@ -159,6 +206,11 @@ class User extends Authenticatable implements FilamentUser
         return $this->role === self::ROLE_DEPARTMENT;
     }
 
+    public function isMohDepartmentHead(): bool
+    {
+        return $this->role == self::ROLE_MOH;
+    }
+
     public function isDepartmentHead(): bool
     {
         return $this->isDepartment();
@@ -186,7 +238,7 @@ class User extends Authenticatable implements FilamentUser
 
     public function isMinistry(): bool
     {
-        return $this->role === self::ROLE_MOH;
+        return $this->role == self::ROLE_MOH;
     }
 
     public function isMedicalManager(): bool
@@ -197,6 +249,61 @@ class User extends Authenticatable implements FilamentUser
     public function isGeneralTrainingManager(): bool
     {
         return $this->role === self::ROLE_GTM;
+    }
+
+    public function isAssistantTrainingManager(): bool
+    {
+        return $this->role === self::ROLE_ASSISTANT_TRAINING_MANAGER;
+    }
+
+    public function isTrainingManagerLike(): bool
+    {
+        return $this->isGeneralTrainingManager() || $this->isAssistantTrainingManager();
+    }
+
+    public function isMonitor(): bool
+    {
+        return $this->role === self::ROLE_MONITOR;
+    }
+
+    public function managedDepartmentIds(): array
+    {
+        if (! $this->isAssistantTrainingManager()) {
+            return [];
+        }
+
+        // Fetch managed departments, limited to active and visible departments.
+        $departments = $this->managedDepartments()
+            ->active()
+            ->visible()
+            ->get(['id']);
+
+        return $departments
+            ->pluck('id')
+            ->map(fn($id) => (int) $id)
+            ->all();
+    }
+
+    public function canManageApplication(Application $application): bool
+    {
+        if ($this->isGeneralTrainingManager() || $this->isAdmin()) {
+            return true;
+        }
+
+        if (! $this->isAssistantTrainingManager()) {
+            return false;
+        }
+
+        $managedDepartmentIds = $this->managedDepartmentIds();
+        if (empty($managedDepartmentIds)) {
+            return false;
+        }
+
+        $applicationDepartmentIds = $application->section?->departments
+            ? $application->section->departments->pluck('id')->map(fn($id) => (int) $id)->all()
+            : $application->section?->departments()->pluck('departments.id')->map(fn($id) => (int) $id)->all();
+
+        return ! empty(array_intersect($managedDepartmentIds, $applicationDepartmentIds ?? []));
     }
 
     // =========================================================================

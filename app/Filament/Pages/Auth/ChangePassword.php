@@ -7,10 +7,11 @@ use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Schemas\Schema;
 use Filament\Forms\Components\TextInput;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Filament\Notifications\Notification;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Support\Str;
+use App\Settings\TrainingSettings;
 
 class ChangePassword extends Page implements HasForms
 {
@@ -20,7 +21,9 @@ class ChangePassword extends Page implements HasForms
 
     protected string $view = 'filament.pages.auth.change-password';
 
-    protected static bool $shouldRegisterNavigation = false;
+    protected static bool $shouldRegisterNavigation = true;
+    protected static ?int $navigationSort = 2;
+    protected static string|\UnitEnum|null $navigationGroup = 'الإعدادات';
 
     public ?array $data = [];
 
@@ -29,6 +32,15 @@ class ChangePassword extends Page implements HasForms
     public bool $hasNumbers = false;
     public bool $hasSymbols = false;
     public bool $hasMixedCase = false;
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return app(TrainingSettings::class)->enable_change_password ?? false;
+    }
+    public static function canAccess(): bool
+    {
+        return app(TrainingSettings::class)->enable_change_password ?? false;
+    }
 
     public function mount(): void
     {
@@ -42,7 +54,7 @@ class ChangePassword extends Page implements HasForms
 
     public function getTitle(): string
     {
-        return 'تغيير كلمة المرور';
+        return '';
     }
 
     public function updatedDataNewPassword($value): void
@@ -68,6 +80,9 @@ class ChangePassword extends Page implements HasForms
                     ->password()
                     ->revealable()
                     ->required()
+                    ->validationMessages([
+                        'current_password' => 'كلمة المرور الحالية غير صحيحة.',
+                    ])
                     ->currentPassword(),
 
                 TextInput::make('new_password')
@@ -101,20 +116,34 @@ class ChangePassword extends Page implements HasForms
 
         $this->validate();
 
+        $hashedPassword = $this->shouldHashPassword($this->data['new_password'])
+            ? bcrypt($this->data['new_password'])
+            : $this->data['new_password'];
+
         auth()->user()->update([
-            'password' => Hash::make($this->data['new_password']),
+            'password' => $hashedPassword,
+            'remember_token' => Str::random(60), // Invalidate all sessions
         ]);
 
-        // Force logout and invalidate session
-        Auth::logout();
-        request()->session()->invalidate();
-        request()->session()->regenerateToken();
+        // Invalidate all other active sessions for this user
+        Auth::logoutOtherDevices($this->data['new_password']);
 
         Notification::make()
             ->success()
             ->title('تم تغيير كلمة المرور بنجاح')
             ->send();
 
-        return redirect('/login');
+        return redirect('/');
+    }
+
+    private function shouldHashPassword(?string $password): bool
+    {
+        if (!filled($password)) {
+            return false;
+        }
+
+        $algo = password_get_info($password)['algo'] ?? null;
+
+        return empty($algo);
     }
 }

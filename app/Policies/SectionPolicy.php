@@ -17,6 +17,8 @@ class SectionPolicy
     {
         return $user->isAdmin() ||
             $user->isGeneralTrainingManager() ||
+            $user->isAssistantTrainingManager() ||
+            $user->isMonitor() ||
             $user->isDepartment() ||
             $user->isAdministrative() ||
             $user->isMedicalManager();
@@ -24,12 +26,16 @@ class SectionPolicy
 
     public function view(User $user, Section $model): bool
     {
-        if ($user->isAdmin() || $user->isGeneralTrainingManager()) {
+        if ($user->isAdmin() || $user->isGeneralTrainingManager() || $user->isMonitor()) {
             return true;
         }
 
+        if ($user->isAssistantTrainingManager()) {
+            return $model->departments->pluck('id')->intersect($user->managedDepartmentIds())->isNotEmpty();
+        }
+
         if ($user->isDepartment()) {
-            return $model->department_id === $user->department?->id;
+            return $model->departments->contains($user->department?->id);
         }
 
         if ($user->isAdministrative()) {
@@ -38,7 +44,7 @@ class SectionPolicy
 
         if ($user->isMedicalManager()) {
             $adminId = \App\Models\Administrative::where('medical_head_user_id', $user->id)->value('id');
-            return $model->administrative_id === $adminId && $model->department?->is_medical === true;
+            return $model->administrative_id === $adminId && $model->departments->where('is_medical', true)->isNotEmpty();
         }
 
         return false;
@@ -55,6 +61,10 @@ class SectionPolicy
             return true;
         }
 
+        if ($user->isAssistantTrainingManager()) {
+            return $model->departments->pluck('id')->intersect($user->managedDepartmentIds())->isNotEmpty();
+        }
+
         // Check HOA permissions
         if ($user->isHOA()) {
             if ($model->administrative_id === $user->administrative?->id) {
@@ -64,7 +74,7 @@ class SectionPolicy
 
         // Check Department Head permissions
         if ($user->isDepartment()) {
-            if ($model->department_id === $user->department?->id) {
+            if ($model->departments->contains($user->department?->id)) {
                 return $this->settings->dept_head_can_edit_section || $this->settings->dept_head_can_enable_section;
             }
         }
@@ -85,11 +95,15 @@ class SectionPolicy
     {
         if ($user->isAdmin() || $user->isGeneralTrainingManager()) return true;
 
+        if ($user->isAssistantTrainingManager()) {
+            return $model->departments->pluck('id')->intersect($user->managedDepartmentIds())->isNotEmpty();
+        }
+
         if ($user->isHOA() && $model->administrative_id === $user->administrative?->id) {
             return $this->settings->hoa_can_edit_section;
         }
 
-        if ($user->isDepartment() && $model->department_id === $user->department?->id) {
+        if ($user->isDepartment() && $model->departments->contains($user->department?->id)) {
             return $this->settings->dept_head_can_edit_section;
         }
 
@@ -107,7 +121,7 @@ class SectionPolicy
             return $this->settings->hoa_can_enable_section;
         }
 
-        if ($user->isDepartment() && $model->department_id === $user->department?->id) {
+        if ($user->isDepartment() && $model->departments->contains($user->department?->id)) {
             return $this->settings->dept_head_can_enable_section;
         }
 

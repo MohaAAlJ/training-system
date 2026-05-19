@@ -27,10 +27,10 @@ class SectionForm
                     ->searchable()
                     ->preload()
                     ->required(),
-                Select::make('department_id')
-                    ->label('الدائرة')
-                    ->relationship('department', 'name', fn($query) => $query->active())
-                    ->getOptionLabelUsing(fn($value) => \App\Models\Department::find($value)?->name)
+                Select::make('departments')
+                    ->label('الدوائر التابعة')
+                    ->relationship('departments', 'name', fn($query) => $query->active())
+                    ->multiple()
                     ->searchable()
                     ->preload()
                     ->required(),
@@ -53,6 +53,7 @@ class SectionForm
                         TextInput::make('password')
                             ->label('كلمة المرور')
                             ->password()
+                            ->revealable()
                             ->required(),
                         Hidden::make('role')
                             ->default(\App\Models\User::ROLE_SECTION),
@@ -63,7 +64,7 @@ class SectionForm
                 TextInput::make('capacity')
                     ->label('السعة الكلية')
                     ->numeric()
-                    ->minValue(1)
+                    ->minValue(0)
                     ->default(10)
                     ->required(),
                 Toggle::make('active')

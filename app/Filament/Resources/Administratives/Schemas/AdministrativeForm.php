@@ -23,6 +23,11 @@ class AdministrativeForm
                             ->required()
                             ->maxLength(255)
                             ->columnSpan(1),
+                        TextInput::make('address')
+                            ->label('العنوان التفصيلي')
+                            ->placeholder('مثال: شارع الوحدة، بجانب مسجد الإيمان')
+                            ->maxLength(255)
+                            ->columnSpan(1),
                         \Filament\Forms\Components\Placeholder::make('active')
                             ->label('الحالة')
                             ->content(fn($record) => new \Illuminate\Support\HtmlString(\Illuminate\Support\Facades\Blade::render(
@@ -70,6 +75,7 @@ class AdministrativeForm
                                 TextInput::make('password')
                                     ->label('كلمة المرور')
                                     ->password()
+                                    ->revealable()
                                     ->required(),
                                 \Filament\Forms\Components\Hidden::make('role')
                                     ->default(\App\Models\User::ROLE_HOA),
@@ -96,6 +102,7 @@ class AdministrativeForm
                                 TextInput::make('password')
                                     ->label('كلمة المرور')
                                     ->password()
+                                    ->revealable()
                                     ->required(),
                                 \Filament\Forms\Components\Hidden::make('role')
                                     ->default(\App\Models\User::ROLE_HOM),
@@ -103,7 +110,7 @@ class AdministrativeForm
                             ->searchable()
                             ->preload()
                             ->visible(fn($get) => $get('is_medical'))
-                            ->required(fn($get) => $get('is_medical')),
+                            ->required(fn($get, string $operation): bool => $get('is_medical') && $operation !== 'edit'),
                     ]),
             ]);
     }

@@ -2,22 +2,19 @@
 
 namespace App\Filament\Widgets;
 
-use App\Models\User;
-// use App\Enums\TrainingType;
-
-use App\Helpers\Constants;
 use App\Models\Application;
+use App\Models\User;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
-use Filament\Widgets\Concerns\InteractsWithPageTable;
 use Illuminate\Support\Facades\Auth;
 use Filament\Actions\ViewAction;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\TextInput;
-use Illuminate\Support\Facades\Lang;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 
 class GTMRecentApplications extends BaseWidget
 {
@@ -31,29 +28,76 @@ class GTMRecentApplications extends BaseWidget
         return '';
     }
 
+    /**
+     * Auto-collapse the widget when there are no pending applications.
+     * Overrides any user preference to keep it expanded.
+     */
+    public function isCollapsed(): bool
+    {
+        return $this->isEmpty();
+    }
+
+    /**
+     * Check whether the table query returns zero records.
+     */
+    protected function isEmpty(): bool
+    {
+        return $this->getTableQuery()->doesntExist();
+    }
+
 
 
 
     public static function canView(): bool
     {
+        // Hide from the dashboard (where Filament auto-discovers widgets)
+        // The Stats page registers this widget manually and has its own canView() guard
+        if (request()->routeIs('filament.home.pages.dashboard')) {
+            return false;
+        }
+
         $user = Auth::user();
         if (!$user) return false;
 
-        // Visible for: GTM, Admin, College Supervisor, and MOH
-        return !request()->routeIs('filament.home.pages.dashboard') && in_array($user->role, [
+        // Visible for: GTM, Admin, Monitor, College Supervisor, and MOH
+        return in_array($user->role, [
             User::ROLE_GTM,
+            User::ROLE_ASSISTANT_TRAINING_MANAGER,
             User::ROLE_ADMIN,
+            User::ROLE_MONITOR,
             User::ROLE_COLLEGE,
             User::ROLE_MOH,
         ]);
+    }
+
+    public static function updateCalculatedEndDate($get, $set): void
+    {
+        $hours       = (int) $get('training_hours');
+        $dailyHrs    = (int) $get('daily_hours');
+        $days        = (array) $get('training_days');
+        $days        = array_filter($days, fn($v) => $v !== '' && $v !== null);
+        $daysPerWeek = count($days);
+        $startDate   = $get('start_date');
+
+        if ($hours > 0 && $dailyHrs > 0 && $daysPerWeek > 0 && $startDate) {
+            $sessions = (int) ceil($hours / $dailyHrs);
+            $calendarDaysToAdd = (int) round(($sessions / $daysPerWeek) * 7);
+            $daysToJump = max(0, $calendarDaysToAdd - 1);
+            $auto = \Carbon\Carbon::parse($startDate)->addDays($daysToJump)->format('Y-m-d');
+            $set('end_date', $auto);
+        }
     }
 
     public function table(Table $table): Table
     {
         return $table
             ->heading(null)
+            ->emptyStateHeading('')
+            ->emptyStateDescription('')
+            ->emptyStateIcon(null)
             ->query(
                 Application::query()
+                    ->forUser(Auth::user())
                     ->whereIn('status', [
                         Application::STATUS_NEW,
                         Application::STATUS_INITIAL_APPROVE,
@@ -61,37 +105,23 @@ class GTMRecentApplications extends BaseWidget
                         Application::STATUS_WAITING_LIST
                     ])
                     ->orderBy('updated_at', 'asc')
+                    ->with([
+                        'trainee',
+                        'institution',
+                        'major',
+                        'section.administrative',
+                        'section.departments' => fn($q) => $q->visible()
+                    ])
             )
             ->modifyQueryUsing(function ($query) {
                 $user = Auth::user();
 
-                if ($user->isAdmin() || $user->isGeneralTrainingManager()) {
-                    // GTM and Admin see New (1), Confirmation (3), and Waiting (4)
-                    // They don't typically act on Initial Approve (2) as that's for MOH/College
-                    return $query->whereIn('status', [
-                        Application::STATUS_NEW,
-                        Application::STATUS_CONFIRMATION,
-                        Application::STATUS_WAITING_LIST
-                    ]);
-                }
-
-                if ($user->isCollegeSupervisor()) {
-                    $collegeId = $user->College?->id;
-                    // College Supervisors MUST see Initial Approve (2) to confirm
-                    return $query->where('status', Application::STATUS_INITIAL_APPROVE)
-                        ->where('training_type', Application::UNIVERSITY)
-                        ->whereHas('trainee', function ($q) use ($collegeId) {
-                            $q->where('college_id', $collegeId);
-                        });
-                }
-
-                if ($user->isMinistry()) {
-                    // MOH MUST see Initial Approve (2) to confirm
-                    return $query->where('status', Application::STATUS_INITIAL_APPROVE)
-                        ->where('training_type', Application::PRACTICE);
-                }
-
-                return $query;
+                return match (true) {
+                    $user->isAdmin() || $user->isTrainingManagerLike() || $user->isMonitor() => $this->applyAdminOrGtmQuery($query, $user),
+                    $user->isCollegeSupervisor() => $this->applyCollegeSupervisorQuery($query, $user),
+                    $user->isMinistry() => $this->applyMohQuery($query, $user),
+                    default => $query,
+                };
             })
             ->columns([
                 Tables\Columns\TextColumn::make('trainee.full_name')
@@ -102,22 +132,22 @@ class GTMRecentApplications extends BaseWidget
                     ->label('رقم الهوية')
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('trainee.institution.name')
+                Tables\Columns\TextColumn::make('institution.name')
                     ->label('المؤسسة')
                     ->toggleable(isToggledHiddenByDefault: false)
                     ->formatStateUsing(fn($state, $record) => $record->training_type === Application::PRACTICE ? '' : $state)
                     ->visible(fn() => Auth::check() && (
                         Auth::user()->isAdmin() ||
-                        Auth::user()->isGeneralTrainingManager()
+                        Auth::user()->isTrainingManagerLike()
                     ))
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('trainee.major.name')
+                Tables\Columns\TextColumn::make('major.name')
                     ->label('التخصص')
                     ->toggleable(isToggledHiddenByDefault: false)
                     ->formatStateUsing(fn($state, $record) => $record->training_type === Application::PRACTICE ? '' : $state)
                     ->visible(fn() => Auth::check() && (
                         Auth::user()->isAdmin() ||
-                        Auth::user()->isGeneralTrainingManager() ||
+                        Auth::user()->isTrainingManagerLike() ||
                         Auth::user()->isCollegeSupervisor()
                     ))
                     ->toggleable(isToggledHiddenByDefault: true)
@@ -134,10 +164,9 @@ class GTMRecentApplications extends BaseWidget
                     ->label('الإدارة')
                     ->toggleable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('section.department.name')
+                Tables\Columns\TextColumn::make('section.departments.name')
                     ->label('الدائرة')
-                    ->toggleable()
-                    ->sortable()
+                    ->badge()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('section.name')
                     ->label('القسم')
@@ -161,7 +190,7 @@ class GTMRecentApplications extends BaseWidget
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->recordUrl(
-                fn (Application $record): string => \App\Filament\Resources\Applications\ApplicationResource::getUrl('view', ['record' => $record]),
+                fn(Application $record): string => \App\Filament\Resources\Applications\ApplicationResource::getUrl('view', ['record' => $record->id]),
             )
             ->actions([
                 ViewAction::make()
@@ -171,7 +200,7 @@ class GTMRecentApplications extends BaseWidget
                     ->label('موافقة مبدئية')
                     ->color('success')
                     ->icon('heroicon-o-check-circle')
-                    ->visible(fn($record) => Auth::user()->isGeneralTrainingManager() && $record->status == Application::STATUS_NEW)
+                    ->visible(fn($record) => Auth::user()->isTrainingManagerLike() && $record->status == Application::STATUS_NEW)
                     ->requiresConfirmation()
                     ->successNotificationTitle('تمت الموافقة المبدئية بنجاح')
                     ->action(fn($record) => $record->update(['status' => Application::STATUS_INITIAL_APPROVE])),
@@ -196,7 +225,7 @@ class GTMRecentApplications extends BaseWidget
                     ->label('معالجة التأكيد')
                     ->color('success')
                     ->icon('heroicon-o-play')
-                    ->visible(fn($record) => Auth::user()->isGeneralTrainingManager() && $record->status == Application::STATUS_CONFIRMATION)
+                    ->visible(fn($record) => Auth::user()->isTrainingManagerLike() && $record->status == Application::STATUS_CONFIRMATION)
                     ->form([
                         \Filament\Forms\Components\Select::make('new_status')
                             ->label('الحالة الجديدة')
@@ -212,50 +241,71 @@ class GTMRecentApplications extends BaseWidget
                             ->required()
                             ->default(now())
                             ->native(false)
-                            ->format('Y/m/d')
+                            ->format('Y-m-d')
                             ->displayFormat('Y/m/d')
                             ->reactive()
-                            ->visible(fn($get) => $get('new_status') && (int)$get('new_status') === Application::STATUS_STARTED_TRAINING),
-                        TextInput::make('duration')
-                            ->label('المدة (يوم)')
+                            ->visible(fn($get) => $get('new_status') && (int)$get('new_status') === Application::STATUS_STARTED_TRAINING)
+                            ->afterStateUpdated(function (Get $get, Set $set) {
+                                self::updateCalculatedEndDate($get, $set);
+                            }),
+                        TextInput::make('training_hours')
+                            ->label('إجمالي ساعات التدريب')
                             ->numeric()
                             ->required()
-                            ->default(30)
-                            ->reactive()
-                            ->visible(fn($get) => $get('new_status') && (int)$get('new_status') === Application::STATUS_STARTED_TRAINING),
-                        \Filament\Forms\Components\Placeholder::make('calculated_end_date')
+                            ->minValue(1)
+                            ->suffix('ساعة')
+                            ->visible(fn($get) => $get('new_status') && (int)$get('new_status') === Application::STATUS_STARTED_TRAINING)
+                            ->live(debounce: 500)
+                            ->afterStateUpdated(function (Get $get, Set $set) {
+                                self::updateCalculatedEndDate($get, $set);
+                            }),
+                        \Filament\Forms\Components\CheckboxList::make('training_days')
+                            ->label('أيام التدريب')
+                            ->options(Application::ALL_DAYS)
+                            ->columns(5)
+                            ->required()
+                            ->visible(fn($get) => $get('new_status') && (int)$get('new_status') === Application::STATUS_STARTED_TRAINING)
+                            ->live()
+                            ->afterStateUpdated(function (Get $get, Set $set) {
+                                self::updateCalculatedEndDate($get, $set);
+                            }),
+                        TextInput::make('daily_hours')
+                            ->label('ساعات باليوم')
+                            ->numeric()
+                            ->required()
+                            ->minValue(1)
+                            ->default(6)
+                            ->visible(fn($get) => $get('new_status') && (int)$get('new_status') === Application::STATUS_STARTED_TRAINING)
+                            ->live(debounce: 500)
+                            ->afterStateUpdated(function (Get $get, Set $set) {
+                                self::updateCalculatedEndDate($get, $set);
+                            }),
+                        DatePicker::make('end_date')
                             ->label('تاريخ الانتهاء المتوقع')
-                            ->content(function ($get) {
-                                $startDate = $get('start_date');
-                                $duration = $get('duration');
-
-                                if ($startDate && $duration) {
-                                    try {
-                                        $start = \Carbon\Carbon::parse($startDate);
-                                        $end = $start->copy()->addDays((int)$duration);
-                                        return $end->format('Y-m-d') . ' (' . $end->translatedFormat('l، d F Y') . ')';
-                                    } catch (\Exception $e) {
-                                        return 'غير محدد';
-                                    }
-                                }
-                                return 'غير محدد';
-                            })
-                            ->visible(fn($get) => $get('new_status') && (int)$get('new_status') === Application::STATUS_STARTED_TRAINING),
+                            ->required()
+                            ->visible(fn($get) => $get('new_status') && (int)$get('new_status') === Application::STATUS_STARTED_TRAINING)
+                            ->default(now()->addDays(30)->toDateString())
+                            ->reactive(),
                     ])
                     ->successNotificationTitle('تمت معالجة التأكيد بنجاح')
                     ->action(function ($record, array $data) {
                         $newStatus = (int)$data['new_status'];
 
                         if ($newStatus === Application::STATUS_STARTED_TRAINING) {
-                            $startDate = \Carbon\Carbon::parse($data['start_date']);
-                            $duration = (int)$data['duration'];
-                            $endDate = $startDate->copy()->addDays($duration);
+                            $hours       = (int) ($data['training_hours'] ?? 0);
+                            $dailyHrs    = (int) ($data['daily_hours'] ?? 6);
+                            $selectedDays = array_filter((array) ($data['training_days'] ?? []), fn($v) => $v !== '' && $v !== null);
 
                             $record->update([
                                 'status' => Application::STATUS_STARTED_TRAINING,
-                                'start_date' => $startDate,
-                                'duration' => $duration,
-                                'end_date' => $endDate,
+                                'start_date' => $data['start_date'],
+                                'end_date' => $data['end_date'],
+                                'training_hours' => $hours ?: null,
+                                'days_note' => [
+                                    'training_days' => array_map('intval', $selectedDays),
+                                    'daily_hours'   => $dailyHrs,
+                                    'note'          => null,
+                                ],
                             ]);
                         } else {
                             $record->update([
@@ -268,51 +318,70 @@ class GTMRecentApplications extends BaseWidget
                     ->label('بدء التدريب')
                     ->color('success')
                     ->icon('heroicon-o-play-circle')
-                    ->visible(fn($record) => Auth::user()->isGeneralTrainingManager() && $record->status == Application::STATUS_WAITING_LIST)
+                    ->visible(fn($record) => Auth::user()->isTrainingManagerLike() && $record->status == Application::STATUS_WAITING_LIST)
                     ->form([
                         DatePicker::make('start_date')
                             ->label('تاريخ البدء')
                             ->required()
                             ->default(now())
                             ->native(false)
-                            ->format('Y/m/d')
+                            ->format('Y-m-d')
                             ->displayFormat('Y/m/d')
-                            ->reactive(),
-                        TextInput::make('duration')
-                            ->label('المدة (يوم)')
+                            ->reactive()
+                            ->afterStateUpdated(function (Get $get, Set $set) {
+                                self::updateCalculatedEndDate($get, $set);
+                            }),
+                        TextInput::make('training_hours')
+                            ->label('إجمالي ساعات التدريب')
                             ->numeric()
                             ->required()
-                            ->default(30)
-                            ->reactive(),
-                        \Filament\Forms\Components\Placeholder::make('calculated_end_date')
-                            ->label('تاريخ الانتهاء المتوقع')
-                            ->content(function ($get) {
-                                $startDate = $get('start_date');
-                                $duration = $get('duration');
-
-                                if ($startDate && $duration) {
-                                    try {
-                                        $start = \Carbon\Carbon::parse($startDate);
-                                        $end = $start->copy()->addDays((int)$duration);
-                                        return $end->format('Y-m-d') . ' (' . $end->translatedFormat('l، d F Y') . ')';
-                                    } catch (\Exception $e) {
-                                        return 'غير محدد';
-                                    }
-                                }
-                                return 'غير محدد';
+                            ->minValue(1)
+                            ->suffix('ساعة')
+                            ->live(debounce: 500)
+                            ->afterStateUpdated(function (Get $get, Set $set) {
+                                self::updateCalculatedEndDate($get, $set);
                             }),
+                        \Filament\Forms\Components\CheckboxList::make('training_days')
+                            ->label('أيام التدريب')
+                            ->options(Application::ALL_DAYS)
+                            ->columns(5)
+                            ->required()
+                            ->live()
+                            ->afterStateUpdated(function (Get $get, Set $set) {
+                                self::updateCalculatedEndDate($get, $set);
+                            }),
+                        TextInput::make('daily_hours')
+                            ->label('ساعات باليوم')
+                            ->numeric()
+                            ->required()
+                            ->minValue(1)
+                            ->default(6)
+                            ->live(debounce: 500)
+                            ->afterStateUpdated(function (Get $get, Set $set) {
+                                self::updateCalculatedEndDate($get, $set);
+                            }),
+                        DatePicker::make('end_date')
+                            ->label('تاريخ الانتهاء المتوقع')
+                            ->required()
+                            ->default(now()->addDays(30)->toDateString())
+                            ->reactive(),
                     ])
                     ->successNotificationTitle('تم بدء التدريب بنجاح')
                     ->action(function ($record, array $data) {
-                        $startDate = \Carbon\Carbon::parse($data['start_date']);
-                        $duration = (int)$data['duration'];
-                        $endDate = $startDate->copy()->addDays($duration);
+                        $hours       = (int) ($data['training_hours'] ?? 0);
+                        $dailyHrs    = (int) ($data['daily_hours'] ?? 6);
+                        $selectedDays = array_filter((array) ($data['training_days'] ?? []), fn($v) => $v !== '' && $v !== null);
 
                         $record->update([
                             'status' => Application::STATUS_STARTED_TRAINING,
-                            'start_date' => $startDate,
-                            'duration' => $duration,
-                            'end_date' => $endDate,
+                            'start_date' => $data['start_date'],
+                            'end_date' => $data['end_date'],
+                            'training_hours' => $hours ?: null,
+                            'days_note' => [
+                                'training_days' => array_map('intval', $selectedDays),
+                                'daily_hours'   => $dailyHrs,
+                                'note'          => null,
+                            ],
                         ]);
                     }),
 
@@ -320,11 +389,55 @@ class GTMRecentApplications extends BaseWidget
                     ->label('رفض')
                     ->modalHeading('رفض الطلب')
                     ->modalDescription('هل أنت متأكد من رفض هذا الطلب؟ سيتم نقله إلى قائمة المرفوضات.')
-                    ->visible(fn($record) => !$record->trashed() && (Auth::user()->isGeneralTrainingManager()))
+                    ->visible(fn($record) => !$record->trashed() && (Auth::user()->isTrainingManagerLike()))
                     ->action(function ($record) {
                         $record->update(['status' => Application::STATUS_REJECTED]);
                         $record->delete();
                     }),
             ]);
+    }
+
+    private function applyAdminOrGtmQuery($query, User $user)
+    {
+        // GTM and Admin see New (1), Confirmation (3), and Waiting (4)
+        // They don't typically act on Initial Approve (2) as that's for MOH/College
+        return $query->forUser($user)->whereIn('status', [
+            Application::STATUS_NEW,
+            Application::STATUS_CONFIRMATION,
+            Application::STATUS_WAITING_LIST
+        ]);
+    }
+
+    private function applyCollegeSupervisorQuery($query, User $user)
+    {
+        $college = $user->college;
+        if (!$college || $user->college()->active()->doesntExist()) {
+            return $query->whereRaw('0 = 1');
+        }
+
+        $collegeId = $college->id;
+        // College Supervisors MUST see Initial Approve (2) to confirm
+        return $query->where('status', Application::STATUS_INITIAL_APPROVE)
+            ->where('training_type', Application::UNIVERSITY)
+            ->where('college_id', $collegeId);
+    }
+
+    private function applyMohQuery($query, User $user)
+    {
+        if ($user->mohDepartment && $user->mohDepartment()->active()->doesntExist()) {
+            return $query->whereRaw('0 = 1');
+        }
+
+        // MOH sees Initial Approve (2) for practice training
+        // If MOH has connected department, filter by that department only
+        $query = $query->where('status', Application::STATUS_INITIAL_APPROVE)
+            ->where('training_type', Application::PRACTICE);
+
+        if ($user->mohDepartment) {
+            return $query->whereHas('section', fn($q) => $q->whereHas('departments', fn($dq) => $dq->where('departments.id', $user->mohDepartment->id)->visible()));
+        }
+
+        // Unlinked MOH - show only visible departments
+        return $query->whereHas('section', fn($q) => $q->whereHas('departments', fn($dq) => $dq->visible()));
     }
 }

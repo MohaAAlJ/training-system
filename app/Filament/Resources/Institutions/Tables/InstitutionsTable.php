@@ -53,7 +53,7 @@ class InstitutionsTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                TrashedFilter::make(),
+                TrashedFilter::make()->visible(fn() => Auth::user()?->isAdmin() ?? false),
                 \Filament\Tables\Filters\TernaryFilter::make('active')
                     ->label('الحالة')
                     ->boolean()

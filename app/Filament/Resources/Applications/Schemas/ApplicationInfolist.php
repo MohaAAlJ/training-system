@@ -56,7 +56,8 @@ class ApplicationInfolist
                                     ->copyable()
                                     ->copyMessage('تم نسخ رقم الهاتف')
                                     ->copyMessageDuration(1500)
-                                    ->url(fn($state) => $state ? 'tel:' . $state : null),
+                                    ->url(fn($state) => $state ? 'https://wa.me/' . $state : null)
+                                    ->openUrlInNewTab(),
                             ]),
 
                         Grid::make(4)
@@ -82,9 +83,25 @@ class ApplicationInfolist
                                     ->placeholder('غير محدد'),
                             ]),
 
-                        Grid::make(2)
+                        Grid::make(3)
                             ->schema([
-                                TextEntry::make('trainee.institution.name')
+                                TextEntry::make('university_number')
+                                    ->label('الرقم الجامعي')
+                                    ->icon('heroicon-m-identification')
+                                    ->iconColor('info')
+                                    ->badge()
+                                    ->color('info')
+                                    ->placeholder('غير محدد')
+                                    ->visible(fn($record) => $record->training_type !== Application::PRACTICE && Auth::check() && (
+                                        Auth::user()->isAdmin() ||
+                                        Auth::user()->isDepartment() ||
+                                        Auth::user()->isHOA() ||
+                                        Auth::user()->isTrainingManagerLike() ||
+                                        Auth::user()->isCollegeSupervisor() ||
+                                        Auth::user()->isMonitor()
+                                    )),
+
+                                TextEntry::make('institution.name')
                                     ->label('المؤسسة التعليمية')
                                     ->icon('heroicon-m-building-library')
                                     ->iconColor('warning')
@@ -95,10 +112,12 @@ class ApplicationInfolist
                                         Auth::user()->isAdmin() ||
                                         Auth::user()->isDepartment() ||
                                         Auth::user()->isHOA() ||
-                                        Auth::user()->isGeneralTrainingManager()
+                                        Auth::user()->isTrainingManagerLike() ||
+                                        Auth::user()->isCollegeSupervisor() ||
+                                        Auth::user()->isMonitor()
                                     )),
 
-                                TextEntry::make('trainee.major.name')
+                                TextEntry::make('major.name')
                                     ->label('التخصص الأكاديمي')
                                     ->icon('heroicon-m-academic-cap')
                                     ->iconColor('success')
@@ -109,7 +128,9 @@ class ApplicationInfolist
                                         Auth::user()->isAdmin() ||
                                         Auth::user()->isDepartment() ||
                                         Auth::user()->isHOA() ||
-                                        Auth::user()->isGeneralTrainingManager()
+                                        Auth::user()->isTrainingManagerLike() ||
+                                        Auth::user()->isCollegeSupervisor() ||
+                                        Auth::user()->isMonitor()
                                     )),
                             ]),
                     ]),
@@ -133,7 +154,7 @@ class ApplicationInfolist
                                     ->badge()
                                     ->color('primary'),
 
-                                TextEntry::make('section.department.name')
+                                TextEntry::make('section.departments.name')
                                     ->label('الدائرة')
                                     ->icon('heroicon-m-rectangle-group')
                                     ->iconColor('info')
@@ -151,7 +172,7 @@ class ApplicationInfolist
                         // Training Details
                         Grid::make(3)
                             ->schema([
-                                TextEntry::make('trainee.training_hours')
+                                TextEntry::make('training_hours')
                                     ->label('عدد ساعات التدريب المطلوبة')
                                     ->icon('heroicon-m-clock')
                                     ->iconColor('warning')
@@ -205,6 +226,36 @@ class ApplicationInfolist
                                     ->visible(fn($record) => $record->accepted_at !== null),
                             ]),
 
+                        // Cancellation Information
+                        Grid::make(2)
+                            ->schema([
+                                TextEntry::make('cancel_who')
+                                    ->label('من قام بالإلغاء')
+                                    ->icon('heroicon-m-user-circle')
+                                    ->iconColor('danger')
+                                    ->state(function ($record) {
+                                        $userId = $record->days_note['who_cancelled'] ?? null;
+                                        if (!$userId) {
+                                            return 'غير محدد';
+                                        }
+                                        $user = \App\Models\User::find($userId);
+                                        return $user ? $user->name : 'المستخدم #' . $userId;
+                                    })
+                                    ->visible(fn($record) => $record->status === Application::STATUS_CANCELLED),
+
+                                TextEntry::make('cancel_reason')
+                                    ->label('سبب الإلغاء')
+                                    ->icon('heroicon-m-exclamation-circle')
+                                    ->iconColor('danger')
+                                    ->state(function ($record) {
+                                        return $record->days_note['cancel_reason'] ?? 'غير محدد';
+                                    })
+                                    ->visible(fn($record) => $record->status === Application::STATUS_CANCELLED)
+                                    ->columnSpan(1),
+                            ])
+                            ->columnSpanFull(),
+
+
                         // Tags
                         TextEntry::make('tags')
                             ->label('الوسوم')
@@ -216,6 +267,46 @@ class ApplicationInfolist
                             ->placeholder('لا توجد وسوم')
                             ->columnSpanFull()
                             ->visible(fn($record) => !empty($record->tags)),
+
+                        Grid::make(3)
+                            ->schema([
+                                TextEntry::make('days_note.training_days')
+                                    ->label('أيام التدريب')
+                                    ->icon('heroicon-m-calendar-days')
+                                    ->badge()
+                                    ->state(function ($record) {
+                                        $state = $record->days_note['training_days'] ?? [];
+                                        if (empty($state)) {
+                                            return ['غير محدد'];
+                                        }
+                                        $days = (array) $state;
+                                        // Filter valid days and sort them naturally (0 to 6)
+                                        $validDays = array_filter($days, fn($day) => isset(Application::ALL_DAYS[(int)$day]));
+                                        if (empty($validDays)) {
+                                            return ['غير محدد'];
+                                        }
+                                        $validDays = array_map('intval', $validDays);
+                                        sort($validDays);
+                                        return array_map(fn($day) => Application::ALL_DAYS[$day], $validDays);
+                                    })
+                                    ->color(function (string $state): string {
+                                        return match ($state) {
+                                            'الأحد', 'الثلاثاء', 'الخميس' => 'info',
+                                            'غير محدد' => 'gray',
+                                            default => 'danger',
+                                        };
+                                    })
+                                    ->visible(true)
+                                    ->columnSpan(2),
+
+                                TextEntry::make('days_note.note')
+                                    ->label('ملاحظات التدريب')
+                                    ->icon('heroicon-m-pencil-square')
+                                    ->iconColor('info')
+                                    ->visible(fn($record) => !empty($record->days_note['note']))
+                                    ->columnSpan(1),
+                            ])
+                            ->columnSpanFull(),
                     ]),
 
                 // المستندات - Enhanced Section
@@ -265,6 +356,34 @@ class ApplicationInfolist
                                     ->dateTime('d/m/Y - h:i A')
                                     ->color('gray'),
 
+                                TextEntry::make('applicant')
+                                    ->label('مقدم الطلب')
+                                    ->icon('heroicon-m-user-circle')
+                                    ->state(function (Application $record) {
+                                        $isInternal = false;
+
+                                        if ($record->created_at && $record->accepted_at && $record->created_at->diffInSeconds($record->accepted_at) < 5) {
+                                            $isInternal = true;
+                                        } elseif (is_null($record->accepted_at) && !in_array($record->status, [Application::STATUS_NEW, Application::STATUS_INITIAL_APPROVE])) {
+                                            $isInternal = true;
+                                        }
+
+                                        if ($isInternal) {
+                                            if ($record->training_type === Application::UNIVERSITY) {
+                                                $supervisorName = $record->college?->user?->name;
+                                                return $supervisorName ? 'مشرف كلية: ' . $supervisorName : 'مشرف كلية';
+                                            } elseif ($record->training_type === Application::PRACTICE) {
+                                                $mohUserName = $record->section?->departments?->first()?->mohUser?->name;
+                                                return $mohUserName ? 'موظف الصحة: ' . $mohUserName : 'وزارة الصحة';
+                                            }
+                                        }
+
+                                        $traineeName = $record->trainee?->full_name ?? 'المتدرب';
+                                        return $traineeName . ' (عبر المنصة الخارجية)';
+                                    })
+                                    ->badge()
+                                    ->color(fn($state) => str_contains((string) $state, 'الخارجية') ? 'success' : 'primary'),
+
                                 TextEntry::make('updated_at')
                                     ->label('آخر تحديث')
                                     ->icon('heroicon-m-arrow-path')
@@ -280,6 +399,7 @@ class ApplicationInfolist
                                     ->copyable()
                                     ->copyMessage('تم نسخ رقم الطلب')
                                     ->copyMessageDuration(1500),
+
                             ]),
                     ]),
             ]);

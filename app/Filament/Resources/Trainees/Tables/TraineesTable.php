@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Trainees\Tables;
 
+use App\Filament\Resources\Applications\Tables\ApplicationsTable;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -32,15 +33,14 @@ class TraineesTable
                     ->searchable(),
                 TextColumn::make('gender')
                     ->label('الجنس')
-                    ->badge()
-                    ->sortable(),
+                    ->badge(),
                 TextColumn::make('phone_number')
                     ->label('رقم الهاتف')
                     ->searchable()
                     ->toggleable(),
                 TextColumn::make('dob')
                     ->label('تاريخ الميلاد')
-                    ->date('Y-m-d')
+                    ->formatStateUsing(fn($state) => $state ? \Carbon\Carbon::parse($state)->format('Y-m-d') : null)
                     ->sortable()
                     ->toggleable(),
                 TextColumn::make('governorate.name')
@@ -50,26 +50,7 @@ class TraineesTable
                 TextColumn::make('street')
                     ->label('الشارع')
                     ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('institution.name')
-                    ->label('المؤسسة التعليمية')
-                    ->sortable()
-                    ->toggleable()
-                    ->visible(fn() => Auth::check() && (
-                        Auth::user()->isAdmin() ||
-                        Auth::user()->isDepartment() ||
-                        Auth::user()->isHOA() ||
-                        Auth::user()->isGeneralTrainingManager()
-                    )),
-                TextColumn::make('major.name')
-                    ->label('التخصص')
-                    ->sortable()
-                    ->toggleable()
-                    ->visible(fn() => Auth::check() && (
-                        Auth::user()->isAdmin() ||
-                        Auth::user()->isDepartment() ||
-                        Auth::user()->isHOA() ||
-                        Auth::user()->isGeneralTrainingManager()
-                    )),
+
                 TextColumn::make('applications_count')
                     ->label('عدد الطلبات')
                     ->badge()
@@ -81,30 +62,32 @@ class TraineesTable
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->defaultSort('created_at', 'desc')
+            ->headerActions([
+                ApplicationsTable::getImportExcelAction(),
+            ])
             ->filters([
-                SelectFilter::make('institution_id')
-                    ->label('المؤسسة التعليمية')
-                    ->relationship('institution', 'name')
-                    ->searchable()
-                    ->preload(),
+
                 SelectFilter::make('governorate_id')
                     ->label('المحافظة')
                     ->relationship('governorate', 'name')
                     ->searchable()
-                    ->preload(),
-                SelectFilter::make('major_id')
-                    ->label('التخصص')
-                    ->relationship('major', 'name')
-                    ->searchable()
-                    ->preload(),
-                TrashedFilter::make(),
+                    ->preload()
+                    ->indicateUsing(function (array $data): ?string {
+                        if (! $data['value']) {
+                            return null;
+                        }
+                        return 'المحافظة: ' . \App\Models\Governorate::find($data['value'])?->name;
+                    }),
+
+                TrashedFilter::make()->visible(fn() => Auth::user()?->isAdmin() || Auth::user()?->isTrainingManagerLike()),
             ])
             ->recordActions([
                 ViewAction::make(),
-                EditAction::make(),
+                EditAction::make()->visible(fn() => !Auth::user()->isMonitor()),
                 DeleteAction::make()
-                    ->visible(fn($record) => !$record->trashed() && (Auth::user()?->isAdmin() || Auth::user()?->isGeneralTrainingManager()))
-                    ->before(function ($record, \Filament\Actions\DeleteAction $action) {
+                    ->visible(fn($record) => !Auth::user()->isMonitor() && !$record->trashed() && (Auth::user()?->isAdmin() || Auth::user()?->isTrainingManagerLike()))
+                    ->before(function ($record, DeleteAction $action) {
                         if ($record->applications()->exists()) {
                             \Filament\Notifications\Notification::make()
                                 ->title('لا يمكن الأرشفة')
@@ -130,12 +113,12 @@ class TraineesTable
                             throw $exception;
                         }
                     }),
-                RestoreAction::make()->visible(fn($record) => $record->trashed() && (Auth::user()?->isAdmin() || Auth::user()?->isGeneralTrainingManager())),
+                RestoreAction::make()->visible(fn($record) => !Auth::user()->isMonitor() && $record->trashed() && (Auth::user()?->isAdmin() || Auth::user()?->isTrainingManagerLike())),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make()->visible(fn() => Auth::user()?->isAdmin() || Auth::user()?->isGeneralTrainingManager()),
-                    RestoreBulkAction::make()->visible(fn() => Auth::user()?->isAdmin() || Auth::user()?->isGeneralTrainingManager()),
+                    DeleteBulkAction::make()->visible(fn() => !Auth::user()->isMonitor() && (Auth::user()?->isAdmin() || Auth::user()?->isTrainingManagerLike())),
+                    RestoreBulkAction::make()->visible(fn() => !Auth::user()->isMonitor() && (Auth::user()?->isAdmin() || Auth::user()?->isTrainingManagerLike())),
                 ]),
             ]);
     }

@@ -65,7 +65,7 @@ class CollegesRelationManager extends RelationManager
                                 \Filament\Forms\Components\TextInput::make('password')
                                     ->label('كلمة المرور')
                                     ->password()
-                                    ->dehydrateStateUsing(fn ($state) => \Illuminate\Support\Facades\Hash::make($state))
+                                    ->revealable()
                                     ->required(),
                                 Hidden::make('role')
                                     ->default(\App\Models\User::ROLE_COLLEGE)

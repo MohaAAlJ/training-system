@@ -5,14 +5,11 @@ namespace App\Filament\Resources\Colleges;
 use App\Filament\Resources\Colleges\Pages\EditCollege;
 use App\Filament\Resources\Colleges\Pages\ViewCollege;
 use App\Filament\Resources\Colleges\RelationManagers\MajorsRelationManager;
-use App\Filament\Resources\Colleges\Schemas\CollegeForm;
-use App\Filament\Resources\Colleges\Schemas\CollegeInfolist;
 use App\Models\College;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
-use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
@@ -28,21 +25,17 @@ class CollegeResource extends Resource
     protected static ?string $modelLabel = 'الكلية';
     protected static ?string $pluralModelLabel = 'الكليات';
 
-    public static function getUrl(string|null $name = null, array $parameters = [], bool $isAbsolute = true, string|null $panel = null, \Illuminate\Database\Eloquent\Model|null $tenant = null, bool $shouldGuessMissingParameters = false): string
+    public static function getUrl(string|null $name = null, array $parameters = [], bool $isAbsolute = true, string|null $panel = null, \Illuminate\Database\Eloquent\Model|null $tenant = null, bool $shouldGuessMissingParameters = false, ?string $configuration = null): string
     {
         if ($name === 'index' || $name === null) {
-            return \App\Filament\Resources\Institutions\InstitutionResource::getUrl('index', $parameters, $isAbsolute, $panel, $tenant, $shouldGuessMissingParameters);
+            return \App\Filament\Resources\Institutions\InstitutionResource::getUrl('index', $parameters, $isAbsolute, $panel, $tenant, $shouldGuessMissingParameters, $configuration);
         }
 
-        return parent::getUrl($name, $parameters, $isAbsolute, $panel, $tenant, $shouldGuessMissingParameters);
+        return parent::getUrl($name, $parameters, $isAbsolute, $panel, $tenant, $shouldGuessMissingParameters, $configuration);
     }
 
     public static function form(Schema $schema): Schema
     {
-        // Re-using the logic from the previously deleted CollegeForm if available,
-        // or just implementing it here if I can't find it.
-        // I'll check if I still have the previous view_file content for CollegeForm.php.
-        // It was at app/Filament/Resources/Colleges/Schemas/CollegeForm.php
         return $schema
             ->components([
                 \Filament\Schemas\Components\Section::make('معلومات الكلية')
@@ -78,6 +71,7 @@ class CollegeResource extends Resource
                                 \Filament\Forms\Components\TextInput::make('password')
                                     ->label('كلمة المرور')
                                     ->password()
+                                    ->revealable()
                                     ->required(),
                                 \Filament\Forms\Components\Hidden::make('role')
                                     ->default(\App\Models\User::ROLE_COLLEGE),
@@ -108,6 +102,7 @@ class CollegeResource extends Resource
     public static function infolist(Schema $schema): Schema
     {
         return $schema
+            ->columns(1)
             ->components([
                 \Filament\Schemas\Components\Section::make('معلومات الكلية')
                     ->schema([
@@ -124,6 +119,28 @@ class CollegeResource extends Resource
                             ->color(fn(int $state): string => \App\Enums\GeneralConst::getStatusColor($state))
                             ->formatStateUsing(fn(int $state): string => \App\Enums\GeneralConst::getStatusLabel($state)),
                     ])->columns(3),
+                \Filament\Schemas\Components\Section::make('معلومات النظام')
+                    ->description('تواريخ الإنشاء والتحديث')
+                    ->icon('heroicon-o-clock')
+                    ->schema([
+                        \Filament\Infolists\Components\TextEntry::make('created_at')
+                            ->label('تاريخ الإنشاء')
+                            ->icon('heroicon-o-calendar')
+                            ->dateTime('d/m/Y - h:i A')
+                            ->since()
+                            ->badge()
+                            ->color('success'),
+
+                        \Filament\Infolists\Components\TextEntry::make('updated_at')
+                            ->label('آخر تحديث')
+                            ->icon('heroicon-o-arrow-path')
+                            ->dateTime('d/m/Y - h:i A')
+                            ->since()
+                            ->badge()
+                            ->color('warning'),
+                    ])
+                    ->columns(2)
+                    ->collapsed(),
             ]);
     }
 
@@ -131,6 +148,7 @@ class CollegeResource extends Resource
     {
         return [
             MajorsRelationManager::class,
+            \App\Filament\Resources\Institutions\RelationManagers\ApplicationsRelationManager::class,
         ];
     }
 

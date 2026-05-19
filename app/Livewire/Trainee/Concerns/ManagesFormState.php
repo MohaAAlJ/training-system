@@ -42,10 +42,8 @@ trait ManagesFormState
         // Form controls
         $this->termsApproval = false;
         $this->letterFile = null;
+        $this->existingApplicationId = null;
 
-        // Form state
-        $this->showPersonalDetails = false;
-        $this->showTrainingDetails = false;
         $this->isValidating = false;
 
         // Messages
@@ -61,60 +59,8 @@ trait ManagesFormState
     }
 
     /**
-     * Reset form to initial state
+     * Obsolete methods removed to favor computed properties or centralized reset logic in component
      */
-    public function resetForm(): void
-    {
-        $this->initializeFormState();
-    }
-
-    /**
-     * Reset only personal details section
-     */
-    public function resetPersonalDetails(): void
-    {
-        $this->fullName = null;
-        $this->phoneNumber = null;
-        $this->governorateId = null;
-        $this->street = null;
-        $this->letterFile = null;
-    }
-
-    /**
-     * Reset only training details section
-     */
-    public function resetTrainingDetails(): void
-    {
-        $this->institutionId = null;
-        $this->majorId = null;
-        $this->administrativeId = null;
-        $this->departmentId = null;
-        $this->sectionId = null;
-        $this->trainingHours = null;
-        $this->collegeId = null;
-    }
-
-    /**
-     * Show/collapse personal details fieldset
-     */
-    public function togglePersonalDetails(bool $show = true): void
-    {
-        $this->showPersonalDetails = $show;
-        if (!$show) {
-            $this->resetPersonalDetails();
-        }
-    }
-
-    /**
-     * Show/collapse training details fieldset
-     */
-    public function toggleTrainingDetails(bool $show = true): void
-    {
-        $this->showTrainingDetails = $show;
-        if (!$show) {
-            $this->resetTrainingDetails();
-        }
-    }
 
     /**
      * Set status message
@@ -135,16 +81,6 @@ trait ManagesFormState
     }
 
     /**
-     * Set toast message
-     */
-    public function showToast(string $message, string $type = 'info'): void
-    {
-        $this->message = $message;
-        $this->messageType = $type;
-        $this->dispatch('show-toast', message: $message, type: $type);
-    }
-
-    /**
      * Set field as readonly
      */
     public function setFieldReadonly(string $field, bool $readonly = true): void
@@ -156,49 +92,5 @@ trait ManagesFormState
         } elseif ($field === 'nationalId') {
             $this->nationalIdReadonly = $readonly;
         }
-    }
-
-    /**
-     * Check if form is valid and ready to submit
-     */
-    public function isFormValid(): bool
-    {
-        return $this->showPersonalDetails &&
-            !empty($this->trainingType) &&
-            !empty($this->nationalId) &&
-            !empty($this->fullName) &&
-            !empty($this->phoneNumber) &&
-            !empty($this->governorateId) &&
-            !empty($this->administrativeId) &&
-            !empty($this->sectionId) &&
-            $this->trainingHours > 0 &&
-            $this->termsApproval;
-    }
-
-    /**
-     * Get form completion percentage
-     */
-    public function getFormCompletionPercentage(): int
-    {
-        $totalFields = 14; // Total form fields
-        $filledFields = 0;
-
-        // Count filled fields
-        if (!empty($this->trainingType)) $filledFields++;
-        if (!empty($this->nationalId)) $filledFields++;
-        if ($this->showPersonalDetails) {
-            if (!empty($this->fullName)) $filledFields++;
-            if (!empty($this->dob)) $filledFields++;
-            if (!empty($this->phoneNumber)) $filledFields++;
-            if (!empty($this->governorateId)) $filledFields++;
-            if (!empty($this->street)) $filledFields++;
-            if (!empty($this->administrativeId)) $filledFields++;
-            if (!empty($this->departmentId)) $filledFields++;
-            if (!empty($this->sectionId)) $filledFields++;
-            if ($this->trainingHours > 0) $filledFields++;
-            if ($this->termsApproval) $filledFields++;
-        }
-
-        return (int) (($filledFields / $totalFields) * 100);
     }
 }

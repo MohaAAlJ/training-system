@@ -17,9 +17,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Auth;
-use UnitEnum;
 
 class SectionResource extends Resource
 {
@@ -77,22 +75,44 @@ class SectionResource extends Resource
         $query = parent::getEloquentQuery();
         $user = Auth::user();
 
-        if ($user->isAdmin() || $user->isGeneralTrainingManager()) {
+        $query->withRegisteredCount();
+
+        if (!$user->isAdmin()) {
+            $query
+                ->active()
+                ->whereHas('departments', fn($q) => $q->visible())
+                ->with(['departments' => fn($q) => $q->visible()]);
+        }
+
+        if ($user->isAdmin() || $user->isGeneralTrainingManager() || $user->isMonitor()) {
             return $query;
         }
 
+        if ($user->isAssistantTrainingManager()) {
+            return $query->whereHas('departments', fn($q) => $q->whereIn('departments.id', $user->managedDepartmentIds())->visible());
+        }
+
         if ($user->isDepartment()) {
-            return $query->where('department_id', $user->department?->id);
+            if ($user->department()->active()->visible()->doesntExist()) {
+                return $query->whereRaw('1 = 0');
+            }
+            return $query->whereHas('departments', fn($q) => $q->where('departments.id', $user->department->id)->visible());
         }
 
         if ($user->isAdministrative()) {
-            return $query->where('administrative_id', $user->administrative?->id);
+            if ($user->administrative()->active()->doesntExist()) {
+                return $query->whereRaw('1 = 0');
+            }
+            return $query->where('administrative_id', $user->administrative->id);
         }
 
         if ($user->isMedicalManager()) {
-            $adminId = \App\Models\Administrative::where('medical_head_user_id', $user->id)->value('id');
-            return $query->where('administrative_id', $adminId)
-                ->whereHas('department', fn($q) => $q->where('is_medical', true));
+            $admin = \App\Models\Administrative::where('medical_head_user_id', $user->id)->active()->first();
+            if (!$admin) {
+                return $query->whereRaw('1 = 0');
+            }
+            return $query->where('administrative_id', $admin->id)
+                ->whereHas('departments', fn($q) => $q->where('is_medical', true)->visible());
         }
 
         return $query->whereRaw('1 = 0');

@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Users\Schemas;
 
 use App\Models\User;
+use App\Models\Department;
 
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -50,7 +51,7 @@ class UserForm
                 TextInput::make('password')
                     ->label('كلمة المرور')
                     ->password()
-                    ->dehydrateStateUsing(fn ($state) => \Illuminate\Support\Facades\Hash::make($state))
+                    ->revealable()
                     ->dehydrated(fn($state) => filled($state))
                     ->required(fn(string $context): bool => $context === 'create')
                     ->maxLength(255),
@@ -60,10 +61,16 @@ class UserForm
                     ->options(User::ROLE_LABELS)
                     ->required()
                     ->reactive()
-                    ->afterStateUpdated(
-                        fn($state, $set) =>
-                        $state != User::ROLE_COLLEGE ? ($set('institution_id', null) || $set('college_id', null)) : null
-                    ),
+                    ->afterStateUpdated(function ($state, $set) {
+                        if ((int) $state !== User::ROLE_COLLEGE) {
+                            $set('institution_id', null);
+                            $set('college_id', null);
+                        }
+
+                        if ((int) $state !== User::ROLE_ASSISTANT_TRAINING_MANAGER) {
+                            $set('managed_department_ids', []);
+                        }
+                    }),
 
                 Select::make('institution_id')
                     ->label('المؤسسة')
@@ -90,6 +97,33 @@ class UserForm
                     ->reactive()
                     ->afterStateUpdated(fn($state, $set) => $state ? $set('institution_id', College::find($state)?->institution_id) : null)
                     ->searchable()
+                    ->columnSpanFull(),
+
+                Select::make('managed_department_ids')
+                    ->label('الأقسام التي يديرها مساعد مدير التدريب')
+                    ->helperText('اختر الدوائر التي يمكن لهذا المستخدم إدارتها. لا يمكن تعيين الدائرة نفسها لأكثر من مساعد مدير تدريب.')
+                    ->options(function ($record) {
+                        return Department::query()
+                            ->assignableToAssistantTrainingManager()
+                            ->orderBy('name')
+                            ->pluck('name', 'id')
+                            ->toArray();
+                    })
+                    ->disableOptionWhen(function ($value, $label = null, $record = null): bool {
+                        $assignedTo = Department::whereKey($value)->value('assistant_training_manager_id');
+
+                        if ($assignedTo === null) {
+                            return false;
+                        }
+
+                        return ! ($record instanceof User && (int) $assignedTo === (int) $record->id);
+                    })
+                    ->multiple()
+                    ->preload()
+                    ->searchable()
+                    ->visible(fn(callable $get) => (int) $get('role') === User::ROLE_ASSISTANT_TRAINING_MANAGER)
+                    ->required(fn(callable $get) => (int) $get('role') === User::ROLE_ASSISTANT_TRAINING_MANAGER)
+                    ->dehydrated(false)
                     ->columnSpanFull(),
 
                 Toggle::make('active')

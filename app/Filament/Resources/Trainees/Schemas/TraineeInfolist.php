@@ -6,12 +6,15 @@ use Filament\Schemas\Components\Section;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\Auth;
+use Filament\Infolists\Components\RepeatableEntry;
+use App\Models\Application;
 
 class TraineeInfolist
 {
     public static function configure(Schema $schema): Schema
     {
         return $schema
+            ->columns(1)
             ->components([
                 Section::make('المعلومات الشخصية')
                     ->description('البيانات الأساسية للمتدرب')
@@ -44,7 +47,7 @@ class TraineeInfolist
                         TextEntry::make('dob')
                             ->label('تاريخ الميلاد')
                             ->icon('heroicon-o-calendar')
-                            ->date('d/m/Y')
+                            ->formatStateUsing(fn($state) => $state ? \Carbon\Carbon::parse($state)->format('d/m/Y') : null)
                             ->badge()
                             ->color('gray'),
 
@@ -61,34 +64,48 @@ class TraineeInfolist
                             ->badge()
                             ->color('warning'),
 
-                        TextEntry::make('institution.name')
-                            ->label('المؤسسة التعليمية')
-                            ->icon('heroicon-o-building-library')
-                            ->copyable()
-                            ->badge()
-                            ->color('purple')
-                            ->visible(fn() => Auth::check() && (
+                        RepeatableEntry::make('applications')
+                            ->label('سجل التعليم والتدريب')
+                            ->state(fn($record) => $record->applications()->where('training_type', '!=', Application::PRACTICE)->get())
+                            ->schema([
+                                TextEntry::make('institution.name')
+                                    ->label('المؤسسة')
+                                    ->icon('heroicon-o-building-library')
+                                    ->color('purple'),
+                                TextEntry::make('college.name')
+                                    ->label('الكلية')
+                                    ->visible(fn($record) => $record->training_type === Application::UNIVERSITY),
+                                TextEntry::make('major.name')
+                                    ->label('التخصص')
+                                    ->icon('heroicon-o-academic-cap'),
+                                TextEntry::make('university_number')
+                                    ->label('الرقم الجامعي')
+                                    ->icon('heroicon-o-identification')
+                                    ->visible(fn($record) => $record->training_type === Application::UNIVERSITY),
+                                TextEntry::make('status')
+                                    ->label('الحالة')
+                                    ->badge()
+                                    ->formatStateUsing(fn($state) => Application::getStatusLabel($state))
+                                    ->color(fn($state) => Application::getStatusColor($state)),
+                                TextEntry::make('start_date')
+                                    ->label('تاريخ البدء')
+                                    ->formatStateUsing(fn($state) => $state ? \Carbon\Carbon::parse($state)->format('d/m/Y') : null)
+                                    ->placeholder('غير محدد'),
+                                TextEntry::make('end_date')
+                                    ->label('تاريخ الانتهاء')
+                                    ->formatStateUsing(fn($state) => $state ? \Carbon\Carbon::parse($state)->format('d/m/Y') : null)
+                                    ->placeholder('غير محدد'),
+                            ])
+                            ->columns(3)
+                            ->columnSpanFull()
+                            ->visible(fn($record) => Auth::check() && (
                                 Auth::user()->isAdmin() ||
                                 Auth::user()->isDepartment() ||
                                 Auth::user()->isHOA() ||
-                                Auth::user()->isGeneralTrainingManager()
-                            ))
-                            ->formatStateUsing(fn($state) => is_array($state) ? ($state['ar'] ?? $state['en'] ?? reset($state)) : $state),
-
-                        TextEntry::make('major.name')
-                            ->label('التخصص')
-                            ->icon('heroicon-o-academic-cap')
-                            ->copyable()
-                            ->badge()
-                            ->color('indigo')
-                            ->visible(fn() => Auth::check() && (
-                                Auth::user()->isAdmin() ||
-                                Auth::user()->isDepartment() ||
-                                Auth::user()->isHOA() ||
-                                Auth::user()->isGeneralTrainingManager() ||
-                                Auth::user()->isCollegeSupervisor()
-                            ))
-                            ->formatStateUsing(fn($state) => is_array($state) ? ($state['ar'] ?? $state['en'] ?? reset($state)) : $state),
+                                Auth::user()->isTrainingManagerLike() ||
+                                Auth::user()->isCollegeSupervisor() ||
+                                Auth::user()->isMonitor()
+                            ) && $record->applications()->where('training_type', Application::UNIVERSITY)->exists()),
                     ])
                     ->columns(2),
 

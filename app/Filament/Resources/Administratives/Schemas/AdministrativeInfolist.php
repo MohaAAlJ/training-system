@@ -12,6 +12,7 @@ class AdministrativeInfolist
     public static function configure(Schema $schema): Schema
     {
         return $schema
+            ->columns(1)
             ->components([
                 Section::make('معلومات الإدارة')
                     ->description('التفاصيل الأساسية للإدارة')
@@ -24,6 +25,12 @@ class AdministrativeInfolist
                             ->weight('bold')
                             ->size('lg')
                             ->color('primary'),
+
+                        TextEntry::make('address')
+                            ->label('العنوان التفصيلي')
+                            ->icon('heroicon-o-map-pin')
+                            ->copyable()
+                            ->placeholder('غير محدد'),
 
                         TextEntry::make('user.name')
                             ->label('رئيس الإدارة')

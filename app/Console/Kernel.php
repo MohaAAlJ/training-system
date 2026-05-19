@@ -30,6 +30,18 @@ class Kernel extends ConsoleKernel
 
         // Send WhatsApp reminders X days before end
         $schedule->command('app:check-training-end-dates')->dailyAt('09:00');
+
+        // Telegram daily monitoring report
+        $schedule->command('telegram:daily-report')
+            ->dailyAt(config('telegram.daily_report_time', '08:00'))
+            ->runInBackground()
+            ->name('telegram-daily-report')
+            ->when(fn () => config('telegram.enabled') && config('telegram.daily_report'));
+
+        // Mark stale applications as unknown daily
+        $schedule->command('applications:mark-stale-unknown', ['--days' => 7])
+            ->dailyAt('02:00')
+            ->runInBackground();
     }
 
     /**

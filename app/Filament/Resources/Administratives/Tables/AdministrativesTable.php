@@ -12,6 +12,7 @@ use Filament\Actions\ViewAction;
 use Illuminate\Support\Facades\Auth;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
@@ -25,7 +26,8 @@ class AdministrativesTable
                 TextColumn::make('name')
                     ->label('اسم الإدارة')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->description(fn($record): ?string => $record->address),
                 TextColumn::make('user.name')
                     ->label('رئيس الإدارة')
                     ->searchable()
@@ -39,11 +41,13 @@ class AdministrativesTable
                     ->searchable()
                     ->sortable()
                     ->placeholder('-'),
-                TextColumn::make('active')
+                ToggleColumn::make('active')
                     ->label('الحالة')
-                    ->badge()
-                    ->color(fn($state): string => \App\Enums\GeneralConst::getStatusColor((int) $state))
-                    ->formatStateUsing(fn($state): string => \App\Enums\GeneralConst::getStatusLabel((int) $state))
+                    ->onIcon('heroicon-m-check-circle')
+                    ->offIcon('heroicon-m-x-circle')
+                    ->onColor('success')
+                    ->offColor('danger')
+                    ->disabled(fn($record) => ! Auth::user()?->can('update', $record))
                     ->sortable(),
 
                 TextColumn::make('created_at')
@@ -68,8 +72,12 @@ class AdministrativesTable
                     ->options([
                         true => 'إدارة طبية',
                         false => 'إدارة عامة',
-                    ]),
-                TrashedFilter::make(),
+                    ])
+                    ->indicateUsing(function (array $data): ?string {
+                        if ($data['value'] === null) return null;
+                        return $data['value'] ? 'نوع الإدارة: طبية' : 'نوع الإدارة: عامة';
+                    }),
+                TrashedFilter::make()->visible(fn() => Auth::user()?->isAdmin() ?? false),
             ])
             ->recordActions([
                 ViewAction::make(),

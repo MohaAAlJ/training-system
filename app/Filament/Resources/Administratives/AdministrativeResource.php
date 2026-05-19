@@ -19,6 +19,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Auth;
 
 class AdministrativeResource extends Resource
 {
@@ -67,6 +68,37 @@ class AdministrativeResource extends Resource
             'view' => ViewAdministrative::route('/{record}'),
             'edit' => EditAdministrative::route('/{record}/edit'),
         ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+        $user = \Illuminate\Support\Facades\Auth::user();
+
+        if ($user->isAdmin() || $user->isGeneralTrainingManager() || $user->isMonitor()) {
+            return $query;
+        }
+
+        if ($user->isAssistantTrainingManager()) {
+            return $query->whereHas('sections.departments', fn($q) => $q->whereIn('departments.id', $user->managedDepartmentIds()));
+        }
+
+        if ($user->isAdministrative()) {
+            if ($user->administrative()->active()->doesntExist()) {
+                return $query->whereRaw('1 = 0');
+            }
+            return $query->where('id', $user->administrative->id);
+        }
+
+        if ($user->isMedicalManager()) {
+            $admin = \App\Models\Administrative::where('medical_head_user_id', $user->id)->active()->first();
+            if (!$admin) {
+                return $query->whereRaw('1 = 0');
+            }
+            return $query->where('id', $admin->id);
+        }
+
+        return $query->whereRaw('1 = 0');
     }
 
     public static function getRecordRouteBindingEloquentQuery(): Builder

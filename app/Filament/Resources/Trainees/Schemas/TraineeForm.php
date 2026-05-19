@@ -56,25 +56,7 @@ class TraineeForm
                     ->searchable()
                     ->preload()
                     ->required(),
-                Select::make('institution_id')
-                    ->label('المؤسسة التعليمية')
-                    ->relationship('institution', 'name')
-                    ->getOptionLabelFromRecordUsing(fn($record) => is_array($record->name) ? ($record->name['ar'] ?? $record->name['en'] ?? reset($record->name)) : $record->name)
-                    ->searchable()
-                    ->preload()
-                    ->required(),
-                Select::make('major_id')
-                    ->label('التخصص')
-                    ->relationship('major', 'name')
-                    ->getOptionLabelFromRecordUsing(fn($record) => is_array($record->name) ? ($record->name['ar'] ?? $record->name['en'] ?? reset($record->name)) : $record->name)
-                    ->searchable()
-                    ->preload()
-                    ->required(),
-                TextInput::make('training_hours')
-                    ->label('ساعات التدريب المطلوبة')
-                    ->numeric()
-                    ->required()
-                    ->visible(fn() => Auth::user()->isCollegeSupervisor()),
+
             ]);
     }
 }

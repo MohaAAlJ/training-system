@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Models\User;
 use App\Settings\TrainingSettings;
 use Filament\Schemas\Schema;
 use Filament\Pages\SettingsPage;
@@ -24,6 +25,7 @@ class ManageTrainingSettings extends SettingsPage
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-cog-6-tooth';
     protected static ?string $navigationLabel = 'اعدادات التدريب';
     protected static ?string $title = 'اعدادات التدريب';
+    protected static string|\UnitEnum|null $navigationGroup = 'الإعدادات';
 
     protected static string $settings = TrainingSettings::class;
 
@@ -144,6 +146,17 @@ class ManageTrainingSettings extends SettingsPage
                                             ->columnSpan(1)
                                             ->live(),
                                     ]),
+
+                                Toggle::make('enable_change_password')
+                                    ->label('تفعيل تغيير كلمة المرور')
+                                    ->helperText('إظهار خيار تغيير كلمة المرور في القائمة العلوية والوصول للصفحة')
+                                    ->default(false)
+                                    ->onIcon('heroicon-m-check-circle')
+                                    ->offIcon('heroicon-m-x-circle')
+                                    ->onColor('success')
+                                    ->offColor('danger')
+                                    ->inline()
+                                    ->live(),
                             ]),
 
                         Tabs\Tab::make('الصلاحيات')
@@ -160,10 +173,10 @@ class ManageTrainingSettings extends SettingsPage
                                                     ->helperText('تعديل الاسم، السعة، والتفاصيل')
                                                     ->default(false)
                                                     ->onIcon('heroicon-m-check-circle')
-                                            ->offIcon('heroicon-m-x-circle')
-                                            ->onColor('success')
-                                            ->offColor('danger')
-                                            ->inline()
+                                                    ->offIcon('heroicon-m-x-circle')
+                                                    ->onColor('success')
+                                                    ->offColor('danger')
+                                                    ->inline()
                                                     ->live(),
 
                                                 Toggle::make('hoa_can_enable_section')
@@ -171,10 +184,10 @@ class ManageTrainingSettings extends SettingsPage
                                                     ->helperText('تفعيل أو تعطيل الأقسام')
                                                     ->default(false)
                                                     ->onIcon('heroicon-m-check-circle')
-                                            ->offIcon('heroicon-m-x-circle')
-                                            ->onColor('success')
-                                            ->offColor('danger')
-                                            ->inline()
+                                                    ->offIcon('heroicon-m-x-circle')
+                                                    ->onColor('success')
+                                                    ->offColor('danger')
+                                                    ->inline()
                                                     ->live(),
                                             ]),
 
@@ -187,10 +200,10 @@ class ManageTrainingSettings extends SettingsPage
                                                     ->helperText('الاسم، السعة، والتفاصيل')
                                                     ->default(false)
                                                     ->onIcon('heroicon-m-check-circle')
-                                            ->offIcon('heroicon-m-x-circle')
-                                            ->onColor('success')
-                                            ->offColor('danger')
-                                            ->inline()
+                                                    ->offIcon('heroicon-m-x-circle')
+                                                    ->onColor('success')
+                                                    ->offColor('danger')
+                                                    ->inline()
                                                     ->live(),
 
                                                 Toggle::make('dept_head_can_enable_section')
@@ -198,10 +211,10 @@ class ManageTrainingSettings extends SettingsPage
                                                     ->helperText('تفعيل أو تعطيل الأقسام')
                                                     ->default(false)
                                                     ->onIcon('heroicon-m-check-circle')
-                                            ->offIcon('heroicon-m-x-circle')
-                                            ->onColor('success')
-                                            ->offColor('danger')
-                                            ->inline()
+                                                    ->offIcon('heroicon-m-x-circle')
+                                                    ->onColor('success')
+                                                    ->offColor('danger')
+                                                    ->inline()
                                                     ->live(),
                                             ]),
                                     ]),
@@ -250,9 +263,10 @@ class ManageTrainingSettings extends SettingsPage
                                                         \App\Models\User::ROLE_COLLEGE => 'مشرف كلية',
                                                         \App\Models\User::ROLE_MOH => 'وزارة الصحة',
                                                         \App\Models\User::ROLE_GTM => 'مدير التدريب العام',
+                                                        \App\Models\User::ROLE_ASSISTANT_TRAINING_MANAGER => 'مساعد مدير التدريب',
                                                         \App\Models\User::ROLE_HOA => 'رئيس الإدارة',
                                                         \App\Models\User::ROLE_HOM => 'رئيس  الإدارة الطبية',
-                                                        \App\Models\User::ROLE_DEPARTMENT=> 'رئيس الدائرة',
+                                                        \App\Models\User::ROLE_DEPARTMENT => 'رئيس الدائرة',
                                                         \App\Models\User::ROLE_SECTION => 'رئيس القسم',
                                                     ])
                                                     ->visible(fn($get) => $get('is_maintenance_mode'))
@@ -330,10 +344,10 @@ class ManageTrainingSettings extends SettingsPage
                                                             ->label('قرب الانتهاء')
                                                             ->helperText('قبل انتهاء التدريب')
                                                             ->onIcon('heroicon-m-check-circle')
-                                            ->offIcon('heroicon-m-x-circle')
-                                            ->onColor('success')
-                                            ->offColor('danger')
-                                            ->inline()
+                                                            ->offIcon('heroicon-m-x-circle')
+                                                            ->onColor('success')
+                                                            ->offColor('danger')
+                                                            ->inline()
                                                             ->disabled(fn($get) => !$get('whatsapp_notifications_enabled'))
                                                             ->live()
                                                             ->dehydrated(),
@@ -367,10 +381,10 @@ class ManageTrainingSettings extends SettingsPage
                                                             ->helperText('عند طلب جديد')
                                                             ->default(false)
                                                             ->onIcon('heroicon-m-check-circle')
-                                            ->offIcon('heroicon-m-x-circle')
-                                            ->onColor('success')
-                                            ->offColor('danger')
-                                            ->inline()
+                                                            ->offIcon('heroicon-m-x-circle')
+                                                            ->onColor('success')
+                                                            ->offColor('danger')
+                                                            ->inline()
                                                             ->disabled(fn($get) => !$get('whatsapp_notifications_enabled')),
 
                                                         Toggle::make('whatsapp_hoa_started_training')
@@ -378,10 +392,10 @@ class ManageTrainingSettings extends SettingsPage
                                                             ->helperText('عند بدء تدريب')
                                                             ->default(false)
                                                             ->onIcon('heroicon-m-check-circle')
-                                            ->offIcon('heroicon-m-x-circle')
-                                            ->onColor('success')
-                                            ->offColor('danger')
-                                            ->inline()
+                                                            ->offIcon('heroicon-m-x-circle')
+                                                            ->onColor('success')
+                                                            ->offColor('danger')
+                                                            ->inline()
                                                             ->disabled(fn($get) => !$get('whatsapp_notifications_enabled')),
 
                                                         Toggle::make('whatsapp_hom_started_training')
@@ -389,10 +403,10 @@ class ManageTrainingSettings extends SettingsPage
                                                             ->helperText('عند بدء تدريب طبي')
                                                             ->default(false)
                                                             ->onIcon('heroicon-m-check-circle')
-                                            ->offIcon('heroicon-m-x-circle')
-                                            ->onColor('success')
-                                            ->offColor('danger')
-                                            ->inline()
+                                                            ->offIcon('heroicon-m-x-circle')
+                                                            ->onColor('success')
+                                                            ->offColor('danger')
+                                                            ->inline()
                                                             ->disabled(fn($get) => !$get('whatsapp_notifications_enabled')),
 
                                                         Toggle::make('whatsapp_department_started_training')
@@ -400,10 +414,10 @@ class ManageTrainingSettings extends SettingsPage
                                                             ->helperText('عند بدء تدريب بدائرته')
                                                             ->default(false)
                                                             ->onIcon('heroicon-m-check-circle')
-                                            ->offIcon('heroicon-m-x-circle')
-                                            ->onColor('success')
-                                            ->offColor('danger')
-                                            ->inline()
+                                                            ->offIcon('heroicon-m-x-circle')
+                                                            ->onColor('success')
+                                                            ->offColor('danger')
+                                                            ->inline()
                                                             ->disabled(fn($get) => !$get('whatsapp_notifications_enabled')),
 
                                                         Toggle::make('whatsapp_section_started_training')
@@ -411,10 +425,10 @@ class ManageTrainingSettings extends SettingsPage
                                                             ->helperText('عند بدء تدريب بقسمه')
                                                             ->default(false)
                                                             ->onIcon('heroicon-m-check-circle')
-                                            ->offIcon('heroicon-m-x-circle')
-                                            ->onColor('success')
-                                            ->offColor('danger')
-                                            ->inline()
+                                                            ->offIcon('heroicon-m-x-circle')
+                                                            ->onColor('success')
+                                                            ->offColor('danger')
+                                                            ->inline()
                                                             ->disabled(fn($get) => !$get('whatsapp_notifications_enabled')),
 
                                                         Toggle::make('whatsapp_college_approved_application')
@@ -422,10 +436,10 @@ class ManageTrainingSettings extends SettingsPage
                                                             ->helperText('عند قبول طلب من كليته')
                                                             ->default(false)
                                                             ->onIcon('heroicon-m-check-circle')
-                                            ->offIcon('heroicon-m-x-circle')
-                                            ->onColor('success')
-                                            ->offColor('danger')
-                                            ->inline()
+                                                            ->offIcon('heroicon-m-x-circle')
+                                                            ->onColor('success')
+                                                            ->offColor('danger')
+                                                            ->inline()
                                                             ->disabled(fn($get) => !$get('whatsapp_notifications_enabled')),
                                                     ]),
                                             ])
@@ -508,10 +522,10 @@ class ManageTrainingSettings extends SettingsPage
                                                             ->helperText('إشعار فوري')
                                                             ->default(false)
                                                             ->onIcon('heroicon-m-check-circle')
-                                            ->offIcon('heroicon-m-x-circle')
-                                            ->onColor('success')
-                                            ->offColor('danger')
-                                            ->inline()
+                                                            ->offIcon('heroicon-m-x-circle')
+                                                            ->onColor('success')
+                                                            ->offColor('danger')
+                                                            ->inline()
                                                             ->disabled(fn($get) => !$get('telegram_enabled'))
                                                             ->dehydrated(),
 
@@ -520,10 +534,10 @@ class ManageTrainingSettings extends SettingsPage
                                                             ->helperText('تحديثات الطلبات')
                                                             ->default(false)
                                                             ->onIcon('heroicon-m-check-circle')
-                                            ->offIcon('heroicon-m-x-circle')
-                                            ->onColor('success')
-                                            ->offColor('danger')
-                                            ->inline()
+                                                            ->offIcon('heroicon-m-x-circle')
+                                                            ->onColor('success')
+                                                            ->offColor('danger')
+                                                            ->inline()
                                                             ->disabled(fn($get) => !$get('telegram_enabled'))
                                                             ->dehydrated(),
 
@@ -532,10 +546,10 @@ class ManageTrainingSettings extends SettingsPage
                                                             ->helperText('تفاصيل الأخطاء')
                                                             ->default(false)
                                                             ->onIcon('heroicon-m-check-circle')
-                                            ->offIcon('heroicon-m-x-circle')
-                                            ->onColor('success')
-                                            ->offColor('danger')
-                                            ->inline()
+                                                            ->offIcon('heroicon-m-x-circle')
+                                                            ->onColor('success')
+                                                            ->offColor('danger')
+                                                            ->inline()
                                                             ->disabled(fn($get) => !$get('telegram_enabled'))
                                                             ->dehydrated(),
 
@@ -544,10 +558,10 @@ class ManageTrainingSettings extends SettingsPage
                                                             ->helperText('النشاطات المهمة')
                                                             ->default(false)
                                                             ->onIcon('heroicon-m-check-circle')
-                                            ->offIcon('heroicon-m-x-circle')
-                                            ->onColor('success')
-                                            ->offColor('danger')
-                                            ->inline()
+                                                            ->offIcon('heroicon-m-x-circle')
+                                                            ->onColor('success')
+                                                            ->offColor('danger')
+                                                            ->inline()
                                                             ->disabled(fn($get) => !$get('telegram_enabled'))
                                                             ->dehydrated(),
 
@@ -556,10 +570,10 @@ class ManageTrainingSettings extends SettingsPage
                                                             ->helperText('ملخص يومي')
                                                             ->default(true)
                                                             ->onIcon('heroicon-m-check-circle')
-                                            ->offIcon('heroicon-m-x-circle')
-                                            ->onColor('success')
-                                            ->offColor('danger')
-                                            ->inline()
+                                                            ->offIcon('heroicon-m-x-circle')
+                                                            ->onColor('success')
+                                                            ->offColor('danger')
+                                                            ->inline()
                                                             ->disabled(fn($get) => !$get('telegram_enabled'))
                                                             ->live()
                                                             ->dehydrated(),
@@ -593,6 +607,34 @@ class ManageTrainingSettings extends SettingsPage
                                             ->rows(3)
                                             ->maxLength(500)
                                             ->required(),
+                                    ]),
+                            ]),
+
+                        Tabs\Tab::make('البحث الذكي')
+                            ->icon('heroicon-o-sparkles')
+                            ->schema([
+                                Section::make('إعدادات البحث الذكي')
+                                    ->description('التحكم في إتاحة البحث الذكي في جداول Filament')
+                                    ->icon('heroicon-o-cpu-chip')
+                                    ->schema([
+                                        Toggle::make('ai_search_enabled')
+                                            ->label('تفعيل البحث الذكي')
+                                            ->helperText('إظهار حقل البحث الحر في جداول الطلبات والمتدربين')
+                                            ->default(false)
+                                            ->onIcon('heroicon-m-check-circle')
+                                            ->offIcon('heroicon-m-x-circle')
+                                            ->onColor('success')
+                                            ->offColor('danger')
+                                            ->inline()
+                                            ->live(),
+
+                                        CheckboxList::make('ai_search_allowed_roles')
+                                            ->label('الأدوار المسموح لها')
+                                            ->helperText('البحث الذكي سيظهر لهذه الأدوار فقط عند تفعيله')
+                                            ->options(User::ROLE_LABELS)
+                                            ->columns(2)
+                                            ->disabled(fn(callable $get) => ! $get('ai_search_enabled'))
+                                            ->dehydrated(),
                                     ]),
                             ]),
 

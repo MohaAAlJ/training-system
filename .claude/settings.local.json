@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(d.get\\('version', d.get\\('name', 'unknown'\\)\\)\\)\")",
+      "Bash(php -l C:/Users/adels/Herd/train/app/Services/AiSearch/AiTableSearchInterpreter.php)",
+      "Bash(php -l C:/Users/adels/Herd/train/app/Filament/Pages/Concerns/InteractsWithAiTableSearch.php)",
+      "Bash(php -l C:/Users/adels/Herd/train/tests/Feature/AiTableSearchInterpreterTest.php)",
+      "Bash(php -l C:/Users/adels/Herd/train/tests/Feature/Filament/AiTableSearchPagesTest.php)",
+      "Bash(php artisan *)",
+      "Bash(php -m)",
+      "Bash(php -r \"new PDO\\('sqlite::memory:'\\);\")",
+      "Bash(xargs grep *)",
+      "Bash(php -r \"require 'C:/Users/adels/Herd/train/vendor/autoload.php'; echo class_exists\\('Prism\\\\\\\\\\\\Prism\\\\\\\\\\\\Contracts\\\\\\\\\\\\HasSchemaType'\\) ? 'prism ok' : 'prism missing';\")"
+    ]
+  }
+}

@@ -22,8 +22,8 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 class UserResource extends Resource
 {
     protected static ?string $modelLabel = 'المستخدم';
-    protected static ?string $pluralModelLabel = 'المستخدمين';
-    protected static ?string $navigationLabel = 'المستخدمين';
+    protected static ?string $pluralModelLabel = 'المستخدمون';
+    protected static ?string $navigationLabel = 'المستخدمون';
     protected static ?int $navigationSort = 7;
     protected static ?string $model = User::class;
     protected static ?string $slug = 'user';

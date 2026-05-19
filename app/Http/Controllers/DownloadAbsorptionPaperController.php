@@ -10,7 +10,7 @@ class DownloadAbsorptionPaperController extends Controller
 {
     public function __invoke(Request $request, Application $application)
     {
-        $application->load(['section.department']);
+        $application->load(['section.departments' => fn($q) => $q->visible()]);
 
         $data = [
             'application' => $application,

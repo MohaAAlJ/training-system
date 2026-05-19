@@ -26,13 +26,10 @@ class TraineeFactory extends Factory
             'national_id' => $this->faker->unique()->numerify('#########'),
             'full_name' => $arabicFaker->name,
             'phone_number' => $this->faker->numerify('97059#######'),
-            'dob' => $this->faker->date('Y-m-d', '-20 years'),
+            'dob' => $this->faker->date('Y-m-d', '-18 years'),
             'governorate_id' => Governorate::factory(),
             'street' => $arabicFaker->streetAddress,
-            'institution_id' => Institution::factory(),
-            'college_id' => College::factory(),
-            'major_id' => Major::factory(),
-            'training_hours' => $this->faker->numberBetween(10, 200),
+            'gender' => $this->faker->randomElement([\App\Enums\Gender::MALE, \App\Enums\Gender::FEMALE]),
         ];
     }
 }

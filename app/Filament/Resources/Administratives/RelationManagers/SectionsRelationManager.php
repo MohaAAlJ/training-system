@@ -40,18 +40,22 @@ class SectionsRelationManager extends RelationManager
                     ->columnSpanFull(),
                 Hidden::make('administrative_id')
                     ->default($this->getOwnerRecord()->id),
-                Select::make('department_id')
-                    ->label('الدائرة')
-                    ->relationship('department', 'name', fn($query) => $query->active())
+                Select::make('departments')
+                    ->label('الدوائر')
+                    ->relationship('departments', 'name', fn($query) => $query->active())
+                    ->multiple()
                     ->searchable()
                     ->required()
                     ->preload(),
                 Select::make('user_id')
                     ->label('المسؤول')
                     // Filter: Role SECTION and 'free' user (or current user)
-                    ->relationship('user', 'name', modifyQueryUsing: fn (Builder $query, ?\App\Models\Section $record) => $query
-                        ->where('role', \App\Models\User::ROLE_SECTION)
-                        ->free($record?->user_id)
+                    ->relationship(
+                        'user',
+                        'name',
+                        modifyQueryUsing: fn(Builder $query, ?\App\Models\Section $record) => $query
+                            ->where('role', \App\Models\User::ROLE_SECTION)
+                            ->free($record?->user_id)
                     )
                     ->searchable()
                     ->preload()
@@ -71,7 +75,7 @@ class SectionsRelationManager extends RelationManager
                         TextInput::make('password')
                             ->label('كلمة المرور')
                             ->password()
-                            ->dehydrateStateUsing(fn ($state) => \Illuminate\Support\Facades\Hash::make($state))
+                            ->revealable()
                             ->required(),
                         Hidden::make('role')
                             ->default(\App\Models\User::ROLE_SECTION)
@@ -118,16 +122,10 @@ class SectionsRelationManager extends RelationManager
                     ->sortable(),
                 TextColumn::make('registered_count')
                     ->label('المسجلين')
-                    ->state(function ($record) {
-                        return \App\Models\Application::where('section_id', $record->id)
-                            ->whereIn('status', [
-                                \App\Models\Application::STATUS_STARTED_TRAINING,
-                                \App\Models\Application::STATUS_ENDED_TRAINING,
-                            ])
-                            ->count();
-                    })
+                    ->numeric()
                     ->badge()
-                    ->color('primary'),
+                    ->color('primary')
+                    ->sortable(),
                 ToggleColumn::make('active')
                     ->label('الحالة')
                     ->disabled(static fn() => ! Auth::user()?->isAdmin() ?? false)
@@ -183,6 +181,7 @@ class SectionsRelationManager extends RelationManager
             ])
             ->modifyQueryUsing(
                 fn(Builder $query) => $query
+                    ->withRegisteredCount()
                     ->withoutGlobalScopes([
                         SoftDeletingScope::class,
                     ])

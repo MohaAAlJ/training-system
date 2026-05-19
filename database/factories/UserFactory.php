@@ -4,7 +4,6 @@ namespace Database\Factories;
 
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 
@@ -20,7 +19,7 @@ class UserFactory extends Factory
             'user_name' => $this->faker->unique()->userName(),
             'email' => $this->faker->unique()->safeEmail(),
             'email_verified_at' => now(),
-            'password' => Hash::make('password'),
+            'password' => 'password',
             'active' => true,
             'role' => User::ROLE_MOH,
             'remember_token' => Str::random(10),
@@ -110,6 +109,13 @@ class UserFactory extends Factory
     {
         return $this->state(fn(array $attributes) => [
             'role' => User::ROLE_GTM,
+        ]);
+    }
+
+    public function assistantTrainingManager(): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'role' => User::ROLE_ASSISTANT_TRAINING_MANAGER,
         ]);
     }
 }

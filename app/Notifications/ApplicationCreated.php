@@ -31,9 +31,7 @@ class ApplicationCreated extends Notification
         $section = $this->application->section;
         $sectionName = optional($section)->name ?? 'غير محدد';
 
-        $departmentName = optional($section?->department)->name
-            ?? optional($section?->department)->name
-            ?? 'غير محدد';
+        $departmentName = $section?->departments->first()?->name ?? 'غير محدد';
 
         $adminName = optional($section?->administrative)->name ?? 'غير محدد';
 
@@ -46,7 +44,7 @@ class ApplicationCreated extends Notification
                 \Filament\Actions\Action::make('view')
                     ->label('عرض الطلب')
                     ->button()
-                    ->url(\App\Filament\Resources\Applications\ApplicationResource::getUrl('view', ['record' => $this->application]))
+                    ->url(\App\Filament\Resources\Applications\ApplicationResource::getUrl('view', ['record' => $this->application->id]))
                 // ->markAsRead() // markAsRead might not be available on generic Action
                 ,
             ])
